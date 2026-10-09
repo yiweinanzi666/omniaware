@@ -469,5 +469,91 @@
    "target": "src/omniaware/eval/citation/checker_asset_manifest.json",
    "sha256": "686c13c84f39b39d9a46e4a78ccea76df82472e9550f9bd3022de823eeab9a77"
   }
+ ],
+ "extracted_objects": [
+  {
+   "source": "experiments/eab_first_token/multimodal_retrieval.py",
+   "object": "TOP_K"
+  },
+  {
+   "source": "experiments/eab_first_token/multimodal_retrieval.py",
+   "object": "encode_bge"
+  },
+  {
+   "source": "experiments/eab_first_token/multimodal_retrieval.py",
+   "object": "score_ce"
+  },
+  {
+   "source": "experiments/eab_first_token/multimodal_retrieval.py",
+   "object": "rank_sources"
+  },
+  {
+   "source": "experiments/eab_first_token/prepare_webqa.py",
+   "object": "QUERY_INSTRUCTION"
+  },
+  {
+   "source": "experiments/eab_first_token/analyze_ce_modality_selection.py",
+   "object": "select_calibrated"
+  },
+  {
+   "source": "experiments/eab_first_token/score_ce_calibration.py",
+   "object": "fit_ecdfs"
+  },
+  {
+   "source": "experiments/eab_first_token/score_ce_calibration.py",
+   "object": "calibrated_relevance"
+  },
+  {
+   "source": "experiments/eab_first_token/score_visual_candidates.py",
+   "object": "normalize_features"
+  },
+  {
+   "source": "experiments/eab_first_token/run_order_mechanism.py",
+   "object": "PERMUTATION_SEEDS"
+  },
+  {
+   "source": "experiments/eab_first_token/run_order_mechanism.py",
+   "object": "permutation_schedule"
+  },
+  {
+   "source": "experiments/eab_first_token/run_order_mechanism.py",
+   "object": "replication_counts"
+  },
+  {
+   "source": "experiments/eab_first_token/score_order_mechanism.py",
+   "object": "order_std_statistics"
+  },
+  {
+   "source": "experiments/eab_first_token/runs/e5_citation_support_preparation/prepare_inputs.py",
+   "object": "CITATION_INSTRUCTION"
+  },
+  {
+   "source": "experiments/eab_first_token/test_multimodal_retrieval.py",
+   "object": "candidates"
+  },
+  {
+   "source": "experiments/eab_first_token/test_multimodal_retrieval.py",
+   "object": "RetrievalTests.test_ce_selection_and_bge_presentation_are_distinct"
+  },
+  {
+   "source": "experiments/eab_first_token/test_multimodal_retrieval.py",
+   "object": "RetrievalTests.test_shared_fact_id_across_modalities_and_ties_remain_distinct"
+  },
+  {
+   "source": "experiments/eab_first_token/test_multimodal_retrieval.py",
+   "object": "RetrievalTests.test_nonfinite_or_misaligned_model_outputs_raise"
+  },
+  {
+   "source": "experiments/eab_first_token/test_order_mechanism.py",
+   "object": "OrderStatisticsTests.test_order_std_bootstrap_resamples_whole_questions_and_recomputes_dataset_means"
+  },
+  {
+   "source": "experiments/eab_first_token/test_order_mechanism.py",
+   "object": "test_permutation_schedule_has_twelve_unique_random_orders_and_two_anchors"
+  },
+  {
+   "source": "experiments/eab_first_token/test_order_mechanism.py",
+   "object": "test_replication_ceil_gate_boundaries_and_adjacent_full_copies (count assertions only)"
+  }
  ]
 }

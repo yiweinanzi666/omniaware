@@ -41,6 +41,13 @@ STRICT_LETTER_INSTRUCTION = (
     "Use the visual and subtitle evidence to select the option that best answers the question. "
     "Return exactly one uppercase letter: A, B, C, or D. Do not include explanations."
 )
+# Citation output format of the CiteRec protocol (docs/citation_support_protocol.md).
+CITATION_INSTRUCTION = (
+    'Answer the question using the supplied evidence and images. '
+    'Write each answer as a complete factual statement on a separate line. '
+    'Cite the supplied evidence that supports each statement using its exact [E<number>] identifier. '
+    'Use only identifiers present in the supplied evidence. Do not include explanations or a reference list.'
+)
 TABLE_INSTRUCTION = (
     "Use the provided tables to answer the question. Apply every condition to the matching rows, "
     "then compute any requested count, average, minimum, maximum, or most recent value. "
