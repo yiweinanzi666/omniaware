@@ -8,12 +8,9 @@ calibrated score r_j.
 from __future__ import annotations
 
 import bisect
-from collections import Counter
 import json
-import math
 import os
 from pathlib import Path
-import re
 
 import numpy as np
 import torch
@@ -87,31 +84,6 @@ def query_text(e: dict) -> str:
     if e.get("options"):
         return e["question"] + " " + " ".join(o[3:] for o in e["options"])
     return e["question"]
-
-
-def query_coverage_select(question, candidates, relevance, k, initial=()):
-    """Prefer complementary query terms at fixed k; only text and scores enter ranking."""
-    def terms(text):
-        return set(re.findall(r"\w+", text.casefold()))
-
-    query = terms(question)
-    docs = [query & terms(c.get("title", "") + " " + c.get("text", "")) for c in candidates]
-    counts = Counter(term for doc in docs for term in doc)
-    weights = {t: math.log((len(candidates) + 1) / (n + 1)) for t, n in sorted(counts.items())}
-    total = sum(weights.values()) or 1
-    initial_ids = {c["cid"] for c in initial}
-    chosen = [i for i, c in enumerate(candidates) if c["cid"] in initial_ids][:k]
-    covered = set().union(*(docs[i] for i in chosen))
-    remaining = [i for i in range(len(candidates)) if i not in chosen]
-    while remaining and len(chosen) < k:
-        def value(i):
-            novelty = sum(weights[t] for t in sorted(docs[i] - covered)) / total
-            return relevance[candidates[i]["cid"]] + 0.25 * novelty
-        i = max(remaining, key=value)
-        chosen.append(i)
-        covered.update(docs[i])
-        remaining.remove(i)
-    return [candidates[i] for i in chosen]
 
 
 def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, dict[str, dict[str, float]]]:

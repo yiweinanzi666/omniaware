@@ -7,7 +7,6 @@ Example:
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import gc
 import json
 import random
@@ -38,7 +37,7 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
     return raw
 
 
-def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0, route: dict | None = None, query_coverage: bool = False) -> list[dict]:
+def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0, route: dict | None = None) -> list[dict]:
     candidates = e["candidates"]
     if route and route["modalities"]:
         missing = set(route["modalities"]) - {c["modality"] for c in candidates}
@@ -54,10 +53,7 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
             for m in sorted({c["modality"] for c in ranked}):
                 picked += [c for c in ranked if c["modality"] == m][:min_per_modality]
             picked = sorted(picked, key=lambda c: -rel[c["cid"]])[:k]
-        if query_coverage:
-            chosen = relevance.query_coverage_select(e["question"], ranked, rel, k, picked)
-        else:
-            chosen = picked + [c for c in ranked if c not in picked][:k - len(picked)]
+        chosen = picked + [c for c in ranked if c not in picked][:k - len(picked)]
         chosen = sorted(chosen, key=lambda c: -rel[c["cid"]])
     if order == "shuffle":
         chosen = list(chosen)
@@ -86,8 +82,6 @@ def main(argv=None):
     ap.add_argument("--first-round-routing", action="store_true",
                     help="cold start: route by M_m H_m over a first joint top-k round, then retrieve top-k "
                          "inside the routed modalities")
-    ap.add_argument("--query-coverage", action="store_true",
-                    help="development candidate: prefer complementary query terms at fixed top-k")
     ap.add_argument("--order", default="rank", choices=["rank", "shuffle", "reverse"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--image-mode", default="mix", choices=["mix", "clip", "caption"])
@@ -104,10 +98,6 @@ def main(argv=None):
     ap.add_argument("--decode-baselines", action="store_true",
                     help="also decode direct and static answers (off: Ours-only)")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
-    ap.add_argument("--image-budget", default="uniform", choices=["uniform", "focus"],
-                    help="focus: same total visual tokens, more for the most relevant evidence image")
-    ap.add_argument("--order-vote", type=int, default=0,
-                    help="N>1: also answer with the evidence reversed / shuffled and majority-vote N orders")
     ap.add_argument("--max-new-tokens", type=int, default=None,
                     help="override the per-dataset generation cap (e.g. 10 to reproduce earlier short-answer runs)")
     ap.add_argument("--tag", required=True)
@@ -130,14 +120,6 @@ def main(argv=None):
         previous = json.loads(config_path.read_text())
         saved = dict(previous)
         saved["variants"] = ",".join(v["name"] for v in saved["variants"])
-        legacy_cap = (10 if saved.get("answer_style") == "short" and args.dataset != "videomme"
-                      else {"okvqa": 10, "okvqa_dense": 10, "mmqa_table": 16, "webqa": 32, "videomme": 4}[args.dataset])
-        for key, default in {"max_new_tokens": legacy_cap, "min_per_modality": 0,
-                             "mmqa_provided_context": False, "modality_routing": False,
-                             "first_round_routing": False, "query_coverage": False, "eab_uncertainty": "post", "image_budget": "uniform", "order_vote": 0,
-                             "table_format": "rows",
-                             "answer_style": "default", "select_tau": False}.items():
-            saved.setdefault(key, default)
         requested = dict(vars(args), max_new_tokens=max_new)
         changed = [k for k, v in requested.items() if saved.get(k) != v
                    and not (k == "tau" and args.select_tau)]
@@ -188,16 +170,11 @@ def main(argv=None):
     style += "_provided_table" if args.mmqa_provided_context else ""
     style += "_route" if args.modality_routing else ""
     style += "_r1route" if args.first_round_routing else ""
-    style += "_qcov" if args.query_coverage else ""
-    style += "_imgfocus" if args.image_budget == "focus" else ""
     style += "_cells" if args.table_format == "cells" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
 
     def evidence_segments(e, chunks, rel):
-        if args.image_budget != "focus":
-            return pipeline.build_segments(e, chunks, args.answer_style)
-        caps = pipeline.focus_image_pixels(chunks, rel, args.max_pixels // pipeline.TOKEN_PIXELS)
-        return pipeline.build_segments(e, chunks, args.answer_style, caps)
+        return pipeline.build_segments(e, chunks, args.answer_style)
 
     routed = args.modality_routing or args.first_round_routing
 
@@ -205,7 +182,7 @@ def main(argv=None):
         """Initial-evidence route; cold-start queries take the first-round pathway when enabled."""
         if not args.first_round_routing or (initial and initial["modalities"]):
             return initial
-        first = select_chunks(e, rel, args.k, order, seed, args.min_per_modality, None, args.query_coverage)
+        first = select_chunks(e, rel, args.k, order, seed, args.min_per_modality, None)
         enc_1 = qwen.encode(*evidence_segments(e, first, rel))
         _, attn_1, _ = qwen.run(enc_1, None, 1, decode_static=False)
         route = routing.evidence_route(attn_1, enc_1, first)
@@ -222,7 +199,7 @@ def main(argv=None):
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
         route = routing.initial_route(attn_d, enc_d, e) if args.modality_routing else None
         route = resolve_route(e, rel, route)
-        chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, args.query_coverage)
+        chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route)
         query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
         pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
@@ -244,14 +221,6 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
-    def variant_rel(v, rel_sel, mass, attn=None, enc=None):
-        """Retriever relevance unless the variant fuses it with latent grounding."""
-        if getattr(v, "relevance", "retriever") == "retriever":
-            return rel_sel
-        if mass is None:
-            mass = pipeline.chunk_masses(attn, enc)
-        return pipeline.variant_relevance(v, rel_sel, mass)
-
     if args.select_tau:
         # paper: thresholds are selected on validation and fixed for test.  Decode the
         # gate-off (direct) and gate-on (first variant) answers on the calibration split only.
@@ -265,7 +234,7 @@ def main(argv=None):
                 continue
             rel = rel_of(e)
             route = ucal[e["qid"]]["route"] if routed else None
-            chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, args.query_coverage)
+            chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route)
             enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
             res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=True)
             enc = qwen.encode(*evidence_segments(e, chunks, rel))
@@ -273,8 +242,7 @@ def main(argv=None):
             u_post = norm_post(ucal[e["qid"]]["post"]["s"])
             u_eab = norm_pre(ucal[e["qid"]]["pre"]["s"]) if args.eab_uncertainty == "pre" else u_post
             res, _, _ = qwen.run(enc, lambda a, l: {"v": variants[0].spec(
-                                     enc, variant_rel(variants[0], rel_sel, None, a, enc),
-                                     u_eab, args.tau_bias, qwen.n_layers)},
+                                     enc, rel_sel, u_eab, args.tau_bias, qwen.n_layers)},
                                  max_new, decode_static=False)
             sel[e["qid"]] = {"u_pre": norm_pre(ucal[e["qid"]]["pre"]["s"]),
                              "direct_text": res_d["static"].text, "retrieve_text": res["v"].text,
@@ -337,7 +305,7 @@ def main(argv=None):
                 rec["preds"]["direct" if args.decode_baselines else "gate_direct"] = res_d["static"].text
 
             route = resolve_route(e, rel, pre_info.get("route"), args.order, args.seed)
-            chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route, args.query_coverage)
+            chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route)
             rec["chunks"] = [c["cid"] for c in chunks]
             rec["rel"] = {c["cid"]: round(rel[c["cid"]], 4) for c in chunks}
             rec["gold_in_topk"] = any(c.get("gold") for c in chunks) if any(
@@ -353,8 +321,7 @@ def main(argv=None):
                 u = norm_post(post["s"])
                 u_eab = rec["u_pre"] if args.eab_uncertainty == "pre" else u
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
-                return {v.name: v.spec(enc, variant_rel(v, rel_sel, info["mass"]), u_eab, args.tau_bias,
-                                       qwen.n_layers) for v in variants}
+                return {v.name: v.spec(enc, rel_sel, u_eab, args.tau_bias, qwen.n_layers) for v in variants}
 
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=args.decode_baselines)
             for name, r in res.items():
@@ -363,31 +330,6 @@ def main(argv=None):
             gate_answer = rec["preds"].get("gate_direct", rec["preds"].get("direct"))
             for v in variants:
                 rec["preds"]["ours_sel:" + v.name] = gate_answer if not rec["retrieve"] else rec["preds"][v.name]
-            if args.order_vote > 1:
-                # same evidence set in other orders; majority vote per variant (tie: original order)
-                answers = {v.name: [rec["preds"][v.name]] for v in variants}
-                for order, seed in [("reverse", 0), ("shuffle", 1), ("shuffle", 2)][:args.order_vote - 1]:
-                    ordered = list(reversed(chunks)) if order == "reverse" else list(chunks)
-                    if order == "shuffle":
-                        random.Random(f"{seed}:{e['qid']}").shuffle(ordered)
-                    enc_o = qwen.encode(*evidence_segments(e, ordered, rel))
-
-                    def make_ordered(attn, logits, enc_o=enc_o):
-                        post = pipeline.raw_uncertainty(attn, enc_o, list(rel_sel), logits, args.beta)
-                        u_o = rec["u_pre"] if args.eab_uncertainty == "pre" else norm_post(post["s"])
-                        mass = pipeline.chunk_masses(attn, enc_o)
-                        return {v.name: v.spec(enc_o, variant_rel(v, rel_sel, mass), u_o, args.tau_bias,
-                                               qwen.n_layers) for v in variants}
-
-                    res_o, _, _ = qwen.run(enc_o, make_ordered, max_new, decode_static=False)
-                    for v in variants:
-                        answers[v.name].append(res_o[v.name].text)
-                        rec["preds"][f"order_{order}{seed}:{v.name}"] = res_o[v.name].text
-                for v in variants:
-                    votes = Counter(scoring.word_norm(a) for a in answers[v.name])
-                    best = max(votes.values())
-                    voted = next(a for a in answers[v.name] if votes[scoring.word_norm(a)] == best)
-                    rec["preds"][f"ours_vote{args.order_vote}:{v.name}"] = gate_answer if not rec["retrieve"] else voted
             rec["u_post"] = info["u_post"]
             rec["u_eab"] = info["u_eab"]
             rec["raw_post"] = info["raw_post"]

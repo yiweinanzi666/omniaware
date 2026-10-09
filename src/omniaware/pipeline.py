@@ -35,23 +35,6 @@ TABLE_INSTRUCTION = (
 )
 
 
-TOKEN_PIXELS = 32 * 32  # one Qwen3-VL visual token after 2x2 merging of 16x16 patches
-
-
-def focus_image_pixels(chunks: list[dict], rel: dict[str, float], base_tokens: int = 256,
-                       low_tokens: int = 128) -> dict[str, int]:
-    """Relevance-weighted visual budget at a fixed total: with n evidence images, the most
-    relevant one may use base + (n-1)*(base-low) tokens and every other image `low` tokens,
-    so the cap sums to n*base, the uniform budget."""
-    imgs = sorted((c for c in chunks if c["modality"] == "image"), key=lambda c: -rel[c["cid"]])
-    if len(imgs) <= 1:
-        return {}
-    top = base_tokens + (len(imgs) - 1) * (base_tokens - low_tokens)
-    caps = {imgs[0]["cid"]: top * TOKEN_PIXELS}
-    caps.update({c["cid"]: low_tokens * TOKEN_PIXELS for c in imgs[1:]})
-    return caps
-
-
 def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "default",
                    image_pixels: dict[str, int] | None = None) -> tuple[list[Segment], int]:
     """User turn = [query images] [evidence chunks] [question suffix]; returns (segments, split index)."""
@@ -126,10 +109,10 @@ def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float) -> 
 
 @dataclass
 class Variant:
-    """EAB family.  rows: 'ans2' paper (a >= q_ans), 'ans1' includes the first answer
-    token, 'q' starts at the question.  form: 'pos' gamma*U*r, 'ctr' gamma*U*(2r-1),
-    'fixed' gamma (PASTA-style uniform), 'pos_nou' gamma*r, 'sup' gamma*U*(r-1)
-    (suppress low-relevance chunks only)."""
+    """EAB family.  rows: 'ans2' paper decode-only (a >= t_ans), 'ans1' EAB-P (also the
+    row that predicts the first answer token), 'q' starts at the question.  form: 'pos'
+    gamma*U*r (paper), 'ctr' gamma*U*(2r-1), 'fixed' gamma (PASTA-style uniform bias),
+    'pos_nou' gamma*r (relevance bias without U scaling, paper ablation)."""
 
     name: str
     gamma: float
@@ -137,15 +120,10 @@ class Variant:
     form: str = "pos"
     gate: bool = True
     layers: str = "all"
-    relevance: str = "retriever"   # 'retriever': r_j; 'fuse<a>': rank fusion with latent grounding
 
     def spec(self, enc, rel: dict[str, float], u: float, tau_bias: float, n_layers: int) -> BiasSpec | None:
         if self.gate and u <= tau_bias:
             return None
-        if self.form.endswith("k"):
-            # contrast inside the selected evidence: min-max rescale r over the k chunks
-            lo, hi = min(rel.values()), max(rel.values())
-            rel = {c: (r - lo) / (hi - lo) if hi > lo else 1.0 for c, r in rel.items()}
         if self.form == "pos":
             vals = {c: self.gamma * u * r for c, r in rel.items()}
         elif self.form == "ctr":
@@ -154,20 +132,6 @@ class Variant:
             vals = {c: self.gamma for c in rel}
         elif self.form == "pos_nou":
             vals = {c: self.gamma * r for c, r in rel.items()}
-        elif self.form == "ctr_nou":
-            vals = {c: self.gamma * (2 * r - 1) for c, r in rel.items()}
-        elif self.form == "ctrk":
-            vals = {c: self.gamma * u * (2 * r - 1) for c, r in rel.items()}
-        elif self.form == "supk":
-            vals = {c: self.gamma * u * (r - 1) for c, r in rel.items()}
-        elif self.form == "ctrk_nouk" or self.form == "ctr_nouk":
-            vals = {c: self.gamma * (2 * r - 1) for c, r in rel.items()}
-        elif self.form == "sup_nouk":
-            vals = {c: self.gamma * (r - 1) for c, r in rel.items()}
-        elif self.form == "sup":
-            vals = {c: self.gamma * u * (r - 1) for c, r in rel.items()}
-        elif self.form == "sup_nou":
-            vals = {c: self.gamma * (r - 1) for c, r in rel.items()}
         else:
             raise ValueError(self.form)
         q_start = {"ans2": enc.length, "ans1": enc.length - 1, "q": enc.split}[self.rows]
@@ -190,31 +154,7 @@ def parse_variant(name: str) -> Variant:
     form = parts[3] if len(parts) > 3 else "pos"
     gate = (parts[4] if len(parts) > 4 else "gate") == "gate"
     layers = parts[5] if len(parts) > 5 else "all"
-    relevance = parts[6] if len(parts) > 6 else "retriever"
-    return Variant(name, gamma, rows, form, gate, layers, relevance)
-
-
-def _rank01(values: dict[str, float]) -> dict[str, float]:
-    order = sorted(values, key=lambda k: -values[k])
-    return {k: 1 - i / max(len(order) - 1, 1) for i, k in enumerate(order)}
-
-
-def fused_relevance(rel: dict[str, float], mass: dict[str, float], alpha: float) -> dict[str, float]:
-    """Rank fusion of retriever relevance r_j with latent grounding (attention mass of the
-    last prompt token on chunk j in the unbiased prefill, the same pass that gives H_grd).
-    Returns scores in [0, 1]; ties keep the retriever order."""
-    rr = _rank01(rel)
-    mr = _rank01({c: mass.get(c, 0.0) for c in rel})
-    fused = {c: alpha * rr[c] + (1 - alpha) * mr[c] + 1e-6 * rel[c] for c in rel}
-    return _rank01(fused)
-
-
-def variant_relevance(v: "Variant", rel: dict[str, float], mass: dict[str, float]) -> dict[str, float]:
-    if v.relevance == "retriever":
-        return rel
-    if v.relevance.startswith("fuse"):
-        return fused_relevance(rel, mass, float(v.relevance[4:]))
-    raise ValueError(v.relevance)
+    return Variant(name, gamma, rows, form, gate, layers)
 
 
 def chunk_masses(attn, enc) -> dict[str, float]:
