@@ -1,0 +1,102 @@
+"""Run the migrated baselines (DRAGIN, Found-in-the-Middle, M2-RAG) on our encoded inputs.
+
+Each function answers one question with the same backbone, prompt format, candidate chunks and
+generation cap as the Omni-Aware arms of the run, so the arms differ only in the method.
+"""
+from __future__ import annotations
+
+import torch
+from transformers import GenerationConfig
+
+from ..qwen_eab import STATE
+
+
+def hf_inputs(qwen, enc) -> dict:
+    """Encoded prompt -> keyword inputs for the Hugging Face forward/generate of the backbone."""
+    kw = dict(input_ids=enc.input_ids.to(qwen.device), attention_mask=torch.ones_like(enc.input_ids).to(qwen.device))
+    if getattr(qwen, "kind", "qwen3_vl") == "internvl":
+        if enc.pixel_values is not None:
+            kw["pixel_values"] = enc.pixel_values.to(qwen.device, qwen.model.dtype)
+        return kw
+    kw["mm_token_type_ids"] = enc.mm_token_type_ids.to(qwen.device)
+    if enc.pixel_values is not None:
+        kw.update(pixel_values=enc.pixel_values.to(qwen.device, qwen.model.dtype),
+                  image_grid_thw=enc.image_grid_thw.to(qwen.device))
+    return kw
+
+
+def generation_config(qwen, max_new_tokens: int) -> GenerationConfig:
+    return GenerationConfig(do_sample=False, num_beams=1, max_new_tokens=max_new_tokens,
+                            eos_token_id=sorted(qwen.eos), pad_token_id=qwen.tok.eos_token_id)
+
+
+@torch.no_grad()
+def greedy(qwen, inputs: dict, max_new_tokens: int) -> str:
+    STATE.reset()
+    if hasattr(qwen.model, "model") and hasattr(qwen.model.model, "rope_deltas"):
+        qwen.model.model.rope_deltas = None
+    out = qwen.model.generate(**inputs, generation_config=generation_config(qwen, max_new_tokens))
+    return qwen.tok.decode(out[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
+
+
+# ------------------------------------------------------------------- DRAGIN --
+def dragin_score(qwen, enc_d, nlp, max_new_tokens: int) -> dict:
+    """Question-only draft and its RIND diagnostics (upstream single-decision DRAGIN, query from the question)."""
+    from .dragin_qwen_observation import observe_dragin_draft
+    STATE.reset()
+    if hasattr(qwen.model.model, "rope_deltas"):
+        qwen.model.model.rope_deltas = None
+    return observe_dragin_draft(qwen.model, hf_inputs(qwen, enc_d), qwen.tok, nlp,
+                                generation_config=generation_config(qwen, max_new_tokens))
+
+
+# ------------------------------------------------------- Found-in-the-Middle --
+def fitm_sources(qwen, enc, chunk_ids: list[str]) -> list[dict]:
+    """Document token indices of each retrieved chunk, split into text and vision positions."""
+    ids = enc.input_ids[0].tolist()
+    vision = set(i for i, t in enumerate(ids) if t == qwen.image_token_id)
+    sources = []
+    for cid in chunk_ids:
+        a, b = enc.spans[cid]
+        sources.append({"source_id": cid, "text_token_indices": [i for i in range(a, b) if i not in vision],
+                        "vision_token_indices": [i for i in range(a, b) if i in vision]})
+    return sources
+
+
+@torch.no_grad()
+def fitm_answer(qwen, enc, chunk_ids: list[str], max_new_tokens: int) -> tuple[str, dict]:
+    from .fitm_qwen_adapter import document_indices, prepare_fitm_calibration, qwen_fitm
+    if getattr(qwen, "kind", "qwen3_vl") != "qwen3_vl":
+        raise NotImplementedError("the FITM null-reference adapter handles Qwen3-VL image grids only")
+    inputs = hf_inputs(qwen, enc)
+    sources = fitm_sources(qwen, enc, chunk_ids)
+    STATE.reset()
+    qwen.model.model.rope_deltas = None
+    alpha, record = prepare_fitm_calibration(qwen.model, inputs, sources, qwen.tok)
+    with qwen_fitm(qwen.model, document_indices(sources), alpha=alpha):
+        text = greedy(qwen, inputs, max_new_tokens)
+    return text, {"extra_forward_calls": record["extra_forward_calls_started"]}
+
+
+# ------------------------------------------------------------------- M2-RAG --
+def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_new_tokens: int,
+                 multi_stage: bool, document_tokens: int = 384) -> tuple[str, dict]:
+    """Official M2RAG summarizer over the same chunks, then the document-only answer extractor."""
+    from .m2rag_official import build_official_summarizer
+    from .m2rag_qwen import LocalQwenVLM
+    from .m2rag_webqa import extractor_messages, official_query, prepare_sources
+    sources, image_paths = [], {}
+    for j, c in enumerate(chunks):
+        fact_id = str(900000 + j) if c["modality"] == "image" else c["cid"]
+        text = f"{c['title']}: {c['text']}" if c.get("title") and c["title"] != c["text"] else c["text"]
+        sources.append({"source_id": c["cid"], "fact_id": fact_id, "modality": c["modality"], "text": text})
+        if c["modality"] == "image":
+            image_paths[fact_id] = c["image"]
+    prepared = prepare_sources(qwen.tok, sources, image_paths, {c["cid"]: rel[c["cid"]] for c in chunks})
+    STATE.reset()
+    backend = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=document_tokens)
+    summarizer = build_official_summarizer(backend, multi_stage=multi_stage)
+    document = summarizer.summarize(query_list=[official_query(e["qid"], e["question"], prepared)], dry_run=False)
+    extractor = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=max_new_tokens)
+    answer = extractor.chat(extractor_messages(e["question"], document))["response"].strip()
+    return answer, {"calls": len(backend.calls) + len(extractor.calls)}

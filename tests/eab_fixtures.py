@@ -14,6 +14,9 @@ class CharTokenizer:
         return [ord(ch) % 140 + 1 for ch in text]
 
     def decode(self, tokens, skip_special_tokens=True):
+        tokens = [int(t) for t in tokens]
+        if skip_special_tokens:
+            tokens = [t for t in tokens if t not in (155, 156, 157)]
         return " ".join(map(str, tokens))
 
     def convert_tokens_to_ids(self, token):
@@ -42,6 +45,7 @@ def make_qwen():
     q.n_layers = len(q.layers)
     q.eos = {155, 156, 157}
     q.vocab_size = 160
+    q.image_token_id = 150
     return q
 
 
@@ -71,4 +75,5 @@ def make_internvl():
     q.n_layers = len(q.layers)
     q.eos = {155, 156, 157}
     q.vocab_size = 160
+    q.image_token_id = 150
     return q

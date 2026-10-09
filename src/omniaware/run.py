@@ -17,7 +17,7 @@ import numpy as np
 import torch
 
 from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
-from .baselines import seakr, universalrag
+from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
 
@@ -161,6 +161,12 @@ def main(argv=None):
     ap.add_argument("--seakr-threshold", type=float, default=None,
                     help="fixed SeaKR eigen threshold; default: matched on the calibration questions to U's "
                          "retrieval rate there")
+    ap.add_argument("--dragin", action="store_true",
+                    help="DRAGIN baseline (single decision, query = question): RIND on a question-only draft; "
+                         "threshold matched on calibration to U's retrieval rate (needs spaCy en_core_web_sm)")
+    ap.add_argument("--fitm", action="store_true", help="Found-in-the-Middle baseline arm on the static input")
+    ap.add_argument("--m2rag", choices=["single", "multi"], default=None,
+                    help="M2-RAG baseline arm (official summarizer, single- or multi-stage) on the same chunks")
     ap.add_argument("--tag", required=True)
     args = ap.parse_args(argv)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
@@ -363,6 +369,21 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
+    dragin_threshold, nlp = None, None
+    if args.dragin:
+        import spacy
+        from .baselines.dragin_rind import calibrate_threshold
+        nlp = spacy.load("en_core_web_sm")
+        dcache_path = cache_dir / f"dragin_{args.dataset}_{args.model}_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json"
+        dcache = json.loads(dcache_path.read_text()) if dcache_path.exists() else {}
+        for e in calib:
+            if e["qid"] not in dcache:
+                enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
+                dcache[e["qid"]] = baseline_arms.dragin_score(qwen, enc_d, nlp, max_new)["masked_max_score"]
+                dcache_path.write_text(json.dumps(dcache))
+        dragin_threshold = calibrate_threshold([dcache[e["qid"]] for e in calib], target_rate=u_rate)["threshold"]
+        print(f"[dragin] threshold {dragin_threshold:.4f} (U retrieval rate {u_rate:.3f})", flush=True)
+
     seakr_threshold = None
     if args.seakr_samples:
         scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
@@ -384,7 +405,7 @@ def main(argv=None):
     config_path.write_text(json.dumps({
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
-        "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
+        "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold, "dragin_threshold": dragin_threshold,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
     }, indent=1))
 
@@ -479,6 +500,18 @@ def main(argv=None):
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
+            if args.dragin:
+                d = baseline_arms.dragin_score(qwen, enc_d, nlp, max_new)
+                retrieve_d = d["masked_max_score"] > dragin_threshold
+                rec["dragin"] = {"masked_max_score": d["masked_max_score"], "retrieve": retrieve_d}
+                # single-decision DRAGIN: keep the draft, or regenerate with the retrieved chunks
+                rec["preds"]["dragin"] = rec["preds"]["static"] if retrieve_d else d["draft_text"].strip()
+            if args.fitm:
+                rec["preds"]["fitm"], rec["fitm"] = baseline_arms.fitm_answer(qwen, enc, [c["cid"] for c in chunks], max_new)
+                arms.append("fitm")
+            if args.m2rag:
+                rec["preds"]["m2rag"], rec["m2rag"] = baseline_arms.m2rag_answer(
+                    qwen, e, chunks, rel, max_new, multi_stage=args.m2rag == "multi")
             if args.seakr_samples:
                 direct_eigen = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
                 info_s = {"direct_eigen": direct_eigen, "retrieve": direct_eigen > seakr_threshold}
