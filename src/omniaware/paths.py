@@ -47,5 +47,12 @@ WEBQA_OPEN = Path(os.environ.get("OMNIAWARE_WEBQA_OPEN_DIR",
                                  ASSET_ROOT / "runs" / "phase1_dense_retrieval_codex_20261006"))
 
 THIRD_PARTY = REPO_ROOT / "third_party"
+EXTERNAL = REPO_ROOT / "external"
+# UniversalRAG benchmark suite (HybridQA, InfoSeek, VideoRAG): its dataset/ tree (unified paragraph/table/
+# image/video/clip corpora built by its script/0_dataset.sh), rankings exported with its own retrievers
+# (scripts/universalrag_retrieval/export_rankings.py) and frames sampled from its videos.
+UNIVERSALRAG_ROOT = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_DIR", EXTERNAL / "UniversalRAG"))
+UNIVERSALRAG_RANKINGS = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_RANKINGS", ASSET_ROOT / "universalrag" / "rankings"))
+UNIVERSALRAG_FRAMES = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_FRAMES", ASSET_ROOT / "universalrag" / "frames"))
 RUNS = Path(os.environ.get("OMNIAWARE_RUNS", REPO_ROOT / "runs"))
 LOCAL_CACHE = Path(os.environ.get("OMNIAWARE_CACHE", REPO_ROOT / "cache"))

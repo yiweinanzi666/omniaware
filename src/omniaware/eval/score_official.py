@@ -175,6 +175,9 @@ def score_run(path, references=('static', 'direct'), bart=False):
     preds = {arm: {q: by_qid[q]['preds'][arm] or '' for q in qids} for arm in arms}
     if family == 'webqa':
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart)
+    elif family in ('hybridqa', 'infoseek', 'videorag'):
+        from .universalrag_metrics import score as universalrag_score
+        scores, metrics, extra = universalrag_score(family, preds, qids, by_qid, bertscore=bart)
     else:
         scores, metrics, extra = SCORERS[family](preds, qids)
     extra = extra or {}
@@ -209,7 +212,8 @@ def main():
     parser.add_argument('predictions', type=Path, help='<run>/<dataset>.jsonl written by omniaware.run')
     parser.add_argument('--reference', action='append', default=None,
                         help='reference arm(s) for paired comparisons (default: static and direct)')
-    parser.add_argument('--bart', action='store_true', help='WebQA: add the ParaBank BARTScore composite')
+    parser.add_argument('--bart', action='store_true',
+                        help='WebQA: add the ParaBank BARTScore composite; VideoRAG: add BERTScore F1')
     args = parser.parse_args()
     summary, details = score_run(args.predictions, tuple(args.reference or ('static', 'direct')), bart=args.bart)
     stem = args.predictions.with_suffix('')

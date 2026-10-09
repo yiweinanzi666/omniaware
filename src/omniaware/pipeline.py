@@ -13,9 +13,14 @@ INSTRUCTION = {
     "mmqa_table": "Answer the question using a single word or phrase.",
     "webqa": "Answer the question in one short sentence.",
     "videomme": "Answer with the option's letter from the given choices directly.",
+    # UniversalRAG suite: its own answer formats (eval/eval.py reformat)
+    "hybridqa": "Please respond with only the exact answer.",
+    "infoseek": "Please respond with only the exact answer.",
+    "videorag": "Please respond in a complete sentence.",
 }
 # Match saved baseline budgets; a short-answer instruction must still allow complete lists.
-MAX_NEW_TOKENS = {"okvqa": 30, "mmqa_table": 256, "webqa": 384, "videomme": 4}
+MAX_NEW_TOKENS = {"okvqa": 30, "mmqa_table": 256, "webqa": 384, "videomme": 4,
+                  "hybridqa": 32, "infoseek": 32, "videorag": 128}
 MAX_NEW_TOKENS["okvqa_dense"] = MAX_NEW_TOKENS["okvqa"]
 MAX_DOC_WORDS = 160
 
@@ -105,6 +110,12 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
                 cap = (image_pixels or {}).get(cid)
                 segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid, max_pixels=cap),
                          Segment(text=tail, chunk=cid)]
+            elif c["modality"] == "video":
+                segs.append(Segment(text=f"{label} (video):\n", chunk=cid))
+                for frame in c["frames"]:
+                    segs.append(Segment(image=frame, chunk=cid, max_pixels=(image_pixels or {}).get(cid)))
+                tail = f"\nTranscript: {_trim(c['text'])}\n\n" if c["text"] else "\n\n"
+                segs.append(Segment(text=tail, chunk=cid))
             elif c["modality"] == "table":
                 segs.append(Segment(text=f"{label} (table):\n{c.get('prompt_text', c['text'])}\n\n", chunk=cid))
             else:

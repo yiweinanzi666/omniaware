@@ -42,7 +42,8 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
 # Loader name -> dataset family used for prompts and generation caps.
 DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img": "webqa", "webqa_open_full": "webqa",
                   "mmqa_table": "mmqa_table",
-                  "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa"}
+                  "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa",
+                  **{name: family for name, (_, family, _) in data.UNIVERSALRAG_TARGETS.items()}}
 
 
 def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0,
@@ -133,6 +134,11 @@ def main(argv=None):
     ap.add_argument("--selector", default="relevance", choices=["relevance", "ce", "ce_calibrated"],
                     help="ce: bge-reranker top-5 shown in retriever order; ce_calibrated: top-5 by per-modality "
                          "CE percentile. With a CE selector, EAB's r_j is the per-modality CE percentile.")
+    ap.add_argument("--universalrag-top", type=int, default=5,
+                    help="UniversalRAG suite: candidates per modality list from the exported rankings")
+    ap.add_argument("--universalrag-modalities", nargs="+", default=None,
+                    choices=["paragraph", "document", "table", "image", "video", "clip"],
+                    help="UniversalRAG suite: modality lists in the candidate pool (default per benchmark)")
     ap.add_argument("--intervention", nargs="+", choices=interventions.KINDS, default=None,
                     help="evidence interventions on eligible questions (retrieval on, EAB active, gold answer in a "
                          "retrieved text chunk); each re-decodes static and every variant")
@@ -216,6 +222,9 @@ def main(argv=None):
     if args.dataset == "videomme":
         loader_kwargs.update(frames_dir=args.video_frames_dir, subtitles=args.subtitles,
                              max_subtitle_words=(args.subtitle_words or None) if args.subtitles == "words" else None)
+    if args.dataset in data.UNIVERSALRAG_TARGETS:
+        loader_kwargs.update(top=args.universalrag_top,
+                             modalities=tuple(args.universalrag_modalities) if args.universalrag_modalities else None)
     examples = data.LOADERS[args.dataset](**loader_kwargs)
     # Input variants get their own relevance / calibration caches.
     data_tag = "".join(f"_{k}-{Path(str(v)).name if k == 'frames_dir' else v}"

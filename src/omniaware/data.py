@@ -392,6 +392,110 @@ def _webqa_open_full(**kw):
     return load_webqa_open("all", **kw)
 
 
+# ------------------------------------------------------- UniversalRAG suite --
+# Web-aligned benchmarks of the UniversalRAG suite (Yeo et al.), queries from its dataset/query/*.json.
+UNIVERSALRAG_TARGETS = {          # loader name -> (query file, dataset family, default modalities)
+    "hybridqa": ("hybridqa", "hybridqa", ("table", "paragraph")),
+    "infoseek": ("infoseek", "infoseek", ("paragraph", "image")),
+    "videorag_wikihow": ("videorag_wikihow", "videorag", ("video", "clip")),
+    "videorag_synth": ("videorag_synth", "videorag", ("video", "clip")),
+}
+_UR_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "image": "image",
+                "video": "video", "clip": "video"}
+_UR_PREFIX = {"paragraph": "p", "document": "d", "table": "t", "image": "i", "video": "v", "clip": "c"}
+
+
+def frame_key(source_id: str) -> str:
+    """Directory name of a ranked video or clip under paths.UNIVERSALRAG_FRAMES."""
+    return re.sub(r"[^A-Za-z0-9_.-]", "_", source_id.replace("dataset/", "", 1))
+
+
+def _video_script(root: Path, video_path: str) -> str:
+    vid = Path(video_path).stem.split(".mp4")[0]
+    scripts = root / Path(video_path).parent.parent / "scripts"
+    for name in (f"{vid}.txt", f"{vid}.en.vtt"):
+        if (scripts / name).exists():
+            text = (scripts / name).read_text(encoding="utf8", errors="replace")
+            if name.endswith(".vtt"):
+                text = " ".join(l for l in text.splitlines() if l and "-->" not in l and not l.startswith("WEBVTT"))
+            return _clean(text)
+    return ""
+
+
+def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, top: int = 5,
+                      rankings: Path | None = None, root: Path | None = None,
+                      frames_dir: Path | None = None) -> list[dict]:
+    """HybridQA / InfoSeek / VideoRAG queries with candidates from UniversalRAG's own retrievers.
+
+    Candidates are the top ``top`` of each modality list exported by
+    scripts/universalrag_retrieval/export_rankings.py; their contents come from the suite's unified corpora
+    (dataset/paragraph|document|table|image.parquet, videos with scripts, clip.parquet). Videos and clips
+    become one 'video' chunk: sampled frames (prepare_frames.py) plus the transcript. ``gold`` marks the
+    annotated table/videos of the question (HybridQA: the gt table and its linked passages; VideoRAG:
+    gt_videos); InfoSeek has no evidence labels (None).
+    """
+    import pandas as pd
+    query_file, family, default_modalities = UNIVERSALRAG_TARGETS[target]
+    modalities = tuple(modalities or default_modalities)
+    root = Path(root or paths.UNIVERSALRAG_ROOT)
+    rankings = Path(rankings or paths.UNIVERSALRAG_RANKINGS) / query_file
+    frames_dir = Path(frames_dir or paths.UNIVERSALRAG_FRAMES)
+    queries = json.loads((root / "dataset" / "query" / f"{query_file}.json").read_text(encoding="utf8"))
+    tops: dict[str, dict[str, list[str]]] = defaultdict(dict)
+    for m in modalities:
+        for line in (rankings / f"{m}.jsonl").open():
+            r = json.loads(line)
+            tops[r["qid"]][m] = [c["source_id"] for c in r["candidates"]][:top]
+    wanted = {m: {s for per_q in tops.values() for s in per_q.get(m, [])} for m in modalities}
+    corpora = {}
+    for m in ("paragraph", "document", "table", "image"):
+        if wanted.get(m):
+            df = pd.read_parquet(root / "dataset" / f"{m}.parquet")
+            corpora[m] = df[df.index.isin(wanted[m])].to_dict("index")
+    out, missing_frames = [], 0
+    for q in queries:
+        qid = q["index"]
+        if qid not in tops:
+            continue
+        gt_table = q.get("gt_tables")
+        gt_videos = set(q.get("gt_videos") or [])
+        cands = []
+        for m in modalities:
+            for rank, sid in enumerate(tops[qid].get(m, []), 1):
+                cid = f"{_UR_PREFIX[m]}{rank}"
+                if m in ("paragraph", "document", "table"):
+                    row = corpora[m][sid]
+                    gold = (sid == f"hybridqa-{gt_table}" or sid.startswith(f"hybridqa-{gt_table}_")) if gt_table else None
+                    cands.append({"cid": cid, "modality": _UR_MODALITY[m], "title": "", "text": _clean(row["text"]),
+                                  "image": None, "gold": gold, "source_id": sid})
+                elif m == "image":
+                    row = corpora[m][sid]
+                    caption = _clean(row.get("caption") or row.get("title") or "")
+                    cands.append({"cid": cid, "modality": "image", "title": caption, "text": caption,
+                                  "image": str(root / sid), "gold": None, "source_id": sid})
+                else:
+                    meta_path = frames_dir / frame_key(sid) / "frames.json"
+                    if not meta_path.exists():
+                        missing_frames += 1
+                        continue
+                    meta = json.loads(meta_path.read_text())
+                    video = sid.rsplit("_", 1)[0] if m == "clip" else sid
+                    cands.append({"cid": cid, "modality": "video", "title": "", "text": _video_script(root, video),
+                                  "image": None, "frames": [str(meta_path.parent / f["path"]) for f in meta["frames"]],
+                                  "gold": (video in gt_videos) if gt_videos else None, "source_id": sid})
+        gold_modalities = sorted({_UR_MODALITY[g] for g in q.get("gt_retrieval", "").split("+") if g in _UR_MODALITY})
+        out.append({
+            "dataset": family, "qid": qid, "question": _clean(q["question"]), "qcate": q.get("source", family),
+            "query_images": [str(root / q["query_image"])] if q.get("query_image") else [],
+            "candidates": cands, "fixed_evidence": False,
+            "golds": [a for a in [q["answer"], *(q.get("aliases") or [])] if a],
+            "gold_modalities": gold_modalities,
+        })
+    if missing_frames:
+        print(f"[data] {target}: {missing_frames} ranked videos/clips have no frames under {frames_dir}", flush=True)
+    return out
+
+
 LOADERS = {
     "webqa_img": _webqa_img,
     "webqa_full": _webqa_full,
@@ -401,6 +505,7 @@ LOADERS = {
     "videomme": load_videomme_short,
     "okvqa": load_okvqa,
     "okvqa_dense": load_okvqa_dense,
+    **{name: (lambda name: lambda **kw: load_universalrag(name, **kw))(name) for name in UNIVERSALRAG_TARGETS},
 }
 
 # Training-split loaders for unlabeled calibration (paper: calibration queries come from the
