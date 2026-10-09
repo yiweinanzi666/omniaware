@@ -25,6 +25,7 @@ class FakeEncoded:
     length: int
     split: int
     spans: dict = field(default_factory=dict)
+    input_ids: torch.Tensor | None = None
 
 
 class FakeQwen:
@@ -35,6 +36,7 @@ class FakeQwen:
     def __init__(self, model_path, **kw):
         self.device, self.n_layers = "cpu", 4
         self.last_prefill_seconds = 0.0
+        self.tok = type("Tok", (), {"pad_token_id": 0, "eos_token_id": 2})()
 
     def encode(self, segments, split_marker):
         spans, pos = {}, 0
@@ -44,7 +46,8 @@ class FakeQwen:
                 a, _ = spans.get(s.chunk, (pos, pos))
                 spans[s.chunk] = (a, pos + n)
             pos += n
-        return FakeEncoded(length=pos, split=sum(len(s.text or "") for s in segments[:split_marker]), spans=spans)
+        return FakeEncoded(length=pos, split=sum(len(s.text or "") for s in segments[:split_marker]), spans=spans,
+                           input_ids=torch.ones(1, pos, dtype=torch.long))
 
     def run(self, enc, make_variants, max_new_tokens, decode_static=True):
         attn = torch.rand(enc.length) + 1e-3
@@ -297,3 +300,33 @@ def test_controller_ablation_options(tmp_path, monkeypatch, extra):
         assert set(r["eab_active"]) == set(variants.split(","))
     if "--no-calibration" in extra:
         assert config["norm_pre"] == {"median": 0.0, "iqr": 1.0} and config["relevance_norm"] == "minmax"
+
+
+def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
+    cities = ["Paris", "Rome", "Berlin", "Madrid", "Vienna", "Prague", "Oslo", "Lisbon"]
+    examples = _examples(16)
+    for i, e in enumerate(examples):
+        e["golds"] = [cities[i % len(cities)]]
+        e["candidates"][0]["text"] = f"The capital is {e['golds'][0]} and more words follow here."
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    kinds = ["mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction"]
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "2", "--tag", "iv", "--tau=-1e9", "--tau-bias=-1e9",
+              "--variants", "eab:g1.2:ans1:pos:gate", "--relevance-noise", "0.1", "--intervention", *kinds])
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "iv" / "okvqa.jsonl").read_text().splitlines()]
+    assert rows
+    for r in rows:
+        iv = r["interventions"]
+        assert iv["eligible"] and iv["target"] == "k1" and iv["gold_in_target"] == r["golds"][0]
+        assert iv["entity"] in cities and iv["entity"] != r["golds"][0]
+        for kind in kinds:
+            assert set(iv[kind]["preds"]) == {"static", "eab:g1.2:ans1:pos:gate"}
+        assert "__inject__" in iv["inject_answer"]["chunks"] and iv["inject_answer"]["chunks"][0] == "__inject__"
+        assert len(set(iv["distractors"]["distractors"]) & set(r["chunks"])) == 0
+        assert iv["distractors"]["chunks"][r["chunks"].index("k1")] == "k1"
+        assert all(0.0 <= v <= 1.0 for v in r["rel"].values())

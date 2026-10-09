@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from . import analysis, data, order as order_mod, paths, pipeline, relevance, rerank, routing
+from . import analysis, data, interventions, order as order_mod, paths, pipeline, relevance, rerank, routing
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
@@ -133,6 +133,12 @@ def main(argv=None):
     ap.add_argument("--selector", default="relevance", choices=["relevance", "ce", "ce_calibrated"],
                     help="ce: bge-reranker top-5 shown in retriever order; ce_calibrated: top-5 by per-modality "
                          "CE percentile. With a CE selector, EAB's r_j is the per-modality CE percentile.")
+    ap.add_argument("--intervention", nargs="+", choices=interventions.KINDS, default=None,
+                    help="evidence interventions on eligible questions (retrieval on, EAB active, gold answer in a "
+                         "retrieved text chunk); each re-decodes static and every variant")
+    ap.add_argument("--relevance-noise", type=float, default=0.0,
+                    help="Gaussian sigma added to calibrated relevance (ranking and EAB), clipped to [0, 1]")
+    ap.add_argument("--noise-draw", type=int, default=0, help="noise draw index (paper averages three draws)")
     ap.add_argument("--relevance-norm", default="ecdf", choices=["ecdf", "raw", "minmax"],
                     help="r_j and ranking: per-modality ECDF (paper), raw retriever scores, or per-question min-max "
                          "(ablations)")
@@ -295,6 +301,74 @@ def main(argv=None):
     def evidence_segments(e, chunks, rel):
         return pipeline.build_segments(e, chunks, args.answer_style)
 
+    def variant_specs(e, enc, rel_sel, u_eab):
+        context_ids = (["__query__"] if e["query_images"] else []) + [c["cid"] for c in e.get("query_chunks", [])]
+        specs = {}
+        for v in variants:
+            rel_v = rel_sel
+            if v.relevance == "random":
+                rng = random.Random(f"random-relevance:{args.seed}:{e['qid']}")
+                rel_v = {c: rng.random() for c in rel_sel}
+            if v.context:
+                rel_v = {**rel_v, **{c: 1.0 for c in context_ids}}
+            specs[v.name] = v.spec(enc, rel_v, u_eab, args.tau_bias, qwen.n_layers)
+        return specs
+
+    def intervene(e, rec, chunks, rel_all, enc, info):
+        """Paper Table `causal`: re-decode static and every variant on perturbed evidence, keeping the
+        retrieval decision and the uncertainty EAB uses fixed."""
+        golds = e["golds"]
+        rel_sel = {c["cid"]: rel_all[c["cid"]] for c in chunks}
+        target = interventions.find_target(chunks, rel_sel, golds)
+        eligible = bool(rec["retrieve"] and any(info["eab_active"].values()) and target is not None)
+        out = {"target": target and target["cid"], "eligible": eligible}
+        if not eligible:
+            return out
+        gold = interventions.answer_span(target["text"], golds)[2]
+        entity = interventions.pick_substitute(e["qid"], golds, gold, substitute_pool, iv_nlp)
+        out.update(gold_in_target=gold, entity=entity)
+        for kind in args.intervention:
+            chunks_x, rel_x, enc_x, extra = chunks, rel_sel, None, {}
+            if kind == "mask":
+                enc_x = interventions.mask_tokens(enc, target["cid"], pad_id)
+            elif kind == "rerun":
+                enc_x = enc
+            elif kind == "distractors":
+                swapped = interventions.distractors(e, chunks, rel_all, target["cid"], golds)
+                if swapped is None:
+                    out[kind] = None
+                    continue
+                chunks_x, extra["distractors"] = swapped
+                rel_x = {c["cid"]: rel_all[c["cid"]] for c in chunks_x}
+            elif entity is None:
+                out[kind] = None
+                continue
+            elif kind == "cf":
+                chunks_x = [interventions.counterfactual(c, golds, entity) if c is target else c for c in chunks]
+            elif kind == "random_edit":
+                edited = interventions.random_edit(target, golds, entity, f"random-edit:{e['qid']}")
+                if edited is None:
+                    out[kind] = None
+                    continue
+                chunks_x = [edited if c is target else c for c in chunks]
+            else:
+                injected = interventions.inject(e, chunks, rel_all, golds, entity, kind, args.order)
+                if injected is None:
+                    out[kind] = None
+                    continue
+                chunks_x, rel_x = injected
+            segments_x = None
+            if enc_x is None:
+                segments_x, split_x = evidence_segments(e, chunks_x, rel_x)
+                enc_x = qwen.encode(segments_x, split_x)
+            res_x, _, _ = qwen.run(enc_x, lambda a, lg: variant_specs(e, enc_x, rel_x, info["u_eab"]), max_new,
+                                   decode_static=True)
+            entry = {"preds": {n: r.text for n, r in res_x.items()}, "chunks": [c["cid"] for c in chunks_x], **extra}
+            if args.answer_style == "cite" and segments_x is not None:
+                entry["citation_sources"] = pipeline.citation_sources(segments_x, chunks_x)
+            out[kind] = entry
+        return out
+
     routed = (args.modality_routing or args.first_round_routing
               or args.route_rule in ("retriever", "all", "oracle", "query"))
     query_routes = universalrag.load_routes(args.query_routes) if args.query_routes else None
@@ -398,6 +472,17 @@ def main(argv=None):
                            else seakr.matched_threshold([scache[e["qid"]] for e in calib], u_rate))
         print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f})", flush=True)
 
+    substitute_pool, iv_nlp, pad_id = None, None, None
+    if args.intervention:
+        try:
+            import spacy
+            iv_nlp = spacy.load("en_core_web_sm")
+        except (ImportError, OSError):
+            print("[interventions] spaCy en_core_web_sm unavailable: entity types from surface rules only", flush=True)
+        substitute_pool = interventions.substitute_pool(evals, iv_nlp)
+        if "mask" in args.intervention:
+            pad_id = qwen.tok.pad_token_id if qwen.tok.pad_token_id is not None else qwen.tok.eos_token_id
+
     out_path = out_dir / f"{args.dataset}.jsonl"
     done = set()
     if out_path.exists():
@@ -406,6 +491,7 @@ def main(argv=None):
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
         "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold, "dragin_threshold": dragin_threshold,
+        "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
     }, indent=1))
 
@@ -416,6 +502,9 @@ def main(argv=None):
                 continue
             t0 = time.time()
             rel = rel_of(e)
+            if args.relevance_noise:
+                rel = interventions.relevance_noise(rel, args.relevance_noise,
+                                                    f"noise:{args.relevance_noise}:{args.noise_draw}:{e['qid']}")
             rec = {"qid": e["qid"], "dataset": e["dataset"], "qcate": e["qcate"], "question": e["question"],
                    "golds": e["golds"],
                    "query_chunks": [c["cid"] for c in e.get("query_chunks", [])],
@@ -446,6 +535,9 @@ def main(argv=None):
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
                                    ce_of and ce_of(e))
             eab_rel = ce_rel_of(e) if ce_rel_of else rel
+            if ce_rel_of and args.relevance_noise:
+                eab_rel = interventions.relevance_noise(eab_rel, args.relevance_noise,
+                                                        f"noise-ce:{args.relevance_noise}:{args.noise_draw}:{e['qid']}")
             rec["chunks"] = [c["cid"] for c in chunks]
             rec["rel"] = {c["cid"]: round(eab_rel[c["cid"]], 4) for c in chunks}
             rec["chunk_gold"] = [c.get("gold") for c in chunks]
@@ -467,16 +559,7 @@ def main(argv=None):
                 u = norm_post(post["s"])
                 u_eab = rec["u_pre"] if args.eab_uncertainty == "pre" else u
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
-                context_ids = (["__query__"] if e["query_images"] else []) + [c["cid"] for c in e.get("query_chunks", [])]
-                specs = {}
-                for v in variants:
-                    rel_v = rel_sel
-                    if v.relevance == "random":
-                        rng = random.Random(f"random-relevance:{args.seed}:{e['qid']}")
-                        rel_v = {c: rng.random() for c in rel_sel}
-                    if v.context:
-                        rel_v = {**rel_v, **{c: 1.0 for c in context_ids}}
-                    specs[v.name] = v.spec(enc, rel_v, u_eab, args.tau_bias, qwen.n_layers)
+                specs = variant_specs(e, enc, rel_sel, u_eab)
                 info["eab_active"] = {name: s is not None for name, s in specs.items()}
                 return specs
 
@@ -555,6 +638,8 @@ def main(argv=None):
             rec["prompt_tokens"] = enc.length
             rec["span_tokens"] = {c["cid"]: [c["modality"], enc.spans[c["cid"]][1] - enc.spans[c["cid"]][0]]
                                   for c in chunks}
+            if args.intervention:
+                rec["interventions"] = intervene(e, rec, chunks, eab_rel, enc, info)
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
             fh.flush()
