@@ -16,6 +16,7 @@ from pathlib import Path
 import torch
 
 from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
+from .baselines import universalrag
 from .qwen_eab import QwenEAB
 
 
@@ -111,10 +112,12 @@ def main(argv=None):
     ap.add_argument("--modality-routing", action="store_true",
                     help="route retrieval by the paper's initial-evidence M_m H_m; cold start keeps joint retrieval")
     ap.add_argument("--route-rule", default="mh",
-                    choices=["mh", "mass", "entropy", "retriever", "all", "oracle"],
+                    choices=["mh", "mass", "entropy", "retriever", "all", "oracle", "query"],
                     help="routing rule (Table 4): mh = M_m*H_m (paper); mass / entropy = one factor; retriever = best "
-                         "calibrated retriever score per modality; all = every modality; oracle = gold modalities. "
+                         "calibrated retriever score per modality; all = every modality; oracle = gold modalities; query = UniversalRAG router (--query-routes). "
                          "Attention rules need --modality-routing or --first-round-routing.")
+    ap.add_argument("--query-routes", default=None,
+                    help="UniversalRAG router output (route_qwen3_vl.py --output) for --route-rule query")
     ap.add_argument("--first-round-routing", action="store_true",
                     help="cold start: route by M_m H_m over a first joint top-k round, then retrieve top-k "
                          "inside the routed modalities")
@@ -153,6 +156,8 @@ def main(argv=None):
         ap.error("--table-format cells requires --dataset mmqa_table")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
+    if (args.route_rule == "query") != (args.query_routes is not None):
+        ap.error("--route-rule query and --query-routes go together")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
     if args.first_round_routing and args.mmqa_provided_context:
@@ -259,9 +264,11 @@ def main(argv=None):
     def evidence_segments(e, chunks, rel):
         return pipeline.build_segments(e, chunks, args.answer_style)
 
-    routed = args.modality_routing or args.first_round_routing or args.route_rule in ("retriever", "all", "oracle")
+    routed = (args.modality_routing or args.first_round_routing
+              or args.route_rule in ("retriever", "all", "oracle", "query"))
+    query_routes = universalrag.load_routes(args.query_routes) if args.query_routes else None
 
-    def resolve_route(e, rel, initial, order="rank", seed=0):
+    def resolve_route(e, rel, initial, order="rank", seed=0, calibrating=False):
         """Initial-evidence route; cold-start queries take the first-round pathway when enabled.
         Non-attention rules (retriever, all, oracle) replace the attention route entirely."""
         if args.route_rule == "oracle":
@@ -270,6 +277,13 @@ def main(argv=None):
             return {"mode": "all", "rule": "all", "modalities": []}
         if args.route_rule == "retriever":
             return routing.retriever_route(e["candidates"], rel)
+        if args.route_rule == "query":
+            index = universalrag.upstream_index(e)
+            if index not in query_routes:
+                if calibrating:   # calibration questions (e.g. training split) need no router output
+                    return None
+                raise KeyError(f"no UniversalRAG route for {index} in {args.query_routes}")
+            return universalrag.to_route(query_routes[index], {c["modality"] for c in e["candidates"]})
         if not args.first_round_routing or (initial and initial["modalities"]):
             return initial
         first = select_chunks(e, rel, args.k, order, seed, args.min_per_modality, None)
@@ -289,7 +303,7 @@ def main(argv=None):
         enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
         route = routing.initial_route(attn_d, enc_d, e, args.route_rule) if args.modality_routing else None
-        route = resolve_route(e, rel, route)
+        route = resolve_route(e, rel, route, calibrating=True)
         chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
         query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
         pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
@@ -385,6 +399,9 @@ def main(argv=None):
                 rec["preds"][name] = r.text
                 rec["tokens"][name] = r.tokens
             arms = ["static"] + [v.name for v in variants]
+            if args.route_rule == "query":
+                # UniversalRAG baseline: its router decides both whether and where to retrieve.
+                rec["preds"]["universalrag"] = rec["preds"]["static"] if route["retrieve"] else rec["preds"]["direct"]
             if args.replication_gamma is not None:
                 counts = order_mod.replication_counts([rel_sel[c["cid"]] for c in chunks], info["u_eab"],
                                                       info["u_eab"] > args.tau_bias, args.replication_gamma)

@@ -213,3 +213,31 @@ def test_route_rules_end_to_end(tmp_path, monkeypatch, rule):
         else:
             assert r["route"]["rule"] == rule and set(mods) <= {"text", "image"}
             assert chosen <= {m[0] for m in mods} or not mods
+
+
+def test_universalrag_query_routes(tmp_path, monkeypatch):
+    from omniaware.baselines import universalrag
+    examples = _webqa_examples(12)
+    monkeypatch.setitem(data.LOADERS, "webqa_open_full", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"): 1 - 0.01 * int(c["cid"][1:])}
+                   for c in e["candidates"]} for e in exs})
+    labels = {0: ["image"], 1: ["paragraph"], 2: ["no"], 3: ["paragraph", "image"]}
+    routes = [dict(q, retrieval=labels[i % 4]) for i, q in enumerate(universalrag.export_queries(examples))]
+    assert all("answer" not in q and "golds" not in q for q in routes)
+    (tmp_path / "routes.json").write_text(json.dumps(routes))
+    run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "uq", "--route-rule", "query", "--query-routes", str(tmp_path / "routes.json"),
+              "--image-mode", "clip", "--variants", "eab:g1.2:ans2:pos:gate"])
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "uq" / "webqa_open_full.jsonl").read_text().splitlines()]
+    for r in rows:
+        lab = labels[int(r["qid"][1:]) % 4]
+        assert r["route"]["labels"] == lab
+        if lab == ["no"]:
+            assert r["preds"]["universalrag"] == r["preds"]["direct"]
+        else:
+            assert r["preds"]["universalrag"] == r["preds"]["static"]
+            assert {c[0] for c in r["chunks"]} == {{"image": "i", "text": "t"}[m] for m in r["route"]["modalities"]}
