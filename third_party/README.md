@@ -12,5 +12,9 @@
 
 - MMQA 官方 `evaluate.py` 和 `common_utils.py`：放在 `data/mmqa_official/official_eval/`（allenai/multimodalqa）；
 - WebQA 的 ParaBank BARTScore：`cache/bartscore/`，包括 `official_source/bart_score.py`、`bart_score.pth`、`bart-large-cnn-config/` 和 provenance 文件。
+- M2-RAG 官方源码：`cache/official_m2rag/`，git commit `ea6b9977f5a153215b38cd9a6aa3e4702ffbda22`（由 `baselines/m2rag_official.py` 原样执行）。
+- DRAGIN 官方源码：`cache/official_dragin/`（仅测试用，核对 RIND 公式与上游一致）。
+- 引用支持度的 NLI 检查器与分句器：`cache/e5_citation_support/`，包括 DeBERTa-v3-large-mnli-fever-anli-ling-wanli（revision `b3546ea6…`，文件哈希见 `src/omniaware/eval/citation/checker_asset_manifest.json`）和固定版本的 NLTK Punkt。
+- cross-encoder：`cache/bge-reranker-v2-m3/`。
 
 缺少这些文件时，相关测试会自动跳过，相应数据集的评分会报错，不会退回到宽松匹配。

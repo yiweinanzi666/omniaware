@@ -21,9 +21,15 @@ src/omniaware/        唯一的方法实现（每个概念只有一处代码）
   run.py              一次运行：解码所有对照臂，写逐题 JSONL
   answer_format.py    MMQA JSON 列表答案解析
   table_render.py     表格的无损行渲染
-  eval/               只放官方评测：score_official.py 是唯一评分入口
+  rerank.py           cross-encoder 选证（bge-reranker）与按模态 CE 百分位
+  order.py            固定排列表、复制份数、顺序标准差统计
+  baselines/          对照方法：DRAGIN 触发、Found-in-the-Middle、M2-RAG
+  eval/               只放官方评测：score_official.py 是唯一答案评分入口
+  eval/citation/      CiteRec 引用支持度（NLI），以及从运行结果导出的工具
 third_party/          原样保存的官方评测脚本及来源、许可
 scripts/data_prep/    生成资产的数据准备脚本（每个数据集一次）
+scripts/webqa_open_retrieval/  WebQA 全语料池、BGE/CLIP 编码、FAISS 索引与检索
+scripts/analysis/     基于运行输出的分析（统计功效、证据是否包含答案）
 tests/                单元测试与端到端测试（CPU 即可运行）
 docs/                 实验协议、新旧代码对照
 runs/  cache/         运行输出与缓存，不进 git
