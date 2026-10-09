@@ -14,6 +14,7 @@ before ``q_start`` are not biased, so sharing the prefix is exact.
 from __future__ import annotations
 
 import math
+import time
 from dataclasses import dataclass, field
 
 import torch
@@ -122,6 +123,8 @@ class Result:
     text: str
     first_logits: torch.Tensor = field(repr=False)
     tokens: list[int] = field(default_factory=list)
+    seconds: float = 0.0                                          # decode time of this arm
+    attention: torch.Tensor | None = field(default=None, repr=False)  # last layer, first answer row
 
 
 def tag_text_layers(model) -> list[int]:
@@ -265,10 +268,19 @@ class QwenEAB:
         STATE.capture_layer = None
         return out.logits[0, -1].float()
 
+    def _sync(self):
+        if str(self.device).startswith("cuda"):
+            torch.cuda.synchronize()
+        elif str(self.device) == "mps":
+            torch.mps.synchronize()
+
     @torch.no_grad()
     def _decode(self, cache, first_logits: torch.Tensor, max_new_tokens: int) -> list[int]:
+        """Greedy decoding; the head-averaged last-layer attention of the first generated token's row
+        (the first row EAB biases) is kept in ``self.last_answer_attention``."""
         tokens = []
         logits = first_logits
+        self.last_answer_attention = None
         for _ in range(max_new_tokens):
             nxt = int(torch.argmax(logits).item())
             if nxt in self.eos:
@@ -276,8 +288,17 @@ class QwenEAB:
             tokens.append(nxt)
             if len(tokens) == max_new_tokens:
                 break
-            logits = self._step(torch.tensor([[nxt]]), cache)
+            logits = self._step(torch.tensor([[nxt]]), cache, capture=len(tokens) == 1)
+            if len(tokens) == 1:
+                self.last_answer_attention = STATE.captured
         return tokens
+
+    def _timed_decode(self, cache, first_logits, max_new_tokens):
+        self._sync()
+        t0 = time.perf_counter()
+        toks = self._decode(cache, first_logits, max_new_tokens)
+        self._sync()
+        return toks, time.perf_counter() - t0
 
     @torch.no_grad()
     def run(self, enc: Encoded, make_variants, max_new_tokens: int, decode_static=True):
@@ -288,15 +309,20 @@ class QwenEAB:
         unbiased answer itself is decoded and returned as "static".
         Returns (results, grounding attention, unbiased first-token logits).
         """
+        self._sync()
+        t0 = time.perf_counter()
         cache = self._prefix(enc)
         suffix = enc.input_ids[:, enc.split:]
         self._activate(enc, None)
         base_logits = self._step(suffix, cache, capture=True)
         grounding = STATE.captured
+        self._sync()
+        self.last_prefill_seconds = time.perf_counter() - t0
         results = {}
         if decode_static(grounding, base_logits) if callable(decode_static) else decode_static:
-            toks = self._decode(cache, base_logits, max_new_tokens)
-            results["static"] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks)
+            toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
+            results["static"] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
+                                       sec, self.last_answer_attention)
             _crop(cache, enc.length)
         variants = make_variants(grounding, base_logits) if make_variants else {}
         # variants that keep the prompt unbiased share the static suffix cache
@@ -308,19 +334,23 @@ class QwenEAB:
                 results[name] = unbiased
                 continue
             self._activate(enc, spec)
-            toks = self._decode(cache, base_logits, max_new_tokens)
+            toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
             self._activate(enc, None)
-            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks)
+            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
+                                   sec, self.last_answer_attention)
             if spec is None:
                 unbiased = results[name]
             _crop(cache, enc.length)
         for name, spec in early.items():
+            self._sync()
+            t0 = time.perf_counter()
             _crop(cache, enc.split)
             self._activate(enc, spec)
             logits = self._step(suffix, cache)
-            toks = self._decode(cache, logits, max_new_tokens)
+            toks, sec = self._timed_decode(cache, logits, max_new_tokens)
             self._activate(enc, None)
-            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks)
+            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks,
+                                   time.perf_counter() - t0, self.last_answer_attention)
         STATE.reset()
         return results, grounding, base_logits.cpu()
 

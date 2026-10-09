@@ -34,6 +34,7 @@ class FakeQwen:
 
     def __init__(self, model_path, **kw):
         self.device, self.n_layers = "cpu", 4
+        self.last_prefill_seconds = 0.0
 
     def encode(self, segments, split_marker):
         spans, pos = {}, 0
@@ -51,10 +52,10 @@ class FakeQwen:
         results = {}
         decode = decode_static(attn, logits) if callable(decode_static) else decode_static
         if decode:
-            results["static"] = Result(f"static@{enc.length}", logits, [1])
+            results["static"] = Result(f"static@{enc.length}", logits, [1], 0.01, attn)
         variants = make_variants(attn, logits) if make_variants else {}
         for name, spec in variants.items():
-            results[name] = Result(f"{name}@{enc.length}" if spec else f"static@{enc.length}", logits, [1])
+            results[name] = Result(f"{name}@{enc.length}" if spec else f"static@{enc.length}", logits, [1], 0.01, attn)
         FakeQwen.calls.append((enc.length, sorted(results)))
         return results, attn, logits
 
@@ -86,6 +87,10 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
         assert r["preds"]["gated:static"] == expected
         assert r["u_eab"] == r["u_pre"]
         assert "scores" not in r
+        assert set(r["arm_seconds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate"}
+        assert set(r["prefill_seconds"]) == {"direct", "evidence"}
+        assert set(r["ard"]) == {"static", "eab:g1.2:ans2:pos:gate"} and all(0 <= v <= 0.7 for v in r["ard"].values())
+        assert set(r["span_tokens"]) == set(r["chunks"]) and len(r["chunk_gold"]) == 5
 
 
 def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):

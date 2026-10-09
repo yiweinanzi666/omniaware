@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
+from . import analysis, data, order as order_mod, paths, pipeline, relevance, rerank, routing
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
@@ -435,6 +435,7 @@ def main(argv=None):
                 return True
 
             res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=gate_off)
+            direct_prefill = qwen.last_prefill_seconds
             rec["u_pre"] = pre_info["u_pre"]
             rec["raw_pre"] = pre_info["raw_pre"]
             rec["retrieve"] = pre_info["u_pre"] > args.tau
@@ -447,6 +448,7 @@ def main(argv=None):
             eab_rel = ce_rel_of(e) if ce_rel_of else rel
             rec["chunks"] = [c["cid"] for c in chunks]
             rec["rel"] = {c["cid"]: round(eab_rel[c["cid"]], 4) for c in chunks}
+            rec["chunk_gold"] = [c.get("gold") for c in chunks]
             rec["gold_in_topk"] = any(c.get("gold") for c in chunks) if any(
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:
@@ -479,9 +481,16 @@ def main(argv=None):
                 return specs
 
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
+            rec["prefill_seconds"] = {"direct": direct_prefill, "evidence": qwen.last_prefill_seconds}
+            rec["arm_seconds"] = {"direct": res_d["static"].seconds}
+            rec["ard"] = {}
             for name, r in res.items():
                 rec["preds"][name] = r.text
                 rec["tokens"][name] = r.tokens
+                rec["arm_seconds"][name] = r.seconds
+                if r.attention is not None:
+                    rec["ard"][name] = analysis.ard(pipeline.chunk_mass(r.attention, {c["cid"]: enc.spans[c["cid"]]
+                                                                                    for c in chunks}), rel_sel)
             arms = ["static"] + [v.name for v in variants]
             if args.route_rule == "query":
                 # UniversalRAG baseline: its router decides both whether and where to retrieve.
@@ -544,6 +553,8 @@ def main(argv=None):
             rec["raw_post"] = info["raw_post"]
             rec["mass"] = {k: round(v, 5) for k, v in info["mass"].items()}
             rec["prompt_tokens"] = enc.length
+            rec["span_tokens"] = {c["cid"]: [c["modality"], enc.spans[c["cid"]][1] - enc.spans[c["cid"]][0]]
+                                  for c in chunks}
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
             fh.flush()

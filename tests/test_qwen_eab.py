@@ -81,3 +81,16 @@ def test_decode_only_eab_changes_later_rows(qwen):
     biased_second = qwen._step(first, cache)
     qwen._activate(enc, None)
     assert not torch.allclose(unbiased_second, biased_second, atol=1e-3)
+
+
+@torch.no_grad()
+def test_arms_report_time_and_first_answer_row_attention(qwen):
+    enc = encode(qwen)
+    res, _, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 1.2), "ans2": spec(enc, "ans2", 1.2)},
+                         4, decode_static=True)
+    assert qwen.last_prefill_seconds > 0
+    for name, r in res.items():
+        assert r.seconds > 0
+        if len(r.tokens) >= 2:          # the first answer row exists only once a token was fed back
+            assert r.attention.shape[-1] == enc.length + 1
+            torch.testing.assert_close(r.attention.sum(), torch.tensor(1.0), atol=1e-4, rtol=1e-4)
