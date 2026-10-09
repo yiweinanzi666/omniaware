@@ -1,0 +1,11 @@
+# Run outputs and caches never enter git; see CONVENTIONS.md §4.
+runs/
+cache/
+assets/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.DS_Store
