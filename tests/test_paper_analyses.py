@@ -59,6 +59,6 @@ def test_latency_gold25_stats_uncertainty_interventions(tmp_path):
     assert iv["eligible"] == 1
     assert iv["kinds"]["cf"]["static"]["follows_entity"] == 100 and iv["kinds"]["cf"]["eab"]["follows_entity"] == 0
     assert iv["kinds"]["inject_answer"]["eab"]["misled"] == 100
-    assert pa.ard_table(run)["eab"]["ARD"] == 0.1
+    assert abs(pa.ard_table(run)["eab"]["ARD"] - 0.1) < 1e-9
     e = pa.errors_table(run, "acc", "static", 50, None, 5, 0)
     assert e["errors"] == 2 and e["shares"]["ambiguous_visual_grounding"] == 100
