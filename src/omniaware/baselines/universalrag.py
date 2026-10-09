@@ -27,8 +27,14 @@ LABEL_TO_MODALITY = {"paragraph": "text", "document": "text", "table": "table", 
 INDEX_PREFIX = {"webqa": "webqa_"}
 
 
+# Datasets loaded from the UniversalRAG suite keep the upstream index as qid.
+SUITE_FAMILIES = {"hybridqa", "infoseek", "videorag"}
+
+
 def upstream_index(example: dict) -> str:
     """Upstream query ids prefix the dataset name (e.g. webqa_<guid>)."""
+    if example["dataset"] in SUITE_FAMILIES:
+        return str(example["qid"])
     return INDEX_PREFIX.get(example["dataset"], f"{example['dataset']}_") + str(example["qid"])
 
 
@@ -38,8 +44,19 @@ def export_queries(examples: list[dict]) -> list[dict]:
 
 
 def load_routes(path: Path) -> dict[str, list[str]]:
+    """Router output -> index -> labels, parsed like upstream eval.py normalize_modalities
+    ('table+paragraph' strings or lists; 'error' dropped; nothing valid -> ['no'])."""
     rows = json.loads(Path(path).read_text(encoding="utf8"))
-    return {row["index"]: list(row["retrieval"]) for row in rows}
+    return {row["index"]: parse_labels(row.get("retrieval")) for row in rows}
+
+
+def parse_labels(raw) -> list[str]:
+    if isinstance(raw, str):
+        raw = [part.strip() for part in raw.split("+")]
+    labels = [label.lower() for label in (raw or []) if label and label.lower() in LABEL_TO_MODALITY]
+    if len(labels) > 1 and "no" in labels:
+        labels = [label for label in labels if label != "no"]
+    return labels or ["no"]
 
 
 def to_route(labels: list[str], available: set[str]) -> dict:
