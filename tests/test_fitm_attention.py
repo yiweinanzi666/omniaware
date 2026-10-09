@@ -4,7 +4,7 @@ import unittest
 
 import torch
 
-from experiments.eab_first_token.fitm_attention import (
+from omniaware.baselines.fitm_attention import (
     TEMPERATURE, calibrated_alpha, document_means, redistribute_document_attention,
 )
 

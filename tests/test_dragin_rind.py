@@ -1,5 +1,10 @@
 """Official-core synthetic comparison and real Qwen token offsets on CPU."""
 
+import pytest
+
+pytest.importorskip('spacy')
+pytest.importorskip('scipy')
+
 import ast
 from pathlib import Path
 from types import SimpleNamespace
@@ -11,13 +16,13 @@ import spacy
 import torch
 from transformers import AutoTokenizer
 
-from experiments.eab_first_token.dragin_rind import (
+from omniaware.baselines.dragin_rind import (
     align_qwen_tokens, calibrate_threshold, generation_entropy_nats,
     received_attention, rind_word_scores, score_draft,
 )
 
 
-ROOT = Path(__file__).parent
+from omniaware.paths import ASSET_ROOT as ROOT
 
 
 class RindNumericalTests(unittest.TestCase):

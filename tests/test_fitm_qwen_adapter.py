@@ -10,12 +10,12 @@ import torch.nn.functional as F
 from tokenizers import Tokenizer, models, pre_tokenizers
 from transformers import PreTrainedTokenizerFast, Qwen3VLForConditionalGeneration
 
-from experiments.eab_first_token.fitm_attention import redistribute_document_attention
-from experiments.eab_first_token.fitm_qwen_adapter import (
+from omniaware.baselines.fitm_attention import redistribute_document_attention
+from omniaware.baselines.fitm_qwen_adapter import (
     DUMMY_TEXT, METHOD_NAME, corrected_sdpa_output, document_indices,
     make_null_reference, prepare_fitm_calibration, qwen_fitm,
 )
-from experiments.eab_first_token.test_qwen_adapter import image_prompt, tiny_model
+from tiny_qwen import image_prompt, tiny_model
 
 
 def model18():
@@ -116,7 +116,7 @@ class FitmQwenTests(unittest.TestCase):
             self.assertEqual(generated["last"][layer]["key_tokens"], 9)
             stats = generated["last"][layer]
             torch.testing.assert_close(stats["document_mass_before"].sum(-1), stats["document_mass_after"].sum(-1))
-        with patch("experiments.eab_first_token.fitm_qwen_adapter.corrected_sdpa_output", side_effect=RuntimeError("failed")):
+        with patch("omniaware.baselines.fitm_qwen_adapter.corrected_sdpa_output", side_effect=RuntimeError("failed")):
             with self.assertRaisesRegex(RuntimeError, "failed"):
                 with qwen_fitm(model, documents, alpha=alpha):
                     model(**inputs, use_cache=False)

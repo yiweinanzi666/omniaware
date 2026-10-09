@@ -1,5 +1,9 @@
 """Local processor and tiny CPU checks; no pretrained model weights are loaded."""
 
+import pytest
+
+pytest.importorskip('torchvision')
+
 import copy
 import tempfile
 import unittest
@@ -12,15 +16,16 @@ import torch
 from transformers import AutoProcessor, Qwen3VLProcessor
 from transformers.models.qwen2_vl.image_processing_qwen2_vl import Qwen2VLImageProcessor
 
-from experiments.eab_first_token.m2rag_qwen import LocalQwenVLM
-from experiments.eab_first_token.test_qwen_adapter import tiny_model
+from omniaware.baselines.m2rag_qwen import LocalQwenVLM
+from tiny_qwen import tiny_model
+from omniaware import paths
 
 
 class LocalQwenTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.processor = AutoProcessor.from_pretrained(
-            Path(__file__).parent / "cache/qwen3-vl-8b-instruct", local_files_only=True,
+            paths.QWEN_8B, local_files_only=True,
         )
 
     def backend(self, output_tokens, **kwargs):

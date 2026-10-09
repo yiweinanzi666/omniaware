@@ -7,14 +7,15 @@ are not part of this adapter. No third-party dependency is substituted.
 
 import builtins
 from functools import lru_cache, partial
-from pathlib import Path
 import re
 import sys
 from types import ModuleType
 
+from .. import paths
+
 
 OFFICIAL_COMMIT = "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22"
-OFFICIAL_ROOT = Path(__file__).parent / "cache/official_m2rag"
+OFFICIAL_ROOT = paths.CACHE / "official_m2rag"
 _NAMESPACE = "_eab_official_m2rag"
 
 

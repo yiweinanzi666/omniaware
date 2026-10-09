@@ -1,5 +1,10 @@
 """Actual random tiny Qwen3VL CPU probes; no pretrained model or GPU runs."""
 
+import pytest
+
+pytest.importorskip('spacy')
+pytest.importorskip('scipy')
+
 from copy import deepcopy
 import json
 import unittest
@@ -11,11 +16,11 @@ import torch.nn.functional as F
 from tokenizers import Tokenizer, models, pre_tokenizers
 from transformers import GenerationConfig, PreTrainedTokenizerFast
 
-from experiments.eab_first_token.dragin_qwen_observation import (
+from omniaware.baselines.dragin_qwen_observation import (
     capture_draft_sdpa, observe_dragin_draft, reconstruct_draft_attention,
 )
-from experiments.eab_first_token.dragin_rind import generation_entropy_nats, received_attention
-from experiments.eab_first_token.test_qwen_adapter import tiny_model
+from omniaware.baselines.dragin_rind import generation_entropy_nats, received_attention
+from tiny_qwen import tiny_model
 
 
 def text_inputs():
@@ -155,7 +160,7 @@ class DraftPipelineTests(unittest.TestCase):
         model, progress = tiny_model("sdpa"), {}
         config = GenerationConfig(max_new_tokens=1, eos_token_id=63, pad_token_id=0,
                                   suppress_tokens=list(range(63)))
-        with patch("experiments.eab_first_token.dragin_qwen_observation.score_draft",
+        with patch("omniaware.baselines.dragin_qwen_observation.score_draft",
                    side_effect=RuntimeError("scoring failed")):
             with self.assertRaisesRegex(RuntimeError, "scoring failed"):
                 observe_dragin_draft(model, text_inputs(), self.tokenizer, self.nlp,

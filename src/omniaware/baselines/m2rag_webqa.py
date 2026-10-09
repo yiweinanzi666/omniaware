@@ -1,8 +1,5 @@
 """Shared WebQA evidence and answer interface for the native M2RAG stages."""
 
-from copy import deepcopy
-
-
 EXTRACTOR_INSTRUCTION = (
     'Answer the question concisely using only the supplied generated response '
     'and any images included in that response. Preserve every requested entity, '
@@ -43,48 +40,6 @@ def official_query(qid, question, sources):
         webpages.append(dict(webpage_id=source['source_id'], title=source['source_id'],
             url='', cleaned_webpage_splits=[dict(split_id=0, score=0, text=text)], images=images))
     return dict(query_id=qid, content=question, webpages=webpages, aux_images=[])
-
-
-def official_stage_one_inputs(backend, processor, query, sources,
-                             *, multi_stage, image_size, device='cpu'):
-    """Preserve native prompts and attach source spans to their actual tokens."""
-    from .multimodal_packing import process_conversation
-    from .m2rag_official import build_official_summarizer
-
-    # Upstream multi-stage ignores dry_run. The shared single-stage filtering
-    # path prepares the same evidence without calling the model.
-    summarizer = build_official_summarizer(backend, multi_stage=False)
-    prepared = summarizer.summarize(query_list=[deepcopy(query)], dry_run=True)
-    if multi_stage:
-        messages = summarizer.construct_summarize_message_stage_1(
-            user_query=prepared['user_query'], webpages=prepared['webpages'],
-            aux_images=prepared['aux_images'])
-    else:
-        messages = prepared['model_input']
-    retained = [page['webpage_id'] for page in prepared['webpages']]
-    expected = [source['source_id'] for source in sources]
-    if retained != expected:
-        raise ValueError(f'Official filtering changed the fixed source sequence: {retained} != {expected}')
-    conversation = backend._conversation(messages)
-    rendered = processor.apply_chat_template(conversation, tokenize=False, add_generation_prompt=True)
-    cursor = rendered.index(messages[0]['text']) + len(messages[0]['text'])
-    spans, images = [], []
-    for index, source in enumerate(sources):
-        header = f'## Webpage {index}\n```markdown\n'
-        start = rendered.index(header, cursor) + len(header)
-        end = start + len(source['text'])
-        if rendered[start:end] != source['text']:
-            raise ValueError(f'Official prompt changed source text: {source["source_id"]}')
-        spans.append(dict(fact_id=source['fact_id'], source_id=source['source_id'],
-            start=start, end=end, r_j=source['r_j']))
-        if source['modality'] == 'image':
-            images.append(dict(fact_id=source['fact_id'], source_id=source['source_id'], r_j=source['r_j']))
-        cursor = end
-    inputs, relevance, trace = process_conversation(processor, conversation, spans, images,
-        image_size=image_size, device=device)
-    trace['official_source_order'] = retained
-    trace['official_messages'] = messages
-    return inputs, relevance, trace
 
 
 def extractor_messages(question, result):

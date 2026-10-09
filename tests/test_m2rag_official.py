@@ -8,12 +8,16 @@ import subprocess
 import sys
 import unittest
 
-from experiments.eab_first_token.m2rag_official import (
+from omniaware.baselines.m2rag_official import (
     OFFICIAL_COMMIT, OFFICIAL_ROOT, build_official_summarizer, query_from_t15,
 )
 
 
-ROOT = Path(__file__).parent
+from omniaware.paths import ASSET_ROOT as ROOT
+import pytest
+
+if not (OFFICIAL_ROOT / 'src').exists():
+    pytest.skip('pinned official M2RAG source not under the asset root', allow_module_level=True)
 
 
 class RecordingBackend:
@@ -64,6 +68,8 @@ class OfficialM2RAGTests(unittest.TestCase):
             ["git", "status", "--porcelain=v1", "--untracked-files=all"],
             cwd=OFFICIAL_ROOT, text=True), "")
 
+    @unittest.skipUnless((ROOT / 'runs/reranker_order_development/predictions.jsonl').exists(),
+                         'legacy T15 run outputs not under the asset root')
     def test_all_128_saved_inputs_preserve_order_text_and_native_prompt(self):
         rows = [json.loads(line) for line in
                 (ROOT / "runs/reranker_order_development/predictions.jsonl").read_text().splitlines()]
