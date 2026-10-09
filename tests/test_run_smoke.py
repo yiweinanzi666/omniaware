@@ -84,3 +84,32 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
         assert r["preds"]["gated:static"] == expected
         assert r["u_eab"] == r["u_pre"]
         assert "scores" not in r
+
+
+def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):
+    from omniaware import order
+    examples = _examples(14)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    schedule = {o["order_id"]: o["permutation"] for o in order.permutation_schedule()}
+
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "perm", "--order", "perm:s17-p1", "--replication-gamma", "1.2",
+              "--variants", "eab:g1.2:ans2:pos:gate"])
+
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "perm" / "okvqa.jsonl").read_text().splitlines()]
+    ranked = ["k1", "k2", "k3", "k4", "k5"]
+    for r in rows:
+        assert r["chunks"] == [ranked[i] for i in schedule["s17-p1"]]
+        assert {"replication", "gated:replication"} <= set(r["preds"])
+        counts = r["replication_counts"]
+        gate = r["u_eab"] > 0.40
+        assert counts == order.replication_counts([r["rel"][c] for c in r["chunks"]], r["u_eab"], gate, 1.2)
+        if all(n == 1 for n in counts):
+            assert r["preds"]["replication"] == r["preds"]["static"]
+        else:
+            assert r["preds"]["replication"] != r["preds"]["static"]

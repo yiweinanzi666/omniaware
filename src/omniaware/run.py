@@ -15,7 +15,7 @@ from pathlib import Path
 
 import torch
 
-from . import data, paths, pipeline, relevance, routing
+from . import data, order as order_mod, paths, pipeline, relevance, routing
 from .qwen_eab import QwenEAB
 
 
@@ -65,7 +65,16 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
         random.Random(f"{seed}:{e['qid']}").shuffle(chosen)
     elif order == "reverse":
         chosen = list(reversed(chosen))
+    elif order.startswith("perm:"):
+        # One fixed permutation of the relevance ranks, identical for every question (order.py).
+        permutation = PERMUTATIONS[order[len("perm:"):]]
+        if len(chosen) != len(permutation):
+            raise ValueError(f"{e['qid']}: permutation needs exactly {len(permutation)} chunks, got {len(chosen)}")
+        chosen = [chosen[i] for i in permutation]
     return chosen
+
+
+PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
 
 
 def main(argv=None):
@@ -96,7 +105,12 @@ def main(argv=None):
     ap.add_argument("--first-round-routing", action="store_true",
                     help="cold start: route by M_m H_m over a first joint top-k round, then retrieve top-k "
                          "inside the routed modalities")
-    ap.add_argument("--order", default="rank", choices=["rank", "shuffle", "reverse"])
+    ap.add_argument("--order", default="rank",
+                    help="rank | reverse | shuffle (per-question, --seed) | perm:<id> with a fixed schedule id: "
+                         + ", ".join(PERMUTATIONS))
+    ap.add_argument("--replication-gamma", type=float, default=None,
+                    help="also decode the chunk-replication arm: ceil(exp(gamma*U*r)) adjacent copies when "
+                         "U > tau_bias (paper: replication baseline, Prop. 2)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--image-mode", default="mix", choices=["mix", "clip", "caption"])
     ap.add_argument("--beta", type=float, default=0.30)
@@ -114,6 +128,8 @@ def main(argv=None):
                     help="override the per-dataset generation cap (e.g. 10 to reproduce earlier short-answer runs)")
     ap.add_argument("--tag", required=True)
     args = ap.parse_args(argv)
+    if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
+        ap.error(f"unknown --order {args.order}")
     if args.mmqa_provided_context and args.dataset != "mmqa_table":
         ap.error("--mmqa-provided-context requires --dataset mmqa_table")
     if args.table_format == "cells" and args.dataset != "mmqa_table":
@@ -311,9 +327,23 @@ def main(argv=None):
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             for name, r in res.items():
                 rec["preds"][name] = r.text
+            arms = ["static"] + [v.name for v in variants]
+            if args.replication_gamma is not None:
+                counts = order_mod.replication_counts([rel_sel[c["cid"]] for c in chunks], info["u_eab"],
+                                                      info["u_eab"] > args.tau_bias, args.replication_gamma)
+                rec["replication_counts"] = counts
+                if all(n == 1 for n in counts):
+                    rec["preds"]["replication"] = rec["preds"]["static"]
+                else:
+                    copies = [c for c, n in zip(chunks, counts) for _ in range(n)]
+                    enc_r = qwen.encode(*evidence_segments(e, copies, rel))
+                    res_r, _, _ = qwen.run(enc_r, None, max_new, decode_static=True)
+                    rec["preds"]["replication"] = res_r["static"].text
+                    rec["replication_prompt_tokens"] = enc_r.length
+                arms.append("replication")
             # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.
             # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
-            for name in ["static"] + [v.name for v in variants]:
+            for name in arms:
                 rec["preds"]["gated:" + name] = rec["preds"][name] if rec["retrieve"] else rec["preds"]["direct"]
             rec["u_post"] = info["u_post"]
             rec["u_eab"] = info["u_eab"]
