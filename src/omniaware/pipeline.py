@@ -56,9 +56,34 @@ TABLE_INSTRUCTION = (
 )
 
 
+VIDEOMME_OFFICIAL_INSTRUCTION = ("Select the best answer to the following multiple-choice question based on the video. "
+                                 "Respond with only the letter (A, B, C, or D) of the correct option.")
+
+
+def videomme_official_segments(e: dict, chunks: list[dict] | None) -> tuple[list[Segment], int]:
+    """Official Video-MME prompt (MME-Benchmarks/Video-MME README): frames, then
+    "This video's subtitles are listed below:", the instruction, question, options, "The best answer is:"."""
+    segs = [Segment(text="<|im_start|>user\n")]
+    for c in chunks or []:
+        if c["modality"] == "image":
+            segs += [Segment(image=c["image"], chunk=c["cid"]), Segment(text="\n", chunk=c["cid"])]
+    for c in chunks or []:
+        if c["modality"] == "text":
+            segs.append(Segment(text=f"This video's subtitles are listed below:\n{c['text']}\n", chunk=c["cid"]))
+    split = len(segs)
+    q = (VIDEOMME_OFFICIAL_INSTRUCTION + "\n" + e["question"] + "\n" + "\n".join(e["options"])
+         + "\nThe best answer is:<|im_end|>\n<|im_start|>assistant\n")
+    segs.append(Segment(text=q))
+    return segs, split
+
+
 def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "default",
                    image_pixels: dict[str, int] | None = None) -> tuple[list[Segment], int]:
     """User turn = [query images] [evidence chunks] [question suffix]; returns (segments, split index)."""
+    if answer_style == "videomme_official":
+        if e["dataset"] != "videomme":
+            raise ValueError("answer style videomme_official is defined for videomme")
+        return videomme_official_segments(e, chunks)
     segs = [Segment(text="<|im_start|>user\n")]
     for img in e["query_images"]:
         segs += [Segment(image=img, chunk="__query__"), Segment(text="\n")]

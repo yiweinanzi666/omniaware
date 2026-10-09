@@ -97,7 +97,10 @@ def main(argv=None):
     ap.add_argument("--n-eval", type=int, default=None, help="evaluate only a slice of the split (default: all)")
     ap.add_argument("--mmqa-scope", choices=["tableq", "legacy299"], default="tableq")
     ap.add_argument("--video-frames-dir", default=None, help="Video-MME frame directory (default: 8-frame set)")
-    ap.add_argument("--subtitle-words", type=int, default=220, help="Video-MME subtitle word cap; 0 keeps all")
+    ap.add_argument("--subtitles", choices=["frames", "words", "none"], default="frames",
+                    help="Video-MME: frames = official frame-aligned subtitles; words = first --subtitle-words "
+                         "words (legacy); none = subtitle-free setting")
+    ap.add_argument("--subtitle-words", type=int, default=220, help="Video-MME --subtitles words cap; 0 keeps all")
     ap.add_argument("--k", type=int, default=5)
     ap.add_argument("--min-per-modality", type=int, default=0,
                     help="keep the top-m chunks of every modality before global top-k filling")
@@ -127,9 +130,9 @@ def main(argv=None):
     ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
                     help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
     ap.add_argument("--answer-style", default="default",
-                    choices=["default", "short", "table", "json_list", "strict_letter", "cite"],
+                    choices=["default", "short", "table", "json_list", "strict_letter", "cite", "videomme_official"],
                     help="short: one word/phrase; table: MMQA table reasoning; json_list: MMQA JSON array "
-                         "(scored as a list); strict_letter: Video-MME single option letter; cite: statements with "
+                         "(scored as a list); strict_letter: Video-MME single option letter; videomme_official: the official Video-MME prompt; cite: statements with "
                          "[E<j>] citations for CiteRec (raise --max-new-tokens). Applies to every arm.")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
@@ -170,7 +173,8 @@ def main(argv=None):
     if args.dataset == "mmqa_table":
         loader_kwargs["scope"] = args.mmqa_scope
     if args.dataset == "videomme":
-        loader_kwargs.update(frames_dir=args.video_frames_dir, max_subtitle_words=args.subtitle_words or None)
+        loader_kwargs.update(frames_dir=args.video_frames_dir, subtitles=args.subtitles,
+                             max_subtitle_words=(args.subtitle_words or None) if args.subtitles == "words" else None)
     examples = data.LOADERS[args.dataset](**loader_kwargs)
     # Input variants get their own relevance / calibration caches.
     data_tag = "".join(f"_{k}-{Path(str(v)).name if k == 'frames_dir' else v}"

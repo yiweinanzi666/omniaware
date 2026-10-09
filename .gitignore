@@ -9,3 +9,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 .DS_Store
+
+# Official upstream repositories (scripts/fetch_external.py); pinned in third_party/external_repos.json
+external/

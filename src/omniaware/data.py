@@ -254,19 +254,57 @@ def _parse_srt(path: Path) -> list[tuple[float, str]]:
     return items
 
 
-def load_videomme_short(max_subtitle_words: int | None = 220, frames_dir: Path | None = None) -> list[dict]:
+def _parse_srt_intervals(path: Path) -> list[tuple[float, float, str]]:
+    """(start, end, text) per SRT block; the lines of one block are joined with spaces."""
+    def seconds(h, m, s, ms):
+        return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+
+    blocks, current = [], None
+    for line in path.read_text(errors="ignore").splitlines():
+        m = _SRT_TIME.search(line)
+        if m:
+            g = m.groups()
+            current = [seconds(*g[:4]), seconds(*g[4:]), []]
+            blocks.append(current)
+            continue
+        text = re.sub(r"<[^>]+>", "", line).strip()
+        if current is not None and text:
+            current[2].append(text)
+        elif not text:
+            current = None
+    return [(a, b, " ".join(t)) for a, b, t in blocks]
+
+
+def frame_aligned_subtitles(intervals: list[tuple[float, float, str]], frame_seconds: list[float]) -> str:
+    """Official Video-MME rule (video-slicer slice_and_extract.py): for each sampled frame time t take the
+    first subtitle with start < t < end, skip empty ones, join with newlines."""
+    lines = []
+    for t in frame_seconds:
+        text = next((s for a, b, s in intervals if a < t < b), "")
+        if text.strip():
+            lines.append(text)
+    return "\n".join(lines)
+
+
+def load_videomme_short(max_subtitle_words: int | None = 220, frames_dir: Path | None = None,
+                        subtitles: str = "frames") -> list[dict]:
     """Video-MME Short; frames come from ``frames_dir`` (8-frame default, or the 32-frame set).
-    ``max_subtitle_words=None`` keeps the full subtitles."""
+
+    subtitles='frames' (official protocol): only the subtitles at the sampled frame times;
+    'words': the first ``max_subtitle_words`` words of the whole transcript (legacy runs; None = all);
+    'none': the subtitle-free setting.
+    """
     import pandas as pd
 
     frames_dir = Path(frames_dir) if frames_dir else paths.VIDEOMME_FRAMES
     df = pd.read_parquet(paths.VIDEOMME_DIR / "official_annotations.parquet")
     df = df[df["duration"] == "short"]
-    out = []
+    out, no_frames = [], 0
     for row in df.itertuples():
         fdir = frames_dir / row.videoID
         meta_path = fdir / "frames.json"
         if not meta_path.exists():
+            no_frames += 1
             continue
         meta = json.loads(meta_path.read_text())
         cands = []
@@ -276,7 +314,12 @@ def load_videomme_short(max_subtitle_words: int | None = 220, frames_dir: Path |
                           "title": f"Frame at {int(sec) // 60:02d}:{int(sec) % 60:02d}",
                           "text": "", "image": str(frames_dir / f["path"]), "gold": None})
         srt = paths.VIDEOMME_DIR / "subtitles" / f"{row.videoID}.srt"
-        if srt.exists():
+        if srt.exists() and subtitles == "frames":
+            text = frame_aligned_subtitles(_parse_srt_intervals(srt), [f["actual_seconds"] for f in meta["frames"]])
+            if text:
+                cands.append({"cid": "sub", "modality": "text", "title": "Subtitles", "text": text,
+                              "image": None, "gold": None})
+        elif srt.exists() and subtitles == "words":
             words = " ".join(t for _s, t in _parse_srt(srt)).split()
             if words:
                 cands.append({"cid": "sub", "modality": "text", "title": "Subtitles",
@@ -289,6 +332,8 @@ def load_videomme_short(max_subtitle_words: int | None = 220, frames_dir: Path |
             "options": options, "gold_letter": row.answer, "golds": [row.answer],
             "video_id": row.videoID,
         })
+    if no_frames:
+        print(f"[data] videomme: {no_frames} questions skipped, no frames under {frames_dir}", flush=True)
     return out
 
 
