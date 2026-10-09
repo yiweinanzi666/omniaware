@@ -37,6 +37,11 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
     return raw
 
 
+# Loader name -> dataset family used for prompts and generation caps.
+DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "mmqa_table": "mmqa_table",
+                  "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa"}
+
+
 def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0, route: dict | None = None) -> list[dict]:
     candidates = e["candidates"]
     if route and route["modalities"]:
@@ -67,9 +72,18 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
     ap.add_argument("--model", default="2b", choices=["2b", "8b"])
-    ap.add_argument("--n-calib", type=int, default=48)
+    ap.add_argument("--split", required=True, choices=["dev", "test"],
+                    help="dev: tune here; test: run once with frozen settings (see docs/PROTOCOL.md)")
+    ap.add_argument("--n-calib", type=int, default=500)
+    ap.add_argument("--calib-source", choices=["train", "heldout"], default="train",
+                    help="train: unlabeled training-split queries (paper); heldout: carve them out of the eval data")
+    ap.add_argument("--n-dev", type=int, default=256, help="size of the frozen dev split")
+    ap.add_argument("--split-seed", type=int, default=2027)
     ap.add_argument("--offset", type=int, default=0)
-    ap.add_argument("--n-eval", type=int, default=32)
+    ap.add_argument("--n-eval", type=int, default=None, help="evaluate only a slice of the split (default: all)")
+    ap.add_argument("--mmqa-scope", choices=["tableq", "legacy299"], default="tableq")
+    ap.add_argument("--video-frames-dir", default=None, help="Video-MME frame directory (default: 8-frame set)")
+    ap.add_argument("--subtitle-words", type=int, default=220, help="Video-MME subtitle word cap; 0 keeps all")
     ap.add_argument("--k", type=int, default=5)
     ap.add_argument("--min-per-modality", type=int, default=0,
                     help="keep the top-m chunks of every modality before global top-k filling")
@@ -107,7 +121,7 @@ def main(argv=None):
 
     out_dir = paths.RUNS / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
-    max_new = args.max_new_tokens or pipeline.MAX_NEW_TOKENS[args.dataset]
+    max_new = args.max_new_tokens or pipeline.MAX_NEW_TOKENS[DATASET_FAMILY[args.dataset]]
     config_path = out_dir / f"{args.dataset}_config.json"
     previous = None
     if (out_dir / f"{args.dataset}.jsonl").exists():
@@ -120,24 +134,30 @@ def main(argv=None):
         changed = [k for k, v in requested.items() if saved.get(k) != v]
         if changed:
             ap.error(f"saved answers use different {', '.join(changed)}; use a new --tag")
-    cache_dir = paths.RUNS / "_cache"
+    cache_dir = paths.LOCAL_CACHE
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    examples = data.LOADERS[args.dataset]()
-    if args.table_format == "cells":
-        for e in examples:
-            for c in e["candidates"]:
-                if c["modality"] == "table":
-                    c["prompt_text"] = c["cell_text"]
-    if args.mmqa_provided_context:
-        for e in examples:
-            e["query_chunks"] = [c for c in e["candidates"] if c["modality"] == "table"]
+    loader_kwargs = {}
+    if args.dataset == "mmqa_table":
+        loader_kwargs["scope"] = args.mmqa_scope
+    if args.dataset == "videomme":
+        loader_kwargs.update(frames_dir=args.video_frames_dir, max_subtitle_words=args.subtitle_words or None)
+    examples = data.LOADERS[args.dataset](**loader_kwargs)
+    # Input variants get their own relevance / calibration caches.
+    data_tag = "".join(f"_{k}-{Path(str(v)).name if k == 'frames_dir' else v}"
+                       for k, v in sorted(loader_kwargs.items()) if v is not None)
+    calib_pool = None
+    if args.calib_source == "train":
+        if args.dataset not in data.TRAIN_LOADERS:
+            ap.error(f"{args.dataset} has no training-split loader; use --calib-source heldout")
+        calib_pool = data.TRAIN_LOADERS[args.dataset]()
     # Dense candidate files may cover only the intended local slice.  Keep the
     # original OK-VQA universe for split identities instead of reshuffling it.
     split_source = data.LOADERS["okvqa"]() if args.dataset == "okvqa_dense" else examples
-    sp = data.split_examples(split_source, args.n_calib)
+    sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool)
     calib = sp["calib"]
-    evals = sp["eval"][args.offset:args.offset + args.n_eval]
+    end = None if args.n_eval is None else args.offset + args.n_eval
+    evals = sp[args.split][args.offset:end]
     if args.dataset == "okvqa_dense":
         by_qid = {e["qid"]: e for e in examples}
         missing = [e["qid"] for e in calib + evals if e["qid"] not in by_qid]
@@ -146,9 +166,18 @@ def main(argv=None):
                      "generate candidates for the original OK-VQA split before running this slice")
         calib = [by_qid[e["qid"]] for e in calib]
         evals = [by_qid[e["qid"]] for e in evals]
-    print(f"[data] {args.dataset}: {len(examples)} total, calib {len(calib)}, eval {len(evals)}", flush=True)
+    for e in calib + evals:
+        if args.table_format == "cells":
+            for c in e["candidates"]:
+                if c["modality"] == "table":
+                    c["prompt_text"] = c["cell_text"]
+        if args.mmqa_provided_context:
+            e["query_chunks"] = [c for c in e["candidates"] if c["modality"] == "table"]
+    assert not {e["qid"] for e in calib} & {e["qid"] for e in evals}, "calibration overlaps evaluation"
+    print(f"[data] {args.dataset}: {len(examples)} total, calib {len(calib)} ({args.calib_source}), "
+          f"{args.split} {len(evals)}", flush=True)
 
-    raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}.json")
+    raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}{data_tag}.json")
     cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib])
 
     def rel_of(e):
@@ -160,7 +189,7 @@ def main(argv=None):
     print(f"[model] {args.model} loaded on {qwen.device} in {time.time() - t0:.1f}s, {qwen.n_layers} layers", flush=True)
 
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
-    style = "" if args.answer_style == "default" else f"_{args.answer_style}"
+    style = data_tag + ("" if args.answer_style == "default" else f"_{args.answer_style}")
     style += f"_mpm{args.min_per_modality}" if args.min_per_modality else ""
     style += "_provided_table" if args.mmqa_provided_context else ""
     style += "_route" if args.modality_routing else ""
@@ -183,7 +212,8 @@ def main(argv=None):
         route = routing.evidence_route(attn_1, enc_1, first)
         route["first_round"] = [c["cid"] for c in first]
         return route
-    ucal_path = cache_dir / f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}{style}.json"
+    ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
+                             f"_{args.calib_source}{args.split_seed}{style}.json")
     ucal = json.loads(ucal_path.read_text()) if ucal_path.exists() else {}
     t0 = time.time()
     for e in calib:
