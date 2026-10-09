@@ -1,5 +1,7 @@
 """End-to-end run.main() with a fake model and synthetic OK-VQA-like data."""
 import json
+
+import pytest
 from dataclasses import dataclass, field
 
 import torch
@@ -165,3 +167,49 @@ def test_cite_style_run_exports_citerec_inputs(tmp_path, monkeypatch):
     (request,) = requests_for_answer(row)
     assert request["valid_citation_ids"] == ["E1"] and request["invalid_citation_ids"] == ["E9"]
     assert request["premise"] == sources[0]["rendered_text"]
+
+
+def _webqa_examples(n):
+    out = []
+    for i in range(n):
+        cands = [{"cid": f"t{j}", "modality": "text", "title": "", "text": f"fact {j} of q{i}", "image": None,
+                  "gold": None} for j in range(1, 6)]
+        cands += [{"cid": f"i{j}", "modality": "image", "title": f"cap {j}", "text": f"cap {j}", "image": f"img{j}.jpg",
+                   "gold": None} for j in range(1, 6)]
+        out.append({"dataset": "webqa", "qid": f"w{i:03d}", "question": f"q {i}?", "qcate": "text",
+                    "query_images": [], "candidates": cands, "fixed_evidence": False, "golds": ["x"],
+                    "gold_modalities": ["image"] if i % 2 else ["text"]})
+    return out
+
+
+@pytest.mark.parametrize("rule", ["mh", "mass", "entropy", "retriever", "all", "oracle"])
+def test_route_rules_end_to_end(tmp_path, monkeypatch, rule):
+    examples = _webqa_examples(12)
+    monkeypatch.setitem(data.LOADERS, "webqa_open_full", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    # images score higher for odd questions, text for even ones
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"):
+                              (0.9 if (c["modality"] == "image") == (int(e["qid"][1:]) % 2 == 1) else 0.1)
+                              - 0.01 * int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    extra = ["--first-round-routing"] if rule in ("mh", "mass", "entropy") else []
+    run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", rule, "--route-rule", rule, "--image-mode", "clip",
+              "--variants", "eab:g1.2:ans2:pos:gate"] + extra)
+    rows = [json.loads(line) for line in (tmp_path / "runs" / rule / "webqa_open_full.jsonl").read_text().splitlines()]
+    for r in rows:
+        mods = r["route"]["modalities"]
+        chosen = {c[0] for c in r["chunks"]}
+        if rule == "all":
+            assert mods == [] and len(r["chunks"]) == 5
+        elif rule == "oracle":
+            assert mods == r["gold_modalities"] and chosen == {r["gold_modalities"][0][0]}
+        elif rule == "retriever":
+            # rule logic is unit-tested; here: per-modality calibrated maxima are recorded and used
+            assert set(r["route"]["statistics"]) == {"text", "image"} and mods and set(mods) <= {"text", "image"}
+            assert chosen <= {m[0] for m in mods}
+        else:
+            assert r["route"]["rule"] == rule and set(mods) <= {"text", "image"}
+            assert chosen <= {m[0] for m in mods} or not mods

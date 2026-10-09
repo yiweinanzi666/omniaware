@@ -70,6 +70,7 @@ def load_webqa(subset: str = "img", split: str = "val") -> list[dict]:
             "dataset": "webqa", "qid": guid, "question": _clean(v["Q"]), "qcate": v["Qcate"],
             "query_images": [], "candidates": cands, "fixed_evidence": False,
             "golds": [_clean(a) for a in v["A"]], "missing_images": missing,
+            "gold_modalities": ["image"] if v["img_posFacts"] else ["text"],
         })
     if missing_total:
         print(f"[data] webqa/{split}/{subset}: {missing_total} fact images missing under "
@@ -149,6 +150,7 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
             "dataset": "webqa", "qid": guid, "question": _clean(v["Q"]), "qcate": v["Qcate"],
             "query_images": [], "candidates": cands, "fixed_evidence": False,
             "golds": [_clean(a) for a in v["A"]],
+            "gold_modalities": ["image"] if v["img_posFacts"] else ["text"],
         })
     if unranked:
         print(f"[data] webqa_open/{split}/{subset}: {unranked} questions have no rankings in {rankings}", flush=True)

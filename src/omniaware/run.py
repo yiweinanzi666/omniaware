@@ -110,6 +110,11 @@ def main(argv=None):
                     help="MMQA prompt display; cells labels every value with its column, keeping retrieval text unchanged")
     ap.add_argument("--modality-routing", action="store_true",
                     help="route retrieval by the paper's initial-evidence M_m H_m; cold start keeps joint retrieval")
+    ap.add_argument("--route-rule", default="mh",
+                    choices=["mh", "mass", "entropy", "retriever", "all", "oracle"],
+                    help="routing rule (Table 4): mh = M_m*H_m (paper); mass / entropy = one factor; retriever = best "
+                         "calibrated retriever score per modality; all = every modality; oracle = gold modalities. "
+                         "Attention rules need --modality-routing or --first-round-routing.")
     ap.add_argument("--first-round-routing", action="store_true",
                     help="cold start: route by M_m H_m over a first joint top-k round, then retrieve top-k "
                          "inside the routed modalities")
@@ -148,6 +153,8 @@ def main(argv=None):
         ap.error("--table-format cells requires --dataset mmqa_table")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
+    if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
+        ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
     if args.first_round_routing and args.mmqa_provided_context:
         ap.error("--first-round-routing is the cold-start pathway; provided tables already give initial evidence")
 
@@ -244,6 +251,7 @@ def main(argv=None):
     style += "_provided_table" if args.mmqa_provided_context else ""
     style += "_route" if args.modality_routing else ""
     style += "_r1route" if args.first_round_routing else ""
+    style += f"_rule-{args.route_rule}" if args.route_rule != "mh" else ""
     style += "_cells" if args.table_format == "cells" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
     style += f"_sel-{args.selector}" if args.selector != "relevance" else ""
@@ -251,16 +259,23 @@ def main(argv=None):
     def evidence_segments(e, chunks, rel):
         return pipeline.build_segments(e, chunks, args.answer_style)
 
-    routed = args.modality_routing or args.first_round_routing
+    routed = args.modality_routing or args.first_round_routing or args.route_rule in ("retriever", "all", "oracle")
 
     def resolve_route(e, rel, initial, order="rank", seed=0):
-        """Initial-evidence route; cold-start queries take the first-round pathway when enabled."""
+        """Initial-evidence route; cold-start queries take the first-round pathway when enabled.
+        Non-attention rules (retriever, all, oracle) replace the attention route entirely."""
+        if args.route_rule == "oracle":
+            return {"mode": "oracle", "rule": "oracle", "modalities": sorted(e["gold_modalities"])}
+        if args.route_rule == "all":
+            return {"mode": "all", "rule": "all", "modalities": []}
+        if args.route_rule == "retriever":
+            return routing.retriever_route(e["candidates"], rel)
         if not args.first_round_routing or (initial and initial["modalities"]):
             return initial
         first = select_chunks(e, rel, args.k, order, seed, args.min_per_modality, None)
         enc_1 = qwen.encode(*evidence_segments(e, first, rel))
         _, attn_1, _ = qwen.run(enc_1, None, 1, decode_static=False)
-        route = routing.evidence_route(attn_1, enc_1, first)
+        route = routing.evidence_route(attn_1, enc_1, first, rule=args.route_rule)
         route["first_round"] = [c["cid"] for c in first]
         return route
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
@@ -273,7 +288,7 @@ def main(argv=None):
         rel = rel_of(e)
         enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
-        route = routing.initial_route(attn_d, enc_d, e) if args.modality_routing else None
+        route = routing.initial_route(attn_d, enc_d, e, args.route_rule) if args.modality_routing else None
         route = resolve_route(e, rel, route)
         chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
         query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
@@ -329,7 +344,7 @@ def main(argv=None):
                 pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
                 pre_info.update(raw_pre=pre, u_pre=norm_pre(pre["s"]))
                 if args.modality_routing:
-                    pre_info["route"] = routing.initial_route(attn_d, enc_d, e)
+                    pre_info["route"] = routing.initial_route(attn_d, enc_d, e, args.route_rule)
                 return True
 
             res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=gate_off)
@@ -349,6 +364,8 @@ def main(argv=None):
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:
                 rec["route"] = route
+            if "gold_modalities" in e:
+                rec["gold_modalities"] = e["gold_modalities"]
             segments, split = evidence_segments(e, chunks, rel)
             enc = qwen.encode(segments, split)
             if args.answer_style == "cite":
