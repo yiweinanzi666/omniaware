@@ -88,8 +88,8 @@ def main(argv=None):
     ap.add_argument("--beta", type=float, default=0.30)
     ap.add_argument("--tau", type=float, default=0.35)
     ap.add_argument("--tau-bias", type=float, default=0.40)
-    ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="post",
-                    help="pre: reuse the paper's retrieval-gate U for EAB; post: existing two-norm experiments")
+    ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
+                    help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
     ap.add_argument("--answer-style", default="default", choices=["default", "short", "table"],
                     help="short: original EMNLP answer format; table: MMQA conditions, aggregation and complete lists")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
