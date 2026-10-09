@@ -241,3 +241,27 @@ def test_universalrag_query_routes(tmp_path, monkeypatch):
         else:
             assert r["preds"]["universalrag"] == r["preds"]["static"]
             assert {c[0] for c in r["chunks"]} == {{"image": "i", "text": "t"}[m] for m in r["route"]["modalities"]}
+
+
+def test_seakr_arms(tmp_path, monkeypatch):
+    from omniaware.baselines import seakr
+    examples = _examples(14)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    # eigen score = prompt length (question-only prompts differ by question number; k3 is the most confident doc)
+    def fake_score(qwen, enc, n, m, layer=None, seed=42):
+        return float(enc.length) if "k3" not in enc.spans else -1e9
+    monkeypatch.setattr(seakr, "score_input", fake_score)
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "sk", "--seakr-samples", "4", "--seakr-threshold", "0",
+              "--variants", "eab:g1.2:ans2:pos:gate"])
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "sk" / "okvqa.jsonl").read_text().splitlines()]
+    for r in rows:
+        assert r["seakr"]["retrieve"]                     # every eigen score > 0
+        assert r["seakr"]["chosen"] == "k3"
+        assert r["preds"]["seakr"] != r["preds"]["direct"]
+        assert r["preds"]["seakr_trigger:static"] == r["preds"]["static"]

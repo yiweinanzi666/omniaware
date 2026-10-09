@@ -16,7 +16,7 @@ from pathlib import Path
 import torch
 
 from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
-from .baselines import universalrag
+from .baselines import seakr, universalrag
 from .qwen_eab import QwenEAB
 
 
@@ -146,6 +146,12 @@ def main(argv=None):
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
                     help="override the per-dataset generation cap (e.g. 10 to reproduce earlier short-answer runs)")
+    ap.add_argument("--seakr-samples", type=int, default=0,
+                    help="SeaKR baseline: samples per input for the eigen score (upstream 20; 0 = off)")
+    ap.add_argument("--seakr-max-new-tokens", type=int, default=100, help="SeaKR sampling length (upstream 100)")
+    ap.add_argument("--seakr-threshold", type=float, default=None,
+                    help="fixed SeaKR eigen threshold; default: matched on the calibration questions to U's "
+                         "retrieval rate there")
     ap.add_argument("--tag", required=True)
     args = ap.parse_args(argv)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
@@ -326,6 +332,21 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
+    seakr_threshold = None
+    if args.seakr_samples:
+        scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
+                                   f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json")
+        scache = json.loads(scache_path.read_text()) if scache_path.exists() else {}
+        for e in calib:
+            if e["qid"] not in scache:
+                enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
+                scache[e["qid"]] = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
+                scache_path.write_text(json.dumps(scache))
+        u_rate = sum(norm_pre(ucal[e["qid"]]["pre"]["s"]) > args.tau for e in calib) / max(len(calib), 1)
+        seakr_threshold = (args.seakr_threshold if args.seakr_threshold is not None
+                           else seakr.matched_threshold([scache[e["qid"]] for e in calib], u_rate))
+        print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f})", flush=True)
+
     out_path = out_dir / f"{args.dataset}.jsonl"
     done = set()
     if out_path.exists():
@@ -333,7 +354,7 @@ def main(argv=None):
     config_path.write_text(json.dumps({
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
-        "max_new_tokens": max_new,
+        "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
     }, indent=1))
 
     t_start = time.time()
@@ -416,6 +437,24 @@ def main(argv=None):
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
+            if args.seakr_samples:
+                direct_eigen = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
+                info_s = {"direct_eigen": direct_eigen, "retrieve": direct_eigen > seakr_threshold}
+                rec["preds"]["seakr_trigger:static"] = (rec["preds"]["static"] if info_s["retrieve"]
+                                                        else rec["preds"]["direct"])
+                if info_s["retrieve"]:
+                    doc_scores, doc_answers = {}, {}
+                    for c in chunks:
+                        enc_c = qwen.encode(*evidence_segments(e, [c], rel))
+                        doc_answers[c["cid"]] = qwen.run(enc_c, None, max_new, decode_static=True)[0]["static"].text
+                        doc_scores[c["cid"]] = seakr.score_input(qwen, enc_c, args.seakr_samples,
+                                                                 args.seakr_max_new_tokens)
+                    best = seakr.choose_document(doc_scores, doc_answers)
+                    info_s.update(doc_eigen=doc_scores, chosen=best)
+                    rec["preds"]["seakr"] = doc_answers[best] if best else rec["preds"]["direct"]
+                else:
+                    rec["preds"]["seakr"] = rec["preds"]["direct"]
+                rec["seakr"] = info_s
             # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.
             # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
             for name in arms:
