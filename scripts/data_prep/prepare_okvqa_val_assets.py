@@ -14,9 +14,9 @@ import zipfile
 from PIL import Image
 import requests
 
-from .prepare_okvqa_bm25_candidates import QueryTokenizer, SQL, sha256, write
+from prepare_okvqa_bm25_candidates import QueryTokenizer, SQL, sha256, write
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
 OUTPUT = ROOT / 'data/okvqa_val5046_assets'
 ORIGINAL = ROOT / 'data/okvqa_local'
 BASE = ROOT / 'data/okvqa_dpr_first3m_fts5_question_only_top5_v1/protocol.json'
@@ -59,7 +59,7 @@ def prepare():
     assert base['sql'] == SQL and base['sqlite_version'] == sqlite3.sqlite_version
     source_files = (QUESTION_ZIP, QUESTION_ZIP.with_suffix(QUESTION_ZIP.suffix + '.http.json'),
                     ORIGINAL / 'confirmation_inputs.jsonl', BASE,
-                    Path(__file__), ROOT / 'prepare_okvqa_bm25_candidates.py')
+                    Path(__file__), Path(__file__).with_name('prepare_okvqa_bm25_candidates.py'))
     protocol = dict(configuration=base['configuration'], source_split='val2014', questions=5046,
         unique_images=5033, query_input='Original question string only', top_k=5,
         query_tokenizer=base['query_tokenizer'], query_rule=base['query_rule'], tie_break=base['tie_break'],

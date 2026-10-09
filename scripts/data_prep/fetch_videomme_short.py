@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import threading
 import urllib.request
@@ -16,7 +17,7 @@ import zlib
 REVISION = 'ead1408f75b618502df9a1d8e0950166bf0a2a0b'
 REPOSITORY = 'lmms-eval/Video-MME'
 BASE_URL = f'https://huggingface.co/datasets/{REPOSITORY}/resolve/{REVISION}/'
-OUTPUT = Path(__file__).resolve().parent / 'data/videomme_short'
+OUTPUT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve() / 'data/videomme_short'
 ANNOTATIONS = 'videomme/test-00000-of-00001.parquet'
 
 

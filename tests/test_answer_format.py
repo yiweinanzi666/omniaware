@@ -1,5 +1,5 @@
 import unittest
-from answer_format import parse_mmqa
+from omniaware.answer_format import parse_mmqa
 
 
 class AnswerFormatTests(unittest.TestCase):

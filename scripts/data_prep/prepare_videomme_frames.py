@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fractions import Fraction
 import hashlib
 import json
+import os
 from pathlib import Path
 import time
 
@@ -12,7 +13,7 @@ import av
 from PIL import Image
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
 DATA = ROOT / 'data/videomme_short'
 OUTPUT = ROOT / 'data/videomme_short_frames'
 FRAME_COUNT = 8

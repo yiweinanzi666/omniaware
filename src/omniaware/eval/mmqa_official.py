@@ -1,10 +1,11 @@
 """Expose the pinned MultiModalQA metrics without changing their functions."""
 
-from pathlib import Path
 import runpy
 
+from .. import paths
 
-SOURCE = Path(__file__).resolve().parent / 'data/mmqa_official/official_eval'
+
+SOURCE = paths.MMQA_OFFICIAL_EVAL
 namespace = runpy.run_path(str(SOURCE / 'common_utils.py'))
 namespace['__name__'] = 'pinned_mmqa_evaluate'
 # The original wildcard import is supplied by the common_utils namespace above.

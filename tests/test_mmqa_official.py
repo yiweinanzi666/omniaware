@@ -2,7 +2,14 @@
 
 import unittest
 
-from experiments.eab_first_token.mmqa_official_eval import list_em, list_f1, score_predictions
+import pytest
+
+from omniaware import paths
+
+if not (paths.MMQA_OFFICIAL_EVAL / 'evaluate.py').exists():
+    pytest.skip('upstream MMQA evaluator not under the asset root', allow_module_level=True)
+
+from omniaware.eval.mmqa_official import list_em, list_f1, score_predictions
 
 
 class OfficialMMQAScoringTests(unittest.TestCase):

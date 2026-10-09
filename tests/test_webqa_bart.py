@@ -7,7 +7,7 @@ import unittest
 import torch
 from transformers import BartConfig, BartForConditionalGeneration, BartTokenizer
 
-from experiments.eab_first_token.score_bart import (
+from omniaware.eval.webqa_bart import (
     DEFAULT_CACHE, add_fluency, configure_official_scorer, normalize_for_bart,
     normalized_bart, summarize_composite,
 )
@@ -99,6 +99,8 @@ class CompositeTests(unittest.TestCase):
 
 
 
+@unittest.skipUnless((DEFAULT_CACHE / "official_source" / "bart_score.py").exists(),
+                     "official BARTScore source and tokenizer not under the asset root")
 class OfficialScoreTests(unittest.TestCase):
     @torch.inference_mode()
     def test_official_function_matches_independent_token_log_probabilities(self):

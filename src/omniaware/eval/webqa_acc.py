@@ -18,6 +18,8 @@ import string
 
 import numpy as np
 
+from .. import paths
+
 
 VARIANTS = ("bias-off", "paper-timing", "first-token")
 OFFICIAL_FILES = {
@@ -43,7 +45,7 @@ def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
     import spacy
     from word2number import w2n
 
-    source_dir = Path(source_dir or Path(__file__).parent / "data" / "official_eval")
+    source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
     sources, source_hashes = {}, {}
     for filename in OFFICIAL_FILES:
         raw = (source_dir / filename).read_bytes()

@@ -17,10 +17,11 @@ import numpy as np
 import torch
 from transformers import BartConfig, BartForConditionalGeneration, BartTokenizer
 
-from .score_webqa import VARIANTS
+from .. import paths
+from .webqa_acc import VARIANTS
 
 
-DEFAULT_CACHE = Path(__file__).parent / "cache" / "bartscore"
+DEFAULT_CACHE = paths.BARTSCORE
 
 
 def sha256(path):
@@ -213,7 +214,7 @@ def main():
     parser.add_argument("--baseline", default=None)
     parser.add_argument("--stage", choices=("development", "confirmation"), default="development")
     args = parser.parse_args()
-    official_eval = Path(__file__).parent / "data" / "official_eval" / "eval_1022.py"
+    official_eval = paths.THIRD_PARTY / "webqa" / "eval_1022.py"
     raw = args.input.read_bytes()
     records = [json.loads(line) for line in raw.decode().splitlines() if line.strip()]
     comparison_pairs(args.variants, args.baseline)

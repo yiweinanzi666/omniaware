@@ -1,5 +1,5 @@
 import unittest
-from run_refined import table_rows
+from omniaware.table_render import table_rows
 
 
 class TableRenderingTests(unittest.TestCase):

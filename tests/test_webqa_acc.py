@@ -3,7 +3,12 @@
 import copy
 import unittest
 
-from experiments.eab_first_token.score_webqa import load_official_metric, score_paired, score_references
+import pytest
+
+pytest.importorskip('spacy')
+pytest.importorskip('word2number')
+
+from omniaware.eval.webqa_acc import load_official_metric, score_paired, score_references
 
 
 class OfficialMetricTests(unittest.TestCase):

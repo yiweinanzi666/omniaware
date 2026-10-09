@@ -5,13 +5,14 @@ from datetime import datetime, timezone
 import gzip
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import time
 
 import requests
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
 CACHE = ROOT / 'cache/okvqa_knowledge_20261004'
 DATA = ROOT / 'data/okvqa_knowledge_dpr_first3m'
 URL = 'https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz'
