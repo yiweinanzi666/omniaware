@@ -1,52 +1,24 @@
-"""Detectable effect sizes for the planned train-256 development comparisons (CPU, saved per-question differences).
+"""Detectable effect sizes and selection-on-noise for a paired comparison of two arms of a run.
 
-For a paired comparison of two arms the standard error of the mean difference over n questions is sd(delta)/sqrt(n).
-The smallest effect detected with 80% power at a two-sided 5% level is about 2.8 * SE. The question-level difference
-distributions come from saved comparisons of the same kind as the planned ones (an EAB arm against its matched static
-arm, and answer-level interface changes). Each distribution is resampled to the planned sample sizes; nothing here is a
-result about a candidate and nothing selects a rule.
+    python -m scripts.analysis.power_design runs/<tag>/<dataset>.official_scores.jsonl \
+        --baseline static --candidate eab:g1.2:ans2:pos:gate --metric vqa_accuracy
 
-Two further quantities, both from the same differences:
-  * the expected best-of-K estimate when K candidates with true effect zero are compared on n questions (selection on
-    noise): K independent size-n resamples of the centered differences, maximum taken. Variants of one mechanism have
-    positively correlated differences, so this overstates the noise of a real variant family; it is an upper bound.
+For a paired comparison the standard error of the mean difference over n questions is sd(delta)/sqrt(n);
+the smallest effect detected with 80% power at a two-sided 5% level is about 2.8 * SE. The question-level
+differences are resampled to each planned sample size. best_of_K_noise is the expected best estimate when
+K candidates with true effect zero are compared on n questions (selection on noise; an upper bound for
+correlated variants). Use it before tuning on a dev split of a given size.
+
+analyse() and the size grids are unchanged from the legacy round-008 power_design.py.
 """
-import hashlib
+import argparse
 import json
 from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[3]
-COMBO, LEXICAL = 'acc_approx_x_normalized_bart', 'acc_approx'
 SAMPLE_SIZES = (128, 256, 512, 1024, 2048, 4096)
 CANDIDATE_COUNTS = (1, 8, 24)
-
-
-def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def formal_differences(path, left, right):
-    deltas = []
-    for line in (ROOT / path).open():
-        row = json.loads(line)
-        deltas.append(row['scores'][right] - row['scores'][left])
-    return np.array(deltas), None
-
-
-def scored_differences(path, arm_field, baseline, candidate, field, keep=None):
-    arms = {}
-    for line in (ROOT / path).open():
-        row = json.loads(line)
-        if keep and not keep(row):
-            continue
-        arms.setdefault(row[arm_field], {}).setdefault(row['qid'], []).append(row[field])
-    qids = sorted(arms[baseline])
-    base = np.array([np.mean(arms[baseline][q]) for q in qids])
-    cand = np.array([np.mean(arms[candidate][q]) for q in qids])
-    return 100 * (cand - base), 100 * base.mean()
 
 
 def analyse(name, deltas, base_mean, rng):
@@ -67,35 +39,20 @@ def analyse(name, deltas, base_mean, rng):
 
 
 def main():
-    rng = np.random.default_rng(17)
-    sources = {}
-    out = []
-    p = 'runs/okvqa_formal_fusion_codex_20261005/output/scored_questions.jsonl'
-    sources[p] = sha(ROOT / p)
-    for left, right in (('trigger-static', 'trigger-full'), ('trigger-static+guard', 'trigger-full+guard')):
-        deltas, _ = formal_differences(p, left, right)
-        base = np.mean([json.loads(l)['scores'][left] for l in (ROOT / p).open()])
-        out.append(analyse(f'OK-VQA official accuracy: {right} - {left} (val5046 differences, resampled)', deltas, float(base), rng))
-    p = 'runs/eab_positive_confirmation/scored/scored_predictions.jsonl'
-    sources[p] = sha(ROOT / p)
-    for field, label in ((COMBO, 'Combo'), (LEXICAL, 'Lexical')):
-        for baseline, candidate in (('static-five', 'bge-centered-g1.2'), ('static-five', 'target-binding-static')):
-            deltas, base = scored_differences(p, 'variant', baseline, candidate, field)
-            out.append(analyse(f'WebQA image {label}: {candidate} - {baseline} (val256 differences, resampled)', deltas, base, rng))
-    p = 'runs/eab_relative_evidence_codex_20261004/output/scored/scored_predictions.jsonl'
-    sources[p] = sha(ROOT / p)
-    for field, label in ((COMBO, 'Combo'), (LEXICAL, 'Lexical')):
-        deltas, base = scored_differences(p, 'method', 'static', 'relative-evidence-eab', field, keep=lambda r: r['order_kind'] == 'random')
-        out.append(analyse(f'WebQA text {label}: relative-evidence-eab - static (T17 128 x 12 orders, resampled)', deltas, base, rng))
-    result = dict(rule='MDE = 2.8 * sd(delta) / sqrt(n) (80% power, two-sided 5%); best-of-K noise by resampling', sources=sources, analyses=out)
-    (HERE / 'power_design.json').write_text(json.dumps(result, indent=1) + '\n')
-    for a in out:
-        print(f"{a['name']}\n   mean {a['mean_difference']:+.4f} sd {a['sd_difference']:.4f} nonzero {a['share_questions_with_nonzero_difference']:.1%} baseline {a['baseline_mean']:.3f}")
-        for r in a['by_sample_size']:
-            if r['n'] in (256, 1024, 4096):
-                print(f"   n={r['n']:5d}  MDE {r['mde_points']:.4f} ({r['mde_relative_percent']:.1f}% rel) | best-of-24 noise {r['best_of_24_noise_points']:+.4f} "
-                      f"({r['best_of_24_noise_relative_percent']:+.1f}%)")
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("scores", type=Path, help="<dataset>.official_scores.jsonl from omniaware.eval.score_official")
+    parser.add_argument("--baseline", required=True)
+    parser.add_argument("--candidate", required=True)
+    parser.add_argument("--metric", required=True)
+    parser.add_argument("--seed", type=int, default=20261005)
+    args = parser.parse_args()
+    rows = [json.loads(line) for line in args.scores.read_text().splitlines() if line.strip()]
+    base = np.array([r["scores"][args.baseline][args.metric] for r in rows], dtype=float)
+    cand = np.array([r["scores"][args.candidate][args.metric] for r in rows], dtype=float)
+    result = analyse(f"{args.candidate} - {args.baseline} ({args.metric})", cand - base, float(base.mean()),
+                     np.random.default_rng(args.seed))
+    print(json.dumps(result, indent=1))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

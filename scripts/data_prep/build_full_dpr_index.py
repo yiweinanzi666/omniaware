@@ -11,12 +11,13 @@ from datetime import datetime, timezone
 import gzip
 import hashlib
 import json
+import os
 from pathlib import Path
 import sqlite3
 import sys
 import time
 
-ROOT = Path(__file__).resolve().parents[4]
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
 SOURCE = ROOT / 'cache/okvqa_knowledge_20261004/psgs_w100.tsv.gz'
 SOURCE_MANIFEST = ROOT / 'data/okvqa_knowledge_dpr_first3m/manifest.json'
 OUTPUT = ROOT / 'data/okvqa_knowledge_dpr_full_bm25/index.sqlite'
