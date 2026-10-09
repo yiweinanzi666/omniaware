@@ -246,7 +246,7 @@ def load_okvqa(candidates_path=None) -> list[dict]:
 def load_okvqa_dense() -> list[dict]:
     """OK-VQA questions covered by dense BGE retrieval; rows stay dataset 'okvqa'."""
     import os
-    default = paths.RUNS / "_okvqa_dense" / "candidates_full.jsonl"
+    default = paths.LOCAL_CACHE / "okvqa_dense" / "candidates_full.jsonl"
     examples = load_okvqa(os.environ.get("ERC_OKVQA_DENSE_CANDIDATES", default))
     return [e for e in examples if e["candidates"]]
 

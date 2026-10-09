@@ -1,9 +1,9 @@
 """Dense BGE retrieval over the local Wikipedia corpus for OK-VQA, matching the original e5_Flat.index setup.
 
-  python -m erc.okvqa_dense encode [--limit N]          # passages -> fp16 memmap (resumable)
-  python -m erc.okvqa_dense search [--limit-queries N]  # top-k per OK-VQA question -> candidates.jsonl
+  python -m omniaware.okvqa_dense encode [--limit N]          # passages -> fp16 memmap (resumable)
+  python -m omniaware.okvqa_dense search [--limit-queries N]  # top-k per OK-VQA question -> candidates.jsonl
 
-Only Ours' retrieval changes; cached baseline predictions are reused unchanged.
+Use the resulting candidates for every arm of a run (ERC_OKVQA_DENSE_CANDIDATES, dataset okvqa_dense).
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import torch
 from . import paths, relevance
 
 CORPUS = paths.DATA / "okvqa_knowledge_dpr_first3m" / "corpus_wiki_first3m.jsonl"
-OUT = paths.RUNS / "_okvqa_dense"
+OUT = paths.LOCAL_CACHE / "okvqa_dense"
 DIM = 1024
 # The original index (rebuild_index_wiki_3m.py, e5_Flat.index) used BGE-large weights with
 # retrieval_method='e5': "passage: " / "query: " prefixes, CLS pooling, normalised, max_length 512.

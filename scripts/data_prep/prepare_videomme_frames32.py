@@ -3,15 +3,16 @@ from concurrent.futures import ThreadPoolExecutor
 from fractions import Fraction
 import hashlib
 import json
+import os
 from pathlib import Path
 import time
 
 import av
 from PIL import Image
 
-HERE = Path(__file__).resolve().parent
-DATA = HERE.parents[2] / 'experiments/eab_first_token/data'
-OUTPUT = HERE / 'video_frames32'
+ASSETS = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()
+DATA = ASSETS / 'data'
+OUTPUT = DATA / 'videomme_short_frames32'   # use with: omniaware.run --video-frames-dir <OUTPUT>
 
 
 def digest(path):
@@ -62,29 +63,15 @@ def sample(video):
 
 def main():
     started = time.monotonic()
-    payload = json.loads((HERE / 'input_videomme.json').read_text())
-    videos = sorted({Path(c['image']).parent.name for e in payload['rows'] for c in e['candidates'] if c.get('image')})
-    assert len(videos) == 300
-    records = {}
+    videos = sorted(p.name for p in (DATA / 'videomme_short_frames').iterdir() if (p / 'frames.json').exists())
+    assert len(videos) == 300, len(videos)
     with ThreadPoolExecutor(max_workers=4) as pool:
         for i, record in enumerate(pool.map(sample, videos), 1):
-            records[record['video']] = record
             print(i, '/300', record['video'], round(time.monotonic() - started, 1), flush=True)
-    for e in payload['rows']:
-        video = Path(next(c['image'] for c in e['candidates'] if c.get('image'))).parent.name
-        candidates = []
-        for frame in records[video]['frames']:
-            sec = frame['actual_seconds']
-            candidates.append({'cid': f"f{frame['index']}", 'modality': 'image',
-                               'title': f'Frame at {int(sec)//60:02d}:{sec%60:05.2f}', 'text': '',
-                               'image': '/root/autodl-tmp/emnlp_three_official_20261008/video_frames32/' + frame['path']})
-        candidates.extend(c for c in e['candidates'] if c['modality'] != 'image')
-        e['candidates'] = candidates
-    (HERE / 'input_videomme32.json').write_text(json.dumps(payload, ensure_ascii=False) + '\n')
-    (HERE / 'VIDEO32_READY.json').write_text(json.dumps({'videos': 300, 'questions': 900, 'frames': 9600,
+    (OUTPUT / 'READY.json').write_text(json.dumps({'videos': 300, 'frames': 9600,
         'seconds': time.monotonic() - started, 'sampling': '32 equal temporal-bin midpoints',
         'encoding': 'JPEG quality95 subsampling0, max side672 bicubic, then unchanged model processor',
-        'answer_labels_read': False, 'input_sha256': digest(HERE / 'input_videomme32.json')}, indent=2) + '\n')
+        'answer_labels_read': False}, indent=2) + '\n')
 
 
 if __name__ == '__main__':

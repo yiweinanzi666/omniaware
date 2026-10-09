@@ -26,6 +26,21 @@ def _trim(text: str, n: int = MAX_DOC_WORDS) -> str:
 
 
 SHORT_INSTRUCTION = "Answer the question using a single word or phrase."
+# Answer formats from the Pro6000 runs (pro6000_three_official_20261008/run_refined.py).
+JSON_LIST_INSTRUCTION = (
+    "Use the provided tables to answer the question. Identify the column being asked for, "
+    "then find every row satisfying all conditions. Return values from the requested column, "
+    "not from the columns used as conditions. Keep each answer cell as one string, including "
+    "names or date ranges within that cell; do not return a whole row. For calculations, return "
+    "the calculated value. For yes/no questions use [\"Yes\"] or [\"No\"]. "
+    "Return only a valid JSON array of answer strings, with double quotes inside strings escaped. "
+    "Do not include explanations."
+)
+STRICT_LETTER_INSTRUCTION = (
+    "These frames appear in chronological order and the subtitles contain spoken content. "
+    "Use the visual and subtitle evidence to select the option that best answers the question. "
+    "Return exactly one uppercase letter: A, B, C, or D. Do not include explanations."
+)
 TABLE_INSTRUCTION = (
     "Use the provided tables to answer the question. Apply every condition to the matching rows, "
     "then compute any requested count, average, minimum, maximum, or most recent value. "
@@ -69,6 +84,14 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
     instruction = SHORT_INSTRUCTION if answer_style == "short" and not e.get("options") else INSTRUCTION[e["dataset"]]
     if answer_style == "table" and e["dataset"] == "mmqa_table":
         instruction = TABLE_INSTRUCTION
+    if answer_style == "json_list":
+        if e["dataset"] != "mmqa_table":
+            raise ValueError("answer style json_list is defined for mmqa_table")
+        instruction = JSON_LIST_INSTRUCTION
+    if answer_style == "strict_letter":
+        if e["dataset"] != "videomme":
+            raise ValueError("answer style strict_letter is defined for videomme")
+        instruction = STRICT_LETTER_INSTRUCTION
     q += instruction + "<|im_end|>\n<|im_start|>assistant\n"
     segs.append(Segment(text=q))
     return segs, split

@@ -1,7 +1,7 @@
-"""Run direct / static / EAB variants on one dataset slice and write per-question JSONL.
+"""Decode direct / static / EAB / gated arms on one dataset split and write per-question JSONL.
 
-Example:
-  python -m erc.run --dataset webqa --model 2b --n-calib 24 --n-eval 8 --tag smoke
+Example (score afterwards with omniaware.eval.score_official):
+  python -m omniaware.run --dataset okvqa --split dev --calib-source heldout --model 8b --tag okvqa_dev
 """
 
 from __future__ import annotations
@@ -104,8 +104,10 @@ def main(argv=None):
     ap.add_argument("--tau-bias", type=float, default=0.40)
     ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
                     help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
-    ap.add_argument("--answer-style", default="default", choices=["default", "short", "table"],
-                    help="short: original EMNLP answer format; table: MMQA conditions, aggregation and complete lists")
+    ap.add_argument("--answer-style", default="default",
+                    choices=["default", "short", "table", "json_list", "strict_letter"],
+                    help="short: one word/phrase; table: MMQA table reasoning; json_list: MMQA JSON array "
+                         "(scored as a list); strict_letter: Video-MME single option letter. Applies to every arm.")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
