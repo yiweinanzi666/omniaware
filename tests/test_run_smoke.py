@@ -113,3 +113,26 @@ def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):
             assert r["preds"]["replication"] == r["preds"]["static"]
         else:
             assert r["preds"]["replication"] != r["preds"]["static"]
+
+
+def test_cross_encoder_selectors(tmp_path, monkeypatch):
+    from omniaware import rerank
+    examples = _examples(14)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    # The cross-encoder prefers the passages the retriever ranks last (k3..k7).
+    monkeypatch.setattr(rerank, "ce_logits", lambda exs, path, model: {
+        e["qid"]: {c["cid"]: float(c["cid"][1:]) for c in e["candidates"]} for e in exs})
+    for selector in ("ce", "ce_calibrated"):
+        run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+                  "--n-dev", "0", "--tag", selector, "--selector", selector, "--variants", "eab:g1.2:ans2:pos:gate"])
+        rows = [json.loads(line) for line in (tmp_path / "runs" / selector / "okvqa.jsonl").read_text().splitlines()]
+        for r in rows:
+            # CE top-5, presented in retriever-relevance order.
+            assert r["chunks"] == ["k3", "k4", "k5", "k6", "k7"]
+            # EAB relevance is the per-modality CE percentile, increasing with the CE logit.
+            assert [r["rel"][c] for c in r["chunks"]] == sorted(r["rel"][c] for c in r["chunks"])

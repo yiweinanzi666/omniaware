@@ -6,7 +6,11 @@ rank_sources selects the cross-encoder top-k and presents it in BGE order (appen
 per-modality ECDF of the cross-encoder logit (appendix: "percentile calibration").
 """
 from bisect import bisect_right
+import gc
+import json
 import math
+import os
+from pathlib import Path
 
 import torch
 
@@ -79,29 +83,50 @@ def select_calibrated(candidates, calibration):
     return scored, ordered
 
 
-def fit_ecdfs(records):
-    pools = {'text': [], 'image': []}
-    for row in records:
-        for candidate in row['candidate_scores']:
-            value = float(candidate['ce_logit'])
-            if not math.isfinite(value):
-                raise ValueError('CE calibration logits must be finite')
-            pools[candidate['modality']].append(value)
-    if any(not values for values in pools.values()):
-        raise ValueError('CE calibration requires both modalities')
-    return {modality: dict(count=len(values), sorted_logits=sorted(values))
-            for modality, values in pools.items()}
-
-
-def calibrated_relevance(logit, modality, calibration):
-    if not math.isfinite(logit):
-        raise ValueError('CE query logit must be finite')
-    pool = calibration['modalities'][modality]
-    return bisect_right(pool['sorted_logits'], logit) / pool['count']
-
-
 def normalize_features(features):
     norms = features.float().norm(dim=-1, keepdim=True)
     if not torch.isfinite(features).all() or not (norms > 0).all():
         raise ValueError('CLIP produced non-finite or zero features')
     return features.float() / norms
+
+
+def ce_logits(examples, cache_path, model_path, device=None, batch_size=16):
+    """qid -> cid -> bge-reranker logit of (question, candidate text); cached, resumable."""
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    cache_path = Path(cache_path)
+    scores = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    todo = [e for e in examples if e["qid"] not in scores]
+    if not todo:
+        return scores
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    model = AutoModelForSequenceClassification.from_pretrained(model_path).to(device).eval()
+
+    class _OnDevice:
+        def __call__(self, *a, **kw):
+            return tokenizer(*a, **kw).to(device)
+
+    for e in todo:
+        texts = [{"text": f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]}
+                 for c in e["candidates"]]
+        values, _ = score_ce(e["question"], texts, _OnDevice(), model, batch_size)
+        scores[e["qid"]] = {c["cid"]: v for c, v in zip(e["candidates"], values, strict=True)}
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = cache_path.with_name(f".{cache_path.name}.{os.getpid()}.tmp")
+    tmp.write_text(json.dumps(scores))
+    os.replace(tmp, cache_path)
+    del model
+    gc.collect()
+    return scores
+
+
+def ce_select(candidates, rel, logits, calibration=None):
+    """CE top-k presented in retriever-relevance order (rank_sources), or per-modality CE-percentile
+    top-k (select_calibrated) when a calibration {'modalities': {m: {count, sorted_logits}}} is given."""
+    rows = [dict(c, fact_id=c["cid"]) for c in candidates]
+    scored, selected = rank_sources(rows, [rel[c["cid"]] for c in candidates], [logits[c["cid"]] for c in candidates])
+    if calibration is not None:
+        _, selected = select_calibrated(scored, calibration)
+    by_cid = {c["cid"]: c for c in candidates}
+    return [by_cid[s["fact_id"]] for s in selected]

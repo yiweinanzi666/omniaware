@@ -15,7 +15,7 @@ from pathlib import Path
 
 import torch
 
-from . import data, order as order_mod, paths, pipeline, relevance, routing
+from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
 from .qwen_eab import QwenEAB
 
 
@@ -42,7 +42,9 @@ DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "mmqa_table": "mm
                   "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa"}
 
 
-def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0, route: dict | None = None) -> list[dict]:
+def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0,
+                  route: dict | None = None, ce: dict | None = None) -> list[dict]:
+    """Top-k by calibrated relevance, or by the cross-encoder when ``ce`` = {"logits", "calibration"}."""
     candidates = e["candidates"]
     if route and route["modalities"]:
         missing = set(route["modalities"]) - {c["modality"] for c in candidates}
@@ -51,6 +53,8 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
         candidates = [c for c in candidates if c["modality"] in route["modalities"]]
     if e["fixed_evidence"]:
         chosen = list(candidates)
+    elif ce is not None:
+        chosen = rerank.ce_select(candidates, rel, ce["logits"], ce["calibration"])
     else:
         ranked = sorted(candidates, key=lambda c: -rel[c["cid"]])
         picked = []
@@ -112,6 +116,9 @@ def main(argv=None):
                     help="also decode the chunk-replication arm: ceil(exp(gamma*U*r)) adjacent copies when "
                          "U > tau_bias (paper: replication baseline, Prop. 2)")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--selector", default="relevance", choices=["relevance", "ce", "ce_calibrated"],
+                    help="ce: bge-reranker top-5 shown in retriever order; ce_calibrated: top-5 by per-modality "
+                         "CE percentile. With a CE selector, EAB's r_j is the per-modality CE percentile.")
     ap.add_argument("--image-mode", default="mix", choices=["mix", "clip", "caption"])
     ap.add_argument("--beta", type=float, default=0.30)
     ap.add_argument("--tau", type=float, default=0.35)
@@ -134,6 +141,8 @@ def main(argv=None):
         ap.error("--mmqa-provided-context requires --dataset mmqa_table")
     if args.table_format == "cells" and args.dataset != "mmqa_table":
         ap.error("--table-format cells requires --dataset mmqa_table")
+    if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
+        ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
     if args.first_round_routing and args.mmqa_provided_context:
         ap.error("--first-round-routing is the cold-start pathway; provided tables already give initial evidence")
 
@@ -201,6 +210,23 @@ def main(argv=None):
     def rel_of(e):
         return {c["cid"]: cal.relevance(raw[e["qid"]][c["cid"]], args.image_mode) for c in e["candidates"]}
 
+    ce_of = ce_rel_of = None
+    if args.selector != "relevance":
+        ce_table = rerank.ce_logits(calib + evals, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER)
+        ce_cal = relevance.Calibrator.fit(
+            {q: {c: {f"ce_{m}": v} for c, (m, v) in rows.items()} for q, rows in
+             ((e["qid"], {c["cid"]: (c["modality"], ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]})
+              for e in calib)}, [e["qid"] for e in calib])
+        calibration = {"modalities": {k[3:]: {"count": len(v), "sorted_logits": v}
+                                      for k, v in ce_cal.sorted.items()}}
+
+        def ce_of(e):
+            return {"logits": ce_table[e["qid"]],
+                    "calibration": calibration if args.selector == "ce_calibrated" else None}
+
+        def ce_rel_of(e):
+            return {c["cid"]: ce_cal.ecdf(f"ce_{c['modality']}", ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]}
+
     model_path = paths.QWEN_8B if args.model == "8b" else paths.QWEN_2B
     t0 = time.time()
     qwen = QwenEAB(model_path, max_pixels=args.max_pixels)
@@ -214,6 +240,7 @@ def main(argv=None):
     style += "_r1route" if args.first_round_routing else ""
     style += "_cells" if args.table_format == "cells" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
+    style += f"_sel-{args.selector}" if args.selector != "relevance" else ""
 
     def evidence_segments(e, chunks, rel):
         return pipeline.build_segments(e, chunks, args.answer_style)
@@ -242,7 +269,7 @@ def main(argv=None):
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
         route = routing.initial_route(attn_d, enc_d, e) if args.modality_routing else None
         route = resolve_route(e, rel, route)
-        chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route)
+        chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
         query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
         pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
@@ -306,15 +333,17 @@ def main(argv=None):
             rec["preds"]["direct"] = res_d["static"].text
 
             route = resolve_route(e, rel, pre_info.get("route"), args.order, args.seed)
-            chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route)
+            chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
+                                   ce_of and ce_of(e))
+            eab_rel = ce_rel_of(e) if ce_rel_of else rel
             rec["chunks"] = [c["cid"] for c in chunks]
-            rec["rel"] = {c["cid"]: round(rel[c["cid"]], 4) for c in chunks}
+            rec["rel"] = {c["cid"]: round(eab_rel[c["cid"]], 4) for c in chunks}
             rec["gold_in_topk"] = any(c.get("gold") for c in chunks) if any(
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:
                 rec["route"] = route
             enc = qwen.encode(*evidence_segments(e, chunks, rel))
-            rel_sel = {c["cid"]: rel[c["cid"]] for c in chunks}
+            rel_sel = {c["cid"]: eab_rel[c["cid"]] for c in chunks}
             info = {}
 
             def make_variants(attn, logits):
