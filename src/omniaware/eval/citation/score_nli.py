@@ -5,7 +5,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from run_nli import expected_checker
+from .run_nli import expected_checker
 
 
 def key(row):

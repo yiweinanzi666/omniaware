@@ -1,7 +1,7 @@
 """Citation request construction only; synthetic rows, no checker results."""
 
 import unittest
-from .prepare_citation_support_intake import requests_for_answer
+from omniaware.eval.citation.requests import requests_for_answer
 
 
 class CitationIntakeTests(unittest.TestCase):

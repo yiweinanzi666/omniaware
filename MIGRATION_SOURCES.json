@@ -463,6 +463,11 @@
    "source": "experiments/eab_first_token/runs/claude_direct_repair_20261005/round_005/analysis/okvqa_passage_answer_recall.py",
    "target": "scripts/analysis/okvqa_passage_answer_recall.py",
    "sha256": "c0d7c3bba7bd52d3721ffe43b4060875baabeeba840464425dffd897a4ae4230"
+  },
+  {
+   "source": "experiments/eab_first_token/runs/e5_citation_support_preparation/checker_asset_manifest.json",
+   "target": "src/omniaware/eval/citation/checker_asset_manifest.json",
+   "sha256": "686c13c84f39b39d9a46e4a78ccea76df82472e9550f9bd3022de823eeab9a77"
   }
  ]
 }

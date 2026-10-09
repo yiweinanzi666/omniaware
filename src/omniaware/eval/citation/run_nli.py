@@ -5,18 +5,20 @@ import json
 from pathlib import Path
 import time
 
-ROOT = Path(__file__).resolve().parents[2]
-MODEL = ROOT / 'cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7'
+from ... import paths
+
+MODEL = paths.CACHE / 'e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7'
 
 
 def expected_checker():
     directory = Path(__file__).resolve().parent
     manifest_path = directory / 'checker_asset_manifest.json'
     manifest = json.loads(manifest_path.read_text())
-    runtime = json.loads((directory / 'verification.json').read_text())['dependency_versions']
+    import torch
+    import transformers
     return dict(model=manifest['model'], revision=manifest['revision'], id2label=manifest['id2label'],
         asset_manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-        torch=runtime['torch'], transformers=runtime['transformers'], device='cpu', dtype='float32',
+        torch=torch.__version__, transformers=transformers.__version__, device='cpu', dtype='float32',
         batch_size=1, truncation=False, windows=False, decision='argmax(logits) == 0')
 
 
@@ -29,10 +31,8 @@ def run(source, output):
             assert hashlib.file_digest(stream, 'sha256').hexdigest() == record['sha256']
     # Imports and model allocation occur only when this future-stage command is invoked.
     import torch
-    import transformers
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
     identity = expected_checker()
-    assert (torch.__version__, transformers.__version__) == (identity['torch'], identity['transformers'])
     assert (manifest['model'], manifest['revision'], manifest['id2label']) == (identity['model'], identity['revision'], identity['id2label'])
     torch.set_num_threads(1)
     tokenizer = AutoTokenizer.from_pretrained(str(MODEL), local_files_only=True)

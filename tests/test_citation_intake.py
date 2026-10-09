@@ -5,9 +5,16 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from intake_answers import prepare, prepare_answer
-from score_nli import score
-from run_nli import expected_checker
+import pytest
+
+from omniaware import paths
+
+if not (paths.CACHE / 'e5_citation_support' / 'sentence_splitter_assets.json').exists():
+    pytest.skip('pinned NLTK Punkt assets not under the asset root', allow_module_level=True)
+
+from omniaware.eval.citation.intake_answers import prepare, prepare_answer
+from omniaware.eval.citation.score_nli import score
+from omniaware.eval.citation.run_nli import expected_checker
 
 
 class IntakeTest(unittest.TestCase):

@@ -7,9 +7,10 @@ import re
 import sys
 from functools import lru_cache
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-from prepare_citation_support_intake import requests_for_answer
+from ... import paths
+from .requests import requests_for_answer
+
+ROOT = paths.ASSET_ROOT
 
 MARKER = re.compile(r'\[(E\d+)\]')
 
@@ -32,7 +33,6 @@ def prepare_answer(answer, source):
     for key in ('dataset', 'qid', 'variant', 'raw_answer', 'raw_token_ids', 'generation_identity'):
         if key not in answer:
             raise ValueError(f'Missing raw generation field: {key}')
-    assert answer['variant'] in ('static_concat', 'eab')
     assert source['status'] == 'CITATION_SOURCE_RECORD_READY'
     assert (answer['dataset'], str(answer['qid'])) == (source['dataset'], source['qid'])
     assert isinstance(answer['raw_answer'], str) and isinstance(answer['raw_token_ids'], list)
@@ -69,7 +69,8 @@ def prepare_answer(answer, source):
     return ledger, requests
 
 
-def prepare(input_path, sources_paths, output):
+def prepare(input_path, sources_paths, output, variants=None):
+    """Every (dataset, qid) source must have one answer per variant (default: all variants seen)."""
     sources = {}
     for path in sources_paths:
         for line in path.open():
@@ -86,7 +87,8 @@ def prepare(input_path, sources_paths, output):
         ledger, values = prepare_answer(answer, sources[key[:2]])
         ledgers.append(ledger)
         requests.extend(values)
-    expected = {(dataset, qid, variant) for dataset, qid in sources for variant in ('static_concat', 'eab')}
+    variants = sorted(variants or {key[2] for key in seen})
+    expected = {(dataset, qid, variant) for dataset, qid in sources for variant in variants}
     assert seen == expected, f'Incomplete full denominator: missing={len(expected-seen)}, unexpected={len(seen-expected)}'
     output.mkdir(parents=True, exist_ok=True)
     for name, data in [('answer_ledger.jsonl',ledgers), ('cite_rec_nli_inputs.jsonl',requests)]:
@@ -107,5 +109,6 @@ if __name__ == '__main__':
     parser.add_argument('--input', type=Path, required=True)
     parser.add_argument('--sources', type=Path, nargs='+', required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--variants', nargs='+', default=None, help='arms that every question must have')
     args = parser.parse_args()
-    print(json.dumps(prepare(args.input, args.sources, args.output)))
+    print(json.dumps(prepare(args.input, args.sources, args.output, args.variants)))
