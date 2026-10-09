@@ -38,7 +38,8 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
 
 
 # Loader name -> dataset family used for prompts and generation caps.
-DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "mmqa_table": "mmqa_table",
+DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img": "webqa", "webqa_open_full": "webqa",
+                  "mmqa_table": "mmqa_table",
                   "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa"}
 
 

@@ -77,6 +77,84 @@ def load_webqa(subset: str = "img", split: str = "val") -> list[dict]:
     return out
 
 
+def _asset_path(recorded: str) -> Path:
+    """Map an absolute path recorded on another host into the local asset root."""
+    path = Path(recorded)
+    if path.exists():
+        return path
+    marker = "experiments/eab_first_token/"
+    text = recorded.replace("\\", "/")
+    return paths.ASSET_ROOT / text.split(marker, 1)[1] if marker in text else path
+
+
+def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | None = None) -> list[dict]:
+    """WebQA with open retrieval over the full public pool (544,489 texts, 389,750 images).
+
+    Candidates are the BGE text top-k and the CLIP image top-k returned by FAISS for the question
+    (scripts/webqa_open_retrieval: encode_webqa_queries --split <split>, then search_dense_queries
+    into <rankings>/bge and <rankings>/clip).  ``gold`` marks a candidate whose snippet aliases or
+    image id belong to the question's positive facts; it feeds recall diagnostics only.
+    """
+    root = paths.WEBQA_OPEN
+    rankings = Path(rankings) if rankings else root / "dense_top5_full" / f"webqa_{split}"
+    tops: dict[str, dict[str, list[str]]] = {}
+    for kind in ("bge", "clip"):
+        for line in (rankings / kind / "rankings.jsonl").open():
+            r = json.loads(line)
+            tops.setdefault(r["qid"], {})[kind] = [c["source_id"] for c in r["candidates"]]
+    wanted = {sid for per_q in tops.values() for ids in per_q.values() for sid in ids}
+    texts = {}
+    with (root / "text_documents.jsonl").open() as fh:
+        for line in fh:
+            row = json.loads(line)
+            if row["document_id"] in wanted:
+                texts[row["document_id"]] = row
+    captions = {}
+    with (root / "image_corpus.jsonl").open() as fh:
+        for line in fh:
+            row = json.loads(line)
+            if row["fact_id"] in wanted:
+                variants = sorted({" ".join(c.split()) for c in row["captions"]} - {""})
+                captions[row["fact_id"]] = variants[0] if variants else ""
+    images = {}
+    plan = json.loads((root / "faiss_clip_full" / "plan.json").read_text())
+    for encoding in plan["inputs"]:
+        with (_asset_path(encoding["directory"]) / "assets.jsonl").open() as fh:
+            for line in fh:
+                row = json.loads(line)
+                if "image:" + str(row["image_id"]) in wanted:
+                    images["image:" + str(row["image_id"])] = str(_asset_path(row["path"]))
+    raw = json.loads(paths.WEBQA_JSON.read_text())
+    out, unranked = [], 0
+    for guid, v in raw.items():
+        if v["split"] != split or (subset == "img" and not v["img_posFacts"]):
+            continue
+        if guid not in tops:
+            unranked += 1
+            continue
+        gold_text = {str(f["snippet_id"]) for f in v["txt_posFacts"]}
+        gold_image = {"image:" + str(f["image_id"]) for f in v["img_posFacts"]}
+        cands = []
+        for rank, sid in enumerate(tops[guid].get("bge", []), 1):
+            row = texts[sid]
+            cands.append({"cid": f"t{rank}", "modality": "text", "title": "", "text": _clean(row["text"]),
+                          "image": None, "gold": bool(gold_text & set(map(str, row["source_snippet_ids"])))})
+        for rank, sid in enumerate(tops[guid].get("clip", []), 1):
+            if sid not in images:
+                continue
+            caption = _clean(captions.get(sid, ""))
+            cands.append({"cid": f"i{rank}", "modality": "image", "title": caption, "text": caption,
+                          "image": images[sid], "gold": sid in gold_image})
+        out.append({
+            "dataset": "webqa", "qid": guid, "question": _clean(v["Q"]), "qcate": v["Qcate"],
+            "query_images": [], "candidates": cands, "fixed_evidence": False,
+            "golds": [_clean(a) for a in v["A"]],
+        })
+    if unranked:
+        print(f"[data] webqa_open/{split}/{subset}: {unranked} questions have no rankings in {rankings}", flush=True)
+    return out
+
+
 # ------------------------------------------------------------------- MMQA --
 def _read_jsonl_gz(path: Path):
     with gzip.open(path, "rt") as fh:
@@ -259,9 +337,19 @@ def _webqa_full(**kw):
     return load_webqa("all", **kw)
 
 
+def _webqa_open_img(**kw):
+    return load_webqa_open("img", **kw)
+
+
+def _webqa_open_full(**kw):
+    return load_webqa_open("all", **kw)
+
+
 LOADERS = {
     "webqa_img": _webqa_img,
     "webqa_full": _webqa_full,
+    "webqa_open_img": _webqa_open_img,
+    "webqa_open_full": _webqa_open_full,
     "mmqa_table": load_mmqa_table,
     "videomme": load_videomme_short,
     "okvqa": load_okvqa,
@@ -274,6 +362,8 @@ TRAIN_LOADERS = {
     "webqa_img": lambda: load_webqa("img", split="train"),
     "webqa_full": lambda: load_webqa("all", split="train"),
     "mmqa_table": lambda: load_mmqa_table(split="train"),
+    "webqa_open_img": lambda: load_webqa_open("img", split="train"),
+    "webqa_open_full": lambda: load_webqa_open("all", split="train"),
 }
 
 

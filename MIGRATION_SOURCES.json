@@ -554,6 +554,18 @@
   {
    "source": "experiments/eab_first_token/test_order_mechanism.py",
    "object": "test_replication_ceil_gate_boundaries_and_adjacent_full_copies (count assertions only)"
+  },
+  {
+   "source": "experiments/eab_first_token/prepare_webqa.py",
+   "object": "MODEL_ID"
+  },
+  {
+   "source": "experiments/eab_first_token/prepare_webqa.py",
+   "object": "MODEL_REVISION"
+  },
+  {
+   "source": "experiments/eab_first_token/prepare_webqa.py",
+   "object": "MODEL_FILES"
   }
  ]
 }

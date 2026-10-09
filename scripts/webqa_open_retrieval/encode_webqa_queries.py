@@ -1,4 +1,9 @@
-"""Freeze BGE/CLIP text-query vectors for the provisional Phase1 train256 cohort on CPU."""
+"""Freeze BGE/CLIP text-query vectors for a WebQA question cohort on CPU (default: legacy train256).
+
+python -m scripts.webqa_open_retrieval.encode_webqa_queries --split val --output <dir>
+writes the cohort (qid, question; no answers or facts) and its query vectors for search_dense_queries.
+"""
+import argparse
 from datetime import datetime, timezone
 import fcntl
 import json
@@ -12,21 +17,31 @@ COHORT_SHA = '0066999cee7d20ff9b6aa6493c0bf97a55da50cde4aa4b5ae13440c99d87ccee'
 OUTPUT = HERE/'webqa_train256_queries_cpu'
 
 
-def main():
+def write_cohort(split, path):
+    """All questions of a WebQA split as {qid, question}; answers and facts are never written."""
+    from omniaware import paths
+    from omniaware.data import _clean
+    raw = json.loads(paths.WEBQA_JSON.read_text())
+    rows = [dict(qid=guid, question=_clean(v["Q"])) for guid, v in raw.items() if v["split"] == split]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+    return path
+
+
+def main(cohort=COHORT, cohort_sha=COHORT_SHA, output=OUTPUT):
     import numpy as np
     from PIL import Image
     import torch
     import transformers
-    from experiments.eab_first_token.multimodal_retrieval import encode_bge
-    from experiments.eab_first_token.prepare_webqa import QUERY_INSTRUCTION
-    from experiments.eab_first_token.score_visual_candidates import normalize_features
+    from omniaware.rerank import QUERY_INSTRUCTION, encode_bge, normalize_features
 
-    OUTPUT.mkdir(exist_ok=True)
-    with (OUTPUT/'worker.lock').open('a') as lock:
+    output.mkdir(exist_ok=True)
+    with (output/'worker.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        assert sha(COHORT) == COHORT_SHA
-        rows = [json.loads(line) for line in COHORT.read_text().splitlines()]
-        assert len(rows) == 256 and len({r['qid'] for r in rows}) == 256
+        assert cohort_sha is None or sha(cohort) == cohort_sha
+        rows = [json.loads(line) for line in cohort.read_text().splitlines()]
+        n = len(rows)
+        assert n and len({r['qid'] for r in rows}) == n
         assert not any({'answer', 'answers', 'A', 'references', 'gold'} & set(r) for r in rows)
         questions = [r['question'] for r in rows]
         ids = np.asarray([r['qid'] for r in rows])
@@ -39,7 +54,7 @@ def main():
         for name, assets in expected.items():
             assert {asset: sha(models[name]/asset) for asset in assets} == assets, f'{name} assets changed'
         fixture = json.loads((HERE/'clip_images_cpu_wave0/assets.jsonl').open().readline())
-        plan = dict(cohort_sha256=COHORT_SHA, questions=256, ordered_qids=ids.tolist(),
+        plan = dict(cohort_sha256=sha(cohort), questions=n, ordered_qids=ids.tolist(),
                     corpus_plan_sha256={name: sha(path) for name, path in corpus_plans.items()},
                     model_files_sha256=expected,
                     bge_input=QUERY_INSTRUCTION+'<exact question, including original quotes>', bge_max_length=512,
@@ -52,22 +67,22 @@ def main():
                     torch=torch.__version__, transformers=transformers.__version__, numpy=np.__version__,
                     labels_read=False, MPS_calls=0, cohort_finalized=False,
                     scope='Query preparation only; final consumption check and cross-modality retrieval protocol still required')
-        if (OUTPUT/'plan.json').exists():
-            assert json.loads((OUTPUT/'plan.json').read_text()) == plan, 'Query encoding plan changed'
+        if (output/'plan.json').exists():
+            assert json.loads((output/'plan.json').read_text()) == plan, 'Query encoding plan changed'
         else:
-            save(OUTPUT/'plan.json', plan)
-        plan_sha = sha(OUTPUT/'plan.json')
+            save(output/'plan.json', plan)
+        plan_sha = sha(output/'plan.json')
         torch.set_num_threads(2)
         torch.set_num_interop_threads(1)
         receipts = {}
         for name, dimension, max_length in (('bge', 1024, 512), ('clip', 768, 77)):
-            path = OUTPUT/f'{name}.npz'
-            receipt_path = OUTPUT/f'{name}.json'
+            path = output/f'{name}.npz'
+            receipt_path = output/f'{name}.json'
             if receipt_path.exists():
                 receipt = json.loads(receipt_path.read_text())
                 assert receipt['plan_sha256'] == plan_sha and receipt['array_sha256'] == sha(path)
                 with np.load(path) as saved:
-                    assert np.array_equal(saved['qids'], ids) and saved['vectors'].shape == (256, dimension)
+                    assert np.array_equal(saved['qids'], ids) and saved['vectors'].shape == (n, dimension)
                 receipts[name] = receipt
                 continue
             assert not path.exists(), 'Unreceipted query array requires inspection'
@@ -109,7 +124,7 @@ def main():
                 check = dict(check='first query cosine against native full CLIP forward',
                              native_cosine=native_cosine, cached_cosine=cached_cosine, absolute_error=check_error)
             array = vectors.numpy()
-            assert array.shape == (256, dimension) and np.isfinite(array).all()
+            assert array.shape == (n, dimension) and np.isfinite(array).all()
             norm_error = float(np.abs(np.linalg.norm(array, axis=1)-1).max())
             assert norm_error < 2e-6
             temporary = path.with_suffix('.npz.tmp')
@@ -118,7 +133,7 @@ def main():
                          untruncated_lengths=np.asarray(raw_lengths, dtype=np.int32))
             temporary.replace(path)
             receipt = dict(status='QUERY_ENCODING_COMPLETE', plan_sha256=plan_sha, array_sha256=sha(path),
-                           queries=256, dimension=dimension, batches=64, model_load_seconds=loaded-started,
+                           queries=n, dimension=dimension, batches=-(-n // 4), model_load_seconds=loaded-started,
                            encoding_validation_write_seconds=time.perf_counter()-loaded,
                            truncated_queries=sum(n > max_length for n in raw_lengths),
                            max_norm_error=norm_error, numerical_validation=check,
@@ -127,16 +142,28 @@ def main():
             receipts[name] = receipt
             del model, tokenizer, vectors
         record = dict(status='QUERY_VECTORS_COMPLETE', plan_sha256=plan_sha,
-                      encoders={name: dict(receipt_sha256=sha(OUTPUT/f'{name}.json'), array_sha256=r['array_sha256'])
+                      encoders={name: dict(receipt_sha256=sha(output/f'{name}.json'), array_sha256=r['array_sha256'])
                                 for name, r in receipts.items()}, labels_read=False, MPS_calls=0,
                       scope='Resource preparation; no retrieval or answer accuracy result')
-        if (OUTPUT/'completion.json').exists():
-            assert json.loads((OUTPUT/'completion.json').read_text()) == record
+        if (output/'completion.json').exists():
+            assert json.loads((output/'completion.json').read_text()) == record
         else:
-            save(OUTPUT/'completion.json', record)
+            save(output/'completion.json', record)
         print(json.dumps(record), flush=True)
         return record
 
 
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--split', choices=['train', 'val'], help='encode every question of this WebQA split')
+    parser.add_argument('--cohort', type=Path, help='jsonl of {qid, question}; default: legacy train256')
+    parser.add_argument('--output', type=Path)
+    args = parser.parse_args()
+    if args.split:
+        output = args.output or HERE/f'webqa_{args.split}_queries_cpu'
+        main(write_cohort(args.split, output/'cohort.jsonl'), None, output)
+    elif args.cohort:
+        main(args.cohort, None, args.output or HERE/f'{args.cohort.stem}_queries_cpu')
+    else:
+        main()

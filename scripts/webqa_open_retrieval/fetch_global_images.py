@@ -6,10 +6,11 @@ import hashlib
 import json
 from pathlib import Path
 import time
-from experiments.eab_first_token.fetch_webqa_parquet_images import REPOSITORY, REVISION, Shard, checked_image
+from omniaware import paths
+from scripts.data_prep.fetch_webqa_parquet_images import REPOSITORY, REVISION, Shard, checked_image
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+HERE = paths.WEBQA_OPEN
+ROOT = paths.ASSET_ROOT
 REUSE = ROOT/'cache/webqa_full4966_images'
 OUT = HERE/'global_image_assets'
 

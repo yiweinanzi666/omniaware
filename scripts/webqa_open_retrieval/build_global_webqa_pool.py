@@ -10,8 +10,10 @@ import os
 import sqlite3
 import subprocess
 
-ROOT=Path('/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token')
-HERE=Path(__file__).resolve().parent
+from omniaware import paths
+
+HERE = paths.WEBQA_OPEN
+ROOT = paths.ASSET_ROOT
 spec=importlib.util.spec_from_file_location('projection',ROOT/'prepare_eab_recovery_confirmation.py')
 projection=importlib.util.module_from_spec(spec);spec.loader.exec_module(projection)
 FACT_FIELDS={'txt_posFacts','txt_negFacts','txt_Facts','img_posFacts','img_negFacts','img_Facts'}

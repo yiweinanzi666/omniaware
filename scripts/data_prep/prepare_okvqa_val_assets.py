@@ -14,7 +14,7 @@ import zipfile
 from PIL import Image
 import requests
 
-from prepare_okvqa_bm25_candidates import QueryTokenizer, SQL, sha256, write
+from .prepare_okvqa_bm25_candidates import QueryTokenizer, SQL, sha256, write
 
 ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
 OUTPUT = ROOT / 'data/okvqa_val5046_assets'

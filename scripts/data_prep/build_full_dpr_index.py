@@ -10,7 +10,6 @@ import csv
 from datetime import datetime, timezone
 import gzip
 import hashlib
-import io
 import json
 from pathlib import Path
 import sqlite3

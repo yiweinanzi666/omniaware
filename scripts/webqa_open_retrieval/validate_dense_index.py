@@ -38,7 +38,6 @@ def main():
         assert query_plan['model_files_sha256'][kind] == index_plan['model_files_sha256']
         with np.load(query_dir/f'{kind}.npz') as archive:
             queries = archive['vectors']
-            qids = archive['qids'].tolist()
         ids = (output/'ids.txt').read_text().splitlines()
         inputs, chunks, source_ids, _ = B.inspect_inputs(kind, [source], 8)
         assert ids == source_ids

@@ -21,7 +21,7 @@ def main(output, max_new_shards=None):
     from PIL import Image
     import torch
     import transformers
-    from experiments.eab_first_token.score_visual_candidates import normalize_features
+    from omniaware.rerank import normalize_features
 
     output = Path(output)
     with (output/'worker.lock').open('a') as lock:

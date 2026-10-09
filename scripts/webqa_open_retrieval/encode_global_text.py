@@ -8,8 +8,10 @@ import json
 from pathlib import Path
 import time
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+from omniaware import paths
+
+HERE = paths.WEBQA_OPEN
+ROOT = paths.ASSET_ROOT
 CORPUS = HERE / 'text_documents.jsonl'
 MODEL = ROOT / 'cache/bge-large-en-v1.5'
 OUTPUT = HERE / 'bge_text_cpu'
@@ -45,8 +47,7 @@ def main(max_new_shards=None):
     import numpy as np
     import torch
     import transformers
-    from experiments.eab_first_token.multimodal_retrieval import encode_bge
-    from experiments.eab_first_token.prepare_webqa import MODEL_FILES, MODEL_REVISION, QUERY_INSTRUCTION
+    from omniaware.rerank import MODEL_FILES, MODEL_REVISION, QUERY_INSTRUCTION, encode_bge
 
     OUTPUT.mkdir(exist_ok=True)
     with (OUTPUT / 'worker.lock').open('a') as lock:

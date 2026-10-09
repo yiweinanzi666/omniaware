@@ -40,6 +40,11 @@ OKVQA_INPUTS = DATA / "okvqa_val5046_assets" / "validation_inputs.jsonl"
 OKVQA_CANDIDATES = DATA / "okvqa_val5046_assets" / "validation_candidates.jsonl"
 OKVQA_ANNOTATIONS = DATA / "okvqa_local" / "original" / "mscoco_val2014_annotations.json.zip"
 
+# WebQA open retrieval artifacts (global pool, encodings, FAISS indices, rankings); default is the
+# legacy directory on the experiment host, where the complete indices were built.
+WEBQA_OPEN = Path(os.environ.get("OMNIAWARE_WEBQA_OPEN_DIR",
+                                 ASSET_ROOT / "runs" / "phase1_dense_retrieval_codex_20261006"))
+
 THIRD_PARTY = REPO_ROOT / "third_party"
 RUNS = Path(os.environ.get("OMNIAWARE_RUNS", REPO_ROOT / "runs"))
 LOCAL_CACHE = Path(os.environ.get("OMNIAWARE_CACHE", REPO_ROOT / "cache"))

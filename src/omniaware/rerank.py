@@ -62,6 +62,10 @@ def rank_sources(candidates, bge_scores, ce_scores):
     return scored, [c for c in by_bge if c['source_id'] in selected]
 
 
+MODEL_ID = 'BAAI/bge-large-en-v1.5'
+MODEL_REVISION = 'd4aa6901d3a41ba39fb536a557fa166f842b0e09'
+MODEL_FILES = ['README.md', 'config.json', 'model.safetensors',
+               'special_tokens_map.json', 'tokenizer.json', 'tokenizer_config.json', 'vocab.txt']
 QUERY_INSTRUCTION = 'Represent this sentence for searching relevant passages: '
 
 

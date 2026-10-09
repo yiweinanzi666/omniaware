@@ -7,8 +7,10 @@ import itertools
 import json
 import sqlite3
 
-HERE=Path(__file__).resolve().parent
-ROOT=HERE.parents[1]
+from omniaware import paths
+
+HERE = paths.WEBQA_OPEN
+ROOT = paths.ASSET_ROOT
 
 
 def sha(path):
