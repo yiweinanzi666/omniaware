@@ -93,8 +93,6 @@ def main(argv=None):
     ap.add_argument("--answer-style", default="default", choices=["default", "short", "table"],
                     help="short: original EMNLP answer format; table: MMQA conditions, aggregation and complete lists")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
-    ap.add_argument("--decode-baselines", action="store_true",
-                    help="also decode direct and static answers (off: Ours-only)")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
                     help="override the per-dataset generation cap (e.g. 10 to reproduce earlier short-answer runs)")
@@ -240,8 +238,8 @@ def main(argv=None):
                    "query_chunks": [c["cid"] for c in e.get("query_chunks", [])],
                    "options": e.get("options"), "gold_letter": e.get("gold_letter"),
                    "preds": {}}
-            # pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
-            # Ours-only: the direct answer is decoded only when the gate keeps retrieval off.
+            # Pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
+            # Every compared arm is decoded here from the same prompt; no cached baselines.
             enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
             pre_info = {}
 
@@ -251,14 +249,13 @@ def main(argv=None):
                 pre_info.update(raw_pre=pre, u_pre=norm_pre(pre["s"]))
                 if args.modality_routing:
                     pre_info["route"] = routing.initial_route(attn_d, enc_d, e)
-                return args.decode_baselines or pre_info["u_pre"] <= args.tau
+                return True
 
             res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=gate_off)
             rec["u_pre"] = pre_info["u_pre"]
             rec["raw_pre"] = pre_info["raw_pre"]
             rec["retrieve"] = pre_info["u_pre"] > args.tau
-            if "static" in res_d:
-                rec["preds"]["direct" if args.decode_baselines else "gate_direct"] = res_d["static"].text
+            rec["preds"]["direct"] = res_d["static"].text
 
             route = resolve_route(e, rel, pre_info.get("route"), args.order, args.seed)
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route)
@@ -279,13 +276,13 @@ def main(argv=None):
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
                 return {v.name: v.spec(enc, rel_sel, u_eab, args.tau_bias, qwen.n_layers) for v in variants}
 
-            res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=args.decode_baselines)
+            res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             for name, r in res.items():
                 rec["preds"][name] = r.text
-            # full system (paper Eq. 4 gate before retrieval): direct answer when U_pre <= tau
-            gate_answer = rec["preds"].get("gate_direct", rec["preds"].get("direct"))
-            for v in variants:
-                rec["preds"]["ours_sel:" + v.name] = gate_answer if not rec["retrieve"] else rec["preds"][v.name]
+            # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.
+            # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
+            for name in ["static"] + [v.name for v in variants]:
+                rec["preds"]["gated:" + name] = rec["preds"][name] if rec["retrieve"] else rec["preds"]["direct"]
             rec["u_post"] = info["u_post"]
             rec["u_eab"] = info["u_eab"]
             rec["raw_post"] = info["raw_post"]
