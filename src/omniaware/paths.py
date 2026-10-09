@@ -21,6 +21,7 @@ CACHE = ASSET_ROOT / "cache"
 
 QWEN_8B = Path(os.environ.get("ERC_QWEN_8B", CACHE / "qwen3-vl-8b-instruct"))
 QWEN_2B = Path(os.environ.get("ERC_QWEN_2B", CACHE / "qwen3-vl-2b-instruct"))
+INTERNVL_8B = Path(os.environ.get("OMNIAWARE_INTERNVL_8B", CACHE / "InternVL3_5-8B-HF"))  # native transformers format
 BGE = Path(os.environ.get("ERC_BGE", CACHE / "bge-large-en-v1.5"))
 CLIP = Path(os.environ.get("ERC_CLIP", CACHE / "clip-vit-large-patch14"))
 RERANKER = Path(os.environ.get("ERC_RERANKER", CACHE / "bge-reranker-v2-m3"))

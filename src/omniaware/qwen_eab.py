@@ -18,7 +18,8 @@ from dataclasses import dataclass, field
 
 import torch
 from PIL import Image
-from transformers import AttentionInterface, AutoProcessor, Qwen3VLForConditionalGeneration
+from transformers import (AttentionInterface, AutoConfig, AutoProcessor, InternVLForConditionalGeneration,
+                          Qwen3VLForConditionalGeneration)
 from transformers.integrations.sdpa_attention import repeat_kv, sdpa_attention_forward
 
 EPS = 1e-9
@@ -123,31 +124,56 @@ class Result:
     tokens: list[int] = field(default_factory=list)
 
 
+def tag_text_layers(model) -> list[int]:
+    """Mark the decoder self-attention modules of the language model (vision attention stays untouched)."""
+    layers = []
+    for i, layer in enumerate(model.model.language_model.layers):
+        layer.self_attn._erc_layer = i
+        layers.append(i)
+    return layers
+
+
 class QwenEAB:
+    """EAB runner for decoder-token VLMs: Qwen3-VL (kind 'qwen3_vl') and native InternVL3.5 (kind 'internvl').
+
+    Both use a ChatML prompt and put image tokens into the decoder sequence, so evidence spans and the
+    SDPA bias hook are shared; only image tokenisation and the prefill inputs differ. InternVL images
+    use ``max_patches`` 448x448 tiles of 256 tokens (1 tile = Qwen3-VL's default 256-token budget).
+    """
+
     def __init__(self, model_path, device: str | None = None, dtype=torch.bfloat16,
-                 max_pixels: int = 256 * 32 * 32, min_pixels: int = 64 * 32 * 32):
+                 max_pixels: int = 256 * 32 * 32, min_pixels: int = 64 * 32 * 32, max_patches: int = 1):
         if device is None:
             device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
         self.device = device
+        self.kind = "internvl" if AutoConfig.from_pretrained(model_path).model_type == "internvl" else "qwen3_vl"
         self.processor = AutoProcessor.from_pretrained(model_path)
         self.tok = self.processor.tokenizer
-        self.model = Qwen3VLForConditionalGeneration.from_pretrained(
-            model_path, dtype=dtype, attn_implementation="sdpa").to(device).eval()
-        self.layers = []
-        for m in self.model.modules():
-            if m.__class__.__name__ == "Qwen3VLTextAttention":
-                m._erc_layer = m.layer_idx
-                self.layers.append(m.layer_idx)
+        cls = InternVLForConditionalGeneration if self.kind == "internvl" else Qwen3VLForConditionalGeneration
+        self.model = cls.from_pretrained(model_path, dtype=dtype, attn_implementation="sdpa").to(device).eval()
+        self.layers = tag_text_layers(self.model)
         self.n_layers = len(self.layers)
         cfg = self.model.config
         self.image_token_id = cfg.image_token_id
-        self.vision_start_id = cfg.vision_start_token_id
-        self.vision_end_id = cfg.vision_end_token_id
-        self.merge = self.processor.image_processor.merge_size
-        self.size = {"shortest_edge": min_pixels, "longest_edge": max_pixels}
+        if self.kind == "internvl":
+            self.vision_start_id = self.processor.start_image_token_id
+            self.vision_end_id = self.processor.end_image_token_id
+            self.image_seq_length = self.processor.image_seq_length
+            self.max_patches = max_patches
+        else:
+            self.vision_start_id = cfg.vision_start_token_id
+            self.vision_end_id = cfg.vision_end_token_id
+            self.merge = self.processor.image_processor.merge_size
+            self.size = {"shortest_edge": min_pixels, "longest_edge": max_pixels}
         self.eos = {self.tok.convert_tokens_to_ids("<|im_end|>"), self.tok.eos_token_id,
                     self.tok.convert_tokens_to_ids("<|endoftext|>")}
         self.vocab_size = self.model.config.text_config.vocab_size
+
+    def _internvl_images(self, images):
+        out = self.processor.image_processor(images=images, crop_to_patches=self.max_patches > 1,
+                                             max_patches=self.max_patches, return_tensors="pt")
+        counts = [int(n) * self.image_seq_length for n in out["num_patches"]]
+        return out["pixel_values"], counts
 
     # ------------------------------------------------------------ encoding --
     def encode(self, segments: list[Segment], split_marker: int) -> Encoded:
@@ -155,7 +181,10 @@ class QwenEAB:
         image_segs = [s for s in segments if s.image is not None]
         images = [Image.open(s.image).convert("RGB") for s in image_segs]
         pixel_values = grid = None
-        if images and any(s.max_pixels for s in image_segs):
+        token_counts = None
+        if images and getattr(self, "kind", "qwen3_vl") == "internvl":
+            pixel_values, token_counts = self._internvl_images(images)
+        elif images and any(s.max_pixels for s in image_segs):
             parts = []
             for s, im in zip(image_segs, images):
                 cap = s.max_pixels or self.size["longest_edge"]
@@ -176,7 +205,7 @@ class QwenEAB:
                 split = len(ids)
             start = len(ids)
             if s.image is not None:
-                n = int(grid[k].prod().item()) // (self.merge ** 2)
+                n = token_counts[k] if token_counts else int(grid[k].prod().item()) // (self.merge ** 2)
                 k += 1
                 ids += [self.vision_start_id] + [self.image_token_id] * n + [self.vision_end_id]
                 types += [0] + [1] * n + [0]
@@ -212,11 +241,14 @@ class QwenEAB:
 
     @torch.no_grad()
     def _prefix(self, enc: Encoded):
-        self.model.model.rope_deltas = None
         STATE.reset()
-        kw = dict(input_ids=enc.input_ids[:, :enc.split].to(self.device),
-                  mm_token_type_ids=enc.mm_token_type_ids[:, :enc.split].to(self.device),
-                  use_cache=True, logits_to_keep=1)
+        kw = dict(input_ids=enc.input_ids[:, :enc.split].to(self.device), use_cache=True, logits_to_keep=1)
+        if getattr(self, "kind", "qwen3_vl") == "internvl":   # 1-D RoPE, no grid or token types
+            if enc.pixel_values is not None:
+                kw.update(pixel_values=enc.pixel_values.to(self.device, self.model.dtype))
+            return self.model(**kw).past_key_values
+        self.model.model.rope_deltas = None
+        kw.update(mm_token_type_ids=enc.mm_token_type_ids[:, :enc.split].to(self.device))
         if enc.pixel_values is not None:
             kw.update(pixel_values=enc.pixel_values.to(self.device, self.model.dtype),
                       image_grid_thw=enc.image_grid_thw.to(self.device))

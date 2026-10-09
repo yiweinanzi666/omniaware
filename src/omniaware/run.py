@@ -86,7 +86,8 @@ PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_s
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
-    ap.add_argument("--model", default="2b", choices=["2b", "8b"])
+    ap.add_argument("--model", default="2b", choices=["2b", "8b", "internvl3.5-8b"])
+    ap.add_argument("--max-patches", type=int, default=1, help="InternVL: 448px tiles per image (256 tokens each)")
     ap.add_argument("--split", required=True, choices=["dev", "test"],
                     help="dev: tune here; test: run once with frozen settings (see docs/PROTOCOL.md)")
     ap.add_argument("--n-calib", type=int, default=500)
@@ -251,9 +252,9 @@ def main(argv=None):
         def ce_rel_of(e):
             return {c["cid"]: ce_cal.ecdf(f"ce_{c['modality']}", ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]}
 
-    model_path = paths.QWEN_8B if args.model == "8b" else paths.QWEN_2B
+    model_path = {"8b": paths.QWEN_8B, "2b": paths.QWEN_2B, "internvl3.5-8b": paths.INTERNVL_8B}[args.model]
     t0 = time.time()
-    qwen = QwenEAB(model_path, max_pixels=args.max_pixels)
+    qwen = QwenEAB(model_path, max_pixels=args.max_pixels, max_patches=args.max_patches)
     print(f"[model] {args.model} loaded on {qwen.device} in {time.time() - t0:.1f}s, {qwen.n_layers} layers", flush=True)
 
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
@@ -265,6 +266,7 @@ def main(argv=None):
     style += f"_rule-{args.route_rule}" if args.route_rule != "mh" else ""
     style += "_cells" if args.table_format == "cells" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
+    style += f"_patches{args.max_patches}" if args.max_patches != 1 else ""
     style += f"_sel-{args.selector}" if args.selector != "relevance" else ""
 
     def evidence_segments(e, chunks, rel):

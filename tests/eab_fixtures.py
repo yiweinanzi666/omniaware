@@ -49,3 +49,26 @@ def encode(q):
     segments = [Segment(text="<user>"), Segment(text="Document 1: alpha beta gamma", chunk="c1"),
                 Segment(text="Document 2: delta epsilon", chunk="c2"), Segment(text="Question: which? Answer:")]
     return q.encode(segments, split_marker=3)
+
+
+def make_internvl():
+    """Tiny random native InternVL (Qwen3 language model) wrapped like QwenEAB(kind='internvl')."""
+    from transformers import InternVLConfig, InternVLForConditionalGeneration
+    from omniaware.qwen_eab import tag_text_layers
+    config = InternVLConfig(
+        text_config=dict(model_type="qwen3", vocab_size=160, hidden_size=64, intermediate_size=128,
+                         num_hidden_layers=2, num_attention_heads=4, num_key_value_heads=2, head_dim=16,
+                         max_position_embeddings=512),
+        vision_config=dict(hidden_size=32, intermediate_size=64, num_hidden_layers=1, num_attention_heads=2,
+                           image_size=[56, 56], patch_size=[14, 14]),
+        image_token_id=150)
+    config.text_config._attn_implementation = "sdpa"
+    torch.manual_seed(0)
+    model = InternVLForConditionalGeneration(config).eval()
+    q = QwenEAB.__new__(QwenEAB)
+    q.kind, q.device, q.model, q.tok, q.processor = "internvl", "cpu", model, CharTokenizer(), None
+    q.layers = tag_text_layers(model)
+    q.n_layers = len(q.layers)
+    q.eos = {155, 156, 157}
+    q.vocab_size = 160
+    return q
