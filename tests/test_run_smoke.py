@@ -79,8 +79,8 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
     calib_ids = {e["qid"] for e in data.split_examples(examples, 6, 4)["calib"]}
     for r in rows:
         assert r["qid"] not in calib_ids
-        assert set(r["preds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate",
-                                   "gated:static", "gated:eab:g1.2:ans2:pos:gate"}
+        assert set(r["preds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate", "gated:static",
+                                   "gated:eab:g1.2:ans2:pos:gate", "nte_trigger:static", "nte_shared:static"}
         assert len(r["chunks"]) == 5 and r["chunks"] == ["k1", "k2", "k3", "k4", "k5"]
         expected = r["preds"]["static"] if r["retrieve"] else r["preds"]["direct"]
         assert r["preds"]["gated:static"] == expected
@@ -265,3 +265,30 @@ def test_seakr_arms(tmp_path, monkeypatch):
         assert r["seakr"]["chosen"] == "k3"
         assert r["preds"]["seakr"] != r["preds"]["direct"]
         assert r["preds"]["seakr_trigger:static"] == r["preds"]["static"]
+
+
+@pytest.mark.parametrize("extra", [["--relevance-norm", "raw"], ["--relevance-norm", "minmax"], ["--no-calibration"]])
+def test_controller_ablation_options(tmp_path, monkeypatch, extra):
+    examples = _examples(14)
+    for e in examples:
+        e["query_images"] = ["q.jpg"]
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 3.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    variants = "eab:g1.2:ans2:pos:gate,eab:g1.2:ans2:pos:gate:all:random,eab:g1.2:ans2:pos:gate:all:retriever:ctx"
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "0",
+              "--tag", "abl", "--variants", variants] + extra)
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "abl" / "okvqa.jsonl").read_text().splitlines()]
+    config = json.loads((tmp_path / "runs" / "abl" / "okvqa_config.json").read_text())
+    for r in rows:
+        assert r["chunks"] == ["k1", "k2", "k3", "k4", "k5"]
+        if "--relevance-norm" in extra and "raw" in extra:
+            assert r["rel"]["k1"] == 3.0
+        else:
+            assert r["rel"]["k1"] == 1.0 and 0 <= r["rel"]["k5"] < 1
+        assert set(r["eab_active"]) == set(variants.split(","))
+    if "--no-calibration" in extra:
+        assert config["norm_pre"] == {"median": 0.0, "iqr": 1.0} and config["relevance_norm"] == "minmax"

@@ -13,6 +13,7 @@ import random
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from . import data, order as order_mod, paths, pipeline, relevance, rerank, routing
@@ -132,6 +133,13 @@ def main(argv=None):
     ap.add_argument("--selector", default="relevance", choices=["relevance", "ce", "ce_calibrated"],
                     help="ce: bge-reranker top-5 shown in retriever order; ce_calibrated: top-5 by per-modality "
                          "CE percentile. With a CE selector, EAB's r_j is the per-modality CE percentile.")
+    ap.add_argument("--relevance-norm", default="ecdf", choices=["ecdf", "raw", "minmax"],
+                    help="r_j and ranking: per-modality ECDF (paper), raw retriever scores, or per-question min-max "
+                         "(ablations)")
+    ap.add_argument("--norm-from", default=None,
+                    help="reuse norm_pre/norm_post from another run's *_config.json (calibration transfer)")
+    ap.add_argument("--no-calibration", action="store_true",
+                    help="heuristic default statistics: Norm(median 0, IQR 1) and per-question min-max relevance")
     ap.add_argument("--image-mode", default="mix", choices=["mix", "clip", "caption"])
     ap.add_argument("--beta", type=float, default=0.30)
     ap.add_argument("--tau", type=float, default=0.35)
@@ -163,6 +171,8 @@ def main(argv=None):
         ap.error("--table-format cells requires --dataset mmqa_table")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
+    if args.no_calibration:
+        args.relevance_norm = "minmax"
     if (args.route_rule == "query") != (args.query_routes is not None):
         ap.error("--route-rule query and --query-routes go together")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
@@ -233,7 +243,13 @@ def main(argv=None):
     cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib])
 
     def rel_of(e):
-        return {c["cid"]: cal.relevance(raw[e["qid"]][c["cid"]], args.image_mode) for c in e["candidates"]}
+        if args.relevance_norm == "ecdf":
+            return {c["cid"]: cal.relevance(raw[e["qid"]][c["cid"]], args.image_mode) for c in e["candidates"]}
+        scores = {c["cid"]: relevance.Calibrator.raw(raw[e["qid"]][c["cid"]], args.image_mode) for c in e["candidates"]}
+        if args.relevance_norm == "raw":
+            return scores
+        lo, hi = min(scores.values(), default=0.0), max(scores.values(), default=1.0)
+        return {c: (s - lo) / (hi - lo) if hi > lo else 1.0 for c, s in scores.items()}
 
     ce_of = ce_rel_of = None
     if args.selector != "relevance":
@@ -268,6 +284,7 @@ def main(argv=None):
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
     style += f"_patches{args.max_patches}" if args.max_patches != 1 else ""
     style += f"_sel-{args.selector}" if args.selector != "relevance" else ""
+    style += f"_rel-{args.relevance_norm}" if args.relevance_norm != "ecdf" else ""
 
     def evidence_segments(e, chunks, rel):
         return pipeline.build_segments(e, chunks, args.answer_style)
@@ -331,6 +348,18 @@ def main(argv=None):
             entropy["s"] = entropy["h_grd"] + args.beta * entropy["h_sem"]
     norm_pre = pipeline.Norm.fit([ucal[e["qid"]]["pre"]["s"] for e in calib])
     norm_post = pipeline.Norm.fit([ucal[e["qid"]]["post"]["s"] for e in calib])
+    if args.norm_from:
+        source = json.loads(Path(args.norm_from).read_text())
+        norm_pre, norm_post = pipeline.Norm(**source["norm_pre"]), pipeline.Norm(**source["norm_post"])
+    if args.no_calibration:
+        norm_pre = norm_post = pipeline.Norm(0.0, 1.0)
+    # Trigger ablations (Table 3): next-token entropy alone. 'nte' matches U's retrieval rate on the
+    # calibration questions with its own threshold (a per-format threshold); 'nte_shared' normalises
+    # beta*H_pred like U and uses the shared tau.
+    u_rate = sum(norm_pre(ucal[e["qid"]]["pre"]["s"]) > args.tau for e in calib) / max(len(calib), 1)
+    h_cal = [ucal[e["qid"]]["pre"]["h_sem"] for e in calib]
+    nte_threshold = float(np.quantile(h_cal, 1 - u_rate)) if h_cal else float("inf")
+    nte_norm = pipeline.Norm.fit([args.beta * h for h in h_cal])
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
@@ -344,7 +373,6 @@ def main(argv=None):
                 enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
                 scache[e["qid"]] = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
                 scache_path.write_text(json.dumps(scache))
-        u_rate = sum(norm_pre(ucal[e["qid"]]["pre"]["s"]) > args.tau for e in calib) / max(len(calib), 1)
         seakr_threshold = (args.seakr_threshold if args.seakr_threshold is not None
                            else seakr.matched_threshold([scache[e["qid"]] for e in calib], u_rate))
         print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f})", flush=True)
@@ -357,6 +385,7 @@ def main(argv=None):
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
         "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
+        "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
     }, indent=1))
 
     t_start = time.time()
@@ -415,7 +444,18 @@ def main(argv=None):
                 u = norm_post(post["s"])
                 u_eab = rec["u_pre"] if args.eab_uncertainty == "pre" else u
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
-                return {v.name: v.spec(enc, rel_sel, u_eab, args.tau_bias, qwen.n_layers) for v in variants}
+                context_ids = (["__query__"] if e["query_images"] else []) + [c["cid"] for c in e.get("query_chunks", [])]
+                specs = {}
+                for v in variants:
+                    rel_v = rel_sel
+                    if v.relevance == "random":
+                        rng = random.Random(f"random-relevance:{args.seed}:{e['qid']}")
+                        rel_v = {c: rng.random() for c in rel_sel}
+                    if v.context:
+                        rel_v = {**rel_v, **{c: 1.0 for c in context_ids}}
+                    specs[v.name] = v.spec(enc, rel_v, u_eab, args.tau_bias, qwen.n_layers)
+                info["eab_active"] = {name: s is not None for name, s in specs.items()}
+                return specs
 
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             for name, r in res.items():
@@ -461,6 +501,11 @@ def main(argv=None):
             # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
             for name in arms:
                 rec["preds"]["gated:" + name] = rec["preds"][name] if rec["retrieve"] else rec["preds"]["direct"]
+            h_sem = rec["raw_pre"]["h_sem"]
+            rec["preds"]["nte_trigger:static"] = rec["preds"]["static"] if h_sem > nte_threshold else rec["preds"]["direct"]
+            rec["preds"]["nte_shared:static"] = (rec["preds"]["static"] if nte_norm(args.beta * h_sem) > args.tau
+                                                 else rec["preds"]["direct"])
+            rec["eab_active"] = info["eab_active"]
             rec["u_post"] = info["u_post"]
             rec["u_eab"] = info["u_eab"]
             rec["raw_post"] = info["raw_post"]

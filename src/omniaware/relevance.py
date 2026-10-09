@@ -149,6 +149,16 @@ class Calibrator:
             parts.append(self.ecdf("image_clip", channels["image_clip"]))
         return float(np.mean(parts)) if parts else 0.5
 
+    @staticmethod
+    def raw(channels: dict[str, float], image_mode: str = "mix") -> float:
+        """The retriever's own score without per-modality calibration (raw-score ablation)."""
+        for key in ("text", "table"):
+            if key in channels:
+                return float(channels[key])
+        parts = [channels[k] for k, m in (("image_clip", ("clip", "mix")), ("image_cap", ("caption", "mix")))
+                 if k in channels and image_mode in m] or [channels[k] for k in ("image_clip",) if k in channels]
+        return float(np.mean(parts)) if parts else 0.0
+
     def to_json(self) -> dict:
         return {k: v for k, v in self.sorted.items()}
 

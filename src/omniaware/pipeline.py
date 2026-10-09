@@ -160,7 +160,9 @@ class Variant:
     """EAB family.  rows: 'ans2' paper decode-only (a >= t_ans), 'ans1' EAB-P (also the
     row that predicts the first answer token), 'q' starts at the question.  form: 'pos'
     gamma*U*r (paper), 'ctr' gamma*U*(2r-1), 'fixed' gamma (PASTA-style uniform bias),
-    'pos_nou' gamma*r (relevance bias without U scaling, paper ablation)."""
+    'pos_nou' gamma*r (relevance bias without U scaling, paper ablation).
+    relevance: 'retriever' (calibrated r_j) or 'random' (uniform r_j per question, ablation);
+    context: also bias the supplied context (query image / provided tables) with r = 1 (ablation)."""
 
     name: str
     gamma: float
@@ -168,6 +170,8 @@ class Variant:
     form: str = "pos"
     gate: bool = True
     layers: str = "all"
+    relevance: str = "retriever"
+    context: bool = False
 
     def spec(self, enc, rel: dict[str, float], u: float, tau_bias: float, n_layers: int) -> BiasSpec | None:
         if self.gate and u <= tau_bias:
@@ -202,7 +206,11 @@ def parse_variant(name: str) -> Variant:
     form = parts[3] if len(parts) > 3 else "pos"
     gate = (parts[4] if len(parts) > 4 else "gate") == "gate"
     layers = parts[5] if len(parts) > 5 else "all"
-    return Variant(name, gamma, rows, form, gate, layers)
+    relevance = parts[6] if len(parts) > 6 else "retriever"
+    if relevance not in ("retriever", "random"):
+        raise ValueError(relevance)
+    context = len(parts) > 7 and parts[7] == "ctx"
+    return Variant(name, gamma, rows, form, gate, layers, relevance, context)
 
 
 def chunk_masses(attn, enc) -> dict[str, float]:
