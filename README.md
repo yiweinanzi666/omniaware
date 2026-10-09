@@ -93,6 +93,30 @@ python -m omniaware.eval.citation.from_run runs/cite_v1/okvqa.jsonl --output run
 
 之后依次运行 `intake_answers` → `run_nli` → `score_nli`，命令写在 `from_run.py` 的说明里。规则见 [docs/citation_support_protocol.md](docs/citation_support_protocol.md)。
 
+论文的 Faith / AP / Inv（别名匹配后接 DeBERTa NLI，按引用块计）：
+
+```bash
+python -m omniaware.eval.citation.attribution runs/cite_v1/webqa_img.jsonl --device cuda
+python -m omniaware.eval.citation.attribution runs/iv_cite/webqa_img.jsonl --intervention distractors   # Dist. 列
+```
+
+### UniversalRAG 套件（HybridQA、InfoSeek、VideoRAG）
+
+```bash
+# 在 external/UniversalRAG 中按其 script/0_dataset.sh、1_preprocess.sh 准备数据与特征，然后：
+(cd external/UniversalRAG && python ../../scripts/universalrag_retrieval/export_rankings.py --target hybridqa     --output $OMNIAWARE_ASSETS/universalrag/rankings)
+python -m scripts.universalrag_retrieval.prepare_frames --target videorag_synth     # 仅视频集
+python -m omniaware.run --dataset hybridqa --split test --calib-source heldout --tag hq_v1 ...
+python -m omniaware.eval.score_official runs/hq_v1/hybridqa.jsonl                    # VideoRAG 加 --bart 得到 BERTScore
+```
+
+### 干预与检索噪声
+
+```bash
+python -m omniaware.run --dataset webqa_open_img ... --intervention mask cf random_edit rerun distractors inject_answer inject_instruction --tag iv
+for d in 0 1 2; do python -m omniaware.run ... --relevance-noise 0.1 --noise-draw $d --tag noise01_d$d; done
+```
+
 ### 分析
 
 ```bash
@@ -101,6 +125,20 @@ python -m scripts.analysis.answer_recall runs/x/okvqa.jsonl
 ```
 
 在决定 dev 集大小和候选方案数量之前，先看 `power_design` 的最小可检测效应和 best-of-K 噪声。
+
+论文各分析表由 `scripts/analysis/paper_analyses.py` 汇总（先运行 `score_official`）：
+
+```bash
+python -m scripts.analysis.paper_analyses order runs/perm_*/webqa_img.jsonl --metric acc_approx --arms static gated:eab:g1.2:ans2:pos:gate
+python -m scripts.analysis.paper_analyses uncertainty runs/x/okvqa.jsonl --metric vqa_accuracy --arms static
+python -m scripts.analysis.paper_analyses ard|latency|stats|interventions runs/x/okvqa.jsonl
+python -m scripts.analysis.paper_analyses gold25 runs/x/webqa_img.jsonl --metric acc_approx
+python -m scripts.analysis.paper_analyses noise runs/noise01_d*/webqa_img.jsonl --metric acc_approx
+python -m scripts.analysis.paper_analyses errors runs/x/okvqa.jsonl --metric vqa_accuracy --arms static
+python -m scripts.analysis.routing_metrics runs/route_*/webqa_open_full.jsonl
+```
+
+延迟只计生成端（检索结果已缓存）：始终检索 = 证据 prefill + 该臂解码；门控 = 直接 prefill（同时算 U）+（检索 ? 证据 prefill + 该臂解码 : 直接解码）。
 
 ## 测试
 
