@@ -18,6 +18,14 @@
    "role": "baseline (Table 2: M2-RAG); same commit as baselines/m2rag_official.py"
   },
   {
+   "name": "UniversalRAG",
+   "url": "https://github.com/wgcyeo/UniversalRAG",
+   "ref": "d29ab3acaebfbaebdc7f095457076585bec88065",
+   "sparse": null,
+   "license": "Apache-2.0",
+   "role": "baseline (query-only modality routing), replaces SAM-RAG"
+  },
+  {
    "name": "DRAGIN",
    "url": "https://github.com/oneal2000/DRAGIN",
    "ref": "9380c94bba500733e64e49c150de7385a1d75086",
@@ -32,22 +40,6 @@
    "sparse": null,
    "license": "MIT",
    "role": "reference for the PASTA-style bias row"
-  },
-  {
-   "name": "ViDoRAG",
-   "url": "https://github.com/Alibaba-NLP/ViDoRAG",
-   "ref": "2c1ec39c5e3a04daa01f91545feaaa79512134bf",
-   "sparse": null,
-   "license": null,
-   "role": "baseline (Table 2: ViDoRAG); no license declared upstream"
-  },
-  {
-   "name": "SAM_RAG",
-   "url": "https://github.com/SAM-RAG/SAM_RAG",
-   "ref": "5fdb1c656b09670e5e711b60e3c05f9432503a2c",
-   "sparse": null,
-   "license": "Apache-2.0",
-   "role": "archived for reference only: upstream README says the code is not ready; SAM-RAG is reimplemented from the paper"
   },
   {
    "name": "FlagEmbedding",
