@@ -126,9 +126,10 @@ def main(argv=None):
     ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
                     help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
     ap.add_argument("--answer-style", default="default",
-                    choices=["default", "short", "table", "json_list", "strict_letter"],
+                    choices=["default", "short", "table", "json_list", "strict_letter", "cite"],
                     help="short: one word/phrase; table: MMQA table reasoning; json_list: MMQA JSON array "
-                         "(scored as a list); strict_letter: Video-MME single option letter. Applies to every arm.")
+                         "(scored as a list); strict_letter: Video-MME single option letter; cite: statements with "
+                         "[E<j>] citations for CiteRec (raise --max-new-tokens). Applies to every arm.")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
@@ -331,6 +332,7 @@ def main(argv=None):
             rec["raw_pre"] = pre_info["raw_pre"]
             rec["retrieve"] = pre_info["u_pre"] > args.tau
             rec["preds"]["direct"] = res_d["static"].text
+            rec["tokens"] = {"direct": res_d["static"].tokens}
 
             route = resolve_route(e, rel, pre_info.get("route"), args.order, args.seed)
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
@@ -342,7 +344,10 @@ def main(argv=None):
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:
                 rec["route"] = route
-            enc = qwen.encode(*evidence_segments(e, chunks, rel))
+            segments, split = evidence_segments(e, chunks, rel)
+            enc = qwen.encode(segments, split)
+            if args.answer_style == "cite":
+                rec["citation_sources"] = pipeline.citation_sources(segments, chunks)
             rel_sel = {c["cid"]: eab_rel[c["cid"]] for c in chunks}
             info = {}
 
@@ -356,6 +361,7 @@ def main(argv=None):
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             for name, r in res.items():
                 rec["preds"][name] = r.text
+                rec["tokens"][name] = r.tokens
             arms = ["static"] + [v.name for v in variants]
             if args.replication_gamma is not None:
                 counts = order_mod.replication_counts([rel_sel[c["cid"]] for c in chunks], info["u_eab"],
@@ -368,6 +374,7 @@ def main(argv=None):
                     enc_r = qwen.encode(*evidence_segments(e, copies, rel))
                     res_r, _, _ = qwen.run(enc_r, None, max_new, decode_static=True)
                     rec["preds"]["replication"] = res_r["static"].text
+                    rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
             # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.

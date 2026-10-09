@@ -6,7 +6,6 @@ pytest.importorskip('spacy')
 pytest.importorskip('scipy')
 
 import ast
-from pathlib import Path
 from types import SimpleNamespace
 import unittest
 

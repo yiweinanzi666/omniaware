@@ -73,17 +73,18 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
         segs.append(Segment(text="Based on the following evidence, answer the question.\n\n"))
         for j, c in enumerate(chunks, 1):
             cid = c["cid"]
+            label = f"[E{j}]" if answer_style == "cite" else f"Document {j}"
             if c["modality"] == "image":
-                head = f"Document {j} (image): {c['title']}\n" if c["title"] else f"Document {j} (image):\n"
+                head = f"{label} (image): {c['title']}\n" if c["title"] else f"{label} (image):\n"
                 tail = f"\nCaption: {_trim(c['text'], 60)}\n\n" if c["text"] and c["text"] != c["title"] else "\n\n"
                 cap = (image_pixels or {}).get(cid)
                 segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid, max_pixels=cap),
                          Segment(text=tail, chunk=cid)]
             elif c["modality"] == "table":
-                segs.append(Segment(text=f"Document {j} (table):\n{c.get('prompt_text', c['text'])}\n\n", chunk=cid))
+                segs.append(Segment(text=f"{label} (table):\n{c.get('prompt_text', c['text'])}\n\n", chunk=cid))
             else:
                 body = f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]
-                segs.append(Segment(text=f"Document {j} (text): {_trim(body)}\n\n", chunk=cid))
+                segs.append(Segment(text=f"{label} (text): {_trim(body)}\n\n", chunk=cid))
     split = len(segs)
     q = f"Question: {e['question']}\n"
     if e.get("options"):
@@ -95,6 +96,8 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
         if e["dataset"] != "mmqa_table":
             raise ValueError("answer style json_list is defined for mmqa_table")
         instruction = JSON_LIST_INSTRUCTION
+    if answer_style == "cite":
+        instruction = CITATION_INSTRUCTION
     if answer_style == "strict_letter":
         if e["dataset"] != "videomme":
             raise ValueError("answer style strict_letter is defined for videomme")
@@ -179,3 +182,15 @@ def parse_variant(name: str) -> Variant:
 
 def chunk_masses(attn, enc) -> dict[str, float]:
     return chunk_mass(attn, enc.spans)
+
+
+def citation_sources(segments: list[Segment], chunks: list[dict]) -> list[dict]:
+    """CiteRec evidence records for a cite-style prompt: [E<j>] -> rendered chunk text (premise for NLI)."""
+    out = []
+    for j, c in enumerate(chunks, 1):
+        text = "".join(s.text for s in segments if s.chunk == c["cid"] and s.text)
+        prefix = f"[E{j}] ({c['modality']}):"
+        assert text.startswith(prefix), (c["cid"], text[:40])
+        out.append({"citation_id": f"E{j}", "source_id": c["cid"], "modality": c["modality"],
+                    "rendered_text": text[len(prefix):].strip()})
+    return out

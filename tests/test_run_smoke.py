@@ -136,3 +136,32 @@ def test_cross_encoder_selectors(tmp_path, monkeypatch):
             assert r["chunks"] == ["k3", "k4", "k5", "k6", "k7"]
             # EAB relevance is the per-modality CE percentile, increasing with the CE logit.
             assert [r["rel"][c] for c in r["chunks"]] == sorted(r["rel"][c] for c in r["chunks"])
+
+
+def test_cite_style_run_exports_citerec_inputs(tmp_path, monkeypatch):
+    from omniaware.eval.citation.from_run import export
+    from omniaware.eval.citation.requests import requests_for_answer
+    examples = _examples(12)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "cite", "--answer-style", "cite", "--variants", "eab:g1.2:ans2:pos:gate"])
+    pred = tmp_path / "runs" / "cite" / "okvqa.jsonl"
+    rows = [json.loads(line) for line in pred.read_text().splitlines()]
+    sources = rows[0]["citation_sources"]
+    assert [s["citation_id"] for s in sources] == ["E1", "E2", "E3", "E4", "E5"]
+    assert sources[0]["source_id"] == "k1" and sources[0]["rendered_text"].startswith("T1: passage 1")
+    summary = export(pred, tmp_path / "citerec")
+    assert summary["arms"] == ["static", "eab:g1.2:ans2:pos:gate"] and summary["answers"] == 2 * len(rows)
+    answer = json.loads((tmp_path / "citerec" / "answers.jsonl").read_text().splitlines()[0])
+    source = json.loads((tmp_path / "citerec" / "sources.jsonl").read_text().splitlines()[0])
+    # A cited statement turns into an NLI request whose premise is the cited chunk text.
+    row = dict(answer, raw_answer="It is passage one [E1] [E9].", evidence=source["evidence"],
+               statements=[{"text": "It is passage one.", "citation_ids": ["E1", "E9"]}])
+    (request,) = requests_for_answer(row)
+    assert request["valid_citation_ids"] == ["E1"] and request["invalid_citation_ids"] == ["E9"]
+    assert request["premise"] == sources[0]["rendered_text"]
