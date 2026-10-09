@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from . import scoring
 from .qwen_eab import BiasSpec, Segment, chunk_mass, grounding_entropy, predictive_entropy
 
 INSTRUCTION = {
@@ -73,15 +72,6 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
     q += instruction + "<|im_end|>\n<|im_start|>assistant\n"
     segs.append(Segment(text=q))
     return segs, split
-
-
-def score(e: dict, pred: str) -> dict:
-    ds = e["dataset"]
-    if ds == "webqa":
-        return scoring.score_webqa(pred, e["golds"][0], e["question"], e["qcate"])
-    if ds == "videomme":
-        return scoring.score_choice(pred, e["gold_letter"], e["options"])
-    return scoring.score_short_answer(pred, e["golds"])
 
 
 # ----------------------------------------------------------------- control --

@@ -15,7 +15,7 @@ from pathlib import Path
 
 import torch
 
-from . import data, paths, pipeline, relevance, routing, scoring
+from . import data, paths, pipeline, relevance, routing
 from .qwen_eab import QwenEAB
 
 
@@ -92,8 +92,6 @@ def main(argv=None):
                     help="pre: reuse the paper's retrieval-gate U for EAB; post: existing two-norm experiments")
     ap.add_argument("--answer-style", default="default", choices=["default", "short", "table"],
                     help="short: original EMNLP answer format; table: MMQA conditions, aggregation and complete lists")
-    ap.add_argument("--select-tau", action="store_true",
-                    help="select the retrieval threshold tau on the calibration split")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
     ap.add_argument("--decode-baselines", action="store_true",
                     help="also decode direct and static answers (off: Ours-only)")
@@ -121,8 +119,7 @@ def main(argv=None):
         saved = dict(previous)
         saved["variants"] = ",".join(v["name"] for v in saved["variants"])
         requested = dict(vars(args), max_new_tokens=max_new)
-        changed = [k for k, v in requested.items() if saved.get(k) != v
-                   and not (k == "tau" and args.select_tau)]
+        changed = [k for k, v in requested.items() if saved.get(k) != v]
         if changed:
             ap.error(f"saved answers use different {', '.join(changed)}; use a new --tag")
     cache_dir = paths.RUNS / "_cache"
@@ -221,47 +218,6 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
-    if args.select_tau:
-        # paper: thresholds are selected on validation and fixed for test.  Decode the
-        # gate-off (direct) and gate-on (first variant) answers on the calibration split only.
-        sel_style = style + ("_upre" if args.eab_uncertainty == "pre" else "")
-        sel_style += f"_max{max_new}"
-        sel_path = cache_dir / (f"tausel_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}{sel_style}_"
-                                f"{variants[0].name.replace(':', '_')}.json")
-        sel = json.loads(sel_path.read_text()) if sel_path.exists() else {}
-        for e in calib:
-            if e["qid"] in sel:
-                continue
-            rel = rel_of(e)
-            route = ucal[e["qid"]]["route"] if routed else None
-            chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route)
-            enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
-            res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=True)
-            enc = qwen.encode(*evidence_segments(e, chunks, rel))
-            rel_sel = {c["cid"]: rel[c["cid"]] for c in chunks}
-            u_post = norm_post(ucal[e["qid"]]["post"]["s"])
-            u_eab = norm_pre(ucal[e["qid"]]["pre"]["s"]) if args.eab_uncertainty == "pre" else u_post
-            res, _, _ = qwen.run(enc, lambda a, l: {"v": variants[0].spec(
-                                     enc, rel_sel, u_eab, args.tau_bias, qwen.n_layers)},
-                                 max_new, decode_static=False)
-            sel[e["qid"]] = {"u_pre": norm_pre(ucal[e["qid"]]["pre"]["s"]),
-                             "direct_text": res_d["static"].text, "retrieve_text": res["v"].text,
-                             "direct": pipeline.score(e, res_d["static"].text)["acc"],
-                             "retrieve": pipeline.score(e, res["v"].text)["acc"]}
-            sel_path.write_text(json.dumps(sel))
-        # New caches retain answers so later scoring corrections need no new inference.
-        for e in calib:
-            entry = sel[e["qid"]]
-            if "direct_text" in entry and "retrieve_text" in entry:
-                entry["direct"] = pipeline.score(e, entry["direct_text"])["acc"]
-                entry["retrieve"] = pipeline.score(e, entry["retrieve_text"])["acc"]
-        grid = [round(0.05 * i, 2) for i in range(21)]
-        acc = {t: sum(v["direct"] if v["u_pre"] <= t else v["retrieve"] for v in sel.values()) / len(sel) for t in grid}
-        best = max(acc.values())
-        args.tau = min((t for t in grid if acc[t] == best), key=lambda t: abs(t - 0.35))
-        print(f"[tau] selected tau={args.tau} on calibration (acc {best:.3f}); grid {acc}", flush=True)
-        if previous is not None and args.tau != previous["tau"]:
-            ap.error("selected tau changed since saved answers; use a new --tag")
     out_path = out_dir / f"{args.dataset}.jsonl"
     done = set()
     if out_path.exists():
@@ -283,7 +239,7 @@ def main(argv=None):
                    "golds": e["golds"],
                    "query_chunks": [c["cid"] for c in e.get("query_chunks", [])],
                    "options": e.get("options"), "gold_letter": e.get("gold_letter"),
-                   "preds": {}, "scores": {}}
+                   "preds": {}}
             # pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
             # Ours-only: the direct answer is decoded only when the gate keeps retrieval off.
             enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
@@ -335,15 +291,11 @@ def main(argv=None):
             rec["raw_post"] = info["raw_post"]
             rec["mass"] = {k: round(v, 5) for k, v in info["mass"].items()}
             rec["prompt_tokens"] = enc.length
-            for name, pred in rec["preds"].items():
-                if pred is not None:
-                    rec["scores"][name] = pipeline.score(e, pred)
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
             fh.flush()
-            acc = {k: v["acc"] for k, v in rec["scores"].items()}
-            print(f"[{i + 1}/{len(evals)}] {e['qid'][:12]} {rec['seconds']}s P={enc.length} U={info['u_post']:.2f} {acc}",
-                  flush=True)
+            print(f"[{i + 1}/{len(evals)}] {e['qid'][:12]} {rec['seconds']}s P={enc.length} "
+                  f"U_pre={rec['u_pre']:.2f} retrieve={rec['retrieve']}", flush=True)
     print(f"[done] {args.dataset} {len(evals)} in {time.time() - t_start:.1f}s -> {out_path}", flush=True)
 
 
