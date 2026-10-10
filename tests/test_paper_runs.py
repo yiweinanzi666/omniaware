@@ -18,3 +18,11 @@ def test_every_paper_run_command_parses_and_its_variants_exist():
                 assert not (args.fitm and args.model == "internvl3.5-8b")
                 n += 1
     assert n > 200
+
+
+def test_ablation_rows_survive_any_frozen_form(monkeypatch):
+    import scripts.paper_runs as pr
+    monkeypatch.setattr(pr, "decisions", lambda model: {**pr.DEFAULTS, "eab_variant": "eab:g1.2:q:ctr:gate"})
+    cmds = [c for c in pr.stages("8b", "test")["ablation"]["commands"] if "--replication-gamma" in c]
+    variants = cmds[0][cmds[0].index("--variants") + 1].split(",")
+    assert len(variants) == 7 and "eab:g1.2:ans2:ctr:gate" in variants and "eab:g1.2:q:fixed:gate" in variants

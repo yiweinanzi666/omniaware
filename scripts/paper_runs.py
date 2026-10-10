@@ -45,13 +45,14 @@ def stages(model: str, split: str) -> dict[str, dict]:
     decode_only = eab.replace(":ans1:", ":ans2:").replace(":q:", ":ans2:")
     okvqa = dec["okvqa_loader"]
     datasets = ["webqa_open_full", "webqa_open_img", okvqa, "hybridqa", "videorag_synth"]
+    _, gamma, rows, form = eab.split(":")[:4]
     ablation_variants = ",".join(dict.fromkeys([
         eab, decode_only,
-        eab.replace(":gate", ":gate:all:retriever:ctx"),         # EAB + context bias
-        eab.replace(":gate", ":nogate"),                          # always retrieve, relevance bias
-        eab.replace(":pos:", ":pos_nou:"),                        # relevance bias without U scaling
-        eab.replace(":pos:", ":fixed:"),                          # uniform (PASTA-style) bias, gated
-        eab.replace(":gate", ":gate:all:random"),                 # random relevance, gated
+        f"eab:{gamma}:{rows}:{form}:gate:all:retriever:ctx",     # EAB + context bias
+        f"eab:{gamma}:{rows}:{form}:nogate",                      # always retrieve, relevance bias
+        f"eab:{gamma}:{rows}:pos_nou:gate",                       # relevance bias without U scaling
+        f"eab:{gamma}:{rows}:fixed:gate",                         # uniform (PASTA-style) bias, gated
+        f"eab:{gamma}:{rows}:{form}:gate:all:random",             # random relevance, gated
     ]))
 
     def method(d, u_combine=None, attn_layer=None, probe=True):
