@@ -92,6 +92,9 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
         assert "scores" not in r
         assert set(r["arm_seconds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate"}
         assert set(r["prefill_seconds"]) == {"direct", "evidence"}
+        # measured stages of the question's paths (D15); no probe without --probe-uncertainty / --first-round-routing
+        assert set(r["seconds_stage"]) == {"direct", "probe", "route", "encode"}
+        assert all(v >= 0 for v in r["seconds_stage"].values()) and r["seconds_stage"]["probe"] == 0
         assert set(r["ard"]) == {"static", "eab:g1.2:ans2:pos:gate"} and all(0 <= v <= 0.7 for v in r["ard"].values())
         assert set(r["span_tokens"]) == set(r["chunks"]) and len(r["chunk_gold"]) == 5
         assert len(r["chunk_modalities"]) == 5 and r["chunk_has_answer"] == [False] * 5   # gold "x" in no passage
@@ -300,7 +303,8 @@ def test_controller_ablation_options(tmp_path, monkeypatch, extra):
             assert r["rel"]["k1"] == 1.0 and 0 <= r["rel"]["k5"] < 1
         assert set(r["eab_active"]) == set(variants.split(","))
     if "--no-calibration" in extra:
-        assert config["norm_pre"] == {"median": 0.0, "iqr": 1.0} and config["relevance_norm"] == "minmax"
+        # D16: only the U statistics change; the relevance normalisation stays at its default (ecdf)
+        assert config["norm_pre"] == {"median": 0.0, "iqr": 1.0} and config["relevance_norm"] == "ecdf"
 
 
 def test_interventions_and_relevance_noise(tmp_path, monkeypatch):

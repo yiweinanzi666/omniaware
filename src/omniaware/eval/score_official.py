@@ -37,7 +37,14 @@ def module(path, name):
 
 
 def paired(a, b, cluster_ids=None):
+    """Paired comparison of b against a over the same questions.
+
+    ``paired_ci95_pp`` is the percentile bootstrap interval of the mean difference (clusters resampled when
+    given). ``p_two_sided`` is the bootstrap test of H0: mean difference = 0, using the bootstrap distribution
+    re-centred on zero: P(|delta* - delta| >= |delta|), with the +1 correction so it is never exactly 0."""
     a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+    if a.shape != b.shape:
+        raise ValueError(f"paired arrays differ in length: {a.shape} vs {b.shape}")
     delta = b - a
     rng = np.random.default_rng(20261008)
     boot = []
@@ -55,9 +62,12 @@ def paired(a, b, cluster_ids=None):
         else:
             ids = rng.integers(len(sums), size=(250, len(sums)))
             boot.extend((sums[ids].sum(axis=1) / counts[ids].sum(axis=1)).tolist())
+    boot = np.asarray(boot)
+    point = float(delta.mean())
+    p = (np.sum(np.abs(boot - point) >= abs(point)) + 1) / (len(boot) + 1) if point != 0 else 1.0
     return {'baseline': float(a.mean()), 'ours': float(b.mean()),
-            'delta_pp': float(delta.mean()), 'relative_percent': float(100 * delta.mean() / a.mean()) if a.mean() else None,
-            'paired_ci95_pp': np.quantile(boot, [.025, .975]).tolist(),
+            'delta_pp': point, 'relative_percent': float(100 * delta.mean() / a.mean()) if a.mean() else None,
+            'paired_ci95_pp': np.quantile(boot, [.025, .975]).tolist(), 'p_two_sided': float(min(p, 1.0)),
             'wins': int((delta > 0).sum()), 'losses': int((delta < 0).sum()), 'ties': int((delta == 0).sum())}
 
 
