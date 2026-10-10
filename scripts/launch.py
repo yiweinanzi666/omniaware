@@ -8,10 +8,13 @@
    threshold) and writes the run configuration, so shards never race on cache files;
 2. one process per GPU slot answers every N-th evaluation question (``--num-shards N --shard-id i``), with
    ``CUDA_VISIBLE_DEVICES`` pinned to its GPU and its log in ``runs/<tag>/logs/``;
-3. the shards are merged into ``runs/<tag>/<dataset>.jsonl`` after checking that every question was answered.
+3. the shards are merged into ``runs/<tag>/<dataset>.jsonl`` after checking that the answered questions are exactly
+   the configuration's evaluation set, and ``<dataset>.merged.json`` is written.
 
 Interrupted runs resume: each shard skips the questions already in its file, and the merge refuses to run
-until the answer count matches. With one GPU slot the command runs unchanged (no shards).
+until the answer count matches. launch trusts only ``<dataset>.merged.json`` (matching configuration and output,
+with as many answers as ``evaluation_questions``); a partial single-process ``<dataset>.jsonl`` without that marker
+is refused. With one GPU slot the command runs unchanged (no shards), and that process writes the marker itself.
 """
 from __future__ import annotations
 
@@ -44,21 +47,32 @@ def _arg(run_args: list[str], name: str) -> str:
 
 def launch(run_args: list[str], gpus: list[str], procs_per_gpu: int = 1, python: str = sys.executable,
            runs_dir: Path | None = None) -> Path:
-    from omniaware import paths
+    from omniaware import paths, runio
     runs_dir = Path(runs_dir or paths.RUNS)
     tag, dataset = _arg(run_args, "--tag"), _arg(run_args, "--dataset")
-    out = runs_dir / tag / f"{dataset}.jsonl"
+    run_dir = runs_dir / tag
+    out = run_dir / f"{dataset}.jsonl"
     base = [python, "-m", "omniaware.run", *run_args]
     slots = [g for g in gpus for _ in range(procs_per_gpu)] or [None]
     env0 = dict(os.environ, **({"CUDA_VISIBLE_DEVICES": slots[0]} if slots[0] is not None else {}))
     if len(slots) == 1:
+        # One process writes the same completion marker itself when it finishes.
         subprocess.run(base, check=True, env=env0)
         return out
+    marker = runio.completion_marker(run_dir, dataset).name
+    try:
+        if runio.verify_completion(run_dir, dataset):
+            print(f"[launch] {out} is complete ({marker}); nothing to do", flush=True)
+            return out
+    except ValueError as exc:
+        raise SystemExit(f"[launch] {exc}")
     if out.exists():
-        print(f"[launch] {out} already merged; nothing to do", flush=True)
-        return out
+        # A single-process run that did not finish leaves a partial <dataset>.jsonl without the marker; shards
+        # must not be merged on top of it.
+        raise SystemExit(f"[launch] {out} has no {marker}: it is a partial single-process run (or predates the "
+                         "marker). Finish it with one GPU slot, or move it aside.")
     subprocess.run(base + ["--calibrate-only"], check=True, env=env0)
-    logs = runs_dir / tag / "logs"
+    logs = run_dir / "logs"
     logs.mkdir(parents=True, exist_ok=True)
     procs = []
     for i, gpu in enumerate(slots):
@@ -79,9 +93,9 @@ def launch(run_args: list[str], gpus: list[str], procs_per_gpu: int = 1, python:
         time.sleep(5)
     if failed:
         raise SystemExit(f"shards {failed} failed; see {logs}; rerun the same command to resume")
-    config = json.loads((runs_dir / tag / f"{dataset}_config.json").read_text())
+    config = json.loads(runio.config_path_for(run_dir, dataset).read_text(encoding="utf8"))
     from omniaware.merge_shards import merge
-    return merge(runs_dir / tag / dataset, config.get("evaluation_questions"))
+    return merge(run_dir / dataset, config.get("evaluation_questions"), config.get("evaluation_qids_sha256"))
 
 
 def main(argv=None):

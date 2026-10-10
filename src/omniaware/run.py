@@ -16,21 +16,40 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from . import analysis, data, interventions, order as order_mod, paths, pipeline, relevance, rerank, routing
+from . import analysis, data, interventions, order as order_mod, paths, pipeline, relevance, rerank, routing, runio
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
 
-def load_relevance(examples: list[dict], cache_path: Path) -> dict:
-    raw = relevance.load_raw(cache_path) if cache_path.exists() else {}
-    todo = [e for e in examples if e["qid"] not in raw]
+def relevance_fingerprint(e: dict) -> str:
+    """Cache key of one question's raw retriever scores (question, candidates, encoder paths)."""
+    return runio.fingerprint(e, {"encoders": runio.encoder_identity()})
+
+
+def load_relevance(examples: list[dict], cache_path: Path, write: bool = True) -> dict:
+    """qid -> cid -> raw channel scores. A cached question is reused only if its fingerprint matches; stale or
+    missing questions are recomputed and saved atomically. With write=False (sharded workers) they are an error."""
+    cached = relevance.load_raw(cache_path) if cache_path.exists() else {}
+    raw, todo = {}, []
+    for e in examples:
+        fp = relevance_fingerprint(e)
+        entry = cached.get(e["qid"])
+        if isinstance(entry, dict) and entry.get("fingerprint") == fp:
+            raw[e["qid"]] = entry["scores"]
+        else:
+            todo.append((e, fp))
+    if todo and not write:
+        raise SystemExit(f"{len(todo)} relevance scores are missing or stale in {cache_path}; "
+                         "run --calibrate-only first")
     if todo:
         t0 = time.time()
+        todo_examples = [e for e, _ in todo]
         bge = relevance.BGE()
-        need_clip = any(c["modality"] == "image" for e in todo for c in e["candidates"])
+        need_clip = any(c["modality"] == "image" for e in todo_examples for c in e["candidates"])
         clip = relevance.CLIP() if need_clip else None
-        raw.update(relevance.raw_scores(todo, bge, clip))
-        relevance.save_raw(raw, cache_path)
+        fresh = relevance.raw_scores(todo_examples, bge, clip)
+        raw.update(fresh)
+        relevance.save_raw({e["qid"]: {"fingerprint": fp, "scores": fresh[e["qid"]]} for e, fp in todo}, cache_path)
         del bge, clip
         gc.collect()
         if torch.backends.mps.is_available():
@@ -215,12 +234,15 @@ def main(argv=None):
     config_path = out_dir / f"{args.dataset}_config.json"
     out_path = out_dir / (f"{args.dataset}.jsonl" if args.num_shards == 1
                           else f"{args.dataset}.shard{args.shard_id:02d}-of-{args.num_shards:02d}.jsonl")
-    previous = None
-    if out_path.exists() or (out_dir / f"{args.dataset}.jsonl").exists():
-        if not config_path.exists():
-            ap.error("saved answers have no configuration; use a new --tag")
-        previous = json.loads(config_path.read_text())
-        saved = dict(previous)
+    # Only the process that writes the caches (single process, or --calibrate-only) may create or replace them;
+    # shards read them and must find the configuration left by --calibrate-only.
+    writes_caches = args.num_shards == 1 or args.calibrate_only
+    has_outputs = runio.has_outputs(out_dir, args.dataset)
+    if (has_outputs or args.num_shards > 1) and not config_path.exists():
+        ap.error("saved answers have no configuration; use a new --tag" if has_outputs else
+                 f"shards need {config_path.name}: run the same command with --calibrate-only first")
+    if config_path.exists() and (has_outputs or args.num_shards > 1):
+        saved = json.loads(config_path.read_text(encoding="utf8"))
         saved["variants"] = ",".join(v["name"] for v in saved["variants"])
         requested = {k: v for k, v in dict(vars(args), max_new_tokens=max_new).items() if k not in EXECUTION_ARGS}
         changed = [k for k, v in requested.items() if saved.get(k) != v]
@@ -291,7 +313,7 @@ def main(argv=None):
         print(f"[data] candidates: {shortfall['fewer_than_k']['count']} questions with fewer than k={args.k}; "
               + ", ".join(f"{m}: {v['count']} without" for m, v in shortfall["without_modality"].items()), flush=True)
 
-    raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}{data_tag}.json")
+    raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}{data_tag}.json", write=writes_caches)
     cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib])
 
     def rel_of(e):
@@ -305,7 +327,8 @@ def main(argv=None):
 
     ce_of = ce_rel_of = None
     if args.selector != "relevance":
-        ce_table = rerank.ce_logits(calib + evals, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER)
+        ce_table = rerank.ce_logits(calib + evals, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER,
+                                    write=writes_caches)
         ce_cal = relevance.Calibrator.fit(
             {q: {c: {f"ce_{m}": v} for c, (m, v) in rows.items()} for q, rows in
              ((e["qid"], {c["cid"]: (c["modality"], ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]})
@@ -451,11 +474,27 @@ def main(argv=None):
         return route
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
                              f"_{args.calib_source}{args.split_seed}{style}.json")
-    ucal = json.loads(ucal_path.read_text()) if ucal_path.exists() else {}
+    # Each calibration entry is keyed by its fingerprint: question content, every setting its raw values depend
+    # on, and (for route-rule query) the hash of the UniversalRAG route file.
+    query_routes_sha = runio.sha256_file(args.query_routes) if args.query_routes else None
+    ucal_settings = {"encoders": runio.encoder_identity(), "model": args.model, "model_path": str(model_path),
+                     "answer_style": args.answer_style, "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
+                     "min_per_modality": args.min_per_modality, "modality_routing": args.modality_routing,
+                     "route_rule": args.route_rule, "first_round_routing": args.first_round_routing,
+                     "probe_uncertainty": args.probe_uncertainty, "selector": args.selector,
+                     "relevance_norm": args.relevance_norm, "attn_layer": args.attn_layer,
+                     "max_pixels": args.max_pixels, "max_patches": args.max_patches,
+                     "query_routes_sha256": query_routes_sha}
+    ucal_fp = {e["qid"]: runio.fingerprint(e, ucal_settings) for e in calib}
+    saved_ucal = json.loads(ucal_path.read_text(encoding="utf8")) if ucal_path.exists() else {}
+    ucal = {e["qid"]: saved_ucal[e["qid"]] for e in calib
+            if e["qid"] in saved_ucal and saved_ucal[e["qid"]].get("fingerprint") == ucal_fp[e["qid"]]}
+    stale = [e for e in calib if e["qid"] not in ucal]
+    if stale and not writes_caches:
+        raise SystemExit(f"{len(stale)} calibration entries of {ucal_path.name} are missing or stale; "
+                         "run --calibrate-only first")
     t0 = time.time()
-    for e in calib:
-        if e["qid"] in ucal:
-            continue
+    for e in stale:
         rel = rel_of(e)
         enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
@@ -467,12 +506,12 @@ def main(argv=None):
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
         _, attn, logits = qwen.run(enc, None, 1, decode_static=False)
         post = pipeline.raw_uncertainty(attn, enc, [c["cid"] for c in chunks], logits, args.beta)
-        ucal[e["qid"]] = {"pre": pre, "post": post}
+        ucal[e["qid"]] = {"fingerprint": ucal_fp[e["qid"]], "pre": pre, "post": post}
         if p:
             ucal[e["qid"]]["probe"] = p["raw"]
         if routed:
             ucal[e["qid"]]["route"] = route
-        ucal_path.write_text(json.dumps(ucal))
+        runio.atomic_write_text(ucal_path, json.dumps(ucal))
     if time.time() - t0 > 1:
         print(f"[ucal] {len(calib)} calibration examples in {time.time() - t0:.1f}s", flush=True)
     # Raw entropies are cached; the combination (beta, sum/zsum) and Norm are fitted here.
@@ -510,18 +549,30 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
+    seakr_settings = {"model": args.model, "model_path": str(model_path), "answer_style": args.answer_style,
+                      "samples": args.seakr_samples, "max_new_tokens": args.seakr_max_new_tokens}
+
+    def seakr_fingerprint(e):
+        return runio.fingerprint(e, seakr_settings)
+
     seakr_threshold = None
     if args.seakr_samples:
         scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
                                    f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json")
-        scache = json.loads(scache_path.read_text()) if scache_path.exists() else {}
-        for e in calib:
-            if e["qid"] not in scache:
-                enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
-                scache[e["qid"]] = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
-                scache_path.write_text(json.dumps(scache))
+        saved_scache = json.loads(scache_path.read_text(encoding="utf8")) if scache_path.exists() else {}
+        scache = {e["qid"]: saved_scache[e["qid"]] for e in calib
+                  if e["qid"] in saved_scache and saved_scache[e["qid"]].get("fingerprint") == seakr_fingerprint(e)}
+        missing_scores = [e for e in calib if e["qid"] not in scache]
+        if missing_scores and not writes_caches:
+            raise SystemExit(f"{len(missing_scores)} SeaKR calibration scores in {scache_path.name} are missing or "
+                             "stale; run --calibrate-only first")
+        for e in missing_scores:
+            enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
+            scache[e["qid"]] = {"fingerprint": seakr_fingerprint(e),
+                                "score": seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)}
+            runio.atomic_write_text(scache_path, json.dumps(scache))
         seakr_threshold = (args.seakr_threshold if args.seakr_threshold is not None
-                           else seakr.matched_threshold([scache[e["qid"]] for e in calib], u_rate))
+                           else seakr.matched_threshold([scache[e["qid"]]["score"] for e in calib], u_rate))
         print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f})", flush=True)
 
     substitute_pool, iv_nlp, pad_id = None, None, None
@@ -535,10 +586,15 @@ def main(argv=None):
         if "mask" in args.intervention:
             pad_id = qwen.tok.pad_token_id if qwen.tok.pad_token_id is not None else qwen.tok.eos_token_id
 
-    done = set()
-    if out_path.exists():
-        done = {json.loads(l)["qid"] for l in out_path.open()}
-    config = json.dumps({
+    # Fingerprints of every cache this configuration was calibrated from (a resumed or sharded run must match them).
+    cache_fingerprints = {
+        "relevance": runio.digest([relevance_fingerprint(e) for e in calib + evals]),
+        "ce": (runio.digest([rerank.ce_fingerprint(e, paths.RERANKER) for e in calib + evals])
+               if args.selector != "relevance" else None),
+        "ucal": runio.digest([ucal_fp[e["qid"]] for e in calib]),
+        "seakr": runio.digest([seakr_fingerprint(e) for e in calib]) if args.seakr_samples else None,
+    }
+    config_text = runio.dumps_strict({
         **{k: v for k, v in vars(args).items() if k not in EXECUTION_ARGS},
         "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "norm_probe": vars(calibrators["probe"][1]) if "probe" in calibrators else None,
@@ -551,16 +607,25 @@ def main(argv=None):
         "split_sizes": {"universe": len(examples), "calib": len(calib), "dev": len(sp["dev"]), "test": len(sp["test"])},
         "dropped_for_missing_assets": dropped,
         "candidate_shortfall": shortfall,
+        "evaluation_qids_sha256": runio.qid_set_sha256([e["qid"] for e in evals]),
+        "cache_fingerprints": cache_fingerprints,
     }, indent=1)
-    # Shards write the same configuration; replace atomically so readers never see a partial file.
-    tmp = config_path.with_name(f".{config_path.name}.{args.shard_id}.tmp")
-    tmp.write_text(config)
-    tmp.replace(config_path)
+    if config_path.exists() and (has_outputs or args.num_shards > 1):
+        saved = json.loads(config_path.read_text(encoding="utf8"))
+        current = json.loads(config_text)
+        differ = sorted(k for k in set(saved) | set(current) if saved.get(k) != current.get(k))
+        if differ:
+            raise SystemExit(f"saved answers were produced with a different {', '.join(differ)}; "
+                             f"use a new --tag (configuration: {config_path})")
+    if writes_caches:
+        runio.atomic_write_text(config_path, config_text)
     if args.calibrate_only:
         print(f"[calibrate-only] caches and {config_path} ready", flush=True)
         return
 
     t_start = time.time()
+    # A half-written last line of an interrupted run is cut off before the questions it held are answered again.
+    done = {r["qid"] for r in runio.load_partial_jsonl(out_path)}
     with out_path.open("a") as fh:
         for i, e in enumerate(evals):
             if i % args.num_shards != args.shard_id or e["qid"] in done:
@@ -717,10 +782,16 @@ def main(argv=None):
             if args.intervention:
                 rec["interventions"] = intervene(e, rec, chunks, eab_rel, enc, info)
             rec["seconds"] = round(time.time() - t0, 2)
-            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            fh.write(runio.dumps_strict(rec, ensure_ascii=False) + "\n")
             fh.flush()
             print(f"[{i + 1}/{len(evals)}] {e['qid'][:12]} {rec['seconds']}s P={enc.length} "
                   f"U_pre={rec['u_pre']:.2f} retrieve={rec['retrieve']}", flush=True)
+    if args.num_shards == 1:
+        # A single process owns every question: mark the file complete only if all of them are in it.
+        answered = [r["qid"] for r in runio.load_partial_jsonl(out_path)]
+        if sorted(answered) != sorted(e["qid"] for e in evals):
+            raise SystemExit(f"{out_path} holds {len(answered)} answers for {len(evals)} evaluation questions")
+        runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path)
     print(f"[done] {args.dataset} {len(evals)} in {time.time() - t_start:.1f}s -> {out_path}", flush=True)
 
 

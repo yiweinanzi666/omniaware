@@ -298,6 +298,11 @@ _UR_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "imag
 _UR_PREFIX = {"paragraph": "p", "document": "d", "table": "t", "image": "i", "video": "v", "clip": "c"}
 
 
+def universalrag_golds(query: dict) -> list[str]:
+    """Reference answers of a UniversalRAG query: its answer and aliases, empty strings dropped."""
+    return [a for a in [query["answer"], *(query.get("aliases") or [])] if a]
+
+
 def frame_key(source_id: str) -> str:
     """Directory name of a ranked video or clip under paths.UNIVERSALRAG_FRAMES."""
     return re.sub(r"[^A-Za-z0-9_.-]", "_", source_id.replace("dataset/", "", 1))
@@ -392,7 +397,7 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
             "dataset": family, "qid": qid, "question": _clean(q["question"]), "qcate": q.get("source", family),
             "query_images": [str(root / q["query_image"])] if q.get("query_image") else [],
             "candidates": cands, "fixed_evidence": False,
-            "golds": [a for a in [q["answer"], *(q.get("aliases") or [])] if a],
+            "golds": universalrag_golds(q),
             "gold_modalities": gold_modalities,
         })
     dropped = _missing_policy(f"universalrag/{target}", missing, allow_missing)

@@ -9,10 +9,11 @@ from bisect import bisect_right
 import gc
 import json
 import math
-import os
 from pathlib import Path
 
 import torch
+
+from . import runio
 
 TOP_K, MAX_LENGTH = 5, 512
 
@@ -94,15 +95,35 @@ def normalize_features(features):
     return features.float() / norms
 
 
-def ce_logits(examples, cache_path, model_path, device=None, batch_size=16):
-    """qid -> cid -> bge-reranker logit of (question, candidate text); cached, resumable."""
+def ce_fingerprint(example, model_path) -> str:
+    """Cache key of one question's cross-encoder logits: question, candidate texts and image paths, reranker."""
+    return runio.fingerprint(example, {"reranker": {"path": str(model_path), "dir": Path(model_path).name}})
+
+
+def ce_logits(examples, cache_path, model_path, device=None, batch_size=16, write=True):
+    """qid -> cid -> bge-reranker logit of (question, candidate text); cached per question.
+
+    An entry is reused only when its fingerprint matches (ce_fingerprint); a stale or missing entry is
+    recomputed and the cache rewritten atomically. With write=False (sharded workers) a stale or missing entry
+    is an error instead, because workers must not write shared caches.
+    """
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
     cache_path = Path(cache_path)
-    scores = json.loads(cache_path.read_text()) if cache_path.exists() else {}
-    todo = [e for e in examples if e["qid"] not in scores]
+    cached = json.loads(cache_path.read_text(encoding="utf8")) if cache_path.exists() else {}
+    scores, todo = {}, []
+    for e in examples:
+        fp = ce_fingerprint(e, model_path)
+        entry = cached.get(e["qid"])
+        if isinstance(entry, dict) and entry.get("fingerprint") == fp:
+            scores[e["qid"]] = entry["logits"]
+        else:
+            todo.append((e, fp))
     if not todo:
         return scores
+    if not write:
+        raise SystemExit(f"{len(todo)} cross-encoder scores are missing or stale in {cache_path}; "
+                         "run --calibrate-only first")
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForSequenceClassification.from_pretrained(model_path).to(device).eval()
@@ -111,15 +132,14 @@ def ce_logits(examples, cache_path, model_path, device=None, batch_size=16):
         def __call__(self, *a, **kw):
             return tokenizer(*a, **kw).to(device)
 
-    for e in todo:
+    for e, fp in todo:
         texts = [{"text": f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]}
                  for c in e["candidates"]]
         values, _ = score_ce(e["question"], texts, _OnDevice(), model, batch_size)
-        scores[e["qid"]] = {c["cid"]: v for c, v in zip(e["candidates"], values, strict=True)}
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = cache_path.with_name(f".{cache_path.name}.{os.getpid()}.tmp")
-    tmp.write_text(json.dumps(scores))
-    os.replace(tmp, cache_path)
+        logits = {c["cid"]: v for c, v in zip(e["candidates"], values, strict=True)}
+        scores[e["qid"]] = logits
+        cached[e["qid"]] = {"fingerprint": fp, "logits": logits}
+    runio.atomic_write_text(cache_path, json.dumps(cached))
     del model
     gc.collect()
     return scores

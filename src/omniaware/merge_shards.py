@@ -1,11 +1,14 @@
 """Merge the per-GPU shard files of one run into <dataset>.jsonl.
 
-    python -m omniaware.merge_shards runs/<tag>/<dataset>
+    python -m omniaware.merge_shards runs/<tag>/<dataset>                 # checks against <dataset>_config.json
+    python -m omniaware.merge_shards runs/<tag>/<dataset> --expected N    # checks the count only, no configuration
 
 Shards are written by ``omniaware.run --num-shards N --shard-id i`` as
 ``<dataset>.shardII-of-NN.jsonl``. The merge checks that all N shards exist, that no question appears twice,
-and that every question of the evaluation split was answered; the shard files then move to
-``<dataset>.shards/``. Re-running the merge after an interrupted shard was resumed is safe.
+and that the answered questions are exactly the evaluation questions of the configuration (their count and the
+sha256 of their sorted ids). The shard files then move to ``<dataset>.shards/`` and ``<dataset>.merged.json`` is
+written, the completion marker that scripts/launch.py trusts. Re-running the merge after an interrupted shard was
+resumed is safe, because nothing is moved until the check passes.
 """
 from __future__ import annotations
 
@@ -13,6 +16,8 @@ import argparse
 import json
 from pathlib import Path
 import re
+
+from . import runio
 
 
 def shard_files(stem: Path) -> list[Path]:
@@ -30,33 +35,39 @@ def shard_files(stem: Path) -> list[Path]:
     return expected
 
 
-def merge(stem: Path, expected_questions: int | None = None) -> Path:
+def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha256: str | None = None) -> Path:
     stem = Path(stem)
     files = shard_files(stem)
     if not files:
         raise SystemExit(f"no shard files for {stem}")
-    rows, seen = [], set()
+    rows, qids, seen = [], [], set()
     for f in files:
         for line in f.read_text(encoding="utf8").splitlines():
             if not line.strip():
                 continue
-            qid = json.loads(line)["qid"]
+            try:
+                qid = json.loads(line)["qid"]
+            except ValueError as exc:
+                raise SystemExit(f"{f.name} has a damaged line ({exc}); resume that shard before merging")
             if qid in seen:
                 raise SystemExit(f"question {qid} answered twice")
             seen.add(qid)
+            qids.append(qid)
             rows.append(line)
     if expected_questions is not None and len(rows) != expected_questions:
         raise SystemExit(f"{len(rows)} answers, expected {expected_questions}: resume the unfinished shards first")
+    if expected_qids_sha256 is not None and runio.qid_set_sha256(qids) != expected_qids_sha256:
+        raise SystemExit(f"the {len(rows)} answered questions are not the configuration's evaluation set: "
+                         "resume the unfinished shards, or check the split")
     out = stem.with_name(stem.name + ".jsonl")
     if out.exists():
         raise SystemExit(f"{out} exists; remove it to merge again")
-    tmp = out.with_name("." + out.name + ".tmp")
-    tmp.write_text("".join(r + "\n" for r in rows), encoding="utf8")
-    tmp.replace(out)
+    runio.atomic_write_text(out, "".join(r + "\n" for r in rows))
     archive = stem.with_name(stem.name + ".shards")
     archive.mkdir(exist_ok=True)
     for f in files:
         f.replace(archive / f.name)
+    runio.write_completion_marker(stem.parent, stem.name, len(rows), out, runio.config_path_for(stem.parent, stem.name))
     print(f"[merge] {len(rows)} answers from {len(files)} shards -> {out}", flush=True)
     return out
 
@@ -64,9 +75,17 @@ def merge(stem: Path, expected_questions: int | None = None) -> Path:
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("stem", type=Path, help="runs/<tag>/<dataset> (without .jsonl)")
-    ap.add_argument("--expected", type=int, default=None, help="number of evaluation questions, checked if given")
+    ap.add_argument("--expected", type=int, default=None,
+                    help="number of evaluation questions to check, instead of the count in <dataset>_config.json")
     args = ap.parse_args(argv)
-    merge(args.stem, args.expected)
+    if args.expected is not None:
+        merge(args.stem, args.expected)
+        return
+    config_path = runio.config_path_for(args.stem.parent, args.stem.name)
+    if not config_path.exists():
+        ap.error(f"{config_path.name} not found: pass --expected N to merge without the configuration check")
+    config = json.loads(config_path.read_text(encoding="utf8"))
+    merge(args.stem, config.get("evaluation_questions"), config.get("evaluation_qids_sha256"))
 
 
 if __name__ == "__main__":
