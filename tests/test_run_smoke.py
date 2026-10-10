@@ -94,6 +94,7 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
         assert set(r["prefill_seconds"]) == {"direct", "evidence"}
         assert set(r["ard"]) == {"static", "eab:g1.2:ans2:pos:gate"} and all(0 <= v <= 0.7 for v in r["ard"].values())
         assert set(r["span_tokens"]) == set(r["chunks"]) and len(r["chunk_gold"]) == 5
+        assert len(r["chunk_modalities"]) == 5 and r["chunk_has_answer"] == [False] * 5   # gold "x" in no passage
 
 
 def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):

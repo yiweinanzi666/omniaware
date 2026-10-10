@@ -225,7 +225,19 @@ def stages(model: str, split: str) -> dict[str, dict]:
                analyse("agreement", path, "--metric", METRIC[d], "--arms", f"gated:{eab}"),
                analyse("transitions", path, "--metric", METRIC[d], "--arms", "gated:static", f"gated:{eab}"),
                analyse("stats", f"runs/v321_ce_{model}/{d}.jsonl", "--arms", "static"),       # reranker recall
-               analyse("ranges", f"cache/relevance_{d}*.json")]
+               analyse("ranges", f"cache/relevance_{d}*.json"),
+               # significance of the controller against baselines held in other runs (table main daggers)
+               analyse("paired", path, path, "--metric", METRIC[d], "--arms", "m2rag" if d != "videorag_synth" else "static",
+                       f"gated:{eab}"),
+               analyse("paired", f"runs/v321_seakr_{model}/{d}.jsonl", path, "--metric", METRIC[d],
+                       "--arms", "seakr", f"gated:{eab}"),
+               analyse("paired", f"runs/v321_ce_{model}/{d}.jsonl", path, "--metric", METRIC[d],
+                       "--arms", "static", f"gated:{eab}")]
+        if d in ("webqa_open_full", "hybridqa", "videorag_synth"):
+            an.append(analyse("paired", f"runs/v321_universalrag_{model}/{d}.jsonl", path, "--metric", METRIC[d],
+                              "--arms", "universalrag", f"gated:{eab}"))
+    for name in ("raw", "minmax"):
+        an.append(analyse("ard", f"runs/v321_ablation_{name}_{model}/webqa_open_img.jsonl"))
     s["analysis"] = {"fills": "selective risk, latency, dataset statistics, first-token shares, error analysis",
                      "commands": an}
     return s

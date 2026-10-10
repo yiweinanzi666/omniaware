@@ -571,6 +571,10 @@ def main(argv=None):
             rec["chunks"] = [c["cid"] for c in chunks]
             rec["rel"] = {c["cid"]: round(eab_rel[c["cid"]], 4) for c in chunks}
             rec["chunk_gold"] = [c.get("gold") for c in chunks]
+            rec["chunk_modalities"] = [c["modality"] for c in chunks]
+            # whether the chunk text states a gold answer (error analysis: biased chunk without the answer)
+            rec["chunk_has_answer"] = [bool(interventions.answer_span(f"{c.get('title') or ''} {c.get('text') or ''}",
+                                                                      e["golds"])) for c in chunks]
             rec["gold_in_topk"] = any(c.get("gold") for c in chunks) if any(
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:

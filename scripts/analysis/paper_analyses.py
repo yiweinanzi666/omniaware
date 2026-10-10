@@ -17,6 +17,7 @@ per-question official score (0-100); a question is *correct* when its score >= `
     selective      AURC / rho with every system scored on its own answers (U -> gated EAB, NTE, SeaKR)
     agreement      NTE vs U trigger agreement and the scores on skipped / retrieved questions
     transitions    wrong->correct and correct->wrong shares between two arms (--arms before after)
+    paired         paired bootstrap across two runs: <baseline run> <our run> --arms <baseline arm> <our arm>
     ranges         raw retriever score ranges per channel (pass cache/relevance_<dataset>*.json)
     errors         rule-based pre-labelling of an arm's errors into the paper's four categories, plus a
                    seeded sample for manual verification
@@ -208,6 +209,9 @@ def latency_table(path: Path) -> dict:
     rows = [r for r in rows if "arm_seconds" in r]
     arms = sorted({a for r in rows for a in r["arm_seconds"] if a != "direct"})
     out = {"questions": len(rows), "retrieval_rate": 100 * mean([float(r["retrieve"]) for r in rows]) if rows else None,
+           "prefill_direct_ms": 1000 * mean([r["prefill_seconds"]["direct"] for r in rows]),
+           "prefill_probe_ms": (1000 * mean([r["prefill_seconds"]["probe"] for r in rows if "probe" in r["prefill_seconds"]])
+                                if any("probe" in r["prefill_seconds"] for r in rows) else None),
            "direct_only": 1000 * mean([r["prefill_seconds"]["direct"] + r["arm_seconds"]["direct"] for r in rows])}
     routed = [r for r in rows if (r.get("route") or {}).get("rule") == "query"]
     if routed:
@@ -353,9 +357,40 @@ def transitions_table(path: Path, metric: str, before: str, after: str, correct_
     b = [scores[r["qid"]][before] >= correct_at for r in rows]
     a = [scores[r["qid"]][after] >= correct_at for r in rows]
     n = len(rows)
+    losses = Counter()
+    for r, x, y in zip(rows, b, a):
+        if x and not y and r.get("rel"):
+            chunks = r.get("chunks") or list(r["rel"])
+            top = max(range(len(chunks)), key=lambda j: r["rel"][chunks[j]])
+            modality = (r.get("chunk_modalities") or ["text"] * len(chunks))[top]
+            if modality == "image":
+                losses["top_chunk_image"] += 1
+            elif modality == "table":
+                losses["top_chunk_table"] += 1
+            elif modality == "video":
+                losses["top_chunk_video"] += 1
+            elif r.get("chunk_has_answer") and not r["chunk_has_answer"][top]:
+                losses["top_text_chunk_without_answer"] += 1
+            else:
+                losses["other"] += 1
+    n_loss = sum(losses.values())
     return {"questions": n, "before": before, "after": after,
             "wrong_to_correct": 100 * sum((not x) and y for x, y in zip(b, a)) / n,
-            "correct_to_wrong": 100 * sum(x and not y for x, y in zip(b, a)) / n}
+            "correct_to_wrong": 100 * sum(x and not y for x, y in zip(b, a)) / n,
+            "losses_by_top_biased_chunk": {k: 100 * v / n_loss for k, v in losses.items()} if n_loss else {}}
+
+
+# ------------------------------------------------------------ significance --
+def paired_test(a_path: Path, a_arm: str, b_path: Path, b_arm: str, metric: str) -> dict:
+    """Paired bootstrap of b_arm (run b) against a_arm (run a) on the questions both runs answered; across runs,
+    e.g. the controller against SeaKR or UniversalRAG. VideoRAG questions are clustered by source video."""
+    sys.path.insert(0, str(ROOT / "src"))
+    from omniaware.eval.score_official import paired
+    sa, sb = load_scores(a_path, metric), load_scores(b_path, metric)
+    qids = sorted(set(sa) & set(sb))
+    clusters = [q.rsplit("_", 1)[0] for q in qids] if all(q.startswith("videorag") for q in qids) else None
+    result = paired([sa[q][a_arm] for q in qids], [sb[q][b_arm] for q in qids], clusters)
+    return {"questions": len(qids), "baseline": f"{a_path}:{a_arm}", "ours": f"{b_path}:{b_arm}", **result}
 
 
 # ---------------------------------------------------------- raw score ranges --
@@ -374,7 +409,7 @@ def score_ranges(cache: Path) -> dict:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("analysis", choices=["order", "uncertainty", "selective", "agreement", "transitions", "ard",
+    ap.add_argument("analysis", choices=["order", "uncertainty", "selective", "agreement", "transitions", "paired", "ard",
                                          "interventions", "gold25", "noise", "latency", "stats", "ranges", "errors"])
     ap.add_argument("runs", nargs="+", type=Path)
     ap.add_argument("--metric", default=None, help="official per-question metric (e.g. acc_approx, accuracy)")
@@ -385,7 +420,8 @@ def main(argv=None):
     ap.add_argument("--sample", type=int, default=100)
     ap.add_argument("--seed", type=int, default=2027)
     args = ap.parse_args(argv)
-    needs_metric = {"order", "uncertainty", "selective", "agreement", "transitions", "gold25", "noise", "errors"}
+    needs_metric = {"order", "uncertainty", "selective", "agreement", "transitions", "paired", "gold25", "noise",
+                    "errors"}
     if args.analysis in needs_metric and not args.metric:
         ap.error(f"{args.analysis} needs --metric")
     one = args.runs[0]
@@ -402,6 +438,10 @@ def main(argv=None):
             ap.error("transitions needs --arms <before> <after>")
         result = {str(p): transitions_table(p, args.metric, args.arms[0], args.arms[1], args.correct_at)
                   for p in args.runs}
+    elif args.analysis == "paired":
+        if len(args.runs) != 2 or len(args.arms) != 2:
+            ap.error("paired needs two runs (baseline, ours) and --arms <baseline arm> <our arm>")
+        result = paired_test(args.runs[0], args.arms[0], args.runs[1], args.arms[1], args.metric)
     elif args.analysis == "ranges":
         result = {str(p): score_ranges(p) for p in args.runs}
     elif args.analysis == "ard":

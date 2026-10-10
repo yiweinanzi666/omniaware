@@ -82,3 +82,15 @@ def test_selective_agreement_transitions_ranges(tmp_path):
     cache.write_text(json.dumps({"q1": {"a": {"text": 0.2}, "b": {"image_clip": 0.3}}, "q2": {"a": {"text": 0.6}}}))
     rg = pa.score_ranges(cache)
     assert rg["text"]["min"] == 0.2 and rg["text"]["max"] == 0.6 and rg["image_clip"]["n"] == 1
+
+
+def test_paired_across_runs_and_loss_breakdown(tmp_path):
+    rows = [_row(f"q{i}", chunks=["a", "b"], rel={"a": 0.9, "b": 0.1},
+                 chunk_modalities=["text", "image"], chunk_has_answer=[False, True]) for i in range(4)]
+    base = _write(tmp_path / "base", rows, {f"q{i}": {"seakr": 0.0, "gated:static": 100.0, "gated:eab": 0.0}
+                                             for i in range(4)}, {})
+    ours = _write(tmp_path / "ours", rows[:3], {f"q{i}": {"gated:eab": 100.0, "gated:static": 100.0} for i in range(3)}, {})
+    t = pa.paired_test(base, "seakr", ours, "gated:eab", "acc")
+    assert t["questions"] == 3 and t["delta_pp"] == 100.0
+    tr = pa.transitions_table(base, "acc", "gated:static", "gated:eab", 50)
+    assert tr["correct_to_wrong"] == 100 and tr["losses_by_top_biased_chunk"] == {"top_text_chunk_without_answer": 100.0}
