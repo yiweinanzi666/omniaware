@@ -63,7 +63,7 @@ def load_relevance(examples: list[dict], cache_path: Path, write: bool = True) -
 
 # Loader name -> dataset family used for prompts and generation caps.
 DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img": "webqa", "webqa_open_full": "webqa",
-                  "okvqa": "okvqa", "okvqa_dense": "okvqa", "okvqa_gs": "okvqa",
+                  "okvqa": "okvqa", "okvqa_dense": "okvqa", "okvqa_gs": "okvqa", "okvqa_gs_full": "okvqa",
                   **{name: family for name, (_, family, _) in data.UNIVERSALRAG_TARGETS.items()}}
 
 
@@ -318,7 +318,7 @@ def main(argv=None):
             args.n_calib = reserve
     # Dense candidate files may cover only the intended local slice.  Keep the
     # original OK-VQA universe for split identities instead of reshuffling it.
-    retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs")
+    retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs", "okvqa_gs_full")
     split_source = data.load_okvqa(candidates_path=False) if retrieved_okvqa else examples
     sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool, reserve=reserve)
     if args.dataset in data.IMAGE_SUBSET_OF:

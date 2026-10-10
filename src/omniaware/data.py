@@ -276,6 +276,12 @@ def load_okvqa_gs(allow_missing: bool = False) -> Examples:
     return load_okvqa(paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl", allow_missing=allow_missing)
 
 
+def load_okvqa_gs_full(allow_missing: bool = False) -> Examples:
+    """Appendix control only: the 168,306-sentence GS corpus, collected with the test questions as well
+    (okvqa_dense --corpus gs168k_full). It never takes part in the dev choice (D3)."""
+    return load_okvqa(paths.LOCAL_CACHE / "okvqa_gs168k_full" / "candidates_full.jsonl", allow_missing=allow_missing)
+
+
 def _webqa_img(**kw):
     return load_webqa("img", **kw)
 
@@ -435,6 +441,7 @@ LOADERS = {
     "okvqa": load_okvqa,
     "okvqa_dense": load_okvqa_dense,
     "okvqa_gs": load_okvqa_gs,
+    "okvqa_gs_full": load_okvqa_gs_full,
     **{name: (lambda name: lambda **kw: load_universalrag(name, **kw))(name) for name in UNIVERSALRAG_TARGETS},
 }
 

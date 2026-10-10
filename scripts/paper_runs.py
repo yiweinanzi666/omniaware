@@ -32,9 +32,9 @@ from scripts.analysis.dev_select import (BETAS, DEV_DATASETS, EAB_CANDIDATES, OK
 from omniaware import paths  # noqa: E402
 
 CALIB = {"webqa_open_full": "train", "webqa_open_img": "train", "okvqa": "heldout", "okvqa_dense": "heldout",
-         "okvqa_gs": "heldout", "hybridqa": "heldout", "videorag_synth": "heldout"}
+         "okvqa_gs": "heldout", "okvqa_gs_full": "heldout", "hybridqa": "heldout", "videorag_synth": "heldout"}
 METRIC = {"webqa_open_full": "acc_approx", "webqa_open_img": "acc_approx", "okvqa": "vqa_accuracy",
-          "okvqa_dense": "vqa_accuracy", "okvqa_gs": "vqa_accuracy", "hybridqa": "em", "videorag_synth": "rouge_l"}
+          "okvqa_dense": "vqa_accuracy", "okvqa_gs": "vqa_accuracy", "okvqa_gs_full": "vqa_accuracy", "hybridqa": "em", "videorag_synth": "rouge_l"}
 COLD = {"webqa_open_full", "webqa_open_img", "hybridqa", "videorag_synth"}   # no supplied context
 SUBSAMPLE = "1000"     # the 14-ordering runs (and their OK-VQA / WebQA-img / HybridQA / VideoRAG siblings): first 1,000
 # SeaKR runs on the full test split (D5); only the order experiment is subsampled and the paper says so.
@@ -231,6 +231,10 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
         t = f"v321_transfer_hybridqa_{model}"
         abl += [run(d, t, "--variants", eab, "--norm-from", f"runs/v321_main_{model}/hybridqa_config.json"),
                 score(d, t)]
+    # Appendix full-corpus control (D3): the 168K GS corpus includes retrieval results for test questions, so it
+    # is reported apart and never selected; static_joint and the gated controller on the same questions.
+    t = f"v321_gsfull_{model}"
+    abl += [run("okvqa_gs_full", t, "--variants", eab), score("okvqa_gs_full", t)]
     s["ablation"] = {"fills": "Table uomni_ablation (incl. decode-only EAB" + (f" [{decode_note}]" if decode_note else "")
                               + ", no probe round); appendix calibration size and transfer, score normalization; "
                               "beta x tau_b grid = SENSITIVITY ONLY, reported and never selected" + frozen_note,

@@ -277,8 +277,9 @@ def main(argv=None):
     shared = ["static"] + [v["name"] for v in config["variants"]]
     decoded = shared + [f"gated:{arm}" for arm in shared]
     if config.get("replication_gamma") is not None:
-        decoded.append("replication")
-    arms = args.arms or shared
+        decoded += ["replication", "gated:replication"]
+    # Default: every decoded arm, so the gated rows the ablation table reports (S-20) are always scored.
+    arms = args.arms or decoded
     if not set(arms) <= set(decoded):
         raise SystemExit(f"only arms decoded in this run can be scored: {decoded}")
     records = [json.loads(line) for line in args.predictions.read_text().splitlines() if line.strip()]
