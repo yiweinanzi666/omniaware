@@ -1,4 +1,4 @@
-"""Future CPU-only E5 inference: complete citation union, no truncation or windows."""
+"""Future CPU-only E5 inference: each statement's own citations as premise, no truncation or windows."""
 import argparse
 import hashlib
 import json

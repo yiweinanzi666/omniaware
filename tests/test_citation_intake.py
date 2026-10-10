@@ -5,13 +5,8 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-import pytest
 
-from omniaware import paths
-
-if not (paths.CACHE / 'e5_citation_support' / 'sentence_splitter_assets.json').exists():
-    pytest.skip('pinned NLTK Punkt assets not under the asset root', allow_module_level=True)
-
+from omniaware.eval.citation.attribution import splitter_name
 from omniaware.eval.citation.intake_answers import prepare, prepare_answer
 from omniaware.eval.citation.score_nli import score
 from omniaware.eval.citation.run_nli import expected_checker
@@ -26,15 +21,17 @@ class IntakeTest(unittest.TestCase):
             raw_answer='First statement [E2].\nSecond statement [E1][E2].',
             raw_token_ids=[1,2], generation_identity={'kind':'CPU_FIXTURE_NOT_EXPERIMENT'})
 
-    def test_all_answer_citations_and_deduplication(self):
+    def test_each_statement_gets_the_premise_of_its_own_citations(self):
         ledger, requests = prepare_answer(self.answer, self.source)
         self.assertEqual(ledger['statement_denominator'], 2)
         self.assertEqual(len(requests), 2)
+        self.assertEqual([r['premise'] for r in requests], ['Second source.', 'First source.\n\nSecond source.'])
         for row in requests:
-            self.assertEqual(row['premise'], 'Second source.\n\nFirst source.')
             self.assertEqual(row['all_actual_citation_ids'], ['E2','E1'])
+            self.assertEqual(row['sentence_splitter'], splitter_name())
 
-    def test_sentence_segmentation_matches_alce_api_not_lines(self):
+    @unittest.skipUnless(splitter_name() == 'nltk-punkt-english', 'NLTK Punkt English data not installed')
+    def test_sentence_segmentation_matches_nltk_sent_tokenize_not_lines(self):
         self.answer['raw_answer'] = 'Dr. Smith described the first source [E1]. Another statement cites the second [E2].'
         _, requests = prepare_answer(self.answer, self.source)
         import nltk
@@ -111,8 +108,8 @@ class IntakeTest(unittest.TestCase):
             source, answers = path / 'sources.jsonl', path / 'answers.jsonl'
             source.write_text(json.dumps(self.source) + '\n')
             answers.write_text(json.dumps(self.answer) + '\n')
-            with self.assertRaises(AssertionError):
-                prepare(answers, [source], path)
+            with self.assertRaises(AssertionError):      # 'static_concat' is required but missing for the question
+                prepare(answers, [source], path, ['eab', 'static_concat'])
 
     def rejected_result(self, answer_text, mutate):
         with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as directory:
