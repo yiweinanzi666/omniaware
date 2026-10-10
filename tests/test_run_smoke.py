@@ -330,3 +330,29 @@ def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
         assert len(set(iv["distractors"]["distractors"]) & set(r["chunks"])) == 0
         assert iv["distractors"]["chunks"][r["chunks"].index("k1")] == "k1"
         assert all(0.0 <= v <= 1.0 for v in r["rel"].values())
+
+
+def test_videorag_run_with_video_chunks_and_m2rag_guard(tmp_path, monkeypatch):
+    examples = []
+    for i in range(12):
+        cands = [{"cid": f"v{j}", "modality": "video", "title": "", "text": f"transcript {j} of q{i}",
+                  "image": None, "frames": [], "gold": j == 1, "source_id": f"vid{j}"} for j in range(1, 6)]
+        cands += [{"cid": f"c{j}", "modality": "video", "title": "", "text": f"clip {j}", "image": None,
+                   "frames": [], "gold": False, "source_id": f"clip{j}"} for j in range(1, 6)]
+        examples.append({"dataset": "videorag", "qid": f"videorag_synth_vid{i % 4}_{i}", "question": f"step {i}?",
+                         "qcate": "videorag_synth", "query_images": [], "candidates": cands,
+                         "fixed_evidence": False, "golds": ["Detach the caliper."], "gold_modalities": ["video"]})
+    monkeypatch.setitem(data.LOADERS, "videorag_synth", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"video_text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    base = ["--dataset", "videorag_synth", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
+            "--n-dev", "2", "--variants", "eab:g1.2:ans2:pos:gate"]
+    with pytest.raises(SystemExit):
+        run.main(base + ["--tag", "vr_m2rag", "--m2rag"])
+    run.main(base + ["--tag", "vr"])
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "vr" / "videorag_synth.jsonl").read_text().splitlines()]
+    assert len(rows) == 6 and all(len(r["chunks"]) == 5 for r in rows)
+    assert all(m == "video" for r in rows for m, _ in r["span_tokens"].values())
