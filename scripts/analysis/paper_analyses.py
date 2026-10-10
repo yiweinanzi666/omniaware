@@ -563,8 +563,15 @@ def column_table(ours: Path, our_arm: str, metric: str, compare: list[str], rest
     for spec in compare:
         path, arm = spec.rsplit(":", 1)
         b_rows, b_cfg = load_run(Path(path))
-        check_pairable(o_cfg, b_cfg, restricted=restrict is not None)
-        b_q = qid_set([r for r in b_rows if restrict is None or restrict in (r.get("gold_modalities") or [])])
+        # a baseline from the same dataset is paired as it is; one from another dataset (the wider WebQA run for
+        # WebQA-img) must be restricted explicitly to the questions of this column
+        same = b_cfg.get("dataset") == o_cfg.get("dataset")
+        if not same and restrict is None:
+            raise SystemExit(f"{path} is dataset {b_cfg.get('dataset')!r}, not {o_cfg.get('dataset')!r}: "
+                             "restrict it explicitly (--restrict-modality)")
+        check_pairable(o_cfg, b_cfg, restricted=not same)
+        keep = None if same else restrict
+        b_q = qid_set([r for r in b_rows if keep is None or keep in (r.get("gold_modalities") or [])])
         if b_q != o_q:
             raise SystemExit(f"{path}: {len(b_q)} questions vs {len(o_q)} in {ours}; restrict the baseline explicitly "
                              "(--restrict-modality) or fix the run")

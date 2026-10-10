@@ -145,10 +145,15 @@ def test_subset_baseline_must_be_restricted_explicitly(tmp_path):
     rows = [_row(f"q{i}", gold_modalities=["image"] if i % 2 == 0 else ["text"]) for i in range(6)]
     img_rows = [r for r in rows if r["gold_modalities"] == ["image"]]
     ours = _write(tmp_path / "img", img_rows, {r["qid"]: {"gated:eab": 80.0} for r in img_rows}, CFG)
-    # same dataset name, wider question set: without an explicit restriction the sets differ and nothing is pooled
-    full = _write(tmp_path / "full", rows, {r["qid"]: {"universalrag": 50.0} for r in rows}, CFG)
-    with pytest.raises(SystemExit, match="restrict the baseline explicitly"):
+    # the wider WebQA run is another dataset: without an explicit restriction nothing is pooled
+    full = _write(tmp_path / "full", rows, {r["qid"]: {"universalrag": 50.0} for r in rows},
+                  {**CFG, "dataset": "webqa_open_full", "candidate_sha256": "full"})
+    with pytest.raises(SystemExit, match="restrict it explicitly"):
         pa.column_table(ours, "gated:eab", "acc", [f"{full}:universalrag"])
+    # a same-dataset baseline with a different question set is refused too (no intersection is taken)
+    same = _write(tmp_path / "same", rows, {r["qid"]: {"seakr": 1.0} for r in rows}, CFG)
+    with pytest.raises(SystemExit, match="answers 6 questions|questions"):
+        pa.column_table(ours, "gated:eab", "acc", [f"{same}:seakr"])
     # the explicit restriction keeps the image questions (the paper's WebQA-img column of UniversalRAG)
     t = pa.column_table(ours, "gated:eab", "acc", [f"{full}:universalrag"], restrict="image")
     assert t["n"] == 3 and t["comparisons"][0]["delta_pp"] == pytest.approx(30.0)
