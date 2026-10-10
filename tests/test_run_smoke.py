@@ -26,6 +26,7 @@ class FakeEncoded:
     split: int
     spans: dict = field(default_factory=dict)
     input_ids: torch.Tensor | None = None
+    blocked: frozenset = frozenset()
 
 
 class FakeQwen:

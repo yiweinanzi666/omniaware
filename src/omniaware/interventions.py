@@ -1,12 +1,20 @@
 """Evidence interventions and retrieval-error perturbations (paper Sec. 5 Table `causal`, Appendix protocol).
 
-Eligible questions: retrieval triggered, EAB active (U > tau_bias), and the gold answer string occurs in a
-retrieved text chunk -- the *target chunk* (the highest-ranked such chunk). The retrieval decision, the
-uncertainty used by EAB and the chunk positions stay those of the unperturbed run.
+Eligible questions: retrieval triggered and the gold answer string occurs in a retrieved text chunk -- the
+*target chunk*, the highest-ranked such chunk. Answers are searched in the text that enters the prompt
+(``prompt_text``: after the 160-word cut of pipeline._trim), not in the stored chunk. The retrieval decision,
+the uncertainty used by EAB and the chunk positions stay those of the unperturbed run.
 
-  mask          every token of the target chunk -> padding; span positions unchanged
-  cf            gold answer in the target chunk -> same-type entity from another question
-  random_edit   control: a non-answer span of the answer's length -> the same entity
+Eligibility is recorded per arm (``eligible_by_arm``): static when the question is eligible, a bias variant
+when its gate is open, replication when its copy counts exceed one. Every requested kind gets one entry per
+eligible question: the arm predictions, or ``{"failed_reason": ...}`` when the perturbation cannot be built, so
+the denominator stays the eligible questions.
+
+  mask          the target chunk stays in the prompt, but no row attends to its tokens (attention-level block,
+                qwen_eab.Encoded.blocked); token ids and positions are unchanged and EAB adds no bias to it
+  cf            every gold alias in the target chunk -> same-type entity from another question
+  random_edit   control: a window of consecutive whole words as long (in words) as the answer -> the same
+                entity; the window overlaps no occurrence of a gold answer; same questions as cf
   rerun         control: the unedited input decoded again (base rate of answer changes)
   distractors   the two highest-scoring candidates beyond the top k without the gold answer replace the two
                 lowest-ranked non-target chunks
@@ -24,8 +32,11 @@ import string
 
 KINDS = ("mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction")
 INJECT_ID = "__inject__"
+MAX_DOC_WORDS = 160         # = pipeline.MAX_DOC_WORDS (tested in tests/test_interventions.py)
+MAX_CAPTION_WORDS = 60      # = the caption cut of pipeline.build_segments for image chunks
 
 _ARTICLES = re.compile(r"\b(a|an|the)\b")
+_WORD = re.compile(r"\w+")
 _COLORS = {"red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black", "white", "gray", "grey",
            "silver", "gold", "beige", "tan", "maroon", "navy", "teal", "violet", "turquoise"}
 
@@ -35,15 +46,57 @@ def normalize(text: str) -> str:
     return " ".join(_ARTICLES.sub(" ", text).split())
 
 
+def _trim(text: str, n: int = MAX_DOC_WORDS) -> str:
+    """Same cut as pipeline._trim."""
+    words = text.split()
+    return text if len(words) <= n else " ".join(words[:n]) + " ..."
+
+
+def prompt_text(c: dict) -> str:
+    """The text of a chunk as pipeline.build_segments writes it into the prompt (the answer is searched here)."""
+    title, text = c.get("title") or "", c.get("text") or ""
+    if c["modality"] == "text":
+        return _trim(f"{title}: {text}" if title and title != text else text)
+    if c["modality"] == "image":
+        caption = _trim(text, MAX_CAPTION_WORDS) if text and text != title else ""
+        return " ".join(s for s in (title, caption) if s)
+    if c["modality"] == "video":
+        return _trim(text)
+    return text
+
+
+def as_prompt_chunk(c: dict) -> dict:
+    """The chunk with the prompt text as its only text (title folded in), so edits act on what the model reads."""
+    return {**c, "title": "", "text": prompt_text(c)}
+
+
+def _gold_list(golds: list[str]) -> list[str]:
+    """Distinct non-empty golds, longest first, then lexicographic (independent of set order / PYTHONHASHSEED)."""
+    return sorted({g.strip() for g in golds if g and g.strip()}, key=lambda g: (-len(g), g))
+
+
+def _gold_pattern(golds: list[str]) -> re.Pattern | None:
+    gold = _gold_list(golds)
+    if not gold:
+        return None
+    return re.compile("|".join(rf"(?<!\w){re.escape(g)}(?!\w)" for g in gold), flags=re.IGNORECASE)
+
+
 def matches(pred: str, answer: str) -> bool:
-    """Normalised containment on word boundaries (answer follows an entity / adopts an injected answer)."""
+    """Normalised containment on word boundaries (answer follows an entity / adopts an injected answer).
+    Yes/no entities are short words that occur inside ordinary sentences ("there is no way"), so they are judged
+    on the whole answer: it equals the entity or starts with it."""
     a, p = normalize(answer), normalize(pred)
-    return bool(a) and re.search(rf"(?<!\w){re.escape(a)}(?!\w)", p) is not None
+    if not a:
+        return False
+    if a in ("yes", "no"):
+        return p == a or p.startswith(a + " ")
+    return re.search(rf"(?<!\w){re.escape(a)}(?!\w)", p) is not None
 
 
 def answer_span(text: str, golds: list[str]) -> tuple[int, int, str] | None:
     """First occurrence (case-insensitive, word-bounded) of any gold answer in ``text``; longest gold first."""
-    for g in sorted({g.strip() for g in golds if g and g.strip()}, key=len, reverse=True):
+    for g in _gold_list(golds):
         m = re.search(rf"(?<!\w){re.escape(g)}(?!\w)", text, flags=re.IGNORECASE)
         if m:
             return m.start(), m.end(), g
@@ -51,9 +104,9 @@ def answer_span(text: str, golds: list[str]) -> tuple[int, int, str] | None:
 
 
 def find_target(chunks: list[dict], rel: dict[str, float], golds: list[str]) -> dict | None:
-    """The highest-ranked retrieved text chunk containing a gold answer string."""
+    """The highest-ranked retrieved text chunk whose prompt text contains a gold answer string."""
     for c in sorted(chunks, key=lambda c: -rel[c["cid"]]):
-        if c["modality"] == "text" and answer_span(c.get("text") or "", golds):
+        if c["modality"] == "text" and answer_span(prompt_text(c), golds):
             return c
     return None
 
@@ -77,7 +130,10 @@ def entity_type(answer: str, nlp=None) -> str:
 
 
 def substitute_pool(examples: list[dict], nlp=None) -> dict[str, list[tuple[str, str]]]:
-    """type -> [(qid, answer)] over the evaluated questions' first gold answers."""
+    """type -> [(qid, answer)] over the first gold answers of ``examples``.
+
+    Callers pass calibration or training questions only (run.py): their golds are used to build entities, never
+    for calibration, and evaluation golds never enter the pool."""
     pool: dict[str, list[tuple[str, str]]] = {}
     for e in examples:
         golds = [g for g in e.get("golds", []) if g and g.strip()]
@@ -97,32 +153,35 @@ def pick_substitute(qid: str, golds: list[str], answer: str, pool: dict, nlp=Non
     return options[h % len(options)]
 
 
-def _replace(chunk: dict, start: int, end: int, new: str) -> dict:
-    text = chunk["text"]
-    return {**chunk, "text": text[:start] + new + text[end:]}
-
-
 def counterfactual(chunk: dict, golds: list[str], entity: str) -> dict:
-    """Replace every occurrence of the matched gold answer in the target chunk by ``entity``."""
-    _, _, gold = answer_span(chunk["text"], golds)
-    text = re.sub(rf"(?<!\w){re.escape(gold)}(?!\w)", lambda m: entity, chunk["text"], flags=re.IGNORECASE)
+    """Replace every occurrence of every gold alias in the chunk's text by ``entity``."""
+    pattern = _gold_pattern(golds)
+    text = pattern.sub(lambda m: entity, chunk["text"]) if pattern else chunk["text"]
     return {**chunk, "text": text}
 
 
 def random_edit(chunk: dict, golds: list[str], entity: str, seed: str) -> dict | None:
-    """Replace a word-aligned span of the answer's length that overlaps no gold occurrence by ``entity``."""
+    """Control: replace a window of consecutive whole words, as many words as the matched gold answer, by
+    ``entity``. The window overlaps no occurrence of any gold answer. None when no such window exists."""
     text = chunk["text"]
-    _, _, gold = answer_span(text, golds)
-    banned = [(m.start(), m.end()) for g in golds if g and g.strip()
-              for m in re.finditer(rf"(?<!\w){re.escape(g.strip())}(?!\w)", text, flags=re.IGNORECASE)]
-    starts = [m.start() for m in re.finditer(r"(?<!\w)\w", text)]
-    length = len(gold)
-    spans = [(s, s + length) for s in starts if s + length <= len(text)
-             and all(s + length <= a or s >= b for a, b in banned)]
-    if not spans:
+    found = answer_span(text, golds)
+    if found is None:
         return None
-    s, t = random.Random(seed).choice(spans)
-    return _replace(chunk, s, t, entity)
+    n = len(_WORD.findall(found[2]))
+    if n < 1:
+        return None
+    pattern = _gold_pattern(golds)
+    banned = [m.span() for m in pattern.finditer(text)]
+    words = list(_WORD.finditer(text))
+    windows = []
+    for i in range(len(words) - n + 1):
+        a, b = words[i].start(), words[i + n - 1].end()
+        if all(b <= s or a >= t for s, t in banned):
+            windows.append((a, b))
+    if not windows:
+        return None
+    a, b = random.Random(seed).choice(windows)
+    return {**chunk, "text": text[:a] + entity + text[b:]}
 
 
 def distractors(e: dict, chunks: list[dict], rel: dict[str, float], target_cid: str, golds: list[str],
@@ -131,8 +190,7 @@ def distractors(e: dict, chunks: list[dict], rel: dict[str, float], target_cid: 
     contain the gold answer (and are not gold facts). Positions in the prompt are kept."""
     chosen = {c["cid"] for c in chunks}
     extra = [c for c in sorted(e["candidates"], key=lambda c: -rel[c["cid"]])
-             if c["cid"] not in chosen and not c.get("gold")
-             and not answer_span(f"{c.get('title') or ''} {c.get('text') or ''}", golds)][:n]
+             if c["cid"] not in chosen and not c.get("gold") and not answer_span(prompt_text(c), golds)][:n]
     victims = [c["cid"] for c in sorted(chunks, key=lambda c: rel[c["cid"]]) if c["cid"] != target_cid][:n]
     if len(extra) < n or len(victims) < n:
         return None
@@ -158,7 +216,7 @@ def inject(e: dict, chunks: list[dict], rel: dict[str, float], golds: list[str],
     """Replace the lowest-ranked non-gold chunk by an injected passage with relevance 1 (the top score).
     Under rank order the passage moves to the first position; other orders keep the replaced slot."""
     victims = [c for c in sorted(chunks, key=lambda c: rel[c["cid"]])
-               if not c.get("gold") and not answer_span(c.get("text") or "", golds)]
+               if not c.get("gold") and not answer_span(prompt_text(c), golds)]
     if not victims:
         return None
     passage = injected_passage(e, entity, kind)
@@ -169,12 +227,10 @@ def inject(e: dict, chunks: list[dict], rel: dict[str, float], golds: list[str],
     return new, rel_new
 
 
-def mask_tokens(enc, cid: str, pad_id: int):
-    """Encoded copy whose tokens inside chunk ``cid`` are padding; spans and positions are unchanged."""
-    ids = enc.input_ids.clone()
-    a, b = enc.spans[cid]
-    ids[:, a:b] = pad_id
-    return dataclasses.replace(enc, input_ids=ids)
+def mask_span(enc, cid: str):
+    """Encoded copy in which no row attends to the tokens of chunk ``cid`` (qwen_eab blocks them on every row,
+    prefill and decoding) and EAB adds no bias to them. Token ids and positions are unchanged."""
+    return dataclasses.replace(enc, blocked=enc.blocked | {cid})
 
 
 def relevance_noise(rel: dict[str, float], sigma: float, seed: str) -> dict[str, float]:

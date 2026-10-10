@@ -35,6 +35,7 @@ class _State:
         self.bias: torch.Tensor | None = None   # [P] float, per key column
         self.q_start: int = 0                    # first biased query row (absolute)
         self.layers: set[int] | None = None      # None = all text layers
+        self.blocked: torch.Tensor | None = None  # [P] bool per key column; True keys are hidden from every row
         self.capture_layer: int | None = None
         self.captured: torch.Tensor | None = None
 
@@ -57,27 +58,35 @@ def _eab_sdpa(module, query, key, value, attention_mask, **kwargs):
         logits = (query[:, :, -1:, :].float() @ k.float().transpose(-1, -2)) * scale
         st.captured = torch.softmax(logits, dim=-1).mean(dim=1)[0, 0].detach().float().cpu()
 
-    if st.bias is not None and (st.layers is None or layer in st.layers):
-        first_row = max(st.q_start - q_pos0, 0)
-        if first_row < q_len:
-            dtype = query.dtype
-            neg = torch.finfo(dtype).min
-            if attention_mask is None:
-                rows = torch.arange(q_pos0, kv_len, device=query.device)[:, None]
-                cols = torch.arange(kv_len, device=query.device)[None, :]
-                mask = torch.zeros(q_len, kv_len, device=query.device, dtype=dtype)
-                mask = mask.masked_fill(cols > rows, neg)[None, None]
-            elif attention_mask.dtype == torch.bool:
-                mask = torch.zeros(attention_mask.shape, device=query.device, dtype=dtype)
-                mask = mask.masked_fill(~attention_mask, neg)
-            else:
-                mask = attention_mask.to(dtype).clone()
+    biased = st.bias is not None and (st.layers is None or layer in st.layers)
+    first_row = max(st.q_start - q_pos0, 0) if biased else q_len
+    if (biased and first_row < q_len) or st.blocked is not None:
+        dtype = query.dtype
+        neg = torch.finfo(dtype).min
+        if attention_mask is None:
+            rows = torch.arange(q_pos0, kv_len, device=query.device)[:, None]
+            cols = torch.arange(kv_len, device=query.device)[None, :]
+            mask = torch.zeros(q_len, kv_len, device=query.device, dtype=dtype)
+            mask = mask.masked_fill(cols > rows, neg)[None, None]
+        elif attention_mask.dtype == torch.bool:
+            mask = torch.zeros(attention_mask.shape, device=query.device, dtype=dtype)
+            mask = mask.masked_fill(~attention_mask, neg)
+        else:
+            mask = attention_mask.to(dtype).clone()
+        mask = mask.expand(mask.shape[0], mask.shape[1], q_len, kv_len).clone()
+        if biased and first_row < q_len:
             col = torch.zeros(kv_len, device=query.device, dtype=dtype)
             n = min(kv_len, st.bias.numel())
             col[:n] = st.bias[:n].to(device=query.device, dtype=dtype)
-            mask = mask.expand(mask.shape[0], mask.shape[1], q_len, kv_len).clone()
             mask[..., first_row:, :] += col
-            attention_mask = mask
+        if st.blocked is not None:
+            # Blocked keys are -inf on every row (prefill, suffix and decoding). Position 0 is never blocked
+            # (_blocked_tensor), so every row keeps an unblocked key and no softmax row is all -inf.
+            hidden = torch.zeros(kv_len, dtype=torch.bool, device=query.device)
+            n = min(kv_len, st.blocked.numel())
+            hidden[:n] = st.blocked[:n].to(query.device)
+            mask[..., hidden] = float("-inf")
+        attention_mask = mask
     return _ORIG_SDPA(module, query, key, value, attention_mask, **kwargs)
 
 
@@ -109,6 +118,7 @@ class Encoded:
     spans: dict[str, tuple[int, int]]       # chunk id -> [start, end)
     split: int                              # first token of the question suffix
     length: int
+    blocked: frozenset = frozenset()        # chunk ids no row may attend to (interventions.mask_span); no EAB on them
 
 
 @dataclass
@@ -232,10 +242,21 @@ class QwenEAB:
     def _bias_tensor(self, enc: Encoded, spec: BiasSpec) -> torch.Tensor:
         col = torch.zeros(enc.length, dtype=torch.float32)
         for cid, v in spec.values.items():
-            if cid in enc.spans and v != 0.0:
+            if cid in enc.spans and v != 0.0 and cid not in enc.blocked:
                 a, b = enc.spans[cid]
                 col[a:b] = float(v)
         return col.to(self.device)
+
+    def _blocked_tensor(self, enc: Encoded) -> torch.Tensor | None:
+        if not enc.blocked:
+            return None
+        hidden = torch.zeros(enc.length, dtype=torch.bool)
+        for cid in enc.blocked:
+            a, b = enc.spans[cid]
+            if a == 0:   # a row whose only visible key would be blocked would be all -inf (NaN)
+                raise ValueError(f"blocked chunk {cid} starts at token 0; keep a prefix before the evidence")
+            hidden[a:b] = True
+        return hidden.to(self.device)
 
     def _activate(self, enc: Encoded, spec: BiasSpec | None):
         STATE.bias = None if spec is None else self._bias_tensor(enc, spec)
@@ -245,6 +266,7 @@ class QwenEAB:
     @torch.no_grad()
     def _prefix(self, enc: Encoded):
         STATE.reset()
+        STATE.blocked = self._blocked_tensor(enc)   # applies to the prefill, the suffix and the decoding of run()
         kw = dict(input_ids=enc.input_ids[:, :enc.split].to(self.device), use_cache=True, logits_to_keep=1)
         if getattr(self, "kind", "qwen3_vl") == "internvl":   # 1-D RoPE, no grid or token types
             if enc.pixel_values is not None:
