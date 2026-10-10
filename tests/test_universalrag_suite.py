@@ -31,7 +31,7 @@ def _tree(tmp_path):
         for m, ids in lists.items():
             (rk / target / f"{m}.jsonl").write_text(json.dumps(
                 {"qid": "h1" if target == "hybridqa" else "v1",
-                 "candidates": [{"source_id": i, "score": 1.0} for i in ids]}) + "\n")
+                 "candidates": [{"source_id": i, "score": 1.0 - 0.1 * rank} for rank, i in enumerate(ids)]}) + "\n")
     key = fr / data.frame_key("dataset/videorag/videos/abc.mp4")
     key.mkdir(parents=True)
     (key / "frames.json").write_text(json.dumps({"frames": [{"path": "00.png"}, {"path": "01.png"}]}))
@@ -45,6 +45,7 @@ def test_hybridqa_loader_marks_gt_table_and_passages(tmp_path):
     by = {c["cid"]: c for c in e["candidates"]}
     assert by["t1"]["gold"] is False and by["t2"]["gold"] is True and by["p1"]["gold"] is True
     assert by["t2"]["modality"] == "table" and by["p1"]["modality"] == "text"
+    assert by["t1"]["suite_score"] == pytest.approx(1.0) and by["t2"]["suite_score"] == pytest.approx(0.9)   # rankings' scores
 
 
 def test_videorag_loader_builds_video_chunks_with_frames_and_transcript(tmp_path):

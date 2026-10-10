@@ -47,26 +47,36 @@ DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img":
 
 def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0,
                   route: dict | None = None, ce: dict | None = None) -> list[dict]:
-    """Top-k by calibrated relevance, or by the cross-encoder when ``ce`` = {"logits", "calibration"}."""
+    """Top-k by calibrated relevance, or by the cross-encoder when ``ce`` = {"logits", "calibration"}.
+
+    A UniversalRAG query route ranks by the suite retriever's own score (``suite_score``) instead of
+    our relevance, so that the baseline's candidate order does not depend on Omni-Aware's scores.
+    """
     candidates = e["candidates"]
     if route and route["modalities"]:
         missing = set(route["modalities"]) - {c["modality"] for c in candidates}
         if missing:
             raise ValueError(f"{e['qid']}: no retrieval candidates for requested modalities {sorted(missing)}")
         candidates = [c for c in candidates if c["modality"] in route["modalities"]]
+    score = rel
+    if route and route.get("rule") == "query":
+        unscored = [c["cid"] for c in e["candidates"] if "suite_score" not in c]
+        if unscored:
+            raise ValueError(f"{e['qid']}: UniversalRAG route needs suite_score on every candidate, missing {unscored[:3]}")
+        score = {c["cid"]: c["suite_score"] for c in e["candidates"]}
     if e["fixed_evidence"]:
         chosen = list(candidates)
     elif ce is not None:
         chosen = rerank.ce_select(candidates, rel, ce["logits"], ce["calibration"])
     else:
-        ranked = sorted(candidates, key=lambda c: -rel[c["cid"]])
+        ranked = sorted(candidates, key=lambda c: -score[c["cid"]])
         picked = []
         if min_per_modality:
             for m in sorted({c["modality"] for c in ranked}):
                 picked += [c for c in ranked if c["modality"] == m][:min_per_modality]
-            picked = sorted(picked, key=lambda c: -rel[c["cid"]])[:k]
+            picked = sorted(picked, key=lambda c: -score[c["cid"]])[:k]
         chosen = picked + [c for c in ranked if c not in picked][:k - len(picked)]
-        chosen = sorted(chosen, key=lambda c: -rel[c["cid"]])
+        chosen = sorted(chosen, key=lambda c: -score[c["cid"]])
     if order == "shuffle":
         chosen = list(chosen)
         random.Random(f"{seed}:{e['qid']}").shuffle(chosen)
@@ -474,7 +484,7 @@ def main(argv=None):
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
-    seakr_threshold = None
+    seakr_threshold, seakr_missing_calibration = None, None
     if args.seakr_samples:
         scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
                                    f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json")
@@ -484,9 +494,12 @@ def main(argv=None):
                 enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
                 scache[e["qid"]] = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
                 scache_path.write_text(json.dumps(scache))
+        calibration_scores = [scache[e["qid"]] for e in calib]
+        seakr_missing_calibration = sum(seakr.is_missing(s) for s in calibration_scores)
         seakr_threshold = (args.seakr_threshold if args.seakr_threshold is not None
-                           else seakr.matched_threshold([scache[e["qid"]] for e in calib], u_rate))
-        print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f})", flush=True)
+                           else seakr.matched_threshold(calibration_scores, u_rate))
+        print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f}; "
+              f"{seakr_missing_calibration} of {len(calib)} calibration questions have no eigen score)", flush=True)
 
     substitute_pool, iv_nlp, pad_id = None, None, None
     if args.intervention:
@@ -509,6 +522,7 @@ def main(argv=None):
         **{f"comb_{ph}": calibrators[ph][0].to_json() for ph in calibrators},
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
         "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
+        "seakr_missing_calibration": seakr_missing_calibration,
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
         "evaluation_questions": len(evals),
@@ -522,6 +536,7 @@ def main(argv=None):
         return
 
     t_start = time.time()
+    tallies = {"universalrag_fallback": 0, "seakr_missing": 0}   # questions in this process only
     with out_path.open("a") as fh:
         for i, e in enumerate(evals):
             if i % args.num_shards != args.shard_id or e["qid"] in done:
@@ -564,6 +579,11 @@ def main(argv=None):
             route = resolve_route(e, rel, pre_info.get("route"), probe_out=probe_out)
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
                                    ce_of and ce_of(e))
+            # Joint input (D4): the same top-k over all candidates, with no probe and no route. The
+            # external baselines (CE, FiTM, M2-RAG, SeaKR) read this input; the Omni-Aware arms keep `chunks`.
+            joint = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, None,
+                                  ce_of and ce_of(e))
+            rec["chunks_joint"] = [c["cid"] for c in joint]
             eab_rel = ce_rel_of(e) if ce_rel_of else rel
             if ce_rel_of and args.relevance_noise:
                 eab_rel = interventions.relevance_noise(eab_rel, args.relevance_noise,
@@ -609,10 +629,23 @@ def main(argv=None):
                 if r.attention is not None:
                     rec["ard"][name] = analysis.ard(pipeline.chunk_mass(r.attention, {c["cid"]: enc.spans[c["cid"]]
                                                                                     for c in chunks}), rel_sel)
+            # Static joint (paper: "Static concatenation"): the same decoding on the joint input, with no probe
+            # and no route. Reused from the routed decoding when both inputs are the same chunks.
+            if rec["chunks_joint"] == rec["chunks"]:
+                enc_j, res_j = enc, res
+            else:
+                enc_j = qwen.encode(*evidence_segments(e, joint, rel))
+                res_j, _, _ = qwen.run(enc_j, None, max_new, decode_static=True)
+            rec["preds"]["static_joint"] = res_j["static"].text
+            rec["tokens"]["static_joint"] = res_j["static"].tokens
+            rec["arm_seconds"]["static_joint"] = res_j["static"].seconds
             arms = ["static"] + [v.name for v in variants]
             if args.route_rule == "query":
-                # UniversalRAG baseline: its router decides both whether and where to retrieve.
+                # UniversalRAG baseline: its router decides both whether and where to retrieve. A route whose
+                # labels are all absent from the corpus does not retrieve (fallback, counted).
                 rec["preds"]["universalrag"] = rec["preds"]["static"] if route["retrieve"] else rec["preds"]["direct"]
+                rec["universalrag_fallback"] = int(route["fallback"])
+                tallies["universalrag_fallback"] += rec["universalrag_fallback"]
             if args.replication_gamma is not None:
                 counts = order_mod.replication_counts([rel_sel[c["cid"]] for c in chunks], info["u_eab"],
                                                       info["u_eab"] > args.tau_bias, args.replication_gamma)
@@ -627,33 +660,39 @@ def main(argv=None):
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
-            # Baseline arms: wall time of everything each method runs itself (its own prefills and decoding).
+            # Baseline arms read the joint input (D4). Wall time: everything each method runs itself.
+            joint_ids = rec["chunks_joint"]
             rec["baseline_seconds"] = {}
             if args.fitm:
                 t_b = time.perf_counter()
-                rec["preds"]["fitm"], rec["fitm"] = baseline_arms.fitm_answer(qwen, enc, [c["cid"] for c in chunks], max_new)
+                rec["preds"]["fitm"], rec["fitm"] = baseline_arms.fitm_answer(
+                    qwen, enc_j, joint_ids, max_new, static_text=rec["preds"]["static_joint"])
                 rec["baseline_seconds"]["fitm"] = time.perf_counter() - t_b
-                arms.append("fitm")
             if args.m2rag:
                 t_b = time.perf_counter()
                 rec["preds"]["m2rag"], rec["m2rag"] = baseline_arms.m2rag_answer(
-                    qwen, e, chunks, rel, max_new)
+                    qwen, e, joint, rel, max_new)
                 rec["baseline_seconds"]["m2rag"] = time.perf_counter() - t_b
             if args.seakr_samples:
                 t_b = time.perf_counter()
                 direct_eigen = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
-                info_s = {"direct_eigen": direct_eigen, "retrieve": direct_eigen > seakr_threshold}
+                # A missing eigen score (None) does not retrieve; it is recorded, not treated as infinity.
+                missing = seakr.is_missing(direct_eigen)
+                info_s = {"direct_eigen": direct_eigen, "missing": missing,
+                          "retrieve": not missing and direct_eigen > seakr_threshold}
+                tallies["seakr_missing"] += missing
                 rec["preds"]["seakr_trigger:static"] = (rec["preds"]["static"] if info_s["retrieve"]
                                                         else rec["preds"]["direct"])
                 if info_s["retrieve"]:
                     doc_scores, doc_answers = {}, {}
-                    for c in chunks:
+                    for c in joint:
                         enc_c = qwen.encode(*evidence_segments(e, [c], rel))
                         doc_answers[c["cid"]] = qwen.run(enc_c, None, max_new, decode_static=True)[0]["static"].text
                         doc_scores[c["cid"]] = seakr.score_input(qwen, enc_c, args.seakr_samples,
                                                                  args.seakr_max_new_tokens)
                     best = seakr.choose_document(doc_scores, doc_answers)
-                    info_s.update(doc_eigen=doc_scores, chosen=best)
+                    info_s.update(doc_eigen=doc_scores, chosen=best,
+                                  doc_missing=sum(seakr.is_missing(s) for s in doc_scores.values()))
                     rec["preds"]["seakr"] = doc_answers[best] if best else rec["preds"]["direct"]
                 else:
                     rec["preds"]["seakr"] = rec["preds"]["direct"]
@@ -661,6 +700,7 @@ def main(argv=None):
                 rec["baseline_seconds"]["seakr"] = time.perf_counter() - t_b
             # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.
             # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
+            # Only the Omni-Aware arms are gated; the external baselines are not.
             for name in arms:
                 rec["preds"]["gated:" + name] = rec["preds"][name] if rec["retrieve"] else rec["preds"]["direct"]
             h_sem = rec["raw_pre"]["h_sem"]
@@ -682,7 +722,13 @@ def main(argv=None):
             fh.flush()
             print(f"[{i + 1}/{len(evals)}] {e['qid'][:12]} {rec['seconds']}s P={enc.length} "
                   f"U_pre={rec['u_pre']:.2f} retrieve={rec['retrieve']}", flush=True)
-    print(f"[done] {args.dataset} {len(evals)} in {time.time() - t_start:.1f}s -> {out_path}", flush=True)
+    notes = []
+    if args.route_rule == "query":
+        notes.append(f"universalrag_fallback {tallies['universalrag_fallback']}")
+    if args.seakr_samples:
+        notes.append(f"seakr_missing {tallies['seakr_missing']}")
+    print(f"[done] {args.dataset} {len(evals)} in {time.time() - t_start:.1f}s -> {out_path}"
+          + "".join(f"; {note}" for note in notes), flush=True)
 
 
 if __name__ == "__main__":

@@ -25,8 +25,16 @@ def prepare_sources(tokenizer, ordered_sources, image_paths, relevance_by_source
     return result
 
 
-def official_query(qid, question, sources):
-    """One selected source becomes one official webpage, in the fixed order."""
+# Image ids of the question's own images; webpage images use 900000 + j (pipeline ids, see arms.py).
+QUERY_IMAGE_ID_BASE = 800000
+
+
+def official_query(qid, question, sources, query_images=()):
+    """One selected source becomes one official webpage, in the fixed order.
+
+    The question's own images (``query_images``, OK-VQA) are passed as the official auxiliary images:
+    valid, unscored, and kept by the summarizer's default filters.
+    """
     webpages = []
     for source in sources:
         text = source['text']
@@ -39,17 +47,24 @@ def official_query(qid, question, sources):
                 detailed_image_caption=source['text']))
         webpages.append(dict(webpage_id=source['source_id'], title=source['source_id'],
             url='', cleaned_webpage_splits=[dict(split_id=0, score=0, text=text)], images=images))
-    return dict(query_id=qid, content=question, webpages=webpages, aux_images=[])
+    aux_images = [dict(image_id=QUERY_IMAGE_ID_BASE + j, split_id=0, valid=True, final_score=0,
+        image_url=path, cached_image_url=path, detailed_image_caption='')
+        for j, path in enumerate(query_images)]
+    return dict(query_id=qid, content=question, webpages=webpages, aux_images=aux_images)
 
 
-def extractor_messages(question, result):
-    """Read only the generated document, its captions, and its retained images."""
+def extractor_messages(question, result, query_images=()):
+    """Read the generated document, its captions and retained images, and the question's own images."""
     pieces = result['placeholder_response'].split('<IMAGE_PLACEHOLDER>')
     images = result['output_images']
     if len(pieces) != len(images) + 1:
         raise ValueError('Generated document placeholders and retained images do not match')
-    messages = [dict(type='text', text=EXTRACTOR_INSTRUCTION +
-        '\n\nQuestion: ' + question + '\n\nGenerated response:\n' + pieces[0])]
+    messages, pending = [], EXTRACTOR_INSTRUCTION + '\n\nQuestion: ' + question + '\n\n'
+    for path in query_images:
+        pending += 'Question image:\n'
+        messages += [dict(type='text', text=pending), dict(type='image_url', image_url=dict(url=path))]
+        pending = '\n'
+    messages.append(dict(type='text', text=pending + 'Generated response:\n' + pieces[0]))
     for index, image in enumerate(images):
         messages.extend([
             dict(type='text', text='\nFigure caption: ' + image['image_caption'] + '\n'),

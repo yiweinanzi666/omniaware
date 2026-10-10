@@ -2,6 +2,10 @@
 
 Sequential inference; no model loading. Null content, independent layer/head
 weights, frozen alpha and query timing are explicit project adaptation choices.
+The null reference replaces only the content of a document: its text tokens get
+an ordinary dummy text of the same length, its image patches are zeroed, and the
+vision start/end markers that delimit an image stay in place (a document keeps
+its structure, so that only its content is nulled).
 """
 
 from contextlib import contextmanager, ExitStack
@@ -21,7 +25,8 @@ DUMMY_TEXT = "This is a reference document."
 
 
 def document_indices(sources):
-    return [sorted(set(source["text_token_indices"] + source["vision_token_indices"])) for source in sources]
+    return [sorted(set(source["text_token_indices"] + source["vision_token_indices"]
+                       + source.get("structural_token_indices", []))) for source in sources]
 
 
 def selected_layers(model):
@@ -116,7 +121,11 @@ def _tensor_hash(value):
 
 
 def make_null_reference(inputs, sources, target, tokenizer):
-    """Replace one source at its original physical text/image positions."""
+    """Replace one source at its original physical text/image positions.
+
+    Only ``text_token_indices`` (content) are replaced. ``structural_token_indices`` (the vision
+    start/end markers of an image chunk) are kept, so the reference has the same token layout.
+    """
     reference = {key: value.clone() for key, value in inputs.items()}
     ordinary = [token for token in tokenizer.encode(DUMMY_TEXT, add_special_tokens=False)
                 if token not in set(tokenizer.all_special_ids)]

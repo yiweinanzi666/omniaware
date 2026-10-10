@@ -46,6 +46,7 @@ def make_qwen():
     q.eos = {155, 156, 157}
     q.vocab_size = 160
     q.image_token_id = 150
+    q.vision_start_id, q.vision_end_id = 152, 153
     return q
 
 

@@ -66,6 +66,18 @@ class M2RAGWebQATests(unittest.TestCase):
         self.assertEqual(len(direct),1)
         self.assertTrue(direct[0]['text'].endswith('Exact direct answer.'))
 
+    def test_question_images_reach_the_official_query_and_the_extractor(self):
+        question_image='/synthetic/question.jpg'
+        query=official_query('synthetic','Synthetic question?',[],query_images=[question_image])
+        self.assertEqual([(a['valid'],a['cached_image_url'],a['image_url']) for a in query['aux_images']],
+            [(True,question_image,question_image)])
+        self.assertEqual(official_query('synthetic','Synthetic question?',[])['aux_images'],[])
+        result=dict(placeholder_response='Generated answer.',output_images=[])
+        messages=extractor_messages('Synthetic question?',result,query_images=[question_image])
+        self.assertEqual([m['image_url']['url'] for m in messages if m['type']=='image_url'],[question_image])
+        self.assertIn('Generated answer.',''.join(m['text'] for m in messages if m['type']=='text'))
+        self.assertEqual(len(extractor_messages('Synthetic question?',result)),1)
+
 
 if __name__=='__main__':
     unittest.main()
