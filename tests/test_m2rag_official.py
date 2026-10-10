@@ -11,6 +11,7 @@ import unittest
 from omniaware.baselines.m2rag_official import (
     OFFICIAL_COMMIT, OFFICIAL_ROOT, build_official_summarizer, query_from_t15,
 )
+from omniaware.baselines.m2rag_webqa import official_query
 
 
 from omniaware.paths import ASSET_ROOT as ROOT
@@ -67,6 +68,15 @@ class OfficialM2RAGTests(unittest.TestCase):
         self.assertEqual(subprocess.check_output(
             ["git", "status", "--porcelain=v1", "--untracked-files=all"],
             cwd=OFFICIAL_ROOT, text=True), "")
+
+    def test_question_image_is_in_the_summarizer_input(self):
+        # OK-VQA's question image is an official auxiliary image: it must reach the backend's messages.
+        query = official_query("okvqa-question", "What is the man holding?", [],
+                               query_images=["file:///mock/question.jpg"])
+        backend = RecordingBackend()
+        build_official_summarizer(backend).summarize(query_list=[query], dry_run=False)
+        urls = [m["image_url"]["url"] for m in backend.calls[0] if m["type"] == "image_url"]
+        self.assertEqual(urls, ["file:///mock/question.jpg"])
 
     @unittest.skipUnless((ROOT / 'runs/reranker_order_development/predictions.jsonl').exists(),
                          'legacy T15 run outputs not under the asset root')

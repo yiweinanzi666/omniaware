@@ -41,19 +41,27 @@ def greedy(qwen, inputs: dict, max_new_tokens: int) -> str:
 
 # ------------------------------------------------------- Found-in-the-Middle --
 def fitm_sources(qwen, enc, chunk_ids: list[str]) -> list[dict]:
-    """Document token indices of each retrieved chunk, split into text and vision positions."""
+    """Document token indices of each retrieved chunk: content text, image patches, and the vision
+    start/end markers of an image (structural: part of the document, but not replaced by a null)."""
     ids = enc.input_ids[0].tolist()
     vision = set(i for i, t in enumerate(ids) if t == qwen.image_token_id)
+    markers = {qwen.vision_start_id, qwen.vision_end_id}
     sources = []
     for cid in chunk_ids:
         a, b = enc.spans[cid]
-        sources.append({"source_id": cid, "text_token_indices": [i for i in range(a, b) if i not in vision],
-                        "vision_token_indices": [i for i in range(a, b) if i in vision]})
+        sources.append({"source_id": cid,
+                        "text_token_indices": [i for i in range(a, b) if i not in vision and ids[i] not in markers],
+                        "vision_token_indices": [i for i in range(a, b) if i in vision],
+                        "structural_token_indices": [i for i in range(a, b) if ids[i] in markers]})
     return sources
 
 
 @torch.no_grad()
-def fitm_answer(qwen, enc, chunk_ids: list[str], max_new_tokens: int) -> tuple[str, dict]:
+def fitm_answer(qwen, enc, chunk_ids: list[str], max_new_tokens: int, static_text: str | None = None) -> tuple[str, dict]:
+    """FiTM answer for the input's chunks. With no candidates there is nothing to calibrate, so the
+    static answer on the same input (``static_text``) is returned and the fallback is recorded."""
+    if not chunk_ids:
+        return static_text, {"fallback": "no_candidates", "extra_forward_calls": 0}
     from .fitm_qwen_adapter import document_indices, prepare_fitm_calibration, qwen_fitm
     if getattr(qwen, "kind", "qwen3_vl") != "qwen3_vl":
         raise NotImplementedError("the FITM null-reference adapter handles Qwen3-VL image grids only")
@@ -68,12 +76,25 @@ def fitm_answer(qwen, enc, chunk_ids: list[str], max_new_tokens: int) -> tuple[s
 
 
 # ------------------------------------------------------------------- M2-RAG --
+def pixel_budget(qwen) -> dict:
+    """The processor size QwenEAB.encode gives a full-budget image (its cap is longest_edge), so that
+    M2-RAG's images get the same pixel budget as every other arm."""
+    cap = qwen.size["longest_edge"]
+    return {"shortest_edge": min(qwen.size["shortest_edge"], cap), "longest_edge": cap}
+
+
 def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_new_tokens: int,
                  document_tokens: int = 384) -> tuple[str, dict]:
-    """Official M2RAG single-stage summarizer over the same chunks, then the document-only answer extractor."""
+    """Official M2RAG single-stage summarizer over the same chunks, then the document-only answer extractor.
+
+    The question's own images (OK-VQA query images) reach both the summarizer and the extractor, as
+    the question image does for every other arm. Images use the same pixel budget as the other arms;
+    the chat template is the official one (see the paper's appendix).
+    """
     from .m2rag_official import build_official_summarizer
     from .m2rag_qwen import LocalQwenVLM
     from .m2rag_webqa import extractor_messages, official_query, prepare_sources
+    query_images = list(e.get("query_images") or [])
     sources, image_paths = [], {}
     for j, c in enumerate(chunks):
         fact_id = str(900000 + j) if c["modality"] == "image" else c["cid"]
@@ -83,9 +104,11 @@ def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_n
             image_paths[fact_id] = c["image"]
     prepared = prepare_sources(qwen.tok, sources, image_paths, {c["cid"]: rel[c["cid"]] for c in chunks})
     STATE.reset()
-    backend = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=document_tokens)
+    size = pixel_budget(qwen)
+    backend = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=document_tokens, image_size=size)
     summarizer = build_official_summarizer(backend, multi_stage=False)
-    document = summarizer.summarize(query_list=[official_query(e["qid"], e["question"], prepared)], dry_run=False)
-    extractor = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=max_new_tokens)
-    answer = extractor.chat(extractor_messages(e["question"], document))["response"].strip()
-    return answer, {"calls": len(backend.calls) + len(extractor.calls)}
+    query = official_query(e["qid"], e["question"], prepared, query_images)
+    document = summarizer.summarize(query_list=[query], dry_run=False)
+    extractor = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=max_new_tokens, image_size=size)
+    answer = extractor.chat(extractor_messages(e["question"], document, query_images))["response"].strip()
+    return answer, {"calls": len(backend.calls) + len(extractor.calls), "query_images": len(query_images)}

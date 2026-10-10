@@ -341,10 +341,12 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
     frames_dir = Path(frames_dir or paths.UNIVERSALRAG_FRAMES)
     queries = json.loads((root / "dataset" / "query" / f"{query_file}.json").read_text(encoding="utf8"))
     tops: dict[str, dict[str, list[str]]] = defaultdict(dict)
+    suite = {}   # (qid, modality) -> {source_id: the suite retriever's own score}
     for m in modalities:
         for line in (rankings / f"{m}.jsonl").open():
             r = json.loads(line)
             tops[r["qid"]][m] = [c["source_id"] for c in r["candidates"]][:top]
+            suite[(r["qid"], m)] = {c["source_id"]: float(c["score"]) for c in r["candidates"][:top]}
     wanted = {m: {s for per_q in tops.values() for s in per_q.get(m, [])} for m in modalities}
     corpora = {}
     for m in ("paragraph", "document", "table", "image"):
@@ -369,11 +371,12 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
                 if m in ("paragraph", "document", "table", "image") and sid not in corpora.get(m, {}):
                     _bump(missing, "ranked source missing from corpus", qid)
                     continue
+                score = suite[(qid, m)][sid]
                 if m in ("paragraph", "document", "table"):
                     row = corpora[m][sid]
                     gold = (sid == f"hybridqa-{gt_table}" or sid.startswith(f"hybridqa-{gt_table}_")) if gt_table else None
                     cands.append({"cid": cid, "modality": _UR_MODALITY[m], "title": "", "text": _clean(row["text"]),
-                                  "image": None, "gold": gold, "source_id": sid})
+                                  "image": None, "gold": gold, "source_id": sid, "suite_score": score})
                 elif m == "image":
                     row = corpora[m][sid]
                     if not (root / sid).exists():
@@ -381,7 +384,7 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
                         continue
                     caption = _clean(row.get("caption") or row.get("title") or "")
                     cands.append({"cid": cid, "modality": "image", "title": caption, "text": caption,
-                                  "image": str(root / sid), "gold": None, "source_id": sid})
+                                  "image": str(root / sid), "gold": None, "source_id": sid, "suite_score": score})
                 else:
                     meta_path = frames_dir / frame_key(sid) / "frames.json"
                     if not meta_path.exists():
@@ -391,7 +394,8 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
                     video = sid.rsplit("_", 1)[0] if m == "clip" else sid
                     cands.append({"cid": cid, "modality": _UR_MODALITY[m], "title": "", "text": _video_script(root, video),
                                   "image": None, "frames": [str(meta_path.parent / f["path"]) for f in meta["frames"]],
-                                  "gold": (video in gt_videos) if gt_videos else None, "source_id": sid})
+                                  "gold": (video in gt_videos) if gt_videos else None, "source_id": sid,
+                                  "suite_score": score})
         gold_modalities = sorted({_UR_MODALITY[g] for g in q.get("gt_retrieval", "").split("+") if g in _UR_MODALITY})
         out.append({
             "dataset": family, "qid": qid, "question": _clean(q["question"]), "qcate": q.get("source", family),

@@ -1,5 +1,14 @@
 """Hsieh et al. document-mean attention calibration, equations (4) and (5).
 
+Source: Hsieh et al. 2024, "Found in the Middle: Calibrating Positional Attention Bias Improves Long
+Context Utilization" (arXiv:2406.16008). Section 4.1 defines the calibrated attention: the document
+mean Attn(x, k) is the mean of token-level attention probabilities over the N_k tokens of document k,
+alpha_k = Softmax(rel(x_k), t), and Eq. (5) rescales each document's tokens so that its mean becomes
+proportional to alpha_k (Eq. (6)). Section 3.2 (Eq. (4)) estimates rel(x_k) as
+Attn(x, k) - Attn(x_dum, k) + rel(x_dum), so the softmax argument here is the difference of
+document means, on the attention-probability scale (about 1/K for K tokens). Appendix B sets
+t = 5e-5 for all experiments and reports robustness to t; that robustness was not re-verified here.
+
 Leading tensor axes remain independent (layers, batches, query heads, queries).
 Reference construction and when to freeze alpha belong to the Qwen adapter.
 """
@@ -9,6 +18,7 @@ import math
 import torch
 
 
+# Hsieh et al. 2024, Appendix B ("We set t = 5e-5 for all experiments").
 TEMPERATURE = 5e-5
 
 

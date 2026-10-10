@@ -37,6 +37,29 @@ def test_threshold_matching_and_document_choice():
     assert seakr.scaled_layer(32) == 15 and seakr.scaled_layer(36) == 17
 
 
+def test_missing_eigen_scores_are_none_not_infinity(monkeypatch):
+    monkeypatch.setattr(seakr, "sampled_eos_states", lambda *a, **k: [torch.ones(8)])
+    assert seakr.score_input(None, None, 4, 10) is None          # one EOS sample: no eigen score
+    monkeypatch.setattr(seakr, "sampled_eos_states", lambda *a, **k: [])
+    assert seakr.score_input(None, None, 4, 10) is None
+    assert seakr.is_missing(None) and seakr.is_missing(float("inf")) and not seakr.is_missing(-6.0)
+
+
+def test_missing_scores_never_retrieve_and_stay_in_the_rate():
+    scores = [-9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, None, None]
+    thr = seakr.matched_threshold(scores, 0.3)
+    retrieved = sum(s is not None and s > thr for s in scores)
+    assert abs(retrieved / len(scores) - 0.3) <= 1 / len(scores)
+    assert seakr.matched_threshold([None, None], 0.5) == float("inf")           # nothing can retrieve
+    assert seakr.matched_threshold([-1.0, None], 1.0) == float("-inf")         # every finite score retrieves
+
+
+def test_documents_without_a_score_come_after_scored_ones():
+    assert seakr.choose_document({"a": None, "b": -3.0, "c": -9.0}, {"a": "x", "b": "y", "c": "z"}) == "c"
+    assert seakr.choose_document({"a": None, "b": None}, {"a": "x", "b": "y"}) == "a"
+    assert seakr.choose_document({"a": -9.0, "b": None}, {"a": " ", "b": "y"}) == "b"    # empty answer last
+
+
 def test_eos_states_from_sampling_on_tiny_qwen(qwen):
     enc = encode(qwen)
     states = seakr.sampled_eos_states(qwen, enc, n=6, max_new_tokens=200, layer=1, seed=3)

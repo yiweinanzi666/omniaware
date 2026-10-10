@@ -250,6 +250,9 @@ def test_shards_refuse_missing_calibration_entries(tmp_path, monkeypatch):
 def test_query_routes_file_is_part_of_the_calibration_key(tmp_path, monkeypatch):
     from omniaware.baselines import universalrag
     examples = _webqa_examples(12)
+    for e in examples:                      # the UniversalRAG arm orders candidates by the suite's own scores
+        for c in e["candidates"]:
+            c["suite_score"] = 1 - 0.01 * int(c["cid"][1:])
     monkeypatch.setitem(data.LOADERS, "webqa_open_full", lambda **kw: examples)
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")

@@ -93,14 +93,16 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
     calib_ids = {e["qid"] for e in data.split_examples(examples, 6, 4, reserve=6)["calib"]}
     for r in rows:
         assert r["qid"] not in calib_ids
-        assert set(r["preds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate", "gated:static",
+        assert set(r["preds"]) == {"direct", "static", "static_joint", "eab:g1.2:ans2:pos:gate", "gated:static",
                                    "gated:eab:g1.2:ans2:pos:gate", "nte_trigger:static", "nte_shared:static"}
         assert len(r["chunks"]) == 5 and r["chunks"] == ["k1", "k2", "k3", "k4", "k5"]
+        # No routing on OK-VQA: the joint input is the routed one, so the static decoding is reused.
+        assert r["chunks_joint"] == r["chunks"] and r["preds"]["static_joint"] == r["preds"]["static"]
         expected = r["preds"]["static"] if r["retrieve"] else r["preds"]["direct"]
         assert r["preds"]["gated:static"] == expected
         assert r["u_eab"] == r["u_pre"]
         assert "scores" not in r
-        assert set(r["arm_seconds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate"}
+        assert set(r["arm_seconds"]) == {"direct", "static", "static_joint", "eab:g1.2:ans2:pos:gate"}
         assert set(r["prefill_seconds"]) == {"direct", "evidence"}
         assert set(r["ard"]) == {"static", "eab:g1.2:ans2:pos:gate"} and all(0 <= v <= 0.7 for v in r["ard"].values())
         assert set(r["span_tokens"]) == set(r["chunks"]) and len(r["chunk_gold"]) == 5
@@ -244,22 +246,56 @@ def test_universalrag_query_routes(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"): 1 - 0.01 * int(c["cid"][1:])}
                    for c in e["candidates"]} for e in exs})
-    labels = {0: ["image"], 1: ["paragraph"], 2: ["no"], 3: ["paragraph", "image"]}
-    routes = [dict(q, retrieval=labels[i % 4]) for i, q in enumerate(universalrag.export_queries(examples))]
+    labels = {0: ["image"], 1: ["paragraph"], 2: ["no"], 3: ["paragraph", "image"], 4: ["table"]}
+    routes = [dict(q, retrieval=labels[i % 5]) for i, q in enumerate(universalrag.export_queries(examples))]
     assert all("answer" not in q and "golds" not in q for q in routes)
     (tmp_path / "routes.json").write_text(json.dumps(routes))
+    # The suite's own retriever scores decide the order of a routed list (not relevance).
+    for e in examples:
+        for c in e["candidates"]:
+            c["suite_score"] = 1 - 0.01 * int(c["cid"][1:])
     run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
               "--n-dev", "0", "--tag", "uq", "--route-rule", "query", "--query-routes", str(tmp_path / "routes.json"),
-              "--image-mode", "clip", "--variants", "eab:g1.2:ans2:pos:gate"])
+              "--image-mode", "clip", "--variants", "eab:g1.2:ans2:pos:gate", "--replication-gamma", "1.2"])
     rows = [json.loads(line) for line in (tmp_path / "runs" / "uq" / "webqa_open_full.jsonl").read_text().splitlines()]
     for r in rows:
-        lab = labels[int(r["qid"][1:]) % 4]
+        lab = labels[int(r["qid"][1:]) % 5]
         assert r["route"]["labels"] == lab
+        assert len(r["chunks_joint"]) == 5 and "static_joint" in r["preds"]
         if lab == ["no"]:
-            assert r["preds"]["universalrag"] == r["preds"]["direct"]
+            assert r["preds"]["universalrag"] == r["preds"]["direct"] and r["universalrag_fallback"] == 0
+        elif lab == ["table"]:   # no table in this corpus: no retrieval, counted as a fallback
+            assert r["preds"]["universalrag"] == r["preds"]["direct"] and r["universalrag_fallback"] == 1
+            assert r["route"]["modalities"] == [] and r["route"]["fallback"] is True
         else:
-            assert r["preds"]["universalrag"] == r["preds"]["static"]
+            assert r["preds"]["universalrag"] == r["preds"]["static"] and r["universalrag_fallback"] == 0
             assert {c[0] for c in r["chunks"]} == {{"image": "i", "text": "t"}[m] for m in r["route"]["modalities"]}
+
+
+def test_static_joint_is_unrouted_and_differs_from_the_routed_input(tmp_path, monkeypatch):
+    examples = _webqa_examples(8)
+    monkeypatch.setitem(data.LOADERS, "webqa_open_full", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    # Text always scores higher than images, so the joint top-5 is all text.
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
+        e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"):
+                              (0.1 if c["modality"] == "image" else 0.9) - 0.01 * int(c["cid"][1:])}
+                   for c in e["candidates"]} for e in exs})
+    run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "2", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "joint", "--route-rule", "oracle", "--image-mode", "clip",
+              "--relevance-norm", "raw", "--variants", "eab:g1.2:ans2:pos:gate"])
+    rows = [json.loads(line) for line in (tmp_path / "runs" / "joint" / "webqa_open_full.jsonl").read_text().splitlines()]
+    assert rows
+    for r in rows:
+        # The joint input ignores the route: all-text top-5 for every question.
+        assert r["chunks_joint"] == ["t1", "t2", "t3", "t4", "t5"]
+        if r["gold_modalities"] == ["image"]:          # oracle routes this question to images only
+            assert {c[0] for c in r["chunks"]} == {"i"} and r["chunks"] != r["chunks_joint"]
+        else:
+            assert r["chunks"] == r["chunks_joint"]
+        assert "gated:static_joint" not in r["preds"]   # the gated arms are the Omni-Aware arms only
 
 
 def test_seakr_arms(tmp_path, monkeypatch):
@@ -284,6 +320,28 @@ def test_seakr_arms(tmp_path, monkeypatch):
         assert r["seakr"]["chosen"] == "k3"
         assert r["preds"]["seakr"] != r["preds"]["direct"]
         assert r["preds"]["seakr_trigger:static"] == r["preds"]["static"]
+
+
+def test_seakr_missing_eigen_scores_are_recorded_and_do_not_retrieve(tmp_path, monkeypatch):
+    from omniaware.baselines import seakr
+    examples = _examples(14)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    monkeypatch.setattr(seakr, "score_input", lambda qwen, enc, n, m, layer=None, seed=42: None)
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "0", "--tag", "skm", "--seakr-samples", "4", "--seakr-threshold", "0",
+              "--variants", "eab:g1.2:ans2:pos:gate"])
+    out = tmp_path / "runs" / "skm"
+    assert json.loads((out / "okvqa_config.json").read_text())["seakr_missing_calibration"] == 6
+    rows = [json.loads(line) for line in (out / "okvqa.jsonl").read_text().splitlines()]
+    assert rows
+    for r in rows:
+        assert r["seakr"]["missing"] is True and r["seakr"]["direct_eigen"] is None and r["seakr"]["retrieve"] is False
+        assert r["preds"]["seakr_trigger:static"] == r["preds"]["direct"] and r["preds"]["seakr"] == r["preds"]["direct"]
 
 
 @pytest.mark.parametrize("extra", [["--relevance-norm", "raw"], ["--relevance-norm", "minmax"], ["--no-calibration"]])

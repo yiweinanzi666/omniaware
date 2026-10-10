@@ -13,8 +13,12 @@ and run with the upstream scripts; this module only moves data in and out:
     # 3. run:  python -m omniaware.run ... --route-rule query --query-routes routes.json
 
 Upstream labels map to our corpora: paragraph/document -> text, table -> table, image -> image,
-clip/video -> video, no -> no retrieval. The 'universalrag' arm answers directly when the router
-says 'no' and otherwise uses static concatenation of the routed top-k.
+clip -> clip, video -> video (clip and video are separate modalities, as in the suite's own lists),
+no -> no retrieval. The 'universalrag' arm answers directly when the router says 'no', or when every
+label it names is absent from our corpus (counted as a fallback), and otherwise uses static
+concatenation of the routed top-k, ranked by the suite retriever's score.
+
+Route files are produced by scripts/universalrag_retrieval/route_queries.py (the official router).
 """
 from __future__ import annotations
 
@@ -23,7 +27,7 @@ import json
 from pathlib import Path
 
 LABEL_TO_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "image": "image",
-                     "clip": "video", "video": "video", "no": None}
+                     "clip": "clip", "video": "video", "no": None}
 INDEX_PREFIX = {"webqa": "webqa_"}
 
 
@@ -51,22 +55,37 @@ def load_routes(path: Path) -> dict[str, list[str]]:
 
 
 def parse_labels(raw) -> list[str]:
+    """Router output (a list, or 'a+b' text) -> labels. Empty or missing output means 'no'.
+
+    Any other label, including the upstream 'error' sentinel, raises: upstream eval.py drops such
+    labels silently, which would turn a malformed route into an unannounced change of arm.
+    """
     if isinstance(raw, str):
         raw = [part.strip() for part in raw.split("+")]
-    labels = [label.lower() for label in (raw or []) if label and label.lower() in LABEL_TO_MODALITY]
+    labels = [str(label).strip().lower() for label in (raw or []) if label and str(label).strip()]
+    unknown = sorted(set(labels) - set(LABEL_TO_MODALITY))
+    if unknown:
+        raise ValueError(f"unknown UniversalRAG labels {unknown}; expected one of {sorted(LABEL_TO_MODALITY)}")
+    labels = list(dict.fromkeys(labels))
     if len(labels) > 1 and "no" in labels:
         labels = [label for label in labels if label != "no"]
     return labels or ["no"]
 
 
 def to_route(labels: list[str], available: set[str]) -> dict:
-    """Router labels -> {retrieve, modalities}; modalities absent from the corpus are dropped."""
+    """Router labels -> {retrieve, modalities} over the modalities this corpus has.
+
+    If the router names modalities but none of them is in the corpus, the query does not retrieve
+    (its answer is the direct one) and ``fallback`` is set so that run.py can count it. Restricting
+    to the corpus never widens the route to other modalities.
+    """
     unknown = set(labels) - set(LABEL_TO_MODALITY)
     if unknown:
         raise ValueError(f"unknown UniversalRAG labels {sorted(unknown)}")
     mapped = {LABEL_TO_MODALITY[label] for label in labels} - {None}
-    return {"mode": "query", "rule": "query", "labels": labels, "retrieve": bool(mapped),
-            "modalities": sorted(mapped & available)}
+    modalities = sorted(mapped & available)
+    return {"mode": "query", "rule": "query", "labels": labels, "retrieve": bool(modalities),
+            "modalities": modalities, "fallback": bool(mapped) and not modalities}
 
 
 def overlapping(train_rows: list[dict], examples: list[dict]) -> set[str]:

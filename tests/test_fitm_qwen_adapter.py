@@ -141,6 +141,19 @@ class FitmQwenTests(unittest.TestCase):
         self.assertIs(F.scaled_dot_product_attention, original_sdpa)
         json.dumps(progress, allow_nan=False)
 
+    def test_null_reference_replaces_content_and_keeps_vision_markers(self):
+        tokenizer = tokenizer64()
+        inputs = dict(input_ids=torch.tensor([[11, 12, 13, 14]]), attention_mask=torch.ones(1, 4, dtype=torch.long))
+        sources = [dict(source_id="image:a", text_token_indices=[2], vision_token_indices=[],
+                        structural_token_indices=[1, 3]),
+                   dict(source_id="text:b", text_token_indices=[0], vision_token_indices=[])]
+        reference, metadata = make_null_reference(inputs, sources, 0, tokenizer)
+        self.assertEqual(reference["input_ids"][0, [0, 1, 3]].tolist(), [11, 12, 14])   # markers and outside text
+        self.assertNotEqual(reference["input_ids"][0, 2].item(), 13)                    # content replaced
+        self.assertEqual(metadata["text_token_indices"], [2])
+        self.assertEqual(document_indices(sources)[0], [1, 2, 3])                       # markers stay in the document
+        self.assertEqual(inputs["input_ids"].tolist(), [[11, 12, 13, 14]])
+
     @torch.inference_mode()
     def test_visual_null_preserves_positions_and_all_reference_costs(self):
         model, tokenizer = model18(), tokenizer64()

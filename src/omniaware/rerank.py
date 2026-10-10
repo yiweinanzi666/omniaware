@@ -4,6 +4,12 @@ Functions are copied verbatim from the legacy pipeline (see MIGRATION_SOURCES.js
 rank_sources selects the cross-encoder top-k and presents it in BGE order (appendix:
 "BGE top-5 vs five facts that bge-reranker-v2-m3 selects"); select_calibrated selects by the
 per-modality ECDF of the cross-encoder logit (appendix: "percentile calibration").
+
+The cross-encoder is text-only (bge-reranker-v2-m3 takes a (question, text) pair). It never sees an
+image or a video frame: an image candidate is scored by its caption, and a video by its transcript
+(empty when there is none). The "CE + static" baseline therefore selects images by caption.
+The order shown to the model is the Omni-Aware calibrated relevance (ce_select passes ``rel`` as
+the BGE score), not the raw BGE cosine.
 """
 from bisect import bisect_right
 import gc

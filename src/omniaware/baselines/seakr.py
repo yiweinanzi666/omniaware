@@ -11,8 +11,24 @@ Upstream (external/SeaKR, THU-KEG/SeaKR, GPL-3.0) runs LLaMA-2 in a modified vLL
 
 Here the layer is scaled to the backbone's depth, documents are our top-k chunks, and the threshold
 is either fixed or matched on the unlabeled calibration questions to a target retrieval rate.
+
+Deviations from the upstream protocol (the paper's shared protocol requires them, or they are not
+yet verified):
+- k = 5 chunks per question (the paper's common k); upstream's notebook scores 10 rows per question.
+- EOS samples: we keep a sample if it emitted at least one non-EOS token; upstream keeps one whose
+  decoded text is non-empty after strip(). Upstream stacks nothing for samples without EOS and fails;
+  we drop them.
+- Sampling is seeded with seed=42 for every question, so runs reproduce; upstream draws from an
+  unseeded vLLM stream.
+- An input with fewer than two EOS samples has no eigen score. It is reported as missing (None),
+  never as infinity: a missing score does not trigger retrieval, and the count is recorded.
+- Threshold: matched on the calibration questions to the retrieval rate of U (upstream fixes -6.0
+  for LLaMA-2), and the layer is scaled to the backbone depth (scaled_layer).
+- The eigen-score body is the upstream formula (tests/test_seakr.py compares the AST).
 """
 from __future__ import annotations
+
+import math
 
 import numpy as np
 import torch
@@ -23,7 +39,7 @@ LLAMA2_LAYER, LLAMA2_DEPTH = 15, 32
 
 
 def eigen_score(z: torch.Tensor, alpha: float = 1e-3) -> float:
-    """Verbatim from upstream vllm_uncertainty/vllm/engine/llm_engine.py:_compute_eigen_score."""
+    """Same body as upstream vllm_uncertainty/vllm/engine/llm_engine.py:_compute_eigen_score (AST-checked)."""
     z = z.to(torch.float32)
     k, d = z.shape
     j_d = torch.eye(d) - (1/d) * torch.ones(d, d)
@@ -72,18 +88,43 @@ def sampled_eos_states(qwen, enc, n: int = 20, max_new_tokens: int = 100, layer:
     return states
 
 
-def score_input(qwen, enc, n: int, max_new_tokens: int, layer: int | None = None, seed: int = 42) -> float:
+def is_missing(score: float | None) -> bool:
+    """A question without a usable eigen score (fewer than two EOS samples, or a non-finite value)."""
+    return score is None or not math.isfinite(score)
+
+
+def score_input(qwen, enc, n: int, max_new_tokens: int, layer: int | None = None, seed: int = 42) -> float | None:
+    """Eigen score of one input, or None (missing) when fewer than two EOS samples were drawn."""
     states = sampled_eos_states(qwen, enc, n, max_new_tokens, layer, seed=seed)
-    return eigen_score(torch.stack(states)) if len(states) > 1 else float("inf")
+    return eigen_score(torch.stack(states)) if len(states) > 1 else None
 
 
-def matched_threshold(calibration_scores: list[float], retrieval_rate: float) -> float:
-    """Threshold whose share of calibration scores above it equals the target retrieval rate."""
-    scores = np.asarray([s for s in calibration_scores if np.isfinite(s)], dtype=float)
-    return float(np.quantile(scores, 1 - retrieval_rate)) if len(scores) else float("inf")
+def matched_threshold(calibration_scores: list[float | None], retrieval_rate: float) -> float:
+    """Threshold at which the calibration questions retrieve at ``retrieval_rate``.
+
+    Missing scores never retrieve, so they stay in the denominator: the threshold is chosen so that
+    the finite scores above it make up retrieval_rate * n of the n calibration questions. When that
+    many cannot be reached (too many missing), every finite score retrieves (threshold -inf). With no
+    finite score at all the threshold is +inf and nothing retrieves.
+    """
+    n = len(calibration_scores)
+    scores = np.asarray([s for s in calibration_scores if not is_missing(s)], dtype=float)
+    if n == 0 or scores.size == 0:
+        return float("inf")
+    fraction = retrieval_rate * n / scores.size   # share of the finite scores that must retrieve
+    if fraction >= 1:
+        return float("-inf")
+    return float(np.quantile(scores, 1 - fraction))
 
 
-def choose_document(doc_scores: dict[str, float], doc_answers: dict[str, str]) -> str | None:
-    """eval_singlehop.ipynb: keep the answer with the lowest eigen score (empty answers last)."""
-    ranked = sorted(doc_scores, key=lambda c: (doc_scores[c] if doc_answers[c].strip() else float("inf"), c))
+def choose_document(doc_scores: dict[str, float | None], doc_answers: dict[str, str]) -> str | None:
+    """eval_singlehop.ipynb: keep the answer with the lowest eigen score.
+
+    Empty answers come last. Among non-empty answers, documents with a score come before documents
+    without one, which are ordered by candidate id.
+    """
+    def key(c):
+        score = doc_scores[c]
+        return (not doc_answers[c].strip(), is_missing(score), 0.0 if is_missing(score) else score, c)
+    ranked = sorted(doc_scores, key=key)
     return ranked[0] if ranked else None
