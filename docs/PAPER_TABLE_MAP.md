@@ -19,7 +19,7 @@
 | Omni-Aware + cross-encoder | `v321_ce` | `gated:EAB` |
 | Latency 列 | `paper_analyses latency` | 始终检索 / 门控臂由 prefill + 解码时间算出；FITM、M2-RAG、SeaKR 为各自的实测墙钟时间 |
 
-列：WebQA 全量 = `webqa_open_full`；WebQA-img = `webqa_open_img`；OK-VQA = `okvqa`（指标 `vqa_accuracy`）；HybridQA = `hybridqa`（`em`，附录 `f1`）；VideoRAG-Synth = `videorag_synth`（`rouge_l`，附录 `bertscore_f1`，需 `--bart`）。显著性：`official_summary.json` 中的配对 bootstrap。
+列：WebQA 全量 = `webqa_open_full`；WebQA-img = `webqa_open_img`；OK-VQA = dev 冻结的语料（默认 `okvqa_gs`，指标 `vqa_accuracy`）；HybridQA = `hybridqa`（`em`，附录 `f1`）；VideoRAG-Synth = `videorag_synth`（`rouge_l`，附录 `bertscore_f1`，需 `--bart`）。显著性：`official_summary.json` 中的配对 bootstrap。
 
 ## 表 uomni_ablation（组件对照）——stage `ablation`、`citation`
 
@@ -33,13 +33,14 @@
 | U_omni, replication | `gated:replication` |
 | U_omni, EAB / decode-only EAB | `gated:EAB` / `gated:EAB_dec` |
 | No probe round（冷启动只用 β·H_pred） | `v321_ablation_noprobe` 的 `gated:EAB` |
-| EAB + context bias | `gated:eab:g1.2:ans2:pos:gate:all:retriever:ctx` |
+| EAB + context bias | `gated:eab:g1.2:ans1:pos:gate:all:retriever:ctx` |
 | Raw retriever scores | `v321_ablation_raw` 的 `gated:EAB` |
-| Always retrieve, relevance bias | `eab:g1.2:ans2:pos:nogate`（无 `gated:` 前缀 = 始终检索） |
-| Relevance bias without U scaling | `gated:eab:g1.2:ans2:pos_nou:gate` |
-| Uniform (PASTA-style) bias, gated | `gated:eab:g1.2:ans2:fixed:gate` |
-| Random relevance, gated | `gated:eab:g1.2:ans2:pos:gate:all:random` |
+| Always retrieve, relevance bias | `eab:g1.2:ans1:pos:nogate`（无 `gated:` 前缀 = 始终检索） |
+| Relevance bias without U scaling | `gated:eab:g1.2:ans1:pos_nou:gate` |
+| Uniform (PASTA-style) bias, gated | `gated:eab:g1.2:ans1:fixed:gate` |
+| Random relevance, gated | `gated:eab:g1.2:ans1:pos:gate:all:random` |
 | R% 列 | 记录中 `retrieve` 为真的比例（`paper_analyses stats` 的 `retrieval_rate`） |
+| 说明 | 以上变体以默认形式 `ans1:pos` 为例；dev 若冻结为其他形式，`paper_runs.py` 自动替换为同一形式 |
 | AP 列 | `python -m omniaware.eval.citation.attribution runs/v321_cite/<dataset>.jsonl` |
 
 ## 表 routing（WebQA 开放检索）——stage `routing`
