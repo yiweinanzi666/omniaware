@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import warnings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ASSET_ROOT = Path(os.environ.get("OMNIAWARE_ASSETS") or os.environ.get("ERC_ASSET_ROOT")
@@ -36,11 +37,14 @@ OKVQA_INPUTS = DATA / "okvqa_val5046_assets" / "validation_inputs.jsonl"
 OKVQA_CANDIDATES = DATA / "okvqa_val5046_assets" / "validation_candidates.jsonl"
 OKVQA_ANNOTATIONS = DATA / "okvqa_local" / "original" / "mscoco_val2014_annotations.json.zip"
 
-# WebQA open retrieval artifacts (global pool, encodings, FAISS indices, rankings); default is the
-# legacy directory on the experiment host, where the complete indices were built.
+# WebQA open retrieval artifacts (global pool, encodings, FAISS indices, rankings).  Only the environment
+# variable or the default ``<asset root>/webqa_open`` selects the directory; the legacy directory of the
+# experiment host is never picked up silently.  Set OMNIAWARE_WEBQA_OPEN_DIR to reuse it.
 _LEGACY_WEBQA_OPEN = ASSET_ROOT / "runs" / "phase1_dense_retrieval_codex_20261006"
-WEBQA_OPEN = Path(os.environ.get("OMNIAWARE_WEBQA_OPEN_DIR",
-                                 _LEGACY_WEBQA_OPEN if _LEGACY_WEBQA_OPEN.exists() else ASSET_ROOT / "webqa_open"))
+WEBQA_OPEN = Path(os.environ.get("OMNIAWARE_WEBQA_OPEN_DIR", ASSET_ROOT / "webqa_open"))
+if "OMNIAWARE_WEBQA_OPEN_DIR" not in os.environ and _LEGACY_WEBQA_OPEN.exists():
+    warnings.warn(f"{_LEGACY_WEBQA_OPEN} exists but is not used: WebQA open-retrieval artifacts come from "
+                  f"{WEBQA_OPEN}. Set OMNIAWARE_WEBQA_OPEN_DIR={_LEGACY_WEBQA_OPEN} to use it.", stacklevel=2)
 # Citation-support NLI checker (pinned revision, see eval/citation/checker_asset_manifest.json)
 NLI_CHECKER = CACHE / "e5_citation_support" / "deberta_nli" / "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7"
 

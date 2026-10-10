@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 import shutil
 import sys
+import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -29,15 +31,43 @@ URLS = {
 RAW = paths.DATA / "okvqa_local" / "original"
 
 
-def fetch(url: str, target: Path) -> Path:
+def fetch(url: str, target: Path, retries: int = 6, timeout: int = 60) -> Path:
+    """Download ``url`` to ``target`` with a timeout, retries with backoff and resume.
+
+    Bytes go to ``<target>.part``; after an interruption the next attempt asks for the rest with a Range request
+    (a server that ignores Range makes it start over).  The result is checked against Content-Length before the
+    part file is renamed, so a truncated download is never mistaken for a finished one."""
     if target.exists():
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
-    tmp = target.with_suffix(target.suffix + ".part")
+    part = target.with_suffix(target.suffix + ".part")
     print(f"[download] {url}", flush=True)
-    urllib.request.urlretrieve(url, tmp)
-    tmp.replace(target)
-    return target
+    for attempt in range(1, retries + 1):
+        have = part.stat().st_size if part.exists() else 0
+        req = urllib.request.Request(url, headers={"Range": f"bytes={have}-"} if have else {})
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if have and resp.status != 206:
+                    have = 0                                   # the server ignored Range: start again
+                length = resp.headers.get("Content-Length")
+                expected = have + int(length) if length else None
+                with part.open("ab" if have else "wb") as out:
+                    shutil.copyfileobj(resp, out, 1 << 20)
+            size = part.stat().st_size
+            if expected is not None and size != expected:
+                raise OSError(f"incomplete download: {size} of {expected} bytes")
+            part.replace(target)
+            return target
+        except urllib.error.HTTPError as exc:
+            if exc.code == 416 and part.exists():             # the part file already holds every byte
+                part.replace(target)
+                return target
+            print(f"[retry {attempt}/{retries}] HTTP {exc.code}", flush=True)
+        except (OSError, TimeoutError) as exc:
+            print(f"[retry {attempt}/{retries}] {exc}", flush=True)
+        if attempt < retries:
+            time.sleep(min(60, 2 ** attempt))
+    raise SystemExit(f"download of {url} failed after {retries} attempts; rerun the command to resume from {part}")
 
 
 def read_zip_json(path: Path) -> dict:

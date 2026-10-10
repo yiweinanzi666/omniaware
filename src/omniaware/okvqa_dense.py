@@ -1,13 +1,21 @@
 """Dense BGE retrieval for OK-VQA over a passage corpus.
 
-Corpora: 'wiki3m' (the first 3M DPR Wikipedia passages, matching the original e5_Flat.index setup) and
-'gs112k', the Google Search corpus of Luo et al. (EMNLP 2021) used across the OK-VQA retrieval literature
-(full test corpus, 168,306 sentences; okvqa_full_corpus.csv of their release).
+Corpora (``--corpus``):
+  wiki3m       the first 3M DPR Wikipedia passages (psgs_w100 prefix); the original e5_Flat.index setup.
+  gs112k       the Google Search corpus of Luo et al. (EMNLP 2021) collected from the TRAINING questions only:
+               okvqa_train_corpus.csv, 112,724 sentences. Default corpus of the okvqa_gs dataset and the
+               only GS corpus used for dev selection.
+  gs168k_full  okvqa_full_corpus.csv, 168,306 sentences. Luo et al. collected it from the training AND the test
+               questions, so it contains retrieval results for evaluation questions. Optional, appendix only;
+               it does not take part in dev selection.
 
-  python -m omniaware.okvqa_dense --corpus gs112k prepare --csv okvqa_full_corpus.csv   # CSV -> corpus.jsonl
-  python -m omniaware.okvqa_dense --corpus gs112k encode [--limit N]     # passages -> fp16 memmap (resumable)
-  python -m omniaware.okvqa_dense --corpus gs112k search --n-passages N  # top-k per question -> candidates.jsonl
+  python -m omniaware.okvqa_dense --corpus gs112k prepare --csv okvqa_train_corpus.csv   # CSV -> corpus.jsonl
+  python -m omniaware.okvqa_dense --corpus gs112k encode [--limit N]      # passages -> fp16 memmap (resumable)
+  python -m omniaware.okvqa_dense --corpus gs112k search                  # top-k per question -> candidates.jsonl
 
+The number of passages is read from corpus.jsonl (``--n-passages`` overrides it only for a partial check).
+Passages are encoded without a prefix and questions with the BGE query instruction, through the same
+relevance.BGE.encode calls that the relevance re-scoring uses, so the index and the scores agree.
 Datasets okvqa_dense (wiki3m) and okvqa_gs (gs112k) read these candidates; every arm of a run shares them.
 """
 
@@ -26,8 +34,11 @@ from . import paths, relevance
 CORPORA = {   # name -> (corpus.jsonl with {"id", "contents"}, output directory)
     "wiki3m": (paths.DATA / "okvqa_knowledge_dpr_first3m" / "corpus_wiki_first3m.jsonl", paths.LOCAL_CACHE / "okvqa_dense"),
     "gs112k": (paths.LOCAL_CACHE / "okvqa_gs112k" / "corpus.jsonl", paths.LOCAL_CACHE / "okvqa_gs112k"),
+    "gs168k_full": (paths.LOCAL_CACHE / "okvqa_gs168k_full" / "corpus.jsonl", paths.LOCAL_CACHE / "okvqa_gs168k_full"),
 }
+GS_CORPORA = ("gs112k", "gs168k_full")
 CORPUS, OUT = CORPORA["wiki3m"]
+DIM = 1024
 
 
 def use_corpus(name: str) -> None:
@@ -35,26 +46,25 @@ def use_corpus(name: str) -> None:
     CORPUS, OUT = CORPORA[name]
 
 
-def prepare_gs112k(csv_path: Path) -> Path:
-    """Luo et al.'s CSV (one knowledge sentence per row) -> corpus.jsonl; ids are the row order."""
+def prepare_gs_csv(csv_path: Path) -> Path:
+    """Luo et al.'s CSV (one knowledge sentence per row, in column 'text') -> corpus.jsonl; ids are the row order
+    of the non-empty sentences.  A CSV without a 'text' column is rejected: the sentence column is never guessed."""
     import csv
-    CORPUS.parent.mkdir(parents=True, exist_ok=True)
-    n = 0
-    with open(csv_path, newline="", encoding="utf8") as fh, CORPUS.open("w", encoding="utf8") as out:
+    with open(csv_path, newline="", encoding="utf8") as fh:
         reader = csv.DictReader(fh)
-        field = "text" if "text" in reader.fieldnames else reader.fieldnames[-1]
-        for row in reader:
-            text = " ".join((row[field] or "").split())
-            if text:
-                out.write(json.dumps({"id": n, "contents": text}, ensure_ascii=False) + "\n")
-                n += 1
-    print(f"[prepare] {n} passages from column '{field}' of {csv_path} -> {CORPUS}", flush=True)
+        if "text" not in (reader.fieldnames or []):
+            raise ValueError(f"{csv_path} has no 'text' column (header: {reader.fieldnames}); "
+                             "the sentence column must be named 'text'")
+        CORPUS.parent.mkdir(parents=True, exist_ok=True)
+        n = 0
+        with CORPUS.open("w", encoding="utf8") as out:
+            for row in reader:
+                text = " ".join((row["text"] or "").split())
+                if text:
+                    out.write(json.dumps({"id": n, "contents": text}, ensure_ascii=False) + "\n")
+                    n += 1
+    print(f"[prepare] {n} passages from column 'text' of {csv_path} -> {CORPUS}", flush=True)
     return CORPUS
-DIM = 1024
-# The original index (rebuild_index_wiki_3m.py, e5_Flat.index) used BGE-large weights with
-# retrieval_method='e5': "passage: " / "query: " prefixes, CLS pooling, normalised, max_length 512.
-PASSAGE_PREFIX = "passage: "
-QUERY_PREFIX = "query: "
 
 
 def _offsets(limit: int | None) -> np.ndarray:
@@ -99,8 +109,8 @@ def encode(limit: int | None, batch: int) -> None:
         while i < n:
             texts = []
             for _ in range(min(batch, n - i)):
-                texts.append(PASSAGE_PREFIX + json.loads(fh.readline())["contents"])
-            vec = bge.encode(texts, batch=batch)
+                texts.append(json.loads(fh.readline())["contents"])   # BGE passages: no instruction
+            vec = bge.encode(texts, query=False, batch=batch)
             emb[i:i + len(texts)] = vec.astype(np.float16)
             i += len(texts)
             if (i // batch) % 40 == 0 or i == n:
@@ -112,15 +122,17 @@ def encode(limit: int | None, batch: int) -> None:
     done_path.write_text(str(n))
 
 
-def search(n_passages: int, k: int, limit_queries: int | None, chunk: int, tag: str) -> Path:
+def search(n_passages: int | None, k: int, limit_queries: int | None, chunk: int, tag: str) -> Path:
     from .data import load_okvqa
 
+    if n_passages is None:   # the corpus itself decides the size; no hand-typed count to go stale
+        n_passages = len(_offsets(None))
     emb = np.memmap(OUT / f"emb_{n_passages}.f16", dtype=np.float16, mode="r", shape=(n_passages, DIM))
     done = int((OUT / f"emb_{n_passages}.done").read_text())
     assert done == n_passages, f"encoding incomplete: {done}/{n_passages}"
     examples = load_okvqa(candidates_path=False)[:limit_queries]
     bge = relevance.BGE()
-    q = torch.from_numpy(bge.encode([QUERY_PREFIX + e["question"] for e in examples])).to(bge.device, torch.float16)
+    q = torch.from_numpy(bge.encode([relevance.query_text(e) for e in examples], query=True)).to(bge.device, torch.float16)
     best_s = torch.full((len(examples), k), -1e4, device=bge.device)
     best_i = torch.zeros((len(examples), k), dtype=torch.long, device=bge.device)
     for s in range(0, n_passages, chunk):
@@ -155,7 +167,7 @@ def main(argv=None):
     a.add_argument("--limit", type=int, default=None)
     a.add_argument("--batch", type=int, default=128)
     b = sub.add_parser("search")
-    b.add_argument("--n-passages", type=int, default=3_000_000)
+    b.add_argument("--n-passages", type=int, default=None, help="default: the number of lines in corpus.jsonl")
     b.add_argument("--k", type=int, default=20)
     b.add_argument("--limit-queries", type=int, default=None)
     b.add_argument("--chunk", type=int, default=200_000)
@@ -163,9 +175,9 @@ def main(argv=None):
     args = ap.parse_args(argv)
     use_corpus(args.corpus)
     if args.cmd == "prepare":
-        if args.corpus != "gs112k":
-            ap.error("prepare converts the GS-112K CSV")
-        prepare_gs112k(args.csv)
+        if args.corpus not in GS_CORPORA:
+            ap.error("prepare converts the Luo et al. GS CSV (--corpus gs112k or gs168k_full)")
+        prepare_gs_csv(args.csv)
     elif args.cmd == "encode":
         encode(args.limit, args.batch)
     else:

@@ -22,8 +22,8 @@ def sentence_splitter():
     import nltk
     assert nltk.__version__ == '3.9.2'
     manifest = json.loads((cache / 'sentence_splitter_assets.json').read_text())
-    for record in manifest['files']:
-        assert hashlib.sha256(Path(record['path']).read_bytes()).hexdigest() == record['sha256']
+    for record in manifest['files']:   # paths are relative to the asset root (absolute paths stay absolute)
+        assert hashlib.sha256((ROOT / record['path']).read_bytes()).hexdigest() == record['sha256']
     nltk.data.path = [str(cache / 'nltk_data')]
     from nltk.tokenize import PunktTokenizer
     return PunktTokenizer('english')
