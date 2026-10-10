@@ -171,7 +171,7 @@ python -m omniaware.okvqa_dense --corpus gs112k search --k 20                   
 
 `okvqa_dense` 的段落按 BGE 官方用法编码（无前缀），问题调用 `relevance.BGE.encode(query=True)`（即 BGE 查询指令），与重打分使用同一函数。
 
-**dev 网格的三种 OK-VQA 语料**。以下三条路线都必须先构建，`paper_runs` 才能使用对应选项（缺语料时 `paper_runs` 的行为见 `docs/DEV_DECISIONS.md`）：
+**dev 网格的三种 OK-VQA 语料**。以下三条路线都必须先构建，`paper_runs` 才能使用对应选项。缺语料时 `paper_runs` 会跳过该选项，因此运行 dev 阶段前用 `python -m scripts.paper_runs --list` 核对哪些选项被跳过：
 
 1. **okvqa_gs（GS 训练语料）**：如上。
 2. **okvqa_dense（DPR 维基，3M 段落）**：
