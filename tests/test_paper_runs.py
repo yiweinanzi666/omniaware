@@ -17,7 +17,7 @@ def test_every_paper_run_command_parses_and_its_variants_exist():
                 assert not (args.m2rag and args.dataset == "videorag_synth")
                 assert not (args.fitm and args.model == "internvl3.5-8b")
                 n += 1
-    assert n > 200
+    assert n > 150
 
 
 def test_ablation_rows_survive_any_frozen_form(monkeypatch):

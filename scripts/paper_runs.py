@@ -4,6 +4,7 @@
     python -m scripts.paper_runs --stage dev --run             # 1. pre-registered dev grid (--split dev)
     python -m scripts.analysis.dev_select                      # 2. freeze choices -> runs/dev_decisions.json
     python -m scripts.paper_runs --stage main --run            # 3. test stages read the frozen choices
+    python -m scripts.paper_runs --stage main --run --gpus auto # every run sharded over all visible GPUs
 
 The dev stage compares the six EAB forms, three uncertainty settings and three OK-VQA retrieval corpora;
 docs/DEV_DECISIONS.md states the decision rules before any result is seen. Test stages run once with the
@@ -73,7 +74,12 @@ def stages(model: str, split: str) -> dict[str, dict]:
 
     s = {}
     dev = []
-    for d in ["webqa_open_full", "okvqa", "okvqa_dense", "okvqa_gs", "hybridqa", "videorag_synth"]:
+    sys.path.insert(0, str(ROOT / "src"))
+    from omniaware import paths
+    optional = {"okvqa": paths.OKVQA_CANDIDATES, "okvqa_dense": paths.LOCAL_CACHE / "okvqa_dense" / "candidates_full.jsonl"}
+    skipped = [d for d, f in optional.items() if not Path(f).exists()]
+    for d in [d for d in ["webqa_open_full", "okvqa", "okvqa_dense", "okvqa_gs", "hybridqa", "videorag_synth"]
+              if d not in skipped]:
         tag = f"v321dev_base_{model}"
         dev += [run(d, tag, "--variants", ",".join(EAB_FORMS), split_="dev", u_combine="sum", attn_layer="last"),
                 score(d, tag)]
@@ -83,9 +89,26 @@ def stages(model: str, split: str) -> dict[str, dict]:
             tag = f"v321dev_{setting}_{model}"
             dev += [run(d, tag, "--variants", "", split_="dev", **kw), score(d, tag)]
     dev.append(["python", "-m", "scripts.analysis.dev_select", "--model", model])
-    s["dev"] = {"fills": "nothing in the paper: pre-registered choices -> runs/dev_decisions.json", "commands": dev}
+    s["dev"] = {"fills": "nothing in the paper: pre-registered choices -> runs/dev_decisions.json"
+                         + (f" (skipped, candidates not built: {', '.join(skipped)})" if skipped else ""),
+                "commands": dev}
 
     main = []
+    if model == "internvl3.5-8b":     # backbone transfer: static vs the controller, with its own calibration
+        for d in datasets:
+            main += [run(d, f"v321_main_{model}", "--variants", eab, "--replication-gamma", "1.2"),
+                     score(d, f"v321_main_{model}")]
+        transfer_order = []
+        sys.path.insert(0, str(ROOT / "src"))
+        from omniaware.order import permutation_schedule
+        for o in permutation_schedule():
+            tag = f"v321_perm_{o['order_id']}_{model}"
+            transfer_order += [run(okvqa, tag, "--variants", eab, "--replication-gamma", "1.2", "--order",
+                                   f"perm:{o['order_id']}", "--n-eval", SUBSAMPLE), score(okvqa, tag)]
+        transfer_order.append(analyse("order", f"runs/v321_perm_*_{model}/{okvqa}.jsonl", "--metric", METRIC[okvqa],
+                                      "--arms", "static", "replication", eab))
+        return {"main": {"fills": "appendix backbone transfer (InternVL3.5-8B)", "commands": main},
+                "order": {"fills": "appendix: OK-VQA order deviations of InternVL3.5-8B", "commands": transfer_order}}
     for d in datasets:
         extra = ["--variants", eab, "--replication-gamma", "1.2"]
         if model != "internvl3.5-8b":
@@ -197,7 +220,12 @@ def stages(model: str, split: str) -> dict[str, dict]:
                analyse("uncertainty", f"runs/v321_seakr_{model}/{d}.jsonl", "--metric", METRIC[d], "--arms", "direct"),
                analyse("latency", path), analyse("latency", f"runs/v321_seakr_{model}/{d}.jsonl"),
                analyse("stats", path, "--arms", "static", eab),
-               analyse("errors", path, "--metric", METRIC[d], "--arms", f"gated:{eab}")]
+               analyse("errors", path, "--metric", METRIC[d], "--arms", f"gated:{eab}"),
+               analyse("selective", f"runs/v321_seakr_{model}/{d}.jsonl", path, "--metric", METRIC[d], "--arms", eab),
+               analyse("agreement", path, "--metric", METRIC[d], "--arms", f"gated:{eab}"),
+               analyse("transitions", path, "--metric", METRIC[d], "--arms", "gated:static", f"gated:{eab}"),
+               analyse("stats", f"runs/v321_ce_{model}/{d}.jsonl", "--arms", "static"),       # reranker recall
+               analyse("ranges", f"cache/relevance_{d}*.json")]
     s["analysis"] = {"fills": "selective risk, latency, dataset statistics, first-token shares, error analysis",
                      "commands": an}
     return s
@@ -211,6 +239,9 @@ def main():
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--print", action="store_true")
     ap.add_argument("--run", action="store_true")
+    ap.add_argument("--gpus", default=None,
+                    help="run every omniaware.run command through scripts.launch on these GPUs ('auto' or '0,1,...')")
+    ap.add_argument("--procs-per-gpu", type=int, default=1)
     args = ap.parse_args()
     all_stages = stages(args.model, args.split)
     if args.list or not args.stage:
@@ -219,6 +250,9 @@ def main():
             print(f"{name:14s} {len(st['commands']):4d} commands  -> {st['fills']}")
         return
     for cmd in all_stages[args.stage]["commands"]:
+        if args.gpus and cmd[:3] == ["python", "-m", "omniaware.run"]:
+            cmd = ["python", "-m", "scripts.launch", "--gpus", args.gpus, "--procs-per-gpu", str(args.procs_per_gpu),
+                   "--", *cmd[3:]]
         line = " ".join(shlex.quote(c) for c in cmd)
         if args.print or not args.run:
             print(line)
