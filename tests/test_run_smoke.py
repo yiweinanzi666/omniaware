@@ -10,6 +10,14 @@ from omniaware import data, paths, run
 from omniaware.qwen_eab import Result
 
 
+@pytest.fixture(autouse=True)
+def tiny_reserves(monkeypatch):
+    # The synthetic universes hold a few dozen questions: shrink the calibration reserves to the --n-calib
+    # used below, so that calibration, dev and test are all non-empty.
+    for family, reserve in {"okvqa": 6, "webqa": 4, "videorag_synth": 4}.items():
+        monkeypatch.setitem(data.CALIB_RESERVE, family, reserve)
+
+
 def _examples(n):
     out = []
     for i in range(n):
@@ -80,7 +88,8 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
     assert len(rows) == 20 - 6 - 4
     config = json.loads((out / "okvqa_config.json").read_text())
     assert config["split"] == "test" and config["eab_uncertainty"] == "pre"
-    calib_ids = {e["qid"] for e in data.split_examples(examples, 6, 4)["calib"]}
+    assert config["split_sizes"] == {"universe": 20, "calib": 6, "dev": 4, "test": 10}
+    calib_ids = {e["qid"] for e in data.split_examples(examples, 6, 4, reserve=6)["calib"]}
     for r in rows:
         assert r["qid"] not in calib_ids
         assert set(r["preds"]) == {"direct", "static", "eab:g1.2:ans2:pos:gate", "gated:static",
@@ -408,8 +417,21 @@ def test_sharded_run_covers_the_split_once(tmp_path, monkeypatch):
         merge_shards.merge(out / "okvqa", expected_questions=16)       # count mismatch is refused
     merge_shards.merge(out / "okvqa", expected_questions=15)
     qids = [json.loads(line)["qid"] for line in (out / "okvqa.jsonl").read_text().splitlines()]
-    expected = {e["qid"] for e in data.split_examples(examples, 6, 2)["test"]}
+    expected = {e["qid"] for e in data.split_examples(examples, 6, 2, reserve=6)["test"]}
     assert len(qids) == len(set(qids)) == 15 and set(qids) == expected
     assert len(list((out / "okvqa.shards").glob("*.jsonl"))) == 3
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2,5")
     assert launch.detect_gpus() == ["2", "5"]
+
+
+def test_split_protocol_violations_stop_the_run_before_the_model_loads(tmp_path, monkeypatch):
+    # F-1 / D1: an empty evaluation split and a calibration size beyond the reserve are errors, not silent runs.
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: _examples(20))
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", lambda *a, **k: pytest.fail("the model must not load"))
+    base = ["--dataset", "okvqa", "--split", "test", "--calib-source", "heldout", "--tag", "bad"]
+    with pytest.raises(ValueError, match="empty"):
+        run.main(base + ["--n-calib", "6", "--n-dev", "14"])          # 20 - 6 reserve - 14 dev = 0 test questions
+    with pytest.raises(ValueError, match="reserve"):
+        run.main(base + ["--n-calib", "7", "--n-dev", "2"])

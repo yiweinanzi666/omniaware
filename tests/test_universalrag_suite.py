@@ -1,5 +1,6 @@
 import json
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -49,8 +50,13 @@ def test_hybridqa_loader_marks_gt_table_and_passages(tmp_path):
 
 def test_videorag_loader_builds_video_chunks_with_frames_and_transcript(tmp_path):
     root, rk, fr = _tree(tmp_path)
-    [e] = data.load_universalrag("videorag_synth", ("video",), root=root, rankings=rk, frames_dir=fr)
-    [v] = e["candidates"]                      # zzz.mp4 has no frames -> skipped
+    with pytest.raises(data.MissingDataError, match="frames missing"):   # zzz.mp4 has no frames
+        data.load_universalrag("videorag_synth", ("video",), root=root, rankings=rk, frames_dir=fr)
+    loaded = data.load_universalrag("videorag_synth", ("video",), root=root, rankings=rk, frames_dir=fr,
+                                    allow_missing=True)
+    assert loaded.meta["dropped"] == {"frames missing": {"items": 1, "qids": ["v1"]}}
+    [e] = loaded
+    [v] = e["candidates"]
     assert v["modality"] == "video" and v["gold"] is True and len(v["frames"]) == 2 and "caliper" in v["text"]
     segs, split = pipeline.build_segments(e, e["candidates"], "cite")
     video = [s for s in segs if s.chunk == "v1"]
@@ -58,6 +64,39 @@ def test_videorag_loader_builds_video_chunks_with_frames_and_transcript(tmp_path
     assert "Transcript:" in video[-1].text and "[E<number>]" in segs[-1].text
     assert "complete sentence" in pipeline.build_segments(e, e["candidates"])[0][-1].text
     assert pipeline.citation_sources(segs, e["candidates"])[0]["source_id"] == "v1"
+
+
+def test_clip_is_a_separate_modality_that_keeps_frames_and_video_scores(tmp_path):
+    # M-44 / D6: clips are their own modality, but are still video chunks (frames, transcript, video channels).
+    root, rk, fr = _tree(tmp_path)
+    clip_sid = "dataset/videorag/videos/abc.mp4_0"
+    (rk / "videorag_synth" / "clip.jsonl").write_text(json.dumps(
+        {"qid": "v1", "candidates": [{"source_id": clip_sid, "score": 0.9}]}) + "\n")
+    key = fr / data.frame_key(clip_sid)
+    key.mkdir(parents=True)
+    (key / "frames.json").write_text(json.dumps({"frames": [{"path": "00.png"}]}))
+    [e] = data.load_universalrag("videorag_synth", ("video", "clip"), root=root, rankings=rk, frames_dir=fr,
+                                 allow_missing=True)
+    by = {c["cid"]: c for c in e["candidates"]}
+    assert by["v1"]["modality"] == "video" and by["c1"]["modality"] == "clip"
+    assert by["c1"]["gold"] is True and len(by["c1"]["frames"]) == 1 and "caliper" in by["c1"]["text"]
+    segs, _ = pipeline.build_segments(e, e["candidates"], "cite")
+    clip = [s for s in segs if s.chunk == "c1"]
+    assert sum(s.image is not None for s in clip) == 1 and "(video)" in clip[0].text
+
+    class FakeBGE:
+        def encode(self, texts, query=False):
+            return np.ones((len(texts), 3))
+
+    class FakeCLIP:
+        def encode_text(self, texts):
+            return np.ones((len(texts), 3))
+
+        def encode_images(self, images):
+            return np.ones((len(images), 3))
+
+    scores = relevance.raw_scores([e], FakeBGE(), FakeCLIP())[e["qid"]]
+    assert set(scores["c1"]) == {"video_text", "video_clip"}
 
 
 def test_video_relevance_channels():

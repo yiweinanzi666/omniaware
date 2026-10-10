@@ -52,7 +52,7 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
                 cap = (image_pixels or {}).get(cid)
                 segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid, max_pixels=cap),
                          Segment(text=tail, chunk=cid)]
-            elif c["modality"] == "video":
+            elif c["modality"] in ("video", "clip"):      # UniversalRAG clips are video chunks too (D6)
                 segs.append(Segment(text=f"{label} (video):\n", chunk=cid))
                 for frame in c["frames"]:
                     segs.append(Segment(image=frame, chunk=cid, max_pixels=(image_pixels or {}).get(cid)))

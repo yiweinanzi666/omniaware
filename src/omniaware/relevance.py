@@ -98,7 +98,7 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
             mats = bge.encode([f"{c['title']}: {c['text']}" if c["modality"] == "text" else c["text"] for c in txt])
             for c, v in zip(txt, mats):
                 scores[c["cid"]][c["modality"]] = float(v @ qv)
-        vids = [c for c in e["candidates"] if c["modality"] == "video"]
+        vids = [c for c in e["candidates"] if c["modality"] in ("video", "clip")]
         if vids:
             with_text = [c for c in vids if c["text"]]
             if with_text:
