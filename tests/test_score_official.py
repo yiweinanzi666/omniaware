@@ -1,4 +1,4 @@
-"""Run the official OK-VQA and Video-MME evaluators on tiny synthetic runs."""
+"""Run the official OK-VQA evaluator and the UniversalRAG-suite scorers on tiny synthetic runs."""
 import json
 import zipfile
 
