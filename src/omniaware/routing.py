@@ -12,21 +12,24 @@ ATTENTION_RULES = ("mh", "mass", "entropy")
 KEY = {"mh": "score", "mass": "mass", "entropy": "entropy"}
 
 
-def route_modalities(attention, spans, modalities, margin=0.08, eps=1e-9, rule="mh"):
-    """Return the leading route and its near-tie, or an explicit cold start."""
+def modality_groups(spans, modalities) -> dict[str, list[int]]:
+    """Token positions of the supplied chunks (those present in ``spans``), grouped by modality."""
     groups = {}
     for chunk, modality in modalities.items():
         if chunk in spans:
             groups.setdefault(modality, []).extend(range(*spans[chunk]))
-    if not groups:
-        return {"mode": "cold_start", "modalities": [], "statistics": {}}
-    if attention is None:
-        raise ValueError("Modality routing requires captured initial-evidence attention")
+    return groups
+
+
+def modality_statistics(attention, groups, eps=1e-9) -> tuple[dict, float]:
+    """Per modality m: M_m (share of the total attention mass), H_m (entropy of the conditional distribution
+    within m, normalised by log|I_m|, 0 when |I_m| <= 1) and M_m * H_m. Also returns the total mass over the
+    groups."""
     weights = {m: [float(attention[i]) for i in ids] for m, ids in groups.items()}
     total = sum(sum(values) for values in weights.values())
-    if total <= eps:
-        return {"mode": "no_evidence_mass", "modalities": [], "statistics": {}}
     stats = {}
+    if total <= eps:
+        return stats, total
     for modality, values in weights.items():
         mass = sum(values) / total
         conditional = [value / total / (mass + eps) for value in values]
@@ -34,6 +37,23 @@ def route_modalities(attention, spans, modalities, margin=0.08, eps=1e-9, rule="
                    / math.log(max(len(values), 2))) if len(values) > 1 else 0.0
         stats[modality] = {"mass": mass, "entropy": entropy,
                            "score": mass * entropy, "tokens": len(values)}
+    return stats, total
+
+
+def route_modalities(attention, spans, modalities, margin=0.08, eps=1e-9, rule="mh"):
+    """Return the leading route and its near-tie. No supplied modality is a cold start (the caller runs a
+    first retrieval round); a single supplied modality skips routing (paper, Modality Routing: retrieval then
+    searches the full pool, e.g. an OK-VQA query image against a text corpus)."""
+    groups = modality_groups(spans, modalities)
+    if not groups:
+        return {"mode": "cold_start", "modalities": [], "statistics": {}}
+    if len(groups) < 2:
+        return {"mode": "skipped", "rule": rule, "modalities": [], "statistics": {}}
+    if attention is None:
+        raise ValueError("Modality routing requires captured initial-evidence attention")
+    stats, total = modality_statistics(attention, groups, eps)
+    if total <= eps:
+        return {"mode": "no_evidence_mass", "modalities": [], "statistics": {}}
     if rule not in ATTENTION_RULES:
         raise ValueError(rule)
     ranked = sorted((m for m in stats if stats[m]["mass"] > eps), key=lambda m: (-stats[m][KEY[rule]], m))

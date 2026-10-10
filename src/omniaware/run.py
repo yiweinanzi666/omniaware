@@ -154,8 +154,8 @@ def build_parser() -> argparse.ArgumentParser:
                     help="rank | reverse | shuffle (per-question, --seed) | perm:<id> with a fixed schedule id: "
                          + ", ".join(PERMUTATIONS))
     ap.add_argument("--replication-gamma", type=float, default=None,
-                    help="also decode the chunk-replication arm: ceil(exp(gamma*U*r)) adjacent copies when "
-                         "U > tau_bias (paper: replication baseline, Prop. 2)")
+                    help="also decode the chunk-replication arm: max(1, round(exp(gamma*U*r))) adjacent copies when "
+                         "U > tau_bias, no truncation (paper: replication baseline, Prop. 2)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--selector", default="relevance", choices=["relevance", "ce", "ce_calibrated"],
                     help="ce: bge-reranker top-5 shown in retriever order; ce_calibrated: top-5 by per-modality "
@@ -324,7 +324,7 @@ def main(argv=None):
               + ", ".join(f"{m}: {v['count']} without" for m, v in shortfall["without_modality"].items()), flush=True)
 
     raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}{data_tag}.json", write=writes_caches)
-    cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib])
+    cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib], args.image_mode)
 
     def rel_of(e):
         if args.relevance_norm == "ecdf":
@@ -458,7 +458,8 @@ def main(argv=None):
         enc_1 = qwen.encode(*evidence_segments(e, first, rel))
         _, attn_1, logits_1 = qwen.run(enc_1, None, 1, decode_static=False)
         return {"chunks": first, "enc": enc_1, "attn": attn_1, "seconds": qwen.last_prefill_seconds,
-                "raw": pipeline.raw_uncertainty(attn_1, enc_1, [c["cid"] for c in first], logits_1, args.beta)}
+                "raw": pipeline.raw_uncertainty(attn_1, enc_1, [c["cid"] for c in first], logits_1, args.beta,
+                                                qwen.vocab_size)}
 
     def resolve_route(e, rel, initial, calibrating=False, probe_out=None):
         """Initial-evidence route; cold-start queries take the probe-round pathway when enabled.
@@ -512,10 +513,10 @@ def main(argv=None):
         p = probe(e, rel) if args.probe_uncertainty and cold(e) else None
         route = resolve_route(e, rel, route, calibrating=True, probe_out=p)
         chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
-        pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
+        pre = pipeline.raw_uncertainty(attn_d, enc_d, pipeline.context_ids(e), logits_d, args.beta, qwen.vocab_size)
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
         _, attn, logits = qwen.run(enc, None, 1, decode_static=False)
-        post = pipeline.raw_uncertainty(attn, enc, [c["cid"] for c in chunks], logits, args.beta)
+        post = pipeline.raw_uncertainty(attn, enc, [c["cid"] for c in chunks], logits, args.beta, qwen.vocab_size)
         ucal[e["qid"]] = {"fingerprint": ucal_fp[e["qid"]], "pre": pre, "post": post}
         if p:
             ucal[e["qid"]]["probe"] = p["raw"]
@@ -659,7 +660,8 @@ def main(argv=None):
             pre_info = {}
 
             def gate_off(attn_d, logits_d):
-                pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
+                pre = pipeline.raw_uncertainty(attn_d, enc_d, pipeline.context_ids(e), logits_d, args.beta,
+                                               qwen.vocab_size)
                 pre_info.update(raw_pre=pre, u_pre=u_of("pre", pre))
                 if args.modality_routing:
                     pre_info["route"] = routing.initial_route(attn_d, enc_d, e, args.route_rule)
@@ -713,7 +715,7 @@ def main(argv=None):
             info = {}
 
             def make_variants(attn, logits):
-                post = pipeline.raw_uncertainty(attn, enc, list(rel_sel), logits, args.beta)
+                post = pipeline.raw_uncertainty(attn, enc, list(rel_sel), logits, args.beta, qwen.vocab_size)
                 u = u_of("post", post)
                 u_eab = rec["u_gate"] if args.eab_uncertainty == "pre" else u
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
@@ -751,11 +753,13 @@ def main(argv=None):
                 rec["universalrag_fallback"] = int(route["fallback"])
                 tallies["universalrag_fallback"] += rec["universalrag_fallback"]
             if args.replication_gamma is not None:
+                # Copies per chunk, aligned with rec["chunks"]; the prompt keeps every copy (no truncation).
                 counts = order_mod.replication_counts([rel_sel[c["cid"]] for c in chunks], info["u_eab"],
                                                       info["u_eab"] > args.tau_bias, args.replication_gamma)
                 rec["replication_counts"] = counts
                 if all(n == 1 for n in counts):
                     rec["preds"]["replication"] = rec["preds"]["static"]
+                    rec["replication_prompt_tokens"] = enc.length      # no copies: the static prompt itself
                 else:
                     copies = [c for c, n in zip(chunks, counts) for _ in range(n)]
                     enc_r = qwen.encode(*evidence_segments(e, copies, rel))

@@ -45,6 +45,7 @@ class FakeQwen:
     def __init__(self, model_path, **kw):
         self.device, self.n_layers = "cpu", 4
         self.last_prefill_seconds = 0.0
+        self.vocab_size = 32
         self.tok = type("Tok", (), {"pad_token_id": 0, "eos_token_id": 2})()
 
     def encode(self, segments, split_marker):
@@ -132,10 +133,13 @@ def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):
         counts = r["replication_counts"]
         gate = r["u_eab"] > 0.40
         assert counts == order.replication_counts([r["rel"][c] for c in r["chunks"]], r["u_eab"], gate, 1.2)
+        assert r["replication_prompt_tokens"] > 0
         if all(n == 1 for n in counts):
             assert r["preds"]["replication"] == r["preds"]["static"]
+            assert r["replication_prompt_tokens"] == r["prompt_tokens"]     # no copies: same prompt
         else:
             assert r["preds"]["replication"] != r["preds"]["static"]
+            assert r["replication_prompt_tokens"] > r["prompt_tokens"]      # copies are kept, not truncated
 
 
 def test_cross_encoder_selectors(tmp_path, monkeypatch):

@@ -37,3 +37,39 @@ def test_wrong_route_and_coverage():
     assert m["triggered"] == 4
     assert m["wrong_route_rate"] == 25.0 and m["coverage_rate"] == 75.0
     assert m["modalities_per_query"] == 1.5
+
+
+def test_single_supplied_modality_skips_routing():
+    """Paper, Modality Routing: when the supplied context covers fewer than two candidate modalities, routing is
+    skipped and retrieval searches the full pool (OK-VQA: only the query image, against a text corpus)."""
+    from types import SimpleNamespace
+    attn = torch.ones(6)
+    spans = {"__query__": (0, 4)}
+    route = routing.route_modalities(attn, spans, {"__query__": "image"})
+    assert route["mode"] == "skipped" and route["modalities"] == [] and route["rule"] == "mh"
+    enc = SimpleNamespace(spans=spans)
+    assert routing.initial_route(attn, enc, {"query_images": ["q.png"]})["modalities"] == []
+    assert routing.evidence_route(attn, enc, [{"cid": "__query__", "modality": "image"}])["mode"] == "skipped"
+    # No supplied context at all is still a cold start, which the probe round handles.
+    assert routing.initial_route(None, SimpleNamespace(spans={}), {"query_images": []})["mode"] == "cold_start"
+
+
+def test_okvqa_style_query_image_routes_without_error():
+    """With --modality-routing, an OK-VQA question (query image, text-only candidates) used to raise ValueError
+    in select_chunks, because the initial route pointed at a modality without candidates."""
+    from types import SimpleNamespace
+    from omniaware import run
+    cands = [{"cid": f"k{j}", "modality": "text", "title": "", "text": f"passage {j}"} for j in range(1, 8)]
+    e = {"qid": "q0", "fixed_evidence": False, "candidates": cands, "query_images": ["q.png"]}
+    attn = torch.tensor([0.0] * 4 + [0.5] * 2)
+    spans = {"__query__": (0, 4), "k1": (4, 6)}
+    route = routing.initial_route(attn, SimpleNamespace(spans=spans), e)
+    assert route["modalities"] == []
+    rel = {c["cid"]: 1.0 - int(c["cid"][1:]) / 10 for c in cands}
+    chosen = run.select_chunks(e, rel, 5, "rank", 0, route=route)
+    assert [c["cid"] for c in chosen] == ["k1", "k2", "k3", "k4", "k5"]
+    # Two supplied modalities still route, and the route filters the candidates as before.
+    two = routing.route_modalities(torch.tensor([0.0, 0.0, 0.1, 0.1, 0.9, 0.9]),
+                                   {"__query__": (0, 2), "k1": (2, 4), "i1": (4, 6)},
+                                   {"__query__": "image", "k1": "text", "i1": "image"}, margin=0.0)
+    assert two["mode"] == "attention" and two["modalities"]

@@ -26,8 +26,12 @@ def permutation_schedule():
 
 
 def replication_counts(relevances, uncertainty, gate, gamma=1.2):
-    """Adjacent whole-chunk copies ceil(exp(gamma * U * r)), the integer analogue of EAB's bias."""
-    return [math.ceil(math.exp(gamma * uncertainty * value)) if gate else 1 for value in relevances]
+    """Adjacent whole-chunk copies max(1, round(exp(gamma * U * r))) when the gate is open, else 1.
+
+    For every gamma*U*r >= 0 the log of the copy count differs from the bias gamma*U*r by at most log(1.5),
+    whereas ceiling gave two copies to any positive bias. The copies are not truncated: the replication prompt
+    grows with them, and its length is recorded per question."""
+    return [max(1, round(math.exp(gamma * uncertainty * value))) if gate else 1 for value in relevances]
 
 
 def order_std_statistics(baseline, candidate, *, resamples=10000, seed=20261002):

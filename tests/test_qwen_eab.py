@@ -1,8 +1,12 @@
 """EAB attention hook inside a tiny randomly initialised Qwen3-VL (CPU, no weights needed)."""
 import math
 import types
+from types import SimpleNamespace
 
+import pytest
 import torch
+from transformers import AttentionInterface
+from transformers.integrations.sdpa_attention import sdpa_attention_forward as ORIG_SDPA
 
 from omniaware import qwen_eab
 from omniaware.pipeline import Variant
@@ -15,12 +19,21 @@ def spec(enc, rows, gamma, u=1.0):
     return Variant("v", gamma, rows=rows, form="pos", gate=False).spec(enc, {"c1": 1.0, "c2": 0.2}, u, 0.4, 2)
 
 
+def _module(d, h, kvh, layer=0):
+    return types.SimpleNamespace(_erc_layer=layer, scaling=1 / math.sqrt(d), num_key_value_groups=h // kvh,
+                                 is_causal=True, training=False)
+
+
+def _expanded_kv(key, value, h):
+    rep = h // key.shape[1]
+    return key.repeat_interleave(rep, dim=1), value.repeat_interleave(rep, dim=1)
+
+
 def test_hook_matches_explicit_softmax_with_bias():
     torch.manual_seed(1)
     b, h, kvh, q_len, kv_len, d = 1, 4, 2, 3, 7, 8
     query, key, value = torch.randn(b, h, q_len, d), torch.randn(b, kvh, kv_len, d), torch.randn(b, kvh, kv_len, d)
-    module = types.SimpleNamespace(_erc_layer=0, scaling=1 / math.sqrt(d), num_key_value_groups=h // kvh,
-                                   is_causal=True, training=False)
+    module = _module(d, h, kvh)
     bias = torch.tensor([0.0, 2.0, 2.0, -1.0, 0.0, 0.0, 0.0])
     STATE.reset()
     STATE.bias, STATE.q_start = bias, kv_len - 2   # only the last two query rows are biased
@@ -28,14 +41,148 @@ def test_hook_matches_explicit_softmax_with_bias():
         out, _ = qwen_eab._eab_sdpa(module, query, key, value, None, scaling=module.scaling)
     finally:
         STATE.reset()
-    k = key.repeat_interleave(h // kvh, dim=1)
-    v = value.repeat_interleave(h // kvh, dim=1)
+    k, v = _expanded_kv(key, value, h)
     logits = query @ k.transpose(-1, -2) * module.scaling
     rows = torch.arange(kv_len - q_len, kv_len)[:, None]
     logits = logits.masked_fill(torch.arange(kv_len)[None, :] > rows, float("-inf"))
     logits[..., 1:, :] += bias        # rows kv_len-2 and kv_len-1 are query rows 1 and 2
     expected = (torch.softmax(logits, -1) @ v).transpose(1, 2)
     torch.testing.assert_close(out, expected, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("mask_kind", ["none", "bool", "float"])
+def test_hook_applies_bias_on_top_of_every_mask_kind(mask_kind):
+    """The model may pass no mask (causal), a boolean mask, or an additive float mask; the bias must be added on
+    top of each, and padded keys must stay masked."""
+    torch.manual_seed(2)
+    b, h, kvh, q_len, kv_len, d = 1, 4, 2, 3, 6, 8
+    query, key, value = torch.randn(b, h, q_len, d), torch.randn(b, kvh, kv_len, d), torch.randn(b, kvh, kv_len, d)
+    module = _module(d, h, kvh)
+    causal = torch.tril(torch.ones(q_len, kv_len, dtype=torch.bool), diagonal=kv_len - q_len)
+    allowed = causal.clone()
+    allowed[:, 1] = False                       # key 1 is padding for every row
+    bias = torch.tensor([0.0, 1.5, 0.0, 0.5, -0.5, 0.0])
+    q_start = kv_len - 2                        # rows 1 and 2 are biased, row 0 is not
+    additive = torch.where(allowed, torch.randn(q_len, kv_len) * 0.3, torch.tensor(-1e4))
+    if mask_kind == "none":
+        attention_mask = None
+    elif mask_kind == "bool":
+        attention_mask = allowed[None, None].expand(b, 1, q_len, kv_len)
+    else:
+        attention_mask = additive[None, None].expand(b, 1, q_len, kv_len).clone()
+    STATE.reset()
+    STATE.bias, STATE.q_start = bias, q_start
+    try:
+        out, _ = qwen_eab._eab_sdpa(module, query, key, value, attention_mask, scaling=module.scaling)
+    finally:
+        STATE.reset()
+    k, v = _expanded_kv(key, value, h)
+    logits = query @ k.transpose(-1, -2) * module.scaling
+    if mask_kind == "none":
+        rows = torch.arange(kv_len - q_len, kv_len)[:, None]
+        logits = logits.masked_fill(torch.arange(kv_len)[None, :] > rows, float("-inf"))
+    elif mask_kind == "bool":
+        logits = logits.masked_fill(~allowed, float("-inf"))
+    else:
+        logits = logits + additive
+    rows_biased = torch.arange(kv_len - q_len, kv_len) >= q_start
+    logits = logits + torch.where(rows_biased[:, None], bias[None, :], torch.zeros(1))
+    expected = (torch.softmax(logits, -1) @ v).transpose(1, 2)
+    torch.testing.assert_close(out, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_captured_attention_is_the_biased_last_row():
+    """The capture uses the same logits as the attention call: a biased last row is captured biased, an unbiased
+    one unbiased, and both match the explicit softmax."""
+    torch.manual_seed(3)
+    b, h, kvh, q_len, kv_len, d = 1, 4, 2, 2, 5, 8
+    query, key, value = torch.randn(b, h, q_len, d), torch.randn(b, kvh, kv_len, d), torch.randn(b, kvh, kv_len, d)
+    module = _module(d, h, kvh, layer=0)
+    bias = torch.tensor([0.0, 0.0, 2.0, 0.0, -1.0])
+    k, _ = _expanded_kv(key, value, h)
+    logits = query[:, :, -1:] @ k.transpose(-1, -2) * module.scaling        # last row = t_end, sees every key
+    plain = torch.softmax(logits, -1).mean(dim=1)[0, 0]
+    expected_biased = torch.softmax(logits + bias, -1).mean(dim=1)[0, 0]
+    STATE.reset()
+    STATE.capture_layer = 0
+    try:
+        qwen_eab._eab_sdpa(module, query, key, value, None, scaling=module.scaling)
+        unbiased_capture = STATE.captured.clone()
+        STATE.bias, STATE.q_start = bias, kv_len - 1
+        qwen_eab._eab_sdpa(module, query, key, value, None, scaling=module.scaling)
+        biased_capture = STATE.captured.clone()
+    finally:
+        STATE.reset()
+    torch.testing.assert_close(unbiased_capture, plain, atol=1e-5, rtol=1e-5)
+    torch.testing.assert_close(biased_capture, expected_biased, atol=1e-5, rtol=1e-5)
+    assert not torch.allclose(biased_capture, plain, atol=1e-3)
+
+
+def test_require_sdpa_rejects_other_backends():
+    model = SimpleNamespace(config=SimpleNamespace(text_config=SimpleNamespace(_attn_implementation="eager")))
+    with pytest.raises(RuntimeError, match="sdpa"):
+        qwen_eab.require_sdpa(model)
+    model.config.text_config._attn_implementation = "sdpa"
+    qwen_eab.require_sdpa(model)
+
+
+def _reference_t_end_attention(q, enc, arm_spec):
+    """Independent reference for the t_end row: a no-cache full forward whose attention is written out here
+    (explicit causal mask, explicit bias on the rows at or after q_start). Returns the head-averaged last-layer
+    attention of the last prompt row, the row that predicts the first answer token."""
+    captured = {}
+    bias = torch.zeros(enc.length)
+    if arm_spec is not None:
+        for cid, value in arm_spec.values.items():
+            if cid in enc.spans and value != 0.0:
+                a, b = enc.spans[cid]
+                bias[a:b] = float(value)
+
+    def ref_sdpa(module, query, key, value, attention_mask, dropout=0.0, scaling=None, is_causal=None, **kw):
+        layer = getattr(module, "_erc_layer", None)
+        if layer is None:
+            return ORIG_SDPA(module, query, key, value, attention_mask, dropout=dropout, scaling=scaling,
+                             is_causal=is_causal, **kw)
+        _, heads, q_len, _ = query.shape
+        kv_len = key.shape[2]
+        k, v = _expanded_kv(key.double(), value.double(), heads)
+        s = scaling if scaling is not None else module.scaling
+        logits = (query.double() @ k.transpose(-1, -2)) * s
+        q_pos = torch.arange(kv_len - q_len, kv_len)
+        k_pos = torch.arange(kv_len)
+        logits = logits.masked_fill((k_pos[None, :] > q_pos[:, None])[None, None], float("-inf"))
+        if arm_spec is not None and (arm_spec.layers is None or layer in arm_spec.layers):
+            biased_rows = (q_pos >= arm_spec.q_start)[:, None]
+            logits = logits + torch.where(biased_rows, bias[None, :kv_len].double(), torch.zeros(1).double())
+        w = torch.softmax(logits, dim=-1)
+        if layer == q.n_layers - 1:
+            captured["row"] = w[0].mean(dim=0)[-1]
+        out = (w @ v).transpose(1, 2).to(query.dtype)
+        return out, None
+
+    AttentionInterface.register("sdpa", ref_sdpa)
+    try:
+        q.model.model.rope_deltas = None
+        with torch.no_grad():
+            q.model(input_ids=enc.input_ids, mm_token_type_ids=enc.mm_token_type_ids)
+    finally:
+        AttentionInterface.register("sdpa", qwen_eab._eab_sdpa)
+    return captured["row"].float()
+
+
+@torch.no_grad()
+def test_hook_matches_reference_for_t_end_attention(qwen):
+    enc = encode(qwen)
+    static_ref = _reference_t_end_attention(qwen, enc, None)
+    for rows in ("ans1", "ans2"):
+        arm = spec(enc, rows, 3.0)
+        res, grounding, _ = qwen.run(enc, lambda a, lg: {"arm": arm}, 4, decode_static=True)
+        torch.testing.assert_close(grounding, static_ref, atol=1e-5, rtol=1e-4)
+        torch.testing.assert_close(res["arm"].attention, _reference_t_end_attention(qwen, enc, arm),
+                                   atol=1e-5, rtol=1e-4)
+    # The answer-row bias must actually move the captured attention, or the comparison proves nothing.
+    res, grounding, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 3.0)}, 4, decode_static=True)
+    assert not torch.allclose(res["ans1"].attention, grounding, atol=1e-4)
 
 
 @torch.no_grad()
@@ -84,16 +231,26 @@ def test_decode_only_eab_changes_later_rows(qwen):
 
 
 @torch.no_grad()
-def test_arms_report_time_and_first_answer_row_attention(qwen):
+def test_arms_report_time_and_t_end_attention(qwen):
     enc = encode(qwen)
-    res, _, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 1.2), "ans2": spec(enc, "ans2", 1.2)},
-                         4, decode_static=True)
+    res, grounding, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 1.2), "ans2": spec(enc, "ans2", 1.2)},
+                                 4, decode_static=True)
     assert qwen.last_prefill_seconds > 0
     for name, r in res.items():
         assert r.seconds > 0
-        if len(r.tokens) >= 2:          # the first answer row exists only once a token was fed back
-            assert r.attention.shape[-1] == enc.length + 1
-            torch.testing.assert_close(r.attention.sum(), torch.tensor(1.0), atol=1e-4, rtol=1e-4)
+        # Every arm has its t_end row, over the whole prompt, whatever the number of generated tokens.
+        assert r.attention.shape[-1] == enc.length
+        torch.testing.assert_close(r.attention.sum(), torch.tensor(1.0), atol=1e-4, rtol=1e-4)
+    # Decode-only variants never touch the t_end row, so their attention is the static arm's.
+    torch.testing.assert_close(res["ans2"].attention, res["static"].attention)
+
+
+@torch.no_grad()
+def test_single_token_answer_still_has_attention(qwen):
+    enc = encode(qwen)
+    res, _, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 1.2)}, 1, decode_static=True)
+    assert all(len(r.tokens) <= 1 for r in res.values())
+    assert res["ans1"].attention is not None and res["ans1"].attention.shape[-1] == enc.length
 
 
 @torch.no_grad()
