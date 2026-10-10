@@ -1,6 +1,8 @@
 """WebQA open-retrieval loader on a synthetic pool laid out like the FAISS pipeline's artifacts."""
 import json
 
+import pytest
+
 from omniaware import data, paths
 
 
@@ -41,7 +43,12 @@ def test_open_retrieval_candidates_and_gold_aliases(tmp_path, monkeypatch):
     (tmp_path / "assets").mkdir()
     (tmp_path / "assets" / "img301.jpg").write_bytes(b"jpg")
 
-    (e,) = data.load_webqa_open("img", rankings=rankings)
+    # g2 (image question) has no rankings: an error by default, dropped and recorded with allow_missing.
+    with pytest.raises(data.MissingDataError, match="no ranking"):
+        data.load_webqa_open("img", rankings=rankings)
+    loaded = data.load_webqa_open("img", rankings=rankings, allow_missing=True)
+    assert loaded.meta["dropped"] == {"no ranking": {"items": 1, "qids": ["g2"]}}
+    (e,) = loaded
     by_cid = {c["cid"]: c for c in e["candidates"]}
     assert [c["cid"] for c in e["candidates"]] == ["t1", "t2", "i1", "i2"]
     assert by_cid["t2"]["gold"] and not by_cid["t1"]["gold"]          # alias s9 of the deduplicated text
@@ -50,8 +57,13 @@ def test_open_retrieval_candidates_and_gold_aliases(tmp_path, monkeypatch):
     # A path recorded on another host is remapped under the local asset root.
     assert by_cid["i1"]["image"] == str(tmp_path / "assets" / "img301.jpg")
     assert e["golds"] == ["In Paris."] and e["missing_images"] == 0
+    assert e["gold_modalities"] == ["image", "text"]                  # M-37: both kinds of positive fact
 
-    # A ranked image whose file is absent is dropped and counted, not skipped silently.
+    # A ranked image whose file is absent is an error by default, and dropped and counted with allow_missing.
     (tmp_path / "assets" / "img301.jpg").unlink()
-    (e,) = data.load_webqa_open("img", rankings=rankings)
+    with pytest.raises(data.MissingDataError, match="ranked image missing"):
+        data.load_webqa_open("img", rankings=rankings, allow_missing=False)
+    loaded = data.load_webqa_open("img", rankings=rankings, allow_missing=True)
+    (e,) = loaded
     assert [c["cid"] for c in e["candidates"]] == ["t1", "t2", "i2"] and e["missing_images"] == 1
+    assert loaded.meta["dropped"]["ranked image missing"] == {"items": 1, "qids": ["g1"]}

@@ -93,11 +93,17 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--max-patches", type=int, default=1, help="InternVL: 448px tiles per image (256 tokens each)")
     ap.add_argument("--split", required=True, choices=["dev", "test"],
                     help="dev: tune here; test: run once with frozen settings (see docs/PROTOCOL.md)")
-    ap.add_argument("--n-calib", type=int, default=500)
+    ap.add_argument("--n-calib", type=int, default=None,
+                    help="calibration questions (default: the dataset's protocol size, data.CALIB_RESERVE / N_CALIB_TRAIN)")
     ap.add_argument("--calib-source", choices=["train", "heldout"], default="train",
                     help="train: unlabeled training-split queries (paper); heldout: carve them out of the eval data")
-    ap.add_argument("--n-dev", type=int, default=256, help="size of the frozen dev split")
+    ap.add_argument("--n-dev", type=int, default=None,
+                    help="size of the frozen dev split (default: data.N_DEV); the test split starts after it, so "
+                         "changing it changes the test set")
     ap.add_argument("--split-seed", type=int, default=2027)
+    ap.add_argument("--allow-missing-assets", action="store_true",
+                    help="drop questions or candidates whose assets are missing instead of failing; the dropped qids "
+                         "and counts are written to the configuration")
     ap.add_argument("--offset", type=int, default=0)
     ap.add_argument("--n-eval", type=int, default=None, help="evaluate only a slice of the split (default: all)")
     ap.add_argument("--k", type=int, default=5)
@@ -227,22 +233,48 @@ def main(argv=None):
     if args.dataset in data.UNIVERSALRAG_TARGETS:
         loader_kwargs.update(top=args.universalrag_top,
                              modalities=tuple(args.universalrag_modalities) if args.universalrag_modalities else None)
-    examples = data.LOADERS[args.dataset](**loader_kwargs)
     # Input variants get their own relevance / calibration caches.
     data_tag = "".join(f"_{k}-{v}" for k, v in sorted(loader_kwargs.items()) if v is not None)
-    calib_pool = None
+    if args.allow_missing_assets:
+        loader_kwargs["allow_missing"] = True
+    # Image subsets are cut from their full split (data.IMAGE_SUBSET_OF), so the full loader defines the universe.
+    split_universe = data.IMAGE_SUBSET_OF.get(args.dataset, args.dataset)
+    examples = data.LOADERS[split_universe](**loader_kwargs)
+    dropped = {"universe": getattr(examples, "meta", {}).get("dropped", {})}
+    # Protocol sizes (docs/PROTOCOL.md section 1, data.CALIB_RESERVE / N_CALIB_TRAIN / N_DEV).
+    family = data.protocol_family(args.dataset)
+    if args.n_dev is None:
+        args.n_dev = data.N_DEV[family]
+    elif args.n_dev != data.N_DEV[family]:
+        print(f"[data] --n-dev {args.n_dev} differs from the protocol size {data.N_DEV[family]}: the test set changes",
+              flush=True)
+    calib_pool, reserve = None, None
     if args.calib_source == "train":
-        if args.dataset not in data.TRAIN_LOADERS:
+        if split_universe not in data.TRAIN_LOADERS:
             ap.error(f"{args.dataset} has no training-split loader; use --calib-source heldout")
-        calib_pool = data.TRAIN_LOADERS[args.dataset]()
+        calib_pool = data.TRAIN_LOADERS[split_universe](**({"allow_missing": True} if args.allow_missing_assets else {}))
+        dropped["calibration_pool"] = getattr(calib_pool, "meta", {}).get("dropped", {})
+        if args.n_calib is None:
+            args.n_calib = data.N_CALIB_TRAIN[family]
+    else:
+        reserve = data.CALIB_RESERVE.get(family)
+        if reserve is None:
+            ap.error(f"{args.dataset} has no held-out calibration reserve; use --calib-source train")
+        if args.n_calib is None:
+            args.n_calib = reserve
     # Dense candidate files may cover only the intended local slice.  Keep the
     # original OK-VQA universe for split identities instead of reshuffling it.
     retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs")
     split_source = data.load_okvqa(candidates_path=False) if retrieved_okvqa else examples
-    sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool)
+    sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool, reserve=reserve)
+    if args.dataset in data.IMAGE_SUBSET_OF:
+        sp = data.image_subset(sp)
+    data.check_disjoint(sp)                       # runtime check of docs/PROTOCOL.md: calib, dev, test disjoint
     calib = sp["calib"]
     end = None if args.n_eval is None else args.offset + args.n_eval
     evals = sp[args.split][args.offset:end]
+    if not evals:
+        raise ValueError(f"{args.dataset}: the {args.split} split is empty (offset {args.offset}, n-eval {args.n_eval})")
     if retrieved_okvqa:
         by_qid = {e["qid"]: e for e in examples}
         missing = [e["qid"] for e in calib + evals if e["qid"] not in by_qid]
@@ -251,9 +283,12 @@ def main(argv=None):
                      "generate candidates for the original OK-VQA split before running this slice")
         calib = [by_qid[e["qid"]] for e in calib]
         evals = [by_qid[e["qid"]] for e in evals]
-    assert not {e["qid"] for e in calib} & {e["qid"] for e in evals}, "calibration overlaps evaluation"
     print(f"[data] {args.dataset}: {len(examples)} total, calib {len(calib)} ({args.calib_source}), "
-          f"{args.split} {len(evals)}", flush=True)
+          f"dev {len(sp['dev'])}, {args.split} {len(evals)}", flush=True)
+    shortfall = data.candidate_shortfall(calib + evals, args.k)
+    if shortfall["fewer_than_k"]["count"] or shortfall["without_modality"]:
+        print(f"[data] candidates: {shortfall['fewer_than_k']['count']} questions with fewer than k={args.k}; "
+              + ", ".join(f"{m}: {v['count']} without" for m, v in shortfall["without_modality"].items()), flush=True)
 
     raw = load_relevance(calib + evals, cache_dir / f"relevance_{args.dataset}{data_tag}.json")
     cal = relevance.Calibrator.fit(raw, [e["qid"] for e in calib])
@@ -512,6 +547,9 @@ def main(argv=None):
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
         "evaluation_questions": len(evals),
+        "split_sizes": {"universe": len(examples), "calib": len(calib), "dev": len(sp["dev"]), "test": len(sp["test"])},
+        "dropped_for_missing_assets": dropped,
+        "candidate_shortfall": shortfall,
     }, indent=1)
     # Shards write the same configuration; replace atomically so readers never see a partial file.
     tmp = config_path.with_name(f".{config_path.name}.{args.shard_id}.tmp")
