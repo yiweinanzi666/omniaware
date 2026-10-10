@@ -1,30 +1,41 @@
 """Paper citation metrics (Appendix `Citation support`): Faith, attribution precision (AP), invalid citations.
 
-    python -m omniaware.eval.citation.attribution runs/<tag>/<dataset>.jsonl [--arms static eab:...]
+    python -m omniaware.eval.citation.attribution runs/<tag>/<dataset>.jsonl [--arms static gated:static ...]
         [--intervention distractors] [--device cuda] [--output runs/<tag>/<dataset>.attribution.json]
 
 For answer y with valid cited chunks C(x) and binary support S(y, e):
     Supp(x) = sum_{e in C(x)} S(y, e);  Faith = 1[Supp > 0] (all answers);  AP = Supp / |C| (answers citing >= 1).
 Missing, malformed and out-of-prompt citations get no credit. Inv = invalid markers / all markers (malformed or
-out-of-prompt [E<j>]); `answers_with_invalid` is the share of answers containing at least one.
-S(y, e) = 1 when alias matching succeeds -- a gold alias occurs in the answer statement and in the chunk -- else
-sentence-level NLI: some answer sentence citing e is entailed by the chunk text (DeBERTa-v3-large MNLI checker of
-checker_asset_manifest.json, argmax decision). Only arms decoded on the cited [E<j>] input are scored (static and
-the bias variants; with --intervention, those arms on the perturbed input).
+out-of-prompt bracketed [E<j>]; a bare "E5" in ordinary text is not a marker); `answers_with_invalid` is the share
+of answers containing at least one.
+
+S(y, e) = S_alias or S_nli (the union, the headline numbers Faith / AP):
+  S_alias  a gold alias occurs in the answer statements citing e and in the chunk text;
+  S_nli    some answer statement citing e is entailed by the chunk text (DeBERTa-v3-large MNLI checker of
+           checker_asset_manifest.json; argmax decision; premises longer than the window are split, see
+           DebertaChecker). Both are also reported alone (Faith_alias, AP_alias, Faith_nli, AP_nli).
+
+Arms: static, the bias variants, replication (when decoded in the run) and gated:<arm> (the arm's answer when
+retrieval fired; questions without retrieval are not applicable: they leave the denominators, and the
+share of applicable questions is reported as gate_coverage). With --intervention, the arms on the perturbed input.
+
+Sentences are split by one splitter for Faith and CiteRec (`sentence_spans`): NLTK Punkt when NLTK and its
+English Punkt data load, otherwise the regex SENTENCE. The splitter name is written into every output.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 
 from ...interventions import normalize
 
 VALID = re.compile(r"\[E(\d+)\]")
-# anything that looks like an attempt at an evidence identifier but is not exactly [E<j>]
-LOOSE = re.compile(r"\[\s*[Ee]?\s*\d+\s*\]|\(\s*[Ee]\s*\d+\s*\)|(?<![\[\w])[Ee]\d+(?![\]\w])|\[\s*[Ee]\s+\d+\s*\]"
-                   r"|\[e\d+\]")
+# bracketed attempts at an evidence identifier that are not exactly [E<j>] ("[3]", "[e2]", "[E 2]", "[E0x]");
+# a bare "E5" in ordinary text is not a citation marker
+LOOSE = re.compile(r"\[\s*[Ee]?\s*\d+\s*\]")
 SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
 
 
@@ -41,10 +52,39 @@ def parse_citations(answer: str, n_sources: int) -> dict:
     return {"valid": valid, "invalid": invalid, "markers": len(valid) + invalid}
 
 
+@lru_cache(maxsize=1)
+def _punkt():
+    """NLTK's English Punkt tokenizer when nltk and its punkt data are installed, else None."""
+    try:
+        from nltk.tokenize import PunktTokenizer
+        return PunktTokenizer("english")
+    except (ImportError, LookupError, OSError):
+        return None
+
+
+def splitter_name() -> str:
+    """Name of the sentence splitter in use, recorded in every output that splits sentences."""
+    return "nltk-punkt-english" if _punkt() is not None else "regex(?<=[.!?])\\s+|\\n+"
+
+
+def sentence_spans(text: str) -> list[tuple[int, int]]:
+    """[begin, end) of each sentence: the one splitter shared by Faith/AP (statements) and CiteRec (intake)."""
+    tok = _punkt()
+    if tok is not None:
+        return list(tok.span_tokenize(text))
+    spans, start = [], 0
+    for m in SENTENCE.finditer(text):
+        spans.append((start, m.start()))
+        start = m.end()
+    spans.append((start, len(text)))
+    return spans
+
+
 def statements(answer: str) -> list[tuple[str, set[int]]]:
     """Answer sentences with the [E<j>] identifiers each one carries (citation-free text for NLI)."""
     out = []
-    for sent in SENTENCE.split(answer):
+    for begin, end in sentence_spans(answer):
+        sent = answer[begin:end]
         cites = {int(j) for j in VALID.findall(sent)}
         text = " ".join(LOOSE.sub(" ", VALID.sub(" ", sent)).split())
         if text:
@@ -62,51 +102,113 @@ def alias_support(answer_text: str, chunk_text: str, golds: list[str]) -> bool:
     return False
 
 
+def _faith_ap(support: dict[int, bool], cited: list[int]) -> tuple[float, float | None]:
+    supp = sum(support.values())
+    return float(supp > 0), (supp / len(cited) if cited else None)
+
+
 def score_answer(answer: str, sources: list[dict], golds: list[str], entails) -> dict:
     cites = parse_citations(answer, len(sources))
     cited = sorted(set(cites["valid"]))
     sents = statements(answer)
     whole = " ".join(s for s, _ in sents)
-    support = {}
+    alias, nli = {}, {}
     for j in cited:
         premise = sources[j - 1]["rendered_text"]
         hyps = [s for s, cs in sents if j in cs] or [whole]
-        support[j] = bool(alias_support(" ".join(hyps), premise, golds)
-                          or any(entails(premise, h) for h in hyps if h))
-    supp = sum(support.values())
-    return {"cited": cited, "support": {f"E{j}": v for j, v in support.items()}, "faith": float(supp > 0),
-            "ap": supp / len(cited) if cited else None, "invalid": cites["invalid"], "markers": cites["markers"]}
+        alias[j] = alias_support(" ".join(hyps), premise, golds)
+        nli[j] = any(entails(premise, h) for h in hyps if h)
+    union = {j: alias[j] or nli[j] for j in cited}
+    faith, ap = _faith_ap(union, cited)
+    faith_a, ap_a = _faith_ap(alias, cited)
+    faith_n, ap_n = _faith_ap(nli, cited)
+    return {"cited": cited, "support": {f"E{j}": v for j, v in union.items()},
+            "support_alias": {f"E{j}": v for j, v in alias.items()},
+            "support_nli": {f"E{j}": v for j, v in nli.items()},
+            "faith": faith, "ap": ap, "faith_alias": faith_a, "ap_alias": ap_a, "faith_nli": faith_n, "ap_nli": ap_n,
+            "invalid": cites["invalid"], "markers": cites["markers"]}
 
 
 def aggregate(rows: list[dict]) -> dict:
     n = len(rows)
     cited = [r for r in rows if r["ap"] is not None]
     markers = sum(r["markers"] for r in rows)
-    return {"answers": n, "Faith": 100 * sum(r["faith"] for r in rows) / n if n else None,
-            "AP": 100 * sum(r["ap"] for r in cited) / len(cited) if cited else None,
-            "coverage": 100 * len(cited) / n if n else None,
-            "Inv": 100 * sum(r["invalid"] for r in rows) / markers if markers else 0.0,
-            "answers_with_invalid": 100 * sum(r["invalid"] > 0 for r in rows) / n if n else None}
+
+    def mean_pct(values):
+        return 100 * sum(values) / len(values) if values else None
+
+    out = {"answers": n, "Faith": 100 * sum(r["faith"] for r in rows) / n if n else None,
+           "AP": mean_pct([r["ap"] for r in cited]),
+           "coverage": 100 * len(cited) / n if n else None,
+           "Inv": 100 * sum(r["invalid"] for r in rows) / markers if markers else 0.0,
+           "answers_with_invalid": 100 * sum(r["invalid"] > 0 for r in rows) / n if n else None}
+    for source in ("alias", "nli"):     # each support source alone; Faith / AP above use their union
+        out[f"Faith_{source}"] = 100 * sum(r[f"faith_{source}"] for r in rows) / n if n else None
+        out[f"AP_{source}"] = mean_pct([r[f"ap_{source}"] for r in cited])
+    return out
+
+
+def arm_base(arm: str) -> str:
+    """The decoded arm behind a scored arm name: gated:<arm> answers with <arm> when retrieval fired."""
+    return arm[len("gated:"):] if arm.startswith("gated:") else arm
 
 
 def score_records(records: list[dict], arms: list[str], entails, intervention: str | None = None) -> dict:
     per_arm = {arm: [] for arm in arms}
+    considered = 0
     for r in records:
         if intervention:
-            entry = (r.get("interventions") or {}).get(intervention)
-            if not entry or "citation_sources" not in entry:
+            owner = (r.get("interventions") or {}).get(intervention)
+            if not owner or "citation_sources" not in owner:    # ineligible or failed perturbation
                 continue
-            sources, preds = entry["citation_sources"], entry["preds"]
         else:
-            sources, preds = r["citation_sources"], r["preds"]
+            owner = r
+        considered += 1
         for arm in arms:
-            row = score_answer(preds[arm] or "", sources, r["golds"], entails)
+            if arm.startswith("gated:") and not r["retrieve"]:  # no retrieval: the arm has no evidence to cite
+                continue
+            base = arm_base(arm)
+            sources = owner.get("replication_citation_sources") if base == "replication" else owner.get("citation_sources")
+            if sources is None:
+                raise ValueError(f"{r['qid']}: no citation sources recorded for {arm}")
+            row = score_answer(owner["preds"][base] or "", sources, r["golds"], entails)
             per_arm[arm].append({"qid": r["qid"], **row})
-    return {"summary": {arm: aggregate(rows) for arm, rows in per_arm.items()}, "details": per_arm}
+    summary = {}
+    for arm, rows in per_arm.items():
+        summary[arm] = dict(aggregate(rows), questions=considered, applicable=len(rows),
+                            gate_coverage=100 * len(rows) / considered if considered else None)
+    return {"summary": summary, "details": per_arm, "sentence_splitter": splitter_name()}
+
+
+def window_decision(windows: list[tuple[float, bool]]) -> bool:
+    """Premise windows -> one decision: the window with the highest entailment probability decides, entailed
+    when that window's argmax is the entailment label. A premise that fits one window reduces to argmax."""
+    return max(windows, key=lambda w: w[0])[1]
+
+
+def premise_windows(premise_ids: list[int], hypothesis_ids: list[int], max_length: int = 512,
+                    special: int = 3) -> list[list[int]]:
+    """Overlapping windows of premise tokens (stride half a window) so that [CLS] premise [SEP] hypothesis [SEP]
+    fits ``max_length``. Every premise token lies in some window; a premise that fits is a single window."""
+    budget = max_length - len(hypothesis_ids) - special
+    if budget < 1:
+        raise ValueError("hypothesis too long for one DeBERTa window")
+    if len(premise_ids) <= budget:
+        return [list(premise_ids)]
+    stride = max(1, budget // 2)
+    windows, start = [], 0
+    while True:
+        windows.append(premise_ids[start:start + budget])
+        if start + budget >= len(premise_ids):
+            return windows
+        start += stride
 
 
 class DebertaChecker:
-    """The pinned DeBERTa-v3-large MNLI checker; entailment = argmax label 0 (manifest id2label)."""
+    """The pinned DeBERTa-v3-large MNLI checker; entailment = argmax label 0 (manifest id2label).
+
+    No truncation: a premise longer than the 512-token window is split into overlapping windows
+    (premise_windows), each scored with the hypothesis, and window_decision picks the answer."""
 
     def __init__(self, device: str = "cpu", verify: bool = True):
         import hashlib
@@ -127,10 +229,21 @@ class DebertaChecker:
     def __call__(self, premise: str, hypothesis: str) -> bool:
         key = (premise, hypothesis)
         if key not in self.cache:
+            p_ids = self.tok.encode(premise, add_special_tokens=False)
+            h_ids = self.tok.encode(hypothesis, add_special_tokens=False)
+            windows = []
             with self.torch.no_grad():
-                enc = self.tok(premise, hypothesis, return_tensors="pt", truncation="only_first", max_length=512)
-                logits = self.model(**{k: v.to(self.device) for k, v in enc.items()}).logits[0]
-            self.cache[key] = int(logits.argmax()) == self.entail_id
+                for win in premise_windows(p_ids, h_ids):
+                    ids = self.tok.build_inputs_with_special_tokens(win, h_ids)
+                    types = self.tok.create_token_type_ids_from_sequences(win, h_ids)
+                    logits = self.model(
+                        input_ids=self.torch.tensor([ids], device=self.device),
+                        token_type_ids=self.torch.tensor([types], device=self.device),
+                        attention_mask=self.torch.ones(1, len(ids), dtype=self.torch.long, device=self.device),
+                    ).logits[0].float()
+                    probs = logits.softmax(-1)
+                    windows.append((float(probs[self.entail_id]), int(logits.argmax()) == self.entail_id))
+            self.cache[key] = window_decision(windows)
         return self.cache[key]
 
 
@@ -146,9 +259,12 @@ def main(argv=None):
     if config.get("answer_style") != "cite":
         raise SystemExit("attribution metrics need a run with --answer-style cite")
     shared = ["static"] + [v["name"] for v in config["variants"]]
+    decoded = shared + [f"gated:{arm}" for arm in shared]
+    if config.get("replication_gamma") is not None:
+        decoded.append("replication")
     arms = args.arms or shared
-    if not set(arms) <= set(shared):
-        raise SystemExit(f"only arms decoded on the cited input can be scored: {shared}")
+    if not set(arms) <= set(decoded):
+        raise SystemExit(f"only arms decoded in this run can be scored: {decoded}")
     records = [json.loads(line) for line in args.predictions.read_text().splitlines() if line.strip()]
     result = score_records(records, arms, DebertaChecker(args.device), args.intervention)
     out = args.output or args.predictions.with_suffix(

@@ -4,29 +4,11 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import sys
-from functools import lru_cache
 
-from ... import paths
+from .attribution import sentence_spans, splitter_name
 from .requests import requests_for_answer
 
-ROOT = paths.ASSET_ROOT
-
 MARKER = re.compile(r'\[(E\d+)\]')
-
-
-@lru_cache(maxsize=1)
-def sentence_splitter():
-    cache = ROOT / 'cache/e5_citation_support'
-    sys.path.insert(0, str(cache / 'nltk_runtime'))
-    import nltk
-    assert nltk.__version__ == '3.9.2'
-    manifest = json.loads((cache / 'sentence_splitter_assets.json').read_text())
-    for record in manifest['files']:
-        assert hashlib.sha256(Path(record['path']).read_bytes()).hexdigest() == record['sha256']
-    nltk.data.path = [str(cache / 'nltk_data')]
-    from nltk.tokenize import PunktTokenizer
-    return PunktTokenizer('english')
 
 
 def prepare_answer(answer, source):
@@ -39,7 +21,7 @@ def prepare_answer(answer, source):
     assert answer['generation_identity'], 'Record generation config and source-input identity'
     assert all(isinstance(token, int) for token in answer['raw_token_ids'])
     statements = []
-    for begin, end in sentence_splitter().span_tokenize(answer['raw_answer']):
+    for begin, end in sentence_spans(answer['raw_answer']):
         raw = answer['raw_answer'][begin:end]
         text = MARKER.sub('', raw).strip()
         if text:
@@ -57,7 +39,7 @@ def prepare_answer(answer, source):
         request['raw_sentence_span'] = statement['raw_span']
         request['raw_sentence'] = statement['raw_sentence']
         request['sentence_local_citation_ids'] = statement['citation_ids']
-        request['sentence_splitter'] = 'NLTK 3.9.2 English Punkt; nltk_data 550b6625bcef1f2abff2ff770a5a0d272c9c6b2a'
+        request['sentence_splitter'] = splitter_name()   # the splitter shared with Faith/AP (attribution.sentence_spans)
     denominator = max(1, len(statements))
     ledger = dict(dataset=answer['dataset'], qid=str(answer['qid']), variant=answer['variant'],
         status=status, statement_denominator=denominator, emitted_citation_ids=cited,
@@ -95,7 +77,7 @@ def prepare(input_path, sources_paths, output, variants=None):
         (output / name).write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in data))
     report = dict(status='INTAKE_ONLY_NO_NLI_RESULTS', answers=len(ledgers), expected_answers=len(expected),
                   statements=sum(r['statement_denominator'] for r in ledgers), requests=len(requests),
-                  generation_calls=0, nli_calls=0,
+                  generation_calls=0, nli_calls=0, sentence_splitter=splitter_name(),
                   ledger_sha256=hashlib.sha256((output / 'answer_ledger.jsonl').read_bytes()).hexdigest(),
                   requests_sha256=hashlib.sha256((output / 'cite_rec_nli_inputs.jsonl').read_bytes()).hexdigest(),
                   answer_input_sha256=hashlib.sha256(input_path.read_bytes()).hexdigest(),

@@ -1,4 +1,5 @@
 """EAB attention hook inside a tiny randomly initialised Qwen3-VL (CPU, no weights needed)."""
+import dataclasses
 import math
 import types
 from types import SimpleNamespace
@@ -8,7 +9,7 @@ import torch
 from transformers import AttentionInterface
 from transformers.integrations.sdpa_attention import sdpa_attention_forward as ORIG_SDPA
 
-from omniaware import qwen_eab
+from omniaware import interventions, qwen_eab
 from omniaware.pipeline import Variant
 from omniaware.qwen_eab import STATE
 
@@ -87,6 +88,35 @@ def test_hook_applies_bias_on_top_of_every_mask_kind(mask_kind):
         logits = logits + additive
     rows_biased = torch.arange(kv_len - q_len, kv_len) >= q_start
     logits = logits + torch.where(rows_biased[:, None], bias[None, :], torch.zeros(1))
+    expected = (torch.softmax(logits, -1) @ v).transpose(1, 2)
+    torch.testing.assert_close(out, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_blocked_keys_get_exactly_zero_weight_and_the_rest_is_renormalised():
+    torch.manual_seed(2)
+    b, h, kvh, q_len, kv_len, d = 1, 4, 2, 3, 7, 8
+    query, key, value = torch.randn(b, h, q_len, d), torch.randn(b, kvh, kv_len, d), torch.randn(b, kvh, kv_len, d)
+    module = types.SimpleNamespace(_erc_layer=0, scaling=1 / math.sqrt(d), num_key_value_groups=h // kvh,
+                                   is_causal=True, training=False)
+    blocked = torch.tensor([False, False, True, True, False, False, False])
+    STATE.reset()
+    STATE.blocked = blocked
+    try:
+        out, _ = qwen_eab._eab_sdpa(module, query, key, value, None, scaling=module.scaling)
+        # The output does not depend on the values of blocked keys: their weight is exactly zero on every row.
+        other = value.clone()
+        other[:, :, blocked] = torch.randn(b, kvh, int(blocked.sum()), d) * 100
+        out_other, _ = qwen_eab._eab_sdpa(module, query, key.clone(), other, None, scaling=module.scaling)
+    finally:
+        STATE.reset()
+    assert torch.isfinite(out).all() and torch.equal(out, out_other)
+    # Removing the blocked keys leaves the same distribution on the rest (proportional weights).
+    keep = (~blocked).nonzero().flatten()
+    k = key.repeat_interleave(h // kvh, dim=1)[:, :, keep]
+    v = value.repeat_interleave(h // kvh, dim=1)[:, :, keep]
+    logits = query @ k.transpose(-1, -2) * module.scaling
+    rows = torch.arange(kv_len - q_len, kv_len)[:, None]
+    logits = logits.masked_fill(keep[None, :] > rows, float("-inf"))
     expected = (torch.softmax(logits, -1) @ v).transpose(1, 2)
     torch.testing.assert_close(out, expected, atol=1e-5, rtol=1e-5)
 
@@ -183,6 +213,42 @@ def test_hook_matches_reference_for_t_end_attention(qwen):
     # The answer-row bias must actually move the captured attention, or the comparison proves nothing.
     res, grounding, _ = qwen.run(enc, lambda a, lg: {"ans1": spec(enc, "ans1", 3.0)}, 4, decode_static=True)
     assert not torch.allclose(res["ans1"].attention, grounding, atol=1e-4)
+
+
+@torch.no_grad()
+def test_blocked_span_is_invisible_to_every_row(qwen):
+    enc = encode(qwen)
+    a, b = enc.spans["c1"]
+    other = enc.input_ids.clone()     # different tokens with the same length: positions stay put
+    other[0, a:b] = torch.tensor([(t * 7 + 3) % 140 + 1 for t in other[0, a:b].tolist()])
+    alt = dataclasses.replace(enc, input_ids=other)
+    res, _, _ = qwen.run(interventions.mask_span(enc, "c1"), None, 4, decode_static=True)
+    res_alt, _, _ = qwen.run(interventions.mask_span(alt, "c1"), None, 4, decode_static=True)
+    torch.testing.assert_close(res["static"].first_logits, res_alt["static"].first_logits, atol=1e-5, rtol=1e-5)
+    assert res["static"].tokens == res_alt["static"].tokens
+    # the same change without the block does move the answer distribution: the span is visible there
+    plain, _, _ = qwen.run(enc, None, 1, decode_static=True)
+    plain_alt, _, _ = qwen.run(alt, None, 1, decode_static=True)
+    assert not torch.allclose(plain["static"].first_logits, plain_alt["static"].first_logits, atol=1e-3)
+
+
+@torch.no_grad()
+def test_blocked_span_gets_no_eab_bias(qwen):
+    enc = encode(qwen)
+    biased = qwen._bias_tensor(enc, spec(enc, "ans1", 1.0))
+    masked = qwen._bias_tensor(interventions.mask_span(enc, "c1"), spec(enc, "ans1", 1.0))
+    a, b = enc.spans["c1"]
+    assert biased[a:b].abs().sum() > 0 and torch.equal(masked[a:b], torch.zeros(b - a))
+    c2a, c2b = enc.spans["c2"]
+    assert torch.equal(masked[c2a:c2b], biased[c2a:c2b])      # other chunks keep their bias
+
+
+@torch.no_grad()
+def test_blocked_span_at_token_zero_is_rejected(qwen):
+    enc = encode(qwen)
+    shifted = dataclasses.replace(enc, spans={**enc.spans, "c1": (0, 5)}, blocked=frozenset({"c1"}))
+    with pytest.raises(ValueError):
+        qwen._prefix(shifted)
 
 
 @torch.no_grad()

@@ -64,6 +64,12 @@ DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img":
                   **{name: family for name, (_, family, _) in data.UNIVERSALRAG_TARGETS.items()}}
 
 
+def replication_copies(chunks: list[dict], counts: list[int]) -> list[dict]:
+    """Adjacent copies of each chunk (replication arm). Each copy gets its own id ``<cid>#<k>``, so every copy is
+    its own [E<j>] source in the cite prompt (pipeline.citation_sources) and its own span."""
+    return [{**c, "cid": f"{c['cid']}#{k}"} for c, n in zip(chunks, counts) for k in range(n)]
+
+
 def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int, min_per_modality: int = 0,
                   route: dict | None = None, ce: dict | None = None) -> list[dict]:
     """Top-k by calibrated relevance, or by the cross-encoder when ``ce`` = {"logits", "calibration"}.
@@ -235,6 +241,17 @@ def main(argv=None):
         ap.error("the Found-in-the-Middle and M2-RAG adapters support the Qwen3-VL backbones only")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
+    norm_source = None
+    if args.norm_from:
+        norm_source = json.loads(Path(args.norm_from).read_text())
+        # The transferred Norm must exist for every phase this run uses: pre and post always, and the probe phase
+        # for cold-start targets (--probe-uncertainty: the gate reads U on the probe round). A source without that
+        # phase (OK-VQA has no probe round) cannot calibrate such a target, so the transfer fails here.
+        needed = ["pre", "post"] + (["probe"] if args.probe_uncertainty else [])
+        missing = [ph for ph in needed if not norm_source.get(f"norm_{ph}")]
+        if missing:
+            ap.error(f"--norm-from {args.norm_from} has no norm_{'/'.join(missing)}; transfer calibration from a run "
+                     "of the same kind (a cold-start target needs a source that has a probe round)")
 
     if not 0 <= args.shard_id < args.num_shards:
         ap.error("--shard-id must lie in [0, --num-shards)")
@@ -389,58 +406,95 @@ def main(argv=None):
         return specs
 
     def intervene(e, rec, chunks, rel_all, enc, info):
-        """Paper Table `causal`: re-decode static and every variant on perturbed evidence, keeping the
-        retrieval decision and the uncertainty EAB uses fixed."""
+        """Paper Table `causal`: re-decode static, every variant and (with --replication-gamma) the replication
+        arm on perturbed evidence, keeping the retrieval decision and the uncertainty EAB uses fixed.
+
+        The target is the highest-ranked text chunk whose prompt text (after the word cut) holds a gold answer.
+        Eligibility is per arm (eligible_by_arm). Each requested kind has one entry per eligible question: the
+        arm predictions, or {"failed_reason": ...} when the perturbation cannot be built (fixed denominator)."""
         golds = e["golds"]
         rel_sel = {c["cid"]: rel_all[c["cid"]] for c in chunks}
         target = interventions.find_target(chunks, rel_sel, golds)
-        eligible = bool(rec["retrieve"] and any(info["eab_active"].values()) and target is not None)
-        out = {"target": target and target["cid"], "eligible": eligible}
-        if not eligible:
+        retrieved = bool(rec["retrieve"]) and target is not None
+        active = {"static": True, **{v.name: info["eab_active"][v.name] for v in variants}}
+        if args.replication_gamma is not None:
+            active["replication"] = info["u_eab"] > args.tau_bias
+        out = {"target": target and target["cid"], "eligible": retrieved,
+               "eligible_by_arm": {arm: retrieved and bool(on) for arm, on in active.items()}}
+        if not retrieved:
             return out
-        gold = interventions.answer_span(target["text"], golds)[2]
+        target_p = interventions.as_prompt_chunk(target)     # the text the model reads, for edits
+        gold = interventions.answer_span(target_p["text"], golds)[2]
         entity = interventions.pick_substitute(e["qid"], golds, gold, substitute_pool, iv_nlp)
-        out.update(gold_in_target=gold, entity=entity)
+        out.update(gold_in_target=gold, entity=entity, attempted=list(args.intervention))
+        segments, split = evidence_segments(e, chunks, rel_sel)
+
+        def decode(kind, chunks_x, rel_x, enc_x, segments_x, split_x):
+            """Decode static, the variants and replication (copy counts recomputed on the perturbed chunks)."""
+            res_x, _, _ = qwen.run(enc_x, lambda a, lg: variant_specs(e, enc_x, rel_x, info["u_eab"]), max_new,
+                                   decode_static=True)
+            entry = {"preds": {n: r.text for n, r in res_x.items()}, "chunks": [c["cid"] for c in chunks_x]}
+            if args.answer_style == "cite":
+                entry["citation_sources"] = pipeline.citation_sources(segments_x, chunks_x)
+            if args.replication_gamma is not None:
+                counts = order_mod.replication_counts([rel_x[c["cid"]] for c in chunks_x], info["u_eab"],
+                                                      info["u_eab"] > args.tau_bias, args.replication_gamma)
+                if all(n == 1 for n in counts):
+                    entry["preds"]["replication"] = entry["preds"]["static"]
+                    if args.answer_style == "cite":
+                        entry["replication_citation_sources"] = entry["citation_sources"]
+                else:
+                    copies = replication_copies(chunks_x, counts)
+                    seg_r, split_r = evidence_segments(e, copies, rel_x)
+                    enc_r = qwen.encode(seg_r, split_r)
+                    if kind == "mask":     # every copy of the target is hidden
+                        for c in copies:
+                            if c["cid"].split("#")[0] == target["cid"]:
+                                enc_r = interventions.mask_span(enc_r, c["cid"])
+                    res_r, _, _ = qwen.run(enc_r, None, max_new, decode_static=True)
+                    entry["preds"]["replication"] = res_r["static"].text
+                    if args.answer_style == "cite":
+                        entry["replication_citation_sources"] = pipeline.citation_sources(seg_r, copies)
+            return entry
+
         for kind in args.intervention:
-            chunks_x, rel_x, enc_x, extra = chunks, rel_sel, None, {}
+            extra = {}
             if kind == "mask":
-                enc_x = interventions.mask_tokens(enc, target["cid"], pad_id)
-            elif kind == "rerun":
-                enc_x = enc
-            elif kind == "distractors":
+                out[kind] = decode(kind, chunks, rel_sel, interventions.mask_span(enc, target["cid"]), segments, split)
+                continue
+            if kind == "rerun":
+                out[kind] = decode(kind, chunks, rel_sel, enc, segments, split)
+                continue
+            if kind == "distractors":
                 swapped = interventions.distractors(e, chunks, rel_all, target["cid"], golds)
                 if swapped is None:
-                    out[kind] = None
+                    out[kind] = {"failed_reason": "fewer than two candidates beyond the top k without the answer"}
                     continue
                 chunks_x, extra["distractors"] = swapped
                 rel_x = {c["cid"]: rel_all[c["cid"]] for c in chunks_x}
-            elif entity is None:
-                out[kind] = None
+            elif entity is None:   # cf and random_edit share the questions: both need the same-type entity
+                out[kind] = {"failed_reason": "no same-type entity among calibration/training golds"}
                 continue
             elif kind == "cf":
-                chunks_x = [interventions.counterfactual(c, golds, entity) if c is target else c for c in chunks]
+                chunks_x = [interventions.counterfactual(target_p, golds, entity) if c is target else c
+                            for c in chunks]
+                rel_x = rel_sel
             elif kind == "random_edit":
-                edited = interventions.random_edit(target, golds, entity, f"random-edit:{e['qid']}")
+                edited = interventions.random_edit(target_p, golds, entity, f"random-edit:{e['qid']}")
                 if edited is None:
-                    out[kind] = None
+                    out[kind] = {"failed_reason": "no window of whole words as long as the answer avoids every gold"}
                     continue
                 chunks_x = [edited if c is target else c for c in chunks]
+                rel_x = rel_sel
             else:
                 injected = interventions.inject(e, chunks, rel_all, golds, entity, kind, args.order)
                 if injected is None:
-                    out[kind] = None
+                    out[kind] = {"failed_reason": "no non-gold chunk to replace"}
                     continue
                 chunks_x, rel_x = injected
-            segments_x = None
-            if enc_x is None:
-                segments_x, split_x = evidence_segments(e, chunks_x, rel_x)
-                enc_x = qwen.encode(segments_x, split_x)
-            res_x, _, _ = qwen.run(enc_x, lambda a, lg: variant_specs(e, enc_x, rel_x, info["u_eab"]), max_new,
-                                   decode_static=True)
-            entry = {"preds": {n: r.text for n, r in res_x.items()}, "chunks": [c["cid"] for c in chunks_x], **extra}
-            if args.answer_style == "cite" and segments_x is not None:
-                entry["citation_sources"] = pipeline.citation_sources(segments_x, chunks_x)
-            out[kind] = entry
+            segments_x, split_x = evidence_segments(e, chunks_x, rel_x)
+            out[kind] = {**decode(kind, chunks_x, rel_x, qwen.encode(segments_x, split_x), segments_x, split_x),
+                         **extra}
         return out
 
     routed = (args.modality_routing or args.first_round_routing
@@ -532,13 +586,12 @@ def main(argv=None):
         if raws:
             comb = pipeline.Combiner.fit(raws, args.beta, args.u_combine)
             calibrators[phase] = (comb, pipeline.Norm.fit([comb(r) for r in raws]))
-    if args.norm_from:
-        source = json.loads(Path(args.norm_from).read_text())
+    if norm_source:
         for phase in ("pre", "post", "probe"):
-            if f"norm_{phase}" in source and source[f"norm_{phase}"]:
-                comb = (pipeline.Combiner.from_json(source[f"comb_{phase}"]) if source.get(f"comb_{phase}")
+            if norm_source.get(f"norm_{phase}"):
+                comb = (pipeline.Combiner.from_json(norm_source[f"comb_{phase}"]) if norm_source.get(f"comb_{phase}")
                         else pipeline.Combiner(args.beta))
-                calibrators[phase] = (comb, pipeline.Norm(**source[f"norm_{phase}"]))
+                calibrators[phase] = (comb, pipeline.Norm(**norm_source[f"norm_{phase}"]))
     if args.no_calibration:
         calibrators = {phase: (pipeline.Combiner(args.beta), pipeline.Norm(0.0, 1.0))
                        for phase in ("pre", "post", "probe")}
@@ -589,16 +642,16 @@ def main(argv=None):
         print(f"[seakr] threshold {seakr_threshold:.4f} (U retrieval rate on calibration {u_rate:.3f}; "
               f"{seakr_missing_calibration} of {len(calib)} calibration questions have no eigen score)", flush=True)
 
-    substitute_pool, iv_nlp, pad_id = None, None, None
+    substitute_pool, iv_nlp = None, None
     if args.intervention:
         try:
             import spacy
             iv_nlp = spacy.load("en_core_web_sm")
         except (ImportError, OSError):
             print("[interventions] spaCy en_core_web_sm unavailable: entity types from surface rules only", flush=True)
-        substitute_pool = interventions.substitute_pool(evals, iv_nlp)
-        if "mask" in args.intervention:
-            pad_id = qwen.tok.pad_token_id if qwen.tok.pad_token_id is not None else qwen.tok.eos_token_id
+        # Counterfactual entities come from calibration questions (training split or held-out calibration) only.
+        # Their golds build the pool; they are never used for calibration, and evaluation golds never enter it.
+        substitute_pool = interventions.substitute_pool(calib, iv_nlp)
 
     # Fingerprints of every cache this configuration was calibrated from (a resumed or sharded run must match them).
     cache_fingerprints = {
@@ -698,9 +751,11 @@ def main(argv=None):
             rec["rel"] = {c["cid"]: round(eab_rel[c["cid"]], 4) for c in chunks}
             rec["chunk_gold"] = [c.get("gold") for c in chunks]
             rec["chunk_modalities"] = [c["modality"] for c in chunks]
-            # whether the chunk text states a gold answer (error analysis: biased chunk without the answer)
-            rec["chunk_has_answer"] = [bool(interventions.answer_span(f"{c.get('title') or ''} {c.get('text') or ''}",
-                                                                      e["golds"])) for c in chunks]
+            if "cluster_id" in e:     # VideoRAG: the source video (clustered bootstrap, universalrag_metrics)
+                rec["cluster_id"] = e["cluster_id"]
+            # whether the prompt text of the chunk states a gold answer (error analysis: biased chunk without it)
+            rec["chunk_has_answer"] = [bool(interventions.answer_span(interventions.prompt_text(c), e["golds"]))
+                                       for c in chunks]
             rec["gold_in_topk"] = any(c.get("gold") for c in chunks) if any(
                 c.get("gold") is not None for c in e["candidates"]) else None
             if routed:
@@ -760,13 +815,18 @@ def main(argv=None):
                 if all(n == 1 for n in counts):
                     rec["preds"]["replication"] = rec["preds"]["static"]
                     rec["replication_prompt_tokens"] = enc.length      # no copies: the static prompt itself
+                    if args.answer_style == "cite":
+                        rec["replication_citation_sources"] = rec["citation_sources"]
                 else:
-                    copies = [c for c, n in zip(chunks, counts) for _ in range(n)]
-                    enc_r = qwen.encode(*evidence_segments(e, copies, rel))
+                    copies = replication_copies(chunks, counts)
+                    seg_r, split_r = evidence_segments(e, copies, rel)
+                    enc_r = qwen.encode(seg_r, split_r)
                     res_r, _, _ = qwen.run(enc_r, None, max_new, decode_static=True)
                     rec["preds"]["replication"] = res_r["static"].text
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
+                    if args.answer_style == "cite":   # copies are numbered [E1..] in their own prompt
+                        rec["replication_citation_sources"] = pipeline.citation_sources(seg_r, copies)
                 arms.append("replication")
             # Baseline arms read the joint input (D4). Wall time: everything each method runs itself.
             joint_ids = rec["chunks_joint"]
