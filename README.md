@@ -145,6 +145,15 @@ python -m scripts.analysis.routing_metrics runs/route_*/webqa_open_full.jsonl
 
 延迟只计生成端（检索结果已缓存）：始终检索 = 证据 prefill + 该臂解码；门控 = 直接 prefill（同时算 U）+（检索 ? 证据 prefill + 该臂解码 : 直接解码）。
 
+## 论文全链路
+
+论文 V3.21 每张表、每个单元格对应的运行和对照臂见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。全部命令由一个脚本给出：
+
+```bash
+python -m scripts.paper_runs --list                 # 各阶段及其填充的表
+python -m scripts.paper_runs --stage main --run     # 主表；另有 universalrag、ablation、routing、order、citation、interventions、analysis
+```
+
 ## 测试
 
 ```bash

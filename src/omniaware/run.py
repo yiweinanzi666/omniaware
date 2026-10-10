@@ -84,7 +84,7 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
 PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
 
 
-def main(argv=None):
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
     ap.add_argument("--model", default="2b", choices=["2b", "8b", "internvl3.5-8b"])
@@ -164,6 +164,11 @@ def main(argv=None):
     ap.add_argument("--m2rag", action="store_true",
                     help="M2-RAG baseline arm (official single-stage summarizer) on the same chunks")
     ap.add_argument("--tag", required=True)
+    return ap
+
+
+def main(argv=None):
+    ap = build_parser()
     args = ap.parse_args(argv)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
         ap.error(f"unknown --order {args.order}")
@@ -173,6 +178,10 @@ def main(argv=None):
         args.relevance_norm = "minmax"
     if (args.route_rule == "query") != (args.query_routes is not None):
         ap.error("--route-rule query and --query-routes go together")
+    if args.m2rag and DATASET_FAMILY[args.dataset] == "videorag":
+        ap.error("M2-RAG accepts no video evidence (an em dash in the paper's main table)")
+    if args.fitm and args.model == "internvl3.5-8b":
+        ap.error("the Found-in-the-Middle adapter supports the Qwen3-VL backbones only")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
 
@@ -545,13 +554,20 @@ def main(argv=None):
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
+            # Baseline arms: wall time of everything each method runs itself (its own prefills and decoding).
+            rec["baseline_seconds"] = {}
             if args.fitm:
+                t_b = time.perf_counter()
                 rec["preds"]["fitm"], rec["fitm"] = baseline_arms.fitm_answer(qwen, enc, [c["cid"] for c in chunks], max_new)
+                rec["baseline_seconds"]["fitm"] = time.perf_counter() - t_b
                 arms.append("fitm")
             if args.m2rag:
+                t_b = time.perf_counter()
                 rec["preds"]["m2rag"], rec["m2rag"] = baseline_arms.m2rag_answer(
                     qwen, e, chunks, rel, max_new)
+                rec["baseline_seconds"]["m2rag"] = time.perf_counter() - t_b
             if args.seakr_samples:
+                t_b = time.perf_counter()
                 direct_eigen = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
                 info_s = {"direct_eigen": direct_eigen, "retrieve": direct_eigen > seakr_threshold}
                 rec["preds"]["seakr_trigger:static"] = (rec["preds"]["static"] if info_s["retrieve"]
@@ -569,6 +585,7 @@ def main(argv=None):
                 else:
                     rec["preds"]["seakr"] = rec["preds"]["direct"]
                 rec["seakr"] = info_s
+                rec["baseline_seconds"]["seakr"] = time.perf_counter() - t_b
             # Gated arms (paper Eq. 4): the direct answer when U_pre <= tau, else the retrieval arm.
             # "gated:static" is the paper's "U_omni, static" row; "gated:<variant>" the full system.
             for name in arms:

@@ -21,7 +21,7 @@ def _row(q, **kw):
             "tokens": {"static": [5], "eab": [6, 7]}, "eab_active": {"eab": True},
             "span_tokens": {"a": ["text", 10], "b": ["image", 64]}, "prompt_tokens": 100,
             "prefill_seconds": {"direct": 0.1, "evidence": 0.3}, "arm_seconds": {"direct": 0.05, "static": 0.2, "eab": 0.2},
-            "ard": {"static": 0.3, "eab": 0.1}, "gold_in_topk": True}
+            "ard": {"static": 0.3, "eab": 0.1}, "gold_in_topk": True, "baseline_seconds": {"seakr": 1.5}}
     base.update(kw)
     return base
 
@@ -46,7 +46,7 @@ def test_latency_gold25_stats_uncertainty_interventions(tmp_path):
               "q3": {"static": 0.0, "eab": 100.0}}
     run = _write(tmp_path / "r", rows, scores, {"order": "rank", "variants": [{"name": "eab"}]})
     lat = pa.latency_table(run)
-    assert abs(lat["always:static"] - 500) < 1e-6
+    assert abs(lat["always:static"] - 500) < 1e-6 and abs(lat["seakr"] - 1500) < 1e-6
     assert abs(lat["gated:static"] - (600 + 150 + 600) / 3) < 1e-6
     g = pa.gold25_table(run, "acc")
     assert g["gold_2_5"] == 2 and g["scores"]["eab"] == 100

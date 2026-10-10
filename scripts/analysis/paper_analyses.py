@@ -194,12 +194,21 @@ def noise_table(runs: list[Path], metric: str) -> dict:
 def latency_table(path: Path) -> dict:
     """Generation-side end-to-end ms (retrieval lookup is cached and excluded):
     always-retrieve arm = evidence prefill + arm decode;
-    gated arm = direct prefill (computes U) + (retrieve ? evidence prefill + arm decode : direct decode)."""
+    gated arm = direct prefill (computes U) + (retrieve ? evidence prefill + arm decode : direct decode);
+    universalrag = (router says retrieve ? evidence prefill + static decode : direct prefill + direct decode),
+    router time excluded; FITM, M2-RAG, SeaKR = wall time of everything the method runs itself."""
     rows, _ = load_run(path)
     rows = [r for r in rows if "arm_seconds" in r]
     arms = sorted({a for r in rows for a in r["arm_seconds"] if a != "direct"})
     out = {"questions": len(rows), "retrieval_rate": 100 * mean([float(r["retrieve"]) for r in rows]) if rows else None,
            "direct_only": 1000 * mean([r["prefill_seconds"]["direct"] + r["arm_seconds"]["direct"] for r in rows])}
+    routed = [r for r in rows if (r.get("route") or {}).get("rule") == "query"]
+    if routed:
+        out["universalrag"] = 1000 * mean([
+            r["prefill_seconds"]["evidence"] + r["arm_seconds"]["static"] if r["route"]["retrieve"]
+            else r["prefill_seconds"]["direct"] + r["arm_seconds"]["direct"] for r in routed])
+    for name in sorted({b for r in rows for b in (r.get("baseline_seconds") or {})}):
+        out[name] = 1000 * mean([r["baseline_seconds"][name] for r in rows if name in (r.get("baseline_seconds") or {})])
     for arm in arms:
         out[f"always:{arm}"] = 1000 * mean([r["prefill_seconds"]["evidence"] + r["arm_seconds"][arm] for r in rows])
         out[f"gated:{arm}"] = 1000 * mean([
