@@ -38,6 +38,8 @@ def test_open_retrieval_candidates_and_gold_aliases(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "WEBQA_OPEN", root)
     monkeypatch.setattr(paths, "WEBQA_JSON", tmp_path / "webqa.json")
     monkeypatch.setattr(paths, "ASSET_ROOT", tmp_path / "assets")
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "assets" / "img301.jpg").write_bytes(b"jpg")
 
     (e,) = data.load_webqa_open("img", rankings=rankings)
     by_cid = {c["cid"]: c for c in e["candidates"]}
@@ -47,4 +49,9 @@ def test_open_retrieval_candidates_and_gold_aliases(tmp_path, monkeypatch):
     assert by_cid["i2"]["text"] == "Eiffel tower"
     # A path recorded on another host is remapped under the local asset root.
     assert by_cid["i1"]["image"] == str(tmp_path / "assets" / "img301.jpg")
-    assert e["golds"] == ["In Paris."] and "missing_images" not in e
+    assert e["golds"] == ["In Paris."] and e["missing_images"] == 0
+
+    # A ranked image whose file is absent is dropped and counted, not skipped silently.
+    (tmp_path / "assets" / "img301.jpg").unlink()
+    (e,) = data.load_webqa_open("img", rankings=rankings)
+    assert [c["cid"] for c in e["candidates"]] == ["t1", "t2", "i2"] and e["missing_images"] == 1

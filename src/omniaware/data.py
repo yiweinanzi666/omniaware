@@ -94,6 +94,8 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
     (scripts/webqa_open_retrieval: encode_webqa_queries --split <split>, then search_dense_queries
     into <rankings>/bge and <rankings>/clip).  ``gold`` marks a candidate whose snippet aliases or
     image id belong to the question's positive facts; it feeds recall diagnostics only.
+    Ranked images without an asset record or file are dropped, counted per question in
+    ``missing_images`` and reported in total (CONVENTIONS: no silent skips).
     """
     root = paths.WEBQA_OPEN
     rankings = Path(rankings) if rankings else root / "dense_top5_full" / f"webqa_{split}"
@@ -125,7 +127,7 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
                 if "image:" + str(row["image_id"]) in wanted:
                     images["image:" + str(row["image_id"])] = str(_asset_path(row["path"]))
     raw = json.loads(paths.WEBQA_JSON.read_text())
-    out, unranked = [], 0
+    out, unranked, missing_total = [], 0, 0
     for guid, v in raw.items():
         if v["split"] != split or (subset == "img" and not v["img_posFacts"]):
             continue
@@ -134,13 +136,14 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
             continue
         gold_text = {str(f["snippet_id"]) for f in v["txt_posFacts"]}
         gold_image = {"image:" + str(f["image_id"]) for f in v["img_posFacts"]}
-        cands = []
+        cands, missing = [], 0
         for rank, sid in enumerate(tops[guid].get("bge", []), 1):
             row = texts[sid]
             cands.append({"cid": f"t{rank}", "modality": "text", "title": "", "text": _clean(row["text"]),
                           "image": None, "gold": bool(gold_text & set(map(str, row["source_snippet_ids"])))})
         for rank, sid in enumerate(tops[guid].get("clip", []), 1):
-            if sid not in images:
+            if sid not in images or not Path(images[sid]).exists():
+                missing += 1
                 continue
             caption = _clean(captions.get(sid, ""))
             cands.append({"cid": f"i{rank}", "modality": "image", "title": caption, "text": caption,
@@ -150,7 +153,12 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
             "query_images": [], "candidates": cands, "fixed_evidence": False,
             "golds": [_clean(a) for a in v["A"]],
             "gold_modalities": ["image"] if v["img_posFacts"] else ["text"],
+            "missing_images": missing,
         })
+        missing_total += missing
+    if missing_total:
+        print(f"[data] webqa_open/{split}/{subset}: {missing_total} ranked images missing, dropped from the "
+              f"candidates of {sum(e['missing_images'] > 0 for e in out)} questions", flush=True)
     if unranked:
         print(f"[data] webqa_open/{split}/{subset}: {unranked} questions have no rankings in {rankings}", flush=True)
     return out
