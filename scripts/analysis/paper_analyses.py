@@ -398,7 +398,10 @@ def score_ranges(cache: Path) -> dict:
     """Raw retriever scores per channel from a relevance cache (cache/relevance_<dataset>*.json)."""
     raw = json.loads(Path(cache).read_text())
     per = defaultdict(list)
-    for chunks in raw.values():
+    for entry in raw.values():
+        # Entries are {"fingerprint", "scores"} since the relevance cache became fingerprinted; older files are
+        # {cid: channels} directly.
+        chunks = entry["scores"] if "scores" in entry else entry
         for channels in chunks.values():
             for k, v in channels.items():
                 per[k].append(v)

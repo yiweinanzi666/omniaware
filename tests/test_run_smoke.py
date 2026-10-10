@@ -69,7 +69,7 @@ def test_run_writes_every_arm_from_one_input(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
 
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
@@ -104,7 +104,7 @@ def test_fixed_permutation_and_replication_arm(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     schedule = {o["order_id"]: o["permutation"] for o in order.permutation_schedule()}
 
@@ -133,10 +133,10 @@ def test_cross_encoder_selectors(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     # The cross-encoder prefers the passages the retriever ranks last (k3..k7).
-    monkeypatch.setattr(rerank, "ce_logits", lambda exs, path, model: {
+    monkeypatch.setattr(rerank, "ce_logits", lambda exs, path, model, **kw: {
         e["qid"]: {c["cid"]: float(c["cid"][1:]) for c in e["candidates"]} for e in exs})
     for selector in ("ce", "ce_calibrated"):
         run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
@@ -157,7 +157,7 @@ def test_cite_style_run_exports_citerec_inputs(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
               "--n-dev", "0", "--tag", "cite", "--answer-style", "cite", "--variants", "eab:g1.2:ans2:pos:gate"])
@@ -199,7 +199,7 @@ def test_route_rules_end_to_end(tmp_path, monkeypatch, rule):
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
     # images score higher for odd questions, text for even ones
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"):
                               (0.9 if (c["modality"] == "image") == (int(e["qid"][1:]) % 2 == 1) else 0.1)
                               - 0.01 * int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
@@ -231,7 +231,7 @@ def test_universalrag_query_routes(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"): 1 - 0.01 * int(c["cid"][1:])}
                    for c in e["candidates"]} for e in exs})
     labels = {0: ["image"], 1: ["paragraph"], 2: ["no"], 3: ["paragraph", "image"]}
@@ -259,7 +259,7 @@ def test_seakr_arms(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     # eigen score = prompt length (question-only prompts differ by question number; k3 is the most confident doc)
     def fake_score(qwen, enc, n, m, layer=None, seed=42):
@@ -285,7 +285,7 @@ def test_controller_ablation_options(tmp_path, monkeypatch, extra):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 3.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     variants = "eab:g1.2:ans2:pos:gate,eab:g1.2:ans2:pos:gate:all:random,eab:g1.2:ans2:pos:gate:all:retriever:ctx"
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "0",
@@ -313,7 +313,7 @@ def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     kinds = ["mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction"]
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
@@ -347,7 +347,7 @@ def test_videorag_run_with_video_chunks_and_m2rag_guard(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"video_text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     base = ["--dataset", "videorag_synth", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
             "--n-dev", "2", "--variants", "eab:g1.2:ans2:pos:gate"]
@@ -368,7 +368,7 @@ def test_cold_start_probe_round_gates_and_routes(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: ({"text": 1.0 / int(c["cid"][1:])} if c["modality"] == "text"
                               else {"image_clip": 0.5 / int(c["cid"][1:])}) for c in e["candidates"]} for e in exs})
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
@@ -393,7 +393,7 @@ def test_sharded_run_covers_the_split_once(tmp_path, monkeypatch):
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
     base = ["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
             "--n-dev", "2", "--tag", "sh"]

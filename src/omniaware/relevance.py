@@ -181,18 +181,22 @@ class Calibrator:
         return {k: v for k, v in self.sorted.items()}
 
 
-def save_raw(raw: dict, path: Path) -> None:
-    """Atomic write; merges entries saved meanwhile by other workers."""
+def save_raw(entries: dict, path: Path) -> None:
+    """Atomic write of {qid: {"fingerprint": str, "scores": {cid: channels}}}; merges the entries saved
+    meanwhile by other workers (an entry for the same qid is replaced)."""
     path.parent.mkdir(parents=True, exist_ok=True)
+    merged = {}
     if path.exists():
         try:
-            raw = {**json.loads(path.read_text()), **raw}
+            merged = json.loads(path.read_text(encoding="utf8"))
         except json.JSONDecodeError:
-            pass
+            print(f"[relevance] {path} is unreadable; starting it afresh", flush=True)
+    merged.update(entries)
     tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    tmp.write_text(json.dumps(raw))
+    tmp.write_text(json.dumps(merged), encoding="utf8")
     os.replace(tmp, path)
 
 
 def load_raw(path: Path) -> dict:
-    return json.loads(path.read_text())
+    """{qid: {"fingerprint": str, "scores": {cid: channels}}}, as written by save_raw."""
+    return json.loads(path.read_text(encoding="utf8"))
