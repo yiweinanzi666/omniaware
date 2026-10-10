@@ -34,7 +34,7 @@ U 的观测不随 citation prompt 重算：OK-VQA 复用原 query-image 初始�
 - 8 个推断资产均已下载，按上游 Git blob SHA1 或 LFS SHA256 校验。权重 870182606 bytes，SHA256 `c03cd208bf920b4fbbb182a0535859a566e8acc3477d2b536bf87b769978524b`。
 - 资产位于 `cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/`，配置、分词器、模型卡和权重的具体哈希见该目录 `asset_manifest.json`。
 
-当前模型加载次数为 0。未来的最小 `run_nli.py` 为 CPU float32、batch1、单线程，记录 pair token 长度、logits、标签、耗时、版本和输入 SHA256；premise 为该陈述自己引用的有效块（见下），不截断、不拆窗。命令失败会保留未完成状态，不能将失败当 0 分或发布部分指标。Faith/AP 的检查器调用（`attribution.DebertaChecker`）与此不同：超过 512 token 的 premise 按窗口分段取最大蕴含概率，见"Faith / AP"一节。
+当前模型加载次数为 0。未来的最小 `run_nli.py` 为 CPU float32、batch1、单线程，记录 pair token 长度、logits、标签、耗时、版本和输入 SHA256；premise 为该陈述自己引用的有效块（见下），不截断；超过 512 token 时与 Faith/AP 一样按窗口分段，取蕴含概率最大的窗口，记录该窗口的 logits 与窗口数。命令失败会保留未完成状态，不能将失败当 0 分或发布部分指标。Faith/AP 的检查器调用（`attribution.DebertaChecker`）使用同一分窗规则（`attribution.premise_windows`），见"Faith / AP"一节。
 
 ## CiteRec 的明确计算规则
 
@@ -87,6 +87,6 @@ T08 本次要求答案全部引用并集，因此本包是 ALCE-style CiteRec，
 - **归因支持 `gated:*` 与 `replication` 臂。** gated 臂中未检索的题不计入 AP 分母，同时报告覆盖率（retrieved share）。
 - **alias 命中与 NLI 判定分别报告。** alias 判定为"gold 别名同时出现在引用它的答案陈述与被引块中"；NLI 判定为 DeBERTa 检查器的蕴含 logit 最大。两者不做短路组合（此前 alias 命中会跳过 NLI，已取消）。
 - **Faith** 对所有答案取平均，**AP** 只对至少有一条引用的答案取平均；覆盖率 × AP 不超过 Faith。
-- **前提长度。** <!-- TODO(G6): 前提截断/分段规则（D9：不截断，超长时按 DeBERTa 窗口分段取 max）由 G6 改写本节 --> 
+- **前提长度。** 不截断；超长前提的分窗规则见上文"前提不截断"一条，CiteRec 与 Faith/AP 共用。
 
 论文的 Faith/AP 数字必须能由 `runs/<tag>/<dataset>.jsonl` 用上述命令重算。
