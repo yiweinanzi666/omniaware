@@ -115,6 +115,16 @@ python -m omniaware.run --dataset hybridqa --split test --calib-source heldout -
 python -m omniaware.eval.score_official runs/hq_v1/hybridqa.jsonl                    # VideoRAG 加 --bart 得到 BERTScore
 ```
 
+### OK-VQA 检索语料 GS-112K
+
+GS-112K（Luo et al., EMNLP 2021）的完整测试语料 `okvqa_full_corpus.csv`（168,306 句）从其官方发布获取，然后：
+
+```bash
+python -m omniaware.okvqa_dense --corpus gs112k prepare --csv okvqa_full_corpus.csv
+python -m omniaware.okvqa_dense --corpus gs112k encode
+python -m omniaware.okvqa_dense --corpus gs112k search --n-passages 168306      # -> 数据集 okvqa_gs
+```
+
 ### 干预与检索噪声
 
 ```bash
@@ -151,6 +161,8 @@ python -m scripts.analysis.routing_metrics runs/route_*/webqa_open_full.jsonl
 
 ```bash
 python -m scripts.paper_runs --list                 # 各阶段及其填充的表
+python -m scripts.paper_runs --stage dev --run      # 先跑 dev 网格
+python -m scripts.analysis.dev_select              # 按预先登记的规则冻结选择（docs/DEV_DECISIONS.md）
 python -m scripts.paper_runs --stage main --run     # 主表；另有 universalrag、ablation、routing、order、citation、interventions、analysis
 ```
 

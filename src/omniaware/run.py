@@ -41,7 +41,7 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
 
 # Loader name -> dataset family used for prompts and generation caps.
 DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img": "webqa", "webqa_open_full": "webqa",
-                  "okvqa": "okvqa", "okvqa_dense": "okvqa",
+                  "okvqa": "okvqa", "okvqa_dense": "okvqa", "okvqa_gs": "okvqa",
                   **{name: family for name, (_, family, _) in data.UNIVERSALRAG_TARGETS.items()}}
 
 
@@ -150,7 +150,15 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--answer-style", default="default", choices=["default", "short", "cite"],
                     help="short: one word/phrase; cite: statements with [E<j>] citations for the citation metrics "
                          "(raise --max-new-tokens). Applies to every arm.")
-    ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
+    ap.add_argument("--variants", default="eab:g1.2:ans1:pos:gate",
+                    help="comma-separated EAB variants (pipeline.parse_variant); paper default eab:g1.2:ans1:pos:gate")
+    ap.add_argument("--probe-uncertainty", action="store_true",
+                    help="cold start (no supplied context): a probe round packs the joint top-k by calibrated "
+                         "relevance; U and, with --first-round-routing, the M_m*H_m route come from its prefill")
+    ap.add_argument("--u-combine", choices=["sum", "zsum"], default="sum",
+                    help="sum: H_grd + beta*H_pred (paper); zsum: each term standardised on calibration first")
+    ap.add_argument("--attn-layer", choices=["last", "mid"], default="last",
+                    help="decoder layer whose head-averaged attention gives H_grd, M_m*H_m and ARD")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
                     help="override the per-dataset generation cap (e.g. 10 to reproduce earlier short-answer runs)")
@@ -217,12 +225,13 @@ def main(argv=None):
         calib_pool = data.TRAIN_LOADERS[args.dataset]()
     # Dense candidate files may cover only the intended local slice.  Keep the
     # original OK-VQA universe for split identities instead of reshuffling it.
-    split_source = data.LOADERS["okvqa"]() if args.dataset == "okvqa_dense" else examples
+    retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs")
+    split_source = data.LOADERS["okvqa"]() if retrieved_okvqa else examples
     sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool)
     calib = sp["calib"]
     end = None if args.n_eval is None else args.offset + args.n_eval
     evals = sp[args.split][args.offset:end]
-    if args.dataset == "okvqa_dense":
+    if retrieved_okvqa:
         by_qid = {e["qid"]: e for e in examples}
         missing = [e["qid"] for e in calib + evals if e["qid"] not in by_qid]
         if missing:
@@ -266,6 +275,7 @@ def main(argv=None):
     model_path = {"8b": paths.QWEN_8B, "2b": paths.QWEN_2B, "internvl3.5-8b": paths.INTERNVL_8B}[args.model]
     t0 = time.time()
     qwen = QwenEAB(model_path, max_pixels=args.max_pixels, max_patches=args.max_patches)
+    qwen.capture_at = qwen.n_layers // 2 if args.attn_layer == "mid" else -1
     print(f"[model] {args.model} loaded on {qwen.device} in {time.time() - t0:.1f}s, {qwen.n_layers} layers", flush=True)
 
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
@@ -273,6 +283,8 @@ def main(argv=None):
     style += f"_mpm{args.min_per_modality}" if args.min_per_modality else ""
     style += "_route" if args.modality_routing else ""
     style += "_r1route" if args.first_round_routing else ""
+    style += "_probe" if args.probe_uncertainty else ""
+    style += "_attn-mid" if args.attn_layer == "mid" else ""
     style += f"_rule-{args.route_rule}" if args.route_rule != "mh" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
     style += f"_patches{args.max_patches}" if args.max_patches != 1 else ""
@@ -354,8 +366,21 @@ def main(argv=None):
               or args.route_rule in ("retriever", "all", "oracle", "query"))
     query_routes = universalrag.load_routes(args.query_routes) if args.query_routes else None
 
-    def resolve_route(e, rel, initial, order="rank", seed=0, calibrating=False):
-        """Initial-evidence route; cold-start queries take the first-round pathway when enabled.
+    def cold(e):
+        return not e["query_images"]
+
+    def probe(e, rel):
+        """Cold-start probe round (paper Sec. 4.2-4.3): the joint top-k by calibrated relevance in rank
+        order, one zero-bias prefill. H_grd over these spans makes U informative without supplied context,
+        and the same attention gives the M_m*H_m route."""
+        first = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, None)
+        enc_1 = qwen.encode(*evidence_segments(e, first, rel))
+        _, attn_1, logits_1 = qwen.run(enc_1, None, 1, decode_static=False)
+        return {"chunks": first, "enc": enc_1, "attn": attn_1, "seconds": qwen.last_prefill_seconds,
+                "raw": pipeline.raw_uncertainty(attn_1, enc_1, [c["cid"] for c in first], logits_1, args.beta)}
+
+    def resolve_route(e, rel, initial, calibrating=False, probe_out=None):
+        """Initial-evidence route; cold-start queries take the probe-round pathway when enabled.
         Non-attention rules (retriever, all, oracle) replace the attention route entirely."""
         if args.route_rule == "oracle":
             return {"mode": "oracle", "rule": "oracle", "modalities": sorted(e["gold_modalities"])}
@@ -372,11 +397,9 @@ def main(argv=None):
             return universalrag.to_route(query_routes[index], {c["modality"] for c in e["candidates"]})
         if not args.first_round_routing or (initial and initial["modalities"]):
             return initial
-        first = select_chunks(e, rel, args.k, order, seed, args.min_per_modality, None)
-        enc_1 = qwen.encode(*evidence_segments(e, first, rel))
-        _, attn_1, _ = qwen.run(enc_1, None, 1, decode_static=False)
-        route = routing.evidence_route(attn_1, enc_1, first, rule=args.route_rule)
-        route["first_round"] = [c["cid"] for c in first]
+        p = probe_out or probe(e, rel)
+        route = routing.evidence_route(p["attn"], p["enc"], p["chunks"], rule=args.route_rule)
+        route["first_round"] = [c["cid"] for c in p["chunks"]]
         return route
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
                              f"_{args.calib_source}{args.split_seed}{style}.json")
@@ -389,34 +412,50 @@ def main(argv=None):
         enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
         _, attn_d, logits_d = qwen.run(enc_d, None, 1, decode_static=False)
         route = routing.initial_route(attn_d, enc_d, e, args.route_rule) if args.modality_routing else None
-        route = resolve_route(e, rel, route, calibrating=True)
+        p = probe(e, rel) if args.probe_uncertainty and cold(e) else None
+        route = resolve_route(e, rel, route, calibrating=True, probe_out=p)
         chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
         pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
         _, attn, logits = qwen.run(enc, None, 1, decode_static=False)
         post = pipeline.raw_uncertainty(attn, enc, [c["cid"] for c in chunks], logits, args.beta)
         ucal[e["qid"]] = {"pre": pre, "post": post}
+        if p:
+            ucal[e["qid"]]["probe"] = p["raw"]
         if routed:
             ucal[e["qid"]]["route"] = route
         ucal_path.write_text(json.dumps(ucal))
     if time.time() - t0 > 1:
         print(f"[ucal] {len(calib)} calibration examples in {time.time() - t0:.1f}s", flush=True)
-    # Raw entropies are reusable across beta values; the cached weighted sum is not.
-    for cached in ucal.values():
-        for phase in ("pre", "post"):
-            entropy = cached[phase]
-            entropy["s"] = entropy["h_grd"] + args.beta * entropy["h_sem"]
-    norm_pre = pipeline.Norm.fit([ucal[e["qid"]]["pre"]["s"] for e in calib])
-    norm_post = pipeline.Norm.fit([ucal[e["qid"]]["post"]["s"] for e in calib])
+    # Raw entropies are cached; the combination (beta, sum/zsum) and Norm are fitted here.
+    calibrators = {}
+    for phase in ("pre", "post", "probe"):
+        raws = [ucal[e["qid"]][phase] for e in calib if phase in ucal[e["qid"]]]
+        if raws:
+            comb = pipeline.Combiner.fit(raws, args.beta, args.u_combine)
+            calibrators[phase] = (comb, pipeline.Norm.fit([comb(r) for r in raws]))
     if args.norm_from:
         source = json.loads(Path(args.norm_from).read_text())
-        norm_pre, norm_post = pipeline.Norm(**source["norm_pre"]), pipeline.Norm(**source["norm_post"])
+        for phase in ("pre", "post", "probe"):
+            if f"norm_{phase}" in source and source[f"norm_{phase}"]:
+                comb = (pipeline.Combiner.from_json(source[f"comb_{phase}"]) if source.get(f"comb_{phase}")
+                        else pipeline.Combiner(args.beta))
+                calibrators[phase] = (comb, pipeline.Norm(**source[f"norm_{phase}"]))
     if args.no_calibration:
-        norm_pre = norm_post = pipeline.Norm(0.0, 1.0)
+        calibrators = {phase: (pipeline.Combiner(args.beta), pipeline.Norm(0.0, 1.0))
+                       for phase in ("pre", "post", "probe")}
+    norm_pre, norm_post = calibrators["pre"][1], calibrators["post"][1]
+
+    def u_of(phase, raw):
+        comb, norm = calibrators[phase]
+        return norm(comb(raw))
+
+    def u_gate_cal(cached):
+        return u_of("probe", cached["probe"]) if "probe" in cached else u_of("pre", cached["pre"])
     # Trigger ablations (Table 3): next-token entropy alone. 'nte' matches U's retrieval rate on the
     # calibration questions with its own threshold (a per-format threshold); 'nte_shared' normalises
     # beta*H_pred like U and uses the shared tau.
-    u_rate = sum(norm_pre(ucal[e["qid"]]["pre"]["s"]) > args.tau for e in calib) / max(len(calib), 1)
+    u_rate = sum(u_gate_cal(ucal[e["qid"]]) > args.tau for e in calib) / max(len(calib), 1)
     h_cal = [ucal[e["qid"]]["pre"]["h_sem"] for e in calib]
     nte_threshold = float(np.quantile(h_cal, 1 - u_rate)) if h_cal else float("inf")
     nte_norm = pipeline.Norm.fit([args.beta * h for h in h_cal])
@@ -454,6 +493,8 @@ def main(argv=None):
         done = {json.loads(l)["qid"] for l in out_path.open()}
     config_path.write_text(json.dumps({
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
+        "norm_probe": vars(calibrators["probe"][1]) if "probe" in calibrators else None,
+        **{f"comb_{ph}": calibrators[ph][0].to_json() for ph in calibrators},
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
         "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
@@ -480,7 +521,7 @@ def main(argv=None):
 
             def gate_off(attn_d, logits_d):
                 pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
-                pre_info.update(raw_pre=pre, u_pre=norm_pre(pre["s"]))
+                pre_info.update(raw_pre=pre, u_pre=u_of("pre", pre))
                 if args.modality_routing:
                     pre_info["route"] = routing.initial_route(attn_d, enc_d, e, args.route_rule)
                 return True
@@ -489,11 +530,18 @@ def main(argv=None):
             direct_prefill = qwen.last_prefill_seconds
             rec["u_pre"] = pre_info["u_pre"]
             rec["raw_pre"] = pre_info["raw_pre"]
-            rec["retrieve"] = pre_info["u_pre"] > args.tau
+            probe_out = probe(e, rel) if args.probe_uncertainty and cold(e) else None
+            if probe_out:
+                rec["raw_probe"] = probe_out["raw"]
+                rec["u_probe"] = u_of("probe", probe_out["raw"])
+                rec["probe_chunks"] = [c["cid"] for c in probe_out["chunks"]]
+            # The gate reads U on the evidence spans in the input: supplied context, or the probe round.
+            rec["u_gate"] = rec.get("u_probe", rec["u_pre"])
+            rec["retrieve"] = rec["u_gate"] > args.tau
             rec["preds"]["direct"] = res_d["static"].text
             rec["tokens"] = {"direct": res_d["static"].tokens}
 
-            route = resolve_route(e, rel, pre_info.get("route"), args.order, args.seed)
+            route = resolve_route(e, rel, pre_info.get("route"), probe_out=probe_out)
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
                                    ce_of and ce_of(e))
             eab_rel = ce_rel_of(e) if ce_rel_of else rel
@@ -518,15 +566,16 @@ def main(argv=None):
 
             def make_variants(attn, logits):
                 post = pipeline.raw_uncertainty(attn, enc, list(rel_sel), logits, args.beta)
-                u = norm_post(post["s"])
-                u_eab = rec["u_pre"] if args.eab_uncertainty == "pre" else u
+                u = u_of("post", post)
+                u_eab = rec["u_gate"] if args.eab_uncertainty == "pre" else u
                 info.update(raw_post=post, u_post=u, u_eab=u_eab, mass=pipeline.chunk_masses(attn, enc))
                 specs = variant_specs(e, enc, rel_sel, u_eab)
                 info["eab_active"] = {name: s is not None for name, s in specs.items()}
                 return specs
 
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
-            rec["prefill_seconds"] = {"direct": direct_prefill, "evidence": qwen.last_prefill_seconds}
+            rec["prefill_seconds"] = {"direct": direct_prefill, "evidence": qwen.last_prefill_seconds,
+                                      **({"probe": probe_out["seconds"]} if probe_out else {})}
             rec["arm_seconds"] = {"direct": res_d["static"].seconds}
             rec["ard"] = {}
             for name, r in res.items():

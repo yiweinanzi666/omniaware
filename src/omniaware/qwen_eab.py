@@ -262,7 +262,7 @@ class QwenEAB:
 
     @torch.no_grad()
     def _step(self, ids: torch.Tensor, cache, spec_enc=None, capture=False) -> torch.Tensor:
-        STATE.capture_layer = self.layers[-1] if capture else None
+        STATE.capture_layer = self.layers[getattr(self, "capture_at", -1)] if capture else None
         STATE.captured = None
         out = self.model(input_ids=ids.to(self.device), past_key_values=cache, use_cache=True, logits_to_keep=1)
         STATE.capture_layer = None

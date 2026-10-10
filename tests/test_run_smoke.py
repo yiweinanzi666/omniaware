@@ -356,3 +356,29 @@ def test_videorag_run_with_video_chunks_and_m2rag_guard(tmp_path, monkeypatch):
     rows = [json.loads(line) for line in (tmp_path / "runs" / "vr" / "videorag_synth.jsonl").read_text().splitlines()]
     assert len(rows) == 6 and all(len(r["chunks"]) == 5 for r in rows)
     assert all(m == "video" for r in rows for m, _ in r["span_tokens"].values())
+
+
+def test_cold_start_probe_round_gates_and_routes(tmp_path, monkeypatch):
+    examples = _examples(16)
+    for e in examples:   # two modalities so that the probe route has a choice
+        for c in e["candidates"][4:]:
+            c.update(modality="image", image=f"/img/{c['cid']}.jpg")
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: ({"text": 1.0 / int(c["cid"][1:])} if c["modality"] == "text"
+                              else {"image_clip": 0.5 / int(c["cid"][1:])}) for c in e["candidates"]} for e in exs})
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+              "--n-dev", "2", "--tag", "probe", "--probe-uncertainty", "--first-round-routing", "--u-combine", "zsum",
+              "--attn-layer", "mid"])
+    out = tmp_path / "runs" / "probe"
+    config = json.loads((out / "okvqa_config.json").read_text())
+    assert config["norm_probe"] and config["comb_probe"]["mode"] == "zsum"
+    for r in (json.loads(line) for line in (out / "okvqa.jsonl").read_text().splitlines()):
+        assert r["u_gate"] == r["u_probe"] and r["retrieve"] == (r["u_probe"] > 0.35)
+        assert len(r["probe_chunks"]) == 5 and r["route"]["first_round"] == r["probe_chunks"]
+        assert "probe" in r["prefill_seconds"]
+        expected = r["preds"]["static"] if r["retrieve"] else r["preds"]["direct"]
+        assert r["preds"]["gated:eab:g1.2:ans1:pos:gate"] in (expected, r["preds"]["eab:g1.2:ans1:pos:gate"])

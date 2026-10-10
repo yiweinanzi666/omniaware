@@ -94,3 +94,15 @@ def test_arms_report_time_and_first_answer_row_attention(qwen):
         if len(r.tokens) >= 2:          # the first answer row exists only once a token was fed back
             assert r.attention.shape[-1] == enc.length + 1
             torch.testing.assert_close(r.attention.sum(), torch.tensor(1.0), atol=1e-4, rtol=1e-4)
+
+
+@torch.no_grad()
+def test_capture_layer_switch(qwen):
+    enc = encode(qwen)
+    _, last, _ = qwen.run(enc, None, 1, decode_static=False)
+    qwen.capture_at = 0
+    try:
+        _, first, _ = qwen.run(enc, None, 1, decode_static=False)
+    finally:
+        qwen.capture_at = -1
+    assert last.shape == first.shape and not torch.allclose(last, first)

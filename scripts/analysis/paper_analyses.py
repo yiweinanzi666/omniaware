@@ -100,7 +100,9 @@ def order_table(runs: list[Path], metric: str, arms: list[str], correct_at: floa
 
 # -------------------------------------------------------------- uncertainty --
 UNCERTAINTIES = {
-    "U_omni": lambda r: r.get("u_pre"),
+    "U_omni": lambda r: r.get("u_gate", r.get("u_pre")),
+    "U_pre": lambda r: r.get("u_pre"),
+    "U_probe": lambda r: r.get("u_probe"),
     "NTE": lambda r: (r.get("raw_pre") or {}).get("h_sem"),
     "H_grd": lambda r: (r.get("raw_pre") or {}).get("h_grd"),
     "SeaKR": lambda r: (r.get("seakr") or {}).get("direct_eigen"),
@@ -194,7 +196,8 @@ def noise_table(runs: list[Path], metric: str) -> dict:
 def latency_table(path: Path) -> dict:
     """Generation-side end-to-end ms (retrieval lookup is cached and excluded):
     always-retrieve arm = evidence prefill + arm decode;
-    gated arm = direct prefill (computes U) + (retrieve ? evidence prefill + arm decode : direct decode);
+    gated arm = direct prefill (computes U) [+ probe prefill at cold start] + (retrieve ? evidence prefill
+    + arm decode : direct decode);
     universalrag = (router says retrieve ? evidence prefill + static decode : direct prefill + direct decode),
     router time excluded; FITM, M2-RAG, SeaKR = wall time of everything the method runs itself."""
     rows, _ = load_run(path)
@@ -212,7 +215,8 @@ def latency_table(path: Path) -> dict:
     for arm in arms:
         out[f"always:{arm}"] = 1000 * mean([r["prefill_seconds"]["evidence"] + r["arm_seconds"][arm] for r in rows])
         out[f"gated:{arm}"] = 1000 * mean([
-            r["prefill_seconds"]["direct"] + (r["prefill_seconds"]["evidence"] + r["arm_seconds"][arm]
+            r["prefill_seconds"]["direct"] + r["prefill_seconds"].get("probe", 0.0)
+            + (r["prefill_seconds"]["evidence"] + r["arm_seconds"][arm]
                                               if r["retrieve"] else r["arm_seconds"]["direct"]) for r in rows])
     return out
 

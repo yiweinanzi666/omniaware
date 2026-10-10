@@ -1,7 +1,7 @@
 # 论文 V3.21 各表格与代码的对应
 
-所有命令由 `python -m scripts.paper_runs --stage <stage> --print` 生成（`--run` 直接执行）；下表中的 tag 省略了模型后缀 `_8b`。
-`EAB` 指变体 `eab:g1.2:ans2:pos:gate`；`gated:X` 是"U > τ 时用 X，否则用 direct"的臂。分数文件是
+先跑 dev 阶段并冻结选择（[DEV_DECISIONS.md](DEV_DECISIONS.md)），再由 `python -m scripts.paper_runs --stage <stage> --print` 生成 test 命令（`--run` 直接执行）；下表中的 tag 省略了模型后缀 `_8b`。
+`EAB` 指 dev 冻结的形式（默认 `eab:g1.2:ans1:pos:gate`，见 [DEV_DECISIONS.md](DEV_DECISIONS.md)），`EAB_dec` 指同形式的 decode-only 版本（`ans2`）；`gated:X` 是"U > τ 时用 X，否则用 direct"的臂。分数文件是
 `runs/<tag>/<dataset>.official_scores.jsonl`（由 `score_official` 生成）。
 
 ## 表 main（主结果）——stage `main`、`universalrag`
@@ -13,7 +13,7 @@
 | Cross-encoder + static | `v321_ce` | `static` |
 | Found-in-the-Middle | `v321_main` | `fitm` |
 | M2-RAG | `v321_main` | `m2rag`（VideoRAG 列为 "—"，运行器会拒绝 `--m2rag`） |
-| SeaKR | `v321_main` | `seakr` |
+| SeaKR | `v321_seakr`（每个数据集前 1,000 题） | `seakr` |
 | UniversalRAG | `v321_universalrag` | `universalrag` |
 | Omni-Aware | `v321_main` | `gated:EAB` |
 | Omni-Aware + cross-encoder | `v321_ce` | `gated:EAB` |
@@ -31,7 +31,8 @@
 | H_grd only, static | 另跑 `--beta 0`（tag `v321_beta0_tb0.4`）的 `gated:static` |
 | U_omni, static | `gated:static` |
 | U_omni, replication | `gated:replication` |
-| U_omni, EAB / EAB-P | `gated:eab:g1.2:ans2:pos:gate` / `gated:eab:g1.2:ans1:pos:gate` |
+| U_omni, EAB / decode-only EAB | `gated:EAB` / `gated:EAB_dec` |
+| No probe round（冷启动只用 β·H_pred） | `v321_ablation_noprobe` 的 `gated:EAB` |
 | EAB + context bias | `gated:eab:g1.2:ans2:pos:gate:all:retriever:ctx` |
 | Raw retriever scores | `v321_ablation_raw` 的 `gated:EAB` |
 | Always retrieve, relevance bias | `eab:g1.2:ans2:pos:nogate`（无 `gated:` 前缀 = 始终检索） |
@@ -55,7 +56,7 @@ Score 列为 `gated:EAB`；WR、Cov.、Mod./q 由 `scripts/analysis/routing_metr
 
 ## 表 order 与附录 order_full——stage `order`
 
-14 个 `--order perm:<id>` 运行（tag `v321_perm_<id>`）。`paper_analyses order` 给出 12 个随机排列上的 Std.、按种子分组的偏差、sorted − reverse 差值和翻转率；臂为 `static`、`fitm`、`replication`、`EAB`（非门控，检索证据固定）。ARD 来自 `paper_analyses ard`。
+14 个 `--order perm:<id>` 运行（tag `v321_perm_<id>`，每个数据集前 1,000 题）。`paper_analyses order` 给出 12 个随机排列上的 Std.、按种子分组的偏差、sorted − reverse 差值和翻转率；臂为 `static`、`fitm`、`replication`、`EAB`、`EAB_dec`（非门控，检索证据固定）。ARD 来自 `paper_analyses ard`。
 
 ## 表 causal（干预与检索错误）——stage `interventions`
 

@@ -1,9 +1,14 @@
-"""Dense BGE retrieval over the local Wikipedia corpus for OK-VQA, matching the original e5_Flat.index setup.
+"""Dense BGE retrieval for OK-VQA over a passage corpus.
 
-  python -m omniaware.okvqa_dense encode [--limit N]          # passages -> fp16 memmap (resumable)
-  python -m omniaware.okvqa_dense search [--limit-queries N]  # top-k per OK-VQA question -> candidates.jsonl
+Corpora: 'wiki3m' (the first 3M DPR Wikipedia passages, matching the original e5_Flat.index setup) and
+'gs112k', the Google Search corpus of Luo et al. (EMNLP 2021) used across the OK-VQA retrieval literature
+(full test corpus, 168,306 sentences; okvqa_full_corpus.csv of their release).
 
-Use the resulting candidates for every arm of a run (ERC_OKVQA_DENSE_CANDIDATES, dataset okvqa_dense).
+  python -m omniaware.okvqa_dense --corpus gs112k prepare --csv okvqa_full_corpus.csv   # CSV -> corpus.jsonl
+  python -m omniaware.okvqa_dense --corpus gs112k encode [--limit N]     # passages -> fp16 memmap (resumable)
+  python -m omniaware.okvqa_dense --corpus gs112k search --n-passages N  # top-k per question -> candidates.jsonl
+
+Datasets okvqa_dense (wiki3m) and okvqa_gs (gs112k) read these candidates; every arm of a run shares them.
 """
 
 from __future__ import annotations
@@ -18,8 +23,33 @@ import torch
 
 from . import paths, relevance
 
-CORPUS = paths.DATA / "okvqa_knowledge_dpr_first3m" / "corpus_wiki_first3m.jsonl"
-OUT = paths.LOCAL_CACHE / "okvqa_dense"
+CORPORA = {   # name -> (corpus.jsonl with {"id", "contents"}, output directory)
+    "wiki3m": (paths.DATA / "okvqa_knowledge_dpr_first3m" / "corpus_wiki_first3m.jsonl", paths.LOCAL_CACHE / "okvqa_dense"),
+    "gs112k": (paths.LOCAL_CACHE / "okvqa_gs112k" / "corpus.jsonl", paths.LOCAL_CACHE / "okvqa_gs112k"),
+}
+CORPUS, OUT = CORPORA["wiki3m"]
+
+
+def use_corpus(name: str) -> None:
+    global CORPUS, OUT
+    CORPUS, OUT = CORPORA[name]
+
+
+def prepare_gs112k(csv_path: Path) -> Path:
+    """Luo et al.'s CSV (one knowledge sentence per row) -> corpus.jsonl; ids are the row order."""
+    import csv
+    CORPUS.parent.mkdir(parents=True, exist_ok=True)
+    n = 0
+    with open(csv_path, newline="", encoding="utf8") as fh, CORPUS.open("w", encoding="utf8") as out:
+        reader = csv.DictReader(fh)
+        field = "text" if "text" in reader.fieldnames else reader.fieldnames[-1]
+        for row in reader:
+            text = " ".join((row[field] or "").split())
+            if text:
+                out.write(json.dumps({"id": n, "contents": text}, ensure_ascii=False) + "\n")
+                n += 1
+    print(f"[prepare] {n} passages from column '{field}' of {csv_path} -> {CORPUS}", flush=True)
+    return CORPUS
 DIM = 1024
 # The original index (rebuild_index_wiki_3m.py, e5_Flat.index) used BGE-large weights with
 # retrieval_method='e5': "passage: " / "query: " prefixes, CLS pooling, normalised, max_length 512.
@@ -108,7 +138,7 @@ def search(n_passages: int, k: int, limit_queries: int | None, chunk: int, tag: 
             cands = []
             for rank, (score, doc) in enumerate(zip(ss, ii), 1):
                 p = _passage(fh, off[doc])
-                cands.append({"rank": rank, "doc_id": int(p["id"]), "fact_id": f"dpr_first3m:{p['id']}",
+                cands.append({"rank": rank, "doc_id": int(p["id"]), "fact_id": f"{OUT.name}:{p['id']}",
                               "text": p["contents"], "bge_score": round(float(score), 5)})
             out.write(json.dumps({"question_id": e["qid"], "candidates": cands}, ensure_ascii=False) + "\n")
     print(f"[search] {len(examples)} queries over {n_passages} passages -> {out_path}", flush=True)
@@ -117,7 +147,10 @@ def search(n_passages: int, k: int, limit_queries: int | None, chunk: int, tag: 
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
+    ap.add_argument("--corpus", choices=sorted(CORPORA), default="wiki3m")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    c = sub.add_parser("prepare")
+    c.add_argument("--csv", type=Path, required=True)
     a = sub.add_parser("encode")
     a.add_argument("--limit", type=int, default=None)
     a.add_argument("--batch", type=int, default=128)
@@ -128,7 +161,12 @@ def main(argv=None):
     b.add_argument("--chunk", type=int, default=200_000)
     b.add_argument("--tag", default="full")
     args = ap.parse_args(argv)
-    if args.cmd == "encode":
+    use_corpus(args.corpus)
+    if args.cmd == "prepare":
+        if args.corpus != "gs112k":
+            ap.error("prepare converts the GS-112K CSV")
+        prepare_gs112k(args.csv)
+    elif args.cmd == "encode":
         encode(args.limit, args.batch)
     else:
         search(args.n_passages, args.k, args.limit_queries, args.chunk, args.tag)

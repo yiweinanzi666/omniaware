@@ -89,6 +89,41 @@ class Norm:
         return cls(float(med), float(q3 - q1))
 
 
+@dataclass
+class Combiner:
+    """s = H_grd + beta * H_pred ('sum', paper Eq. uomni) or, with 'zsum', the same after standardising each
+    term on the calibration queries, (H - median) / IQR, so that beta weighs the two terms on one scale
+    (a term that is constant on the calibration queries, e.g. H_grd without evidence, contributes 0)."""
+    beta: float
+    mode: str = "sum"
+    grd: Norm | None = None
+    pred: Norm | None = None
+
+    def __call__(self, raw: dict) -> float:
+        if self.mode == "sum":
+            return raw["h_grd"] + self.beta * raw["h_sem"]
+
+        def z(x, n):
+            return (x - n.median) / n.iqr if n.iqr > 0 else 0.0
+        return z(raw["h_grd"], self.grd) + self.beta * z(raw["h_sem"], self.pred)
+
+    @classmethod
+    def fit(cls, raws: list[dict], beta: float, mode: str = "sum") -> "Combiner":
+        if mode == "sum":
+            return cls(beta, mode)
+        if mode != "zsum":
+            raise ValueError(mode)
+        return cls(beta, mode, Norm.fit([r["h_grd"] for r in raws]), Norm.fit([r["h_sem"] for r in raws]))
+
+    def to_json(self) -> dict:
+        return {"beta": self.beta, "mode": self.mode, "grd": self.grd and vars(self.grd),
+                "pred": self.pred and vars(self.pred)}
+
+    @classmethod
+    def from_json(cls, d: dict) -> "Combiner":
+        return cls(d["beta"], d["mode"], d["grd"] and Norm(**d["grd"]), d["pred"] and Norm(**d["pred"]))
+
+
 def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float) -> dict:
     tokens = [t for c in evidence_ids if c in enc.spans for t in range(*enc.spans[c])]
     h_grd = grounding_entropy(attn, tokens)
@@ -98,8 +133,9 @@ def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float) -> 
 
 @dataclass
 class Variant:
-    """EAB family.  rows: 'ans2' paper decode-only (a >= t_ans), 'ans1' EAB-P (also the
-    row that predicts the first answer token), 'q' starts at the question.  form: 'pos'
+    """EAB family.  rows: 'ans1' (paper default since V3.21) biases every row that predicts an answer
+    token, starting at t_end, the row that predicts the first one; 'ans2' decode-only (a >= t_ans,
+    cannot change the first answer token; ablation); 'q' starts at the question.  form: 'pos'
     gamma*U*r (paper), 'ctr' gamma*U*(2r-1), 'fixed' gamma (PASTA-style uniform bias),
     'pos_nou' gamma*r (relevance bias without U scaling, paper ablation).
     relevance: 'retriever' (calibrated r_j) or 'random' (uniform r_j per question, ablation);

@@ -193,10 +193,16 @@ def load_okvqa(candidates_path=None) -> list[dict]:
 
 
 def load_okvqa_dense() -> list[dict]:
-    """OK-VQA questions covered by dense BGE retrieval; rows stay dataset 'okvqa'."""
+    """OK-VQA questions covered by dense BGE retrieval over DPR Wikipedia; rows stay dataset 'okvqa'."""
     import os
     default = paths.LOCAL_CACHE / "okvqa_dense" / "candidates_full.jsonl"
     examples = load_okvqa(os.environ.get("ERC_OKVQA_DENSE_CANDIDATES", default))
+    return [e for e in examples if e["candidates"]]
+
+
+def load_okvqa_gs() -> list[dict]:
+    """OK-VQA with dense BGE retrieval over the GS-112K Google Search corpus (okvqa_dense --corpus gs112k)."""
+    examples = load_okvqa(paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl")
     return [e for e in examples if e["candidates"]]
 
 
@@ -325,6 +331,7 @@ LOADERS = {
     "webqa_open_full": _webqa_open_full,
     "okvqa": load_okvqa,
     "okvqa_dense": load_okvqa_dense,
+    "okvqa_gs": load_okvqa_gs,
     **{name: (lambda name: lambda **kw: load_universalrag(name, **kw))(name) for name in UNIVERSALRAG_TARGETS},
 }
 

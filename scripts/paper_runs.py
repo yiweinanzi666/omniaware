@@ -1,65 +1,103 @@
-"""Every run, scoring and analysis command behind the tables of paper V3.21, in one place.
+"""Every run, scoring and analysis command behind paper V3.21, in one place.
 
-    python -m scripts.paper_runs --list                       # stages and what each one fills
-    python -m scripts.paper_runs --stage main --print         # commands of one stage
-    python -m scripts.paper_runs --stage main --run [--model 8b] [--split test]
+    python -m scripts.paper_runs --list                        # stages and what each one fills
+    python -m scripts.paper_runs --stage dev --run             # 1. pre-registered dev grid (--split dev)
+    python -m scripts.analysis.dev_select                      # 2. freeze choices -> runs/dev_decisions.json
+    python -m scripts.paper_runs --stage main --run            # 3. test stages read the frozen choices
 
-Each command writes runs/<tag>/<dataset>.jsonl; docs/PAPER_TABLE_MAP.md says which arm of which run fills
-each table cell. Settings are frozen here; tuning happens on --split dev with other tags (docs/PROTOCOL.md).
+The dev stage compares the six EAB forms, three uncertainty settings and three OK-VQA retrieval corpora;
+docs/DEV_DECISIONS.md states the decision rules before any result is seen. Test stages run once with the
+frozen settings. docs/PAPER_TABLE_MAP.md maps each table cell to a run tag and an arm.
 """
 from __future__ import annotations
 
 import argparse
+import json
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
-DATASETS = {   # loader -> (calibration source, official metric used by the analyses)
-    "webqa_open_full": ("train", "acc_approx"),
-    "webqa_open_img": ("train", "acc_approx"),
-    "okvqa": ("heldout", "vqa_accuracy"),
-    "hybridqa": ("heldout", "em"),
-    "videorag_synth": ("heldout", "rouge_l"),
-}
-EAB = "eab:g1.2:ans2:pos:gate"
-EAB_P = "eab:g1.2:ans1:pos:gate"
-ABLATION_VARIANTS = ",".join([
-    EAB, EAB_P,
-    "eab:g1.2:ans2:pos:gate:all:retriever:ctx",       # EAB + context bias
-    "eab:g1.2:ans2:pos:nogate",                       # always retrieve, relevance bias (ungated arm)
-    "eab:g1.2:ans2:pos_nou:gate",                     # relevance bias without U scaling
-    "eab:g1.2:ans2:fixed:gate",                       # uniform (PASTA-style) bias, gated
-    "eab:g1.2:ans2:pos:gate:all:random",              # random relevance, gated
-])
-ROUTING_RULES = ["all", "retriever", "query", "mass", "entropy", "mh", "oracle"]
+ROOT = Path(__file__).resolve().parents[1]
+CALIB = {"webqa_open_full": "train", "webqa_open_img": "train", "okvqa": "heldout", "okvqa_dense": "heldout",
+         "okvqa_gs": "heldout", "hybridqa": "heldout", "videorag_synth": "heldout"}
+METRIC = {"webqa_open_full": "acc_approx", "webqa_open_img": "acc_approx", "okvqa": "vqa_accuracy",
+          "okvqa_dense": "vqa_accuracy", "okvqa_gs": "vqa_accuracy", "hybridqa": "em", "videorag_synth": "rouge_l"}
+COLD = {"webqa_open_full", "webqa_open_img", "hybridqa", "videorag_synth"}   # no supplied context
+EAB_FORMS = [f"eab:g1.2:{rows}:{form}:gate" for rows in ("ans1", "ans2", "q") for form in ("pos", "ctr")]
+SUBSAMPLE = "1000"     # SeaKR and the 14-ordering runs: first 1,000 test questions of each dataset
+DEFAULTS = {"eab_variant": "eab:g1.2:ans1:pos:gate", "u_combine": "sum", "attn_layer": "last",
+            "okvqa_loader": "okvqa_gs"}
 
 
-def run_cmd(dataset, tag, *extra, model="8b", split="test"):
-    calib, _ = DATASETS[dataset]
-    return ["python", "-m", "omniaware.run", "--dataset", dataset, "--split", split, "--calib-source", calib,
-            "--model", model, "--tag", tag, *extra]
-
-
-def score_cmd(dataset, tag, bart=True):
-    return ["python", "-m", "omniaware.eval.score_official", f"runs/{tag}/{dataset}.jsonl", *(["--bart"] if bart else [])]
+def decisions(model: str) -> dict:
+    path = ROOT / "runs" / "dev_decisions.json"
+    if path.exists():
+        d = json.loads(path.read_text())
+        if d.get("model") == model:
+            return {**DEFAULTS, **{k: d[k] for k in DEFAULTS}}
+    return dict(DEFAULTS)
 
 
 def stages(model: str, split: str) -> dict[str, dict]:
+    dec = decisions(model)
+    eab = dec["eab_variant"]
+    decode_only = eab.replace(":ans1:", ":ans2:").replace(":q:", ":ans2:")
+    okvqa = dec["okvqa_loader"]
+    datasets = ["webqa_open_full", "webqa_open_img", okvqa, "hybridqa", "videorag_synth"]
+    ablation_variants = ",".join(dict.fromkeys([
+        eab, decode_only,
+        eab.replace(":gate", ":gate:all:retriever:ctx"),         # EAB + context bias
+        eab.replace(":gate", ":nogate"),                          # always retrieve, relevance bias
+        eab.replace(":pos:", ":pos_nou:"),                        # relevance bias without U scaling
+        eab.replace(":pos:", ":fixed:"),                          # uniform (PASTA-style) bias, gated
+        eab.replace(":gate", ":gate:all:random"),                 # random relevance, gated
+    ]))
+
+    def method(d, u_combine=None, attn_layer=None, probe=True):
+        flags = ["--u-combine", u_combine or dec["u_combine"], "--attn-layer", attn_layer or dec["attn_layer"]]
+        if d in COLD and probe:
+            flags += ["--probe-uncertainty", "--first-round-routing"]
+        return flags
+
+    def run(d, tag, *extra, split_=None, **kw):
+        return ["python", "-m", "omniaware.run", "--dataset", d, "--split", split_ or split, "--calib-source",
+                CALIB[d], "--model", model, "--tag", tag, *method(d, **kw), *extra]
+
+    def score(d, tag):
+        return ["python", "-m", "omniaware.eval.score_official", f"runs/{tag}/{d}.jsonl", "--bart"]
+
+    def analyse(kind, path, *extra):
+        return ["python", "-m", "scripts.analysis.paper_analyses", kind, path, *extra]
+
     s = {}
+    dev = []
+    for d in ["webqa_open_full", "okvqa", "okvqa_dense", "okvqa_gs", "hybridqa", "videorag_synth"]:
+        tag = f"v321dev_base_{model}"
+        dev += [run(d, tag, "--variants", ",".join(EAB_FORMS), split_="dev", u_combine="sum", attn_layer="last"),
+                score(d, tag)]
+    for setting, kw in (("zsum", {"u_combine": "zsum", "attn_layer": "last"}),
+                        ("mid", {"u_combine": "sum", "attn_layer": "mid"})):
+        for d in ["webqa_open_full", "okvqa_gs", "hybridqa", "videorag_synth"]:
+            tag = f"v321dev_{setting}_{model}"
+            dev += [run(d, tag, "--variants", "", split_="dev", **kw), score(d, tag)]
+    dev.append(["python", "-m", "scripts.analysis.dev_select", "--model", model])
+    s["dev"] = {"fills": "nothing in the paper: pre-registered choices -> runs/dev_decisions.json", "commands": dev}
+
     main = []
-    for d in DATASETS:
-        extra = ["--variants", EAB, "--seakr-samples", "20", "--replication-gamma", "1.2"]
+    for d in datasets:
+        extra = ["--variants", eab, "--replication-gamma", "1.2"]
         if model != "internvl3.5-8b":
             extra.append("--fitm")
         if d != "videorag_synth":
             extra.append("--m2rag")
-        tag = f"v321_main_{model}"
-        main += [run_cmd(d, tag, *extra, model=model, split=split), score_cmd(d, tag)]
-        tag_ce = f"v321_ce_{model}"
-        main += [run_cmd(d, tag_ce, "--selector", "ce", "--variants", EAB, model=model, split=split),
-                 score_cmd(d, tag_ce)]
-    s["main"] = {"fills": "Table main (all rows but UniversalRAG); backbone transfer with --model internvl3.5-8b",
-                 "commands": main}
+        main += [run(d, f"v321_main_{model}", *extra), score(d, f"v321_main_{model}"),
+                 run(d, f"v321_ce_{model}", "--selector", "ce", "--variants", eab), score(d, f"v321_ce_{model}"),
+                 run(d, f"v321_seakr_{model}", "--variants", eab, "--seakr-samples", "20", "--n-eval", SUBSAMPLE),
+                 score(d, f"v321_seakr_{model}")]
+    s["main"] = {"fills": "Table main (UniversalRAG in its own stage; SeaKR on 1,000 questions per dataset); "
+                          "backbone transfer with --model internvl3.5-8b", "commands": main}
+
     ur = []
     for d in ("webqa_open_full", "hybridqa", "videorag_synth"):
         tag = f"v321_universalrag_{model}"
@@ -67,96 +105,98 @@ def stages(model: str, split: str) -> dict[str, dict]:
                 "--output", f"runs/{tag}/{d}.queries.json"],
                ["echo", f"route runs/{tag}/{d}.queries.json with the official UniversalRAG router "
                         f"(see baselines/universalrag.py) into runs/{tag}/{d}.routes.json"],
-               run_cmd(d, tag, "--variants", EAB, "--route-rule", "query", "--query-routes",
-                       f"runs/{tag}/{d}.routes.json", model=model, split=split),
-               score_cmd(d, tag)]
+               run(d, tag, "--variants", eab, "--route-rule", "query", "--query-routes", f"runs/{tag}/{d}.routes.json"),
+               score(d, tag)]
     s["universalrag"] = {"fills": "Table main, UniversalRAG row (arm 'universalrag')", "commands": ur}
+
     abl = []
-    for d in ("okvqa", "webqa_open_img"):
+    for d in (okvqa, "webqa_open_img"):
         tag = f"v321_ablation_{model}"
-        abl += [run_cmd(d, tag, "--variants", ABLATION_VARIANTS, "--replication-gamma", "1.2", model=model,
-                        split=split), score_cmd(d, tag)]
+        abl += [run(d, tag, "--variants", ablation_variants, "--replication-gamma", "1.2"), score(d, tag)]
         for flag, name in ((["--relevance-norm", "raw"], "raw"), (["--relevance-norm", "minmax"], "minmax"),
                            (["--no-calibration"], "nocal")):
-            abl += [run_cmd(d, f"v321_ablation_{name}_{model}", "--variants", EAB, *flag, model=model, split=split),
-                    score_cmd(d, f"v321_ablation_{name}_{model}")]
+            abl += [run(d, f"v321_ablation_{name}_{model}", "--variants", eab, *flag),
+                    score(d, f"v321_ablation_{name}_{model}")]
         for n in (100, 1000):
-            abl += [run_cmd(d, f"v321_calib{n}_{model}", "--variants", EAB, "--n-calib", str(n), model=model,
-                            split=split), score_cmd(d, f"v321_calib{n}_{model}")]
-        for beta in ("0", "0.15", "0.5", "1.0"):
+            abl += [run(d, f"v321_calib{n}_{model}", "--variants", eab, "--n-calib", str(n)),
+                    score(d, f"v321_calib{n}_{model}")]
+        for beta in ("0", "0.15", "0.3", "0.5", "1.0"):
             for tb in ("0.2", "0.4", "0.6"):
                 t = f"v321_beta{beta}_tb{tb}_{model}"
-                abl += [run_cmd(d, t, "--variants", EAB, "--beta", beta, "--tau-bias", tb, model=model,
-                                split=split), score_cmd(d, t)]
+                abl += [run(d, t, "--variants", eab, "--beta", beta, "--tau-bias", tb), score(d, t)]
+    for d in ("webqa_open_img", "hybridqa"):
+        t = f"v321_ablation_noprobe_{model}"          # cold start without the probe round: U = Norm(beta H_pred)
+        abl += [run(d, t, "--variants", eab, probe=False), score(d, t)]
     for d in ("hybridqa", "videorag_synth", "webqa_open_img"):
         t = f"v321_transfer_okvqa_{model}"
-        abl += [run_cmd(d, t, "--variants", EAB, "--norm-from", f"runs/v321_main_{model}/okvqa_config.json",
-                        model=model, split=split), score_cmd(d, t)]
-    s["ablation"] = {"fills": "Table uomni_ablation; appendix beta/tau_bias, calibration size and transfer, "
-                              "score normalization", "commands": abl}
+        abl += [run(d, t, "--variants", eab, "--norm-from", f"runs/v321_main_{model}/{okvqa}_config.json"),
+                score(d, t)]
+    s["ablation"] = {"fills": "Table uomni_ablation (incl. decode-only EAB, no probe round); appendix beta/tau_bias, "
+                              "calibration size and transfer, score normalization", "commands": abl}
+
     route = []
-    for rule in ROUTING_RULES:
+    for rule in ["all", "retriever", "query", "mass", "entropy", "mh", "oracle"]:
         tag = f"v321_route_{rule}_{model}"
-        extra = ["--variants", EAB, "--route-rule", rule]
-        if rule in ("mh", "mass", "entropy"):
-            extra.append("--first-round-routing")
+        extra = ["--variants", eab, "--route-rule", rule]
         if rule == "query":
             extra += ["--query-routes", f"runs/v321_universalrag_{model}/webqa_open_full.routes.json"]
-        route += [run_cmd("webqa_open_full", tag, *extra, model=model, split=split),
-                  score_cmd("webqa_open_full", tag),
+        route += [run("webqa_open_full", tag, *extra), score("webqa_open_full", tag),
                   ["python", "-m", "scripts.analysis.routing_metrics", f"runs/{tag}/webqa_open_full.jsonl",
-                   "--arm", f"gated:{EAB}", "--metric", "acc_approx"]]
+                   "--arm", f"gated:{eab}", "--metric", "acc_approx"]]
     s["routing"] = {"fills": "Table routing (WebQA, open retrieval)", "commands": route}
+
+    sys.path.insert(0, str(ROOT / "src"))
+    from omniaware.order import permutation_schedule
     order = []
-    from omniaware.order import permutation_schedule   # noqa: E402 (needs src on the path)
-    for d in ("okvqa", "webqa_open_img", "hybridqa", "videorag_synth"):
+    for d in (okvqa, "webqa_open_img", "hybridqa", "videorag_synth"):
         for o in permutation_schedule():
             tag = f"v321_perm_{o['order_id']}_{model}"
-            extra = ["--variants", EAB, "--replication-gamma", "1.2", "--order", f"perm:{o['order_id']}"]
+            extra = ["--variants", f"{eab},{decode_only}", "--replication-gamma", "1.2", "--order",
+                     f"perm:{o['order_id']}", "--n-eval", SUBSAMPLE]
             if model != "internvl3.5-8b":
                 extra.append("--fitm")
-            order += [run_cmd(d, tag, *extra, model=model, split=split), score_cmd(d, tag)]
-        metric = DATASETS[d][1]
-        order_arms = ["static", "replication", EAB] + (["fitm"] if model != "internvl3.5-8b" else [])
-        order.append(["python", "-m", "scripts.analysis.paper_analyses", "order", f"runs/v321_perm_*_{model}/{d}.jsonl",
-                      "--metric", metric, "--arms", *order_arms])
-        order.append(["python", "-m", "scripts.analysis.paper_analyses", "ard", f"runs/v321_perm_sorted_{model}/{d}.jsonl"])
-    s["order"] = {"fills": "Table order and appendix order_full (Std., gap, flip, ARD)", "commands": order}
+            order += [run(d, tag, *extra), score(d, tag)]
+        arms = ["static", "replication", eab, decode_only] + (["fitm"] if model != "internvl3.5-8b" else [])
+        order += [analyse("order", f"runs/v321_perm_*_{model}/{d}.jsonl", "--metric", METRIC[d], "--arms", *arms),
+                  analyse("ard", f"runs/v321_perm_sorted_{model}/{d}.jsonl")]
+    s["order"] = {"fills": "Table order and appendix order_full (Std., gap, flip, ARD); 1,000 questions per dataset",
+                  "commands": order}
+
     cite = []
-    for d in ("okvqa", "webqa_open_img", "hybridqa"):
+    for d in (okvqa, "webqa_open_img", "hybridqa"):
         tag = f"v321_cite_{model}"
-        cite += [run_cmd(d, tag, "--variants", ABLATION_VARIANTS, "--replication-gamma", "1.2", "--answer-style", "cite",
-                         "--max-new-tokens", "128", model=model, split=split),
+        cite += [run(d, tag, "--variants", ablation_variants, "--replication-gamma", "1.2", "--answer-style", "cite",
+                     "--max-new-tokens", "128"),
                  ["python", "-m", "omniaware.eval.citation.attribution", f"runs/{tag}/{d}.jsonl", "--device", "cuda"]]
     s["citation"] = {"fills": "AP columns of Table uomni_ablation; appendix citation support", "commands": cite}
+
     iv = []
     tag = f"v321_interventions_{model}"
-    iv += [run_cmd("webqa_open_img", tag, "--variants", EAB, "--answer-style", "cite", "--max-new-tokens", "128",
-                   "--intervention", "mask", "cf", "random_edit", "rerun", "distractors", "inject_answer",
-                   "inject_instruction", model=model, split=split),
-           score_cmd("webqa_open_img", tag),
-           ["python", "-m", "scripts.analysis.paper_analyses", "interventions", f"runs/{tag}/webqa_open_img.jsonl"],
+    iv += [run("webqa_open_img", tag, "--variants", eab, "--replication-gamma", "1.2", "--answer-style", "cite",
+               "--max-new-tokens", "128", "--intervention", "mask", "cf", "random_edit", "rerun", "distractors",
+               "inject_answer", "inject_instruction"),
+           score("webqa_open_img", tag),
+           analyse("interventions", f"runs/{tag}/webqa_open_img.jsonl"),
            ["python", "-m", "omniaware.eval.citation.attribution", f"runs/{tag}/webqa_open_img.jsonl",
             "--intervention", "distractors", "--device", "cuda"],
-           ["python", "-m", "scripts.analysis.paper_analyses", "gold25", f"runs/v321_main_{model}/webqa_open_img.jsonl",
-            "--metric", "acc_approx"]]
+           analyse("gold25", f"runs/v321_main_{model}/webqa_open_img.jsonl", "--metric", "acc_approx")]
     for sigma in ("0.1", "0.2"):
         for draw in range(3):
             t = f"v321_noise{sigma}_d{draw}_{model}"
-            iv += [run_cmd("webqa_open_img", t, "--variants", EAB, "--replication-gamma", "1.2", "--relevance-noise",
-                           sigma, "--noise-draw", str(draw), model=model, split=split), score_cmd("webqa_open_img", t)]
-    iv.append(["python", "-m", "scripts.analysis.paper_analyses", "noise", f"runs/v321_noise*_{model}/webqa_open_img.jsonl",
-               "--metric", "acc_approx", "--arms", "static", "replication", EAB])
+            iv += [run("webqa_open_img", t, "--variants", eab, "--replication-gamma", "1.2", "--relevance-noise",
+                       sigma, "--noise-draw", str(draw)), score("webqa_open_img", t)]
+    iv.append(analyse("noise", f"runs/v321_noise*_{model}/webqa_open_img.jsonl", "--metric", "acc_approx",
+                      "--arms", "static", "replication", eab))
     s["interventions"] = {"fills": "Table causal (interventions, Gold@2-5, noise, Misled)", "commands": iv}
+
     an = []
-    for d, (_, metric) in DATASETS.items():
+    for d in datasets:
         path = f"runs/v321_main_{model}/{d}.jsonl"
-        an += [["python", "-m", "scripts.analysis.paper_analyses", "uncertainty", path, "--metric", metric,
-                "--arms", "static"],
-               ["python", "-m", "scripts.analysis.paper_analyses", "latency", path],
-               ["python", "-m", "scripts.analysis.paper_analyses", "stats", path, "--arms", "static", EAB],
-               ["python", "-m", "scripts.analysis.paper_analyses", "errors", path, "--metric", metric,
-                "--arms", f"gated:{EAB}"]]
+        an += [analyse("uncertainty", path, "--metric", METRIC[d], "--arms", "direct"),
+               analyse("uncertainty", f"runs/v321_seakr_{model}/{d}.jsonl", "--metric", METRIC[d], "--arms", "direct"),
+               analyse("latency", path), analyse("latency", f"runs/v321_seakr_{model}/{d}.jsonl"),
+               analyse("stats", path, "--arms", "static", eab),
+               analyse("errors", path, "--metric", METRIC[d], "--arms", f"gated:{eab}")]
     s["analysis"] = {"fills": "selective risk, latency, dataset statistics, first-token shares, error analysis",
                      "commands": an}
     return s
@@ -171,23 +211,18 @@ def main():
     ap.add_argument("--print", action="store_true")
     ap.add_argument("--run", action="store_true")
     args = ap.parse_args()
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
     all_stages = stages(args.model, args.split)
     if args.list or not args.stage:
+        print(f"frozen choices: {decisions(args.model)}")
         for name, st in all_stages.items():
             print(f"{name:14s} {len(st['commands']):4d} commands  -> {st['fills']}")
         return
-    commands = all_stages[args.stage]["commands"]
-    for cmd in commands:
+    for cmd in all_stages[args.stage]["commands"]:
         line = " ".join(shlex.quote(c) for c in cmd)
         if args.print or not args.run:
             print(line)
         if args.run:
-            if "*" in line:
-                subprocess.run(line, shell=True, check=True)
-            else:
-                subprocess.run(cmd, check=True)
+            subprocess.run(line if "*" in line else cmd, shell="*" in line, check=True)
 
 
 if __name__ == "__main__":
