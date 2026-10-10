@@ -6,7 +6,7 @@ Omni-Aware 是一个面向多模态 Web 问答的检索控制方法。它在证�
 - 去哪个模态检索：由 M_m·H_m 决定；
 - 如何使用证据：在所有预测答案 token 的注意力行上，按相关度给证据加偏置，即 Evidence Attention Bias（EAB）。
 
-本仓库是它唯一的实现与实验代码，论文对应 `../OmniAware_V3.21_Overleaf`。
+本仓库是它唯一的实现与实验代码；论文 LaTeX 源码（V3.21）在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
 > **当前状态：** 本仓库**还没有任何正式结果**。旧仓库和论文 V3.20 中的数字都不能当作结果，原因见 `../Omni-Aware_全面审查报告_20261010.md`。所有结果都必须按 [docs/PROTOCOL.md](docs/PROTOCOL.md) 与 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 重新产生。
 
@@ -41,6 +41,7 @@ scripts/
 third_party/           原样保存的官方评测脚本
 tests/                 CPU 测试（小模型验证 EAB 钩子，合成数据跑通全流程）
 docs/                  实验协议、dev 决策规则、论文表格映射、新旧代码对照
+paper/                 论文 LaTeX 源码（V3.21，ACM sigconf）与各版修改说明
 ```
 
 ## 1. 环境

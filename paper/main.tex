@@ -1,0 +1,258 @@
+\documentclass[sigconf,anonymous,review]{acmart}
+
+%% ---------------------------------------------------------------
+%% Compile with pdfLaTeX (Overleaf default). acmart then loads the
+%% official ACM fonts (Linux Libertine + newtxmath).
+\makeatletter
+\@ifundefined{mathbb}{\usepackage{amsfonts}}{}
+\makeatother
+%% ---------------------------------------------------------------
+
+%% Allow slightly looser lines instead of overfull boxes.
+\setlength{\emergencystretch}{1.5em}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{graphicx}
+
+\setcopyright{none}
+\copyrightyear{2027}
+\acmYear{2027}
+\acmConference[WWW '27]{The ACM Web Conference 2027}{May 10--14, 2027}{Dublin, Ireland}
+\acmBooktitle{Proceedings of The ACM Web Conference 2027 (WWW '27)}
+\acmDOI{}
+\acmISBN{}
+\settopmatter{printacmref=true}
+
+
+%% ---------------------------------------------------------------
+%% Review marks (yellow background, red bold).
+%%   \tbd{...}  placeholder that MUST be filled before submission;
+%%              always highlighted.
+%%   \ph        numeric placeholder (prints X.XX); MUST be replaced.
+%%   \ai{...}   wording flagged for human review; set \reviewmarksfalse
+%%              to print it as normal text once reviewed.
+%% Before submission: searching the project for "\tbd{" and "\ph"
+%% must return only these definitions.
+\usepackage{xcolor}
+\newif\ifreviewmarks
+\reviewmarkstrue
+\ExplSyntaxOn
+\seq_new:N \l__rev_words_seq
+\bool_new:N \l__rev_first_bool
+\NewDocumentCommand{\revhl}{m}
+  {
+    \group_begin:
+    \setlength{\fboxsep}{0.6pt}
+    \color{red}\bfseries
+    \seq_set_split:Nnn \l__rev_words_seq {~} {#1}
+    \bool_set_true:N \l__rev_first_bool
+    \seq_map_inline:Nn \l__rev_words_seq
+      {
+        \bool_if:NTF \l__rev_first_bool
+          { \bool_set_false:N \l__rev_first_bool }
+          { \colorbox{yellow}{\strut\hspace{0.25em}}\hskip 0pt plus 0.15em\relax }
+        \colorbox{yellow}{\strut ##1}
+      }
+    \group_end:
+  }
+\ExplSyntaxOff
+\newcommand{\tbd}[1]{\revhl{#1}}
+\newcommand{\ph}{\revhl{X.XX}}
+\newcommand{\ai}[1]{\ifreviewmarks\revhl{#1}\else#1\fi}
+%% ---------------------------------------------------------------
+
+\newcommand{\method}{Omni-Aware}
+\newcommand{\Uomni}{U_{\mathrm{omni}}}
+\newcommand{\hgrd}{\mathcal{H}_{\mathrm{grd}}}
+\newcommand{\hpred}{\mathcal{H}_{\mathrm{pred}}}
+\newcommand{\taub}{\tau_{\mathrm{bias}}}
+\newcommand{\Mbias}{M_{\mathrm{bias}}}
+\newcommand{\tans}{t_{\mathrm{ans}}}
+\newcommand{\tend}{t_{\mathrm{end}}}
+\newcommand{\webimg}{WebQA-img}
+
+\begin{document}
+
+
+\title[Omni-Aware: Latent-Space Evidence Control]{Omni-Aware: Latent-Space Evidence Control for Multimodal Web Answering}
+
+\author{Anonymous Author(s)}
+\affiliation{\institution{Anonymous Institution}\country{}}
+
+\begin{abstract}
+Web retrieval-augmented generation (Web RAG) answers questions from Web evidence that may lie in text passages, images, tables, or video frames. Existing multimodal RAG systems decide when and where to retrieve with format-specific uncertainty signals and rules, making these decisions hard to coordinate across formats. They also leave the influence of the retrieved evidence to position-sensitive attention, so reordering the same evidence can change the answer. We propose \method{}, a training-free controller that operates in the latent space of evidence spans, the token spans that encoded evidence occupies in the decoder input. A single zero-bias prefill over the evidence spans, those of the supplied context or, at cold start, of a probe round of retrieved chunks, yields all three control decisions: one uncertainty score from predictive entropy and the dispersion of evidence attention decides whether to retrieve, the share and dispersion of that attention across modalities decide which modality to search, and the same score gates Evidence Attention Bias (EAB), which adds a relevance-weighted bias to the attention logits of retrieved chunks on every row that predicts an answer token. The controller trains no router or classifier, samples no extra generations, and changes neither the input nor the model parameters. Across four benchmarks with text, image, table, and video evidence (WebQA, OK-VQA, HybridQA, and VideoRAG), \method{} \ai{outperforms multimodal RAG, adaptive retrieval, and modality-routing baselines} (\ph{} versus \ph{} for M2-RAG on WebQA). \ai{Controlled comparisons show that both the retrieval decision and EAB contribute, and EAB lowers the standard deviation of OK-VQA accuracy across evidence orderings} from \ph{} to \ph{}.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept><concept_id>10002951.10003317.10003338</concept_id><concept_desc>Information systems~Retrieval models and ranking</concept_desc><concept_significance>500</concept_significance></concept>
+<concept><concept_id>10010147.10010178.10010179.10010182</concept_id><concept_desc>Computing methodologies~Natural language generation</concept_desc><concept_significance>300</concept_significance></concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Information systems~Retrieval models and ranking}
+\ccsdesc[300]{Computing methodologies~Natural language generation}
+
+\keywords{Web retrieval-augmented generation, multimodal question answering, latent-space control, adaptive retrieval, evidence use}
+
+\maketitle
+
+%% ===============================================================
+\section{Introduction}
+\label{sec:intro}
+
+Web retrieval-augmented generation (Web RAG) answers a question by retrieving evidence from Web resources and conditioning a generator on it~\cite{guu2020realm,lewis2020rag}. On the Web, the facts behind an answer are spread across text passages, images, tables embedded in pages, and video frames, and answer engines must cite their sources so that users can verify them. We study multimodal Web answering, a form of Web question answering with multimodal RAG (Search, Recommendation, and Retrieval-Augmented AI track): a question may arrive with or without supporting context, Web pages mix formats, and separate engines retrieve them with incomparable scores. Within a fixed input budget, the system must decide when to acquire more evidence, which modality to consult, and how strongly the generator should rely on each retrieved chunk.
+
+%% Fig. 1 (order-sensitivity teaser) removed in V3.21 for the 8-page limit; its content is Table~\ref{tab:order}.
+%% Reinstate it from the V3.21 order runs if space allows.
+
+Existing multimodal RAG systems mainly improve access to such evidence, through joint image--text retrieval~\cite{chen2022murag}, visual-document retrieval~\cite{wang2025vidorag,yu2025visrag}, and multimodal generation~\cite{ma2025m2rag,wu2025visualrag}. Adaptive retrieval decides from generation-time signals whether more knowledge is needed~\cite{asai2024selfrag,jiang2023flare,su2024dragin,yao2025seakr}. Multimodal variants judge the retrieved visual context from hidden states~\cite{du2026mmarag}, route from the query text~\cite{yeo2026universalrag}, or verify retrieved images and passages~\cite{zhai2025samrag}; they read signals defined for one format or for the query, need a trained router or classifier or many sampled generations, and pack the selected chunks in a fixed order. A recent comparison finds that adding retriever-side signals to query-only routers does not reliably improve multimodal routing~\cite{li2026beyond}; the generator's own reading of the evidence is the signal these routers do not use. Attention-level methods regulate how specified spans influence decoding~\cite{mo2026opendecoder,zhang2024pasta}, but they do not decide whether or where to retrieve. Connecting evidence acquisition with evidence use raises two challenges in multimodal Web answering.
+
+\textbf{Challenge 1: coordinating control across heterogeneous evidence.} Images, serialized tables, and sampled video frames occupy different numbers of decoder tokens, on average \ph{} for a serialized table and \ph{} for an image, and their retrievers return scores on different scales. Existing systems design control for each format (Figure~\ref{fig:compare}(A)). Each format then needs its own uncertainty proxy and threshold, and each system covers only the formats it was built for: M2-RAG, for example, accepts no video evidence (Section~\ref{sec:overall}). Even a shared controller is affected: with raw instead of per-modality normalized retriever scores, accuracy drops from \ph{} to \ph{} on OK-VQA (Section~\ref{sec:ablation}). The challenge is to make acquisition decisions over a common interface while keeping format-specific retrievers and encoders.
+
+\textbf{Challenge 2: using evidence consistently across positions.} Even after useful evidence is retrieved, its position in the decoder input can change the answer~\cite{liu2024lost}. Text-only RAG readers show smaller position effects than this suggests~\cite{cuconasu2025positional}, but multimodal readers favor the first passages strongly, and retrieval-side fixes such as reranking and reordering do not remove the preference of a frozen reader~\cite{liu2026lostend}. When a fixed set of retrieved chunks is permuted on OK-VQA, static concatenation shows an accuracy standard deviation of \ph{} points across 12 orderings, and relevance-sorted and reverse-sorted packing differ by \ph{} points (Table~\ref{tab:order}). Chunk replication lowers the deviation only to \ph{} and spends input budget on duplicates. Because the chunks are fixed, this variation comes from how the generator uses them, which retrieval control alone cannot change.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{fig/fig2.pdf}
+  \Description{Two-row diagram contrasting format-specific adaptive multimodal RAG pipelines with the shared span-level controller of Omni-Aware.}
+  \caption{Comparison of control designs. (A) An illustrative composite of format-specific adaptive multimodal RAG designs~\cite{du2026mmarag,yeo2026universalrag,zhai2025samrag}, not a single system; each cited system uses only some of these components: each format has its own uncertainty proxy and retrieval rule, and chunks are repeated, reordered, or truncated for emphasis. (B) \method{} keeps format-specific encoders and retrievers and applies one rule to the evidence spans: $\Uomni$ gates retrieval, $M_m\cdot H_m$ routes it, and EAB biases attention toward retrieved chunks.}
+  \label{fig:compare}
+\end{figure*}
+
+Retrieval selects which chunks the generator sees, whereas attention determines how much each chunk contributes to a prediction. \method{} connects the two decisions through evidence spans: every encoded chunk occupies an identifiable token span in the decoder input, while its retriever and encoder remain format-specific. The controller reads and adjusts attention over these spans and does not edit hidden activations. The same attention is read to decide and written to act. For Challenge~1, an uncertainty score from predictive entropy and the dispersion of evidence attention decides whether to retrieve, and the attention each modality receives decides which modality to search; at cold start, a probe round of retrieved chunks supplies the evidence spans that the score and the route read, so one prefill serves both decisions without a trained router. For Challenge~2, Evidence Attention Bias (EAB) adds a relevance-weighted bias to the attention logits of each retrieved chunk on every row that predicts an answer token, scaled by the uncertainty score, without duplicated input or parameter updates.
+
+\ai{\method{} outperforms all baselines on the four benchmarks} (\ph{} versus \ph{} for M2-RAG on WebQA). Our contributions are as follows:
+\begin{itemize}
+  \item We identify two challenges of multimodal Web answering and measure them: formats differ in span length (\ph{} to \ph{} tokens) and score scale, and relevance-sorted and reverse-sorted orders of the same chunks differ by \ph{} points on OK-VQA.
+  \item We formulate evidence acquisition and use over evidence spans and derive all three decisions from one zero-bias prefill: one uncertainty score triggers retrieval and scales chunk weighting, modality-level attention routes the retrieval, and a probe round extends both to queries without supplied context. Unlike query-only or retriever-score routers, the controller needs no training data and no sampled generations.
+  \item We introduce EAB, an uncertainty-gated and relevance-weighted attention bias on the rows that predict answer tokens, including the first, and characterize its effect at a fixed attention row: it tilts chunk masses toward relevance by a bounded factor and matches chunk replication at bias $\log n$ (Propositions~\ref{thm:tilt} and~\ref{thm:dca-local}).
+  \item On four benchmarks with text, image, table, and video evidence, \method{} \ai{outperforms M2-RAG, SeaKR, and UniversalRAG} and lowers the order-induced standard deviation by \ph\% to 70\%; further analyses cover routing, counterfactual evidence, and retrieval noise. All settings are fixed on development queries by rules stated before the evaluation runs (Section~\ref{sec:setup}).
+\end{itemize}
+
+%% ===============================================================
+\section{Related Work}
+\label{sec:related}
+
+\textit{Web and multimodal retrieval-augmented generation.} Web answer engines retrieve and cite pages at query time~\cite{nakano2021webgpt,liu2023webglm}, and WebQA poses multimodal Web answering over text and image facts~\cite{chang2022webqa}. Multimodal RAG systems~\cite{abootorabi2025survey} retrieve images, knowledge memories, or visual documents~\cite{adjali2024multilevel,chen2022murag,hu2023reveal,wang2025vidorag,yu2025visrag}, generate multimodal answers~\cite{ma2025m2rag,wu2025visualrag}, or refine selection by reranking, reflection, or adaptive visual selection~\cite{chen2025ragvl,zhai2025samrag,zhang2024mr2ag}; they improve which chunks are retrieved and how each format is encoded. We keep such format-specific components and add control over evidence acquisition and use inside the generator.
+
+\textit{Adaptive evidence acquisition.} Adaptive retrieval decides from the generation state whether external knowledge is needed: Self-RAG learns reflection signals~\cite{asai2024selfrag}, FLARE retrieves when upcoming tokens have low probability~\cite{jiang2023flare}, DRAGIN combines token entropy with attention to decide when and what to retrieve~\cite{su2024dragin}, Adaptive-RAG classifies question complexity~\cite{jeong2024adaptiverag}, and SeaKR measures the consistency of sampled hidden states~\cite{yao2025seakr}; their cost--quality tradeoffs have been compared~\cite{moskvoretskii2025adaptive}. For multimodal inputs, MMA-RAG classifies hidden states of the input and the retrieved visual context~\cite{du2026mmarag}, and UniversalRAG routes the query alone to modality- and granularity-specific corpora~\cite{yeo2026universalrag}; retriever signals do not reliably improve such query-only routers~\cite{li2026beyond}. These methods read generated text, the query, retriever scores, or pooled hidden states, and most train a router or classifier or sample many generations. Our controller reads how the generator attends to the evidence spans of each modality, from one prefill and without training, and reuses this signal to weight the evidence.
+
+\textit{Inference-time evidence control.} Position sensitivity~\cite{liu2024lost} has motivated multi-scale positional encoding~\cite{zhang2024mspoe} and positional attention calibration~\cite{hsieh2024found}; text-only RAG readers are less affected than long-context models~\cite{cuconasu2025positional}, but multimodal readers strongly prefer the first passages, and reranking does not remove this preference~\cite{liu2026lostend}. OpenDecoder multiplies attention scores by retrieval features and fine-tunes the decoder~\cite{mo2026opendecoder}; PASTA emphasizes user-specified spans on profiled heads~\cite{zhang2024pasta}, which at one attention row equals a constant span bias; PAI amplifies attention to image tokens~\cite{liu2024pai}; and MAD-RAG restores attention to question-relevant image regions that retrieved text draws away~\cite{zhao2026madrag}. EAB differs in three respects: each retrieved chunk receives its own bias, set by calibrated relevance and the uncertainty score; this weighting is coupled to the retrieval decision, which the other methods take as given; and the generator stays frozen.
+
+%% ===============================================================
+\section{Problem Definition}
+\label{sec:problem}
+
+We study multimodal Web answering with retrieved evidence. An instance consists of a query $q$, optional context $c$, and an external evidence pool $\mathcal{D}=\bigcup_{m\in\mathcal{M}}\mathcal{D}_m$, where $\mathcal{M}$ contains the available text, image, table, and video modalities. The context $c$ may be empty, as in a text-only WebQA question. Each chunk $d_j\in\mathcal{D}$ is the unit that can be packed into the input and keeps its source identifier and modality. For a query, the format-specific retriever of modality $m$ returns candidate chunks with raw scores $s_j$, whose scales differ across modalities.
+
+\textit{Input and output.} A frozen generator $G_\theta$ consumes $X=[X_{\mathrm{sys}},\allowbreak X_{\mathrm{ctx}},\allowbreak X_{\mathrm{query}}]$. Here $X_{\mathrm{sys}}$ holds the task instruction and the citation format, $X_{\mathrm{ctx}}$ the encoded context and retrieved chunks, and $X_{\mathrm{query}}$ the question. The token positions that an encoded chunk occupies in $X$ form its evidence span $\mathrm{span}(d_j)$; the supplied context also occupies evidence spans, whereas $X_{\mathrm{sys}}$ and $X_{\mathrm{query}}$ do not. The output is an answer $y$ with citations to the supplied chunks, generated autoregressively from $p(\cdot\mid X,y_{<t})$.
+
+\textit{Control decisions.} For each query, a controller makes three decisions: (i) whether additional evidence is needed; (ii) if so, which modalities $\mathcal{M}'\subseteq\mathcal{M}$ to search, retrieving at most $k$ chunks $\{d_j\}_{j=1}^{k}$; and (iii) how strongly each retrieved chunk influences decoding. The goal is a correct answer supported by the cited chunks, with $G_\theta$ frozen and the context budget fixed.
+
+%% ===============================================================
+\section{Method}
+\label{sec:method}
+
+\subsection{Framework Overview}
+\method{} controls evidence acquisition and use through evidence spans (Figure~\ref{fig:pipeline}). Format-specific encoders and retrievers produce the spans (steps 1--3). Uncertainty estimation (Section~\ref{sec:uncertainty}, step 4) decides whether more evidence is needed, modality routing (Section~\ref{sec:routing}, step 5) chooses the modalities to search, and EAB (Section~\ref{sec:eab}, step 6) reuses the uncertainty score to shift attention toward relevant retrieved chunks. The first two decisions address Challenge~1; EAB addresses Challenge~2.
+
+The interface between the format-specific components and the controller is a span map from each encoded chunk to its evidence span and modality. Serialized tables keep header and row boundaries, and video frames keep their temporal order. Spans are not compressed; the figures show them schematically.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{fig/fig3.pdf}
+  \Description{Six-step pipeline: format-specific encoding, span map, prefill uncertainty, modality routing, and attention bias during decoding.}
+  \caption{\method{} with initial multimodal context. Steps 1--3 encode the query and supplied evidence into evidence spans; step 4 computes $\hgrd$ and $\hpred$ from a zero-bias prefill (at cold start, of a probe round) and compares $\Uomni$ with $\tau$; step 5 routes retrieval by $M_mH_m$; step 6 applies EAB when $\Uomni>\taub$. In both heatmaps, columns are key positions grouped by evidence span. Rows are the attention heads of the last input position in step 4, which Eq.~\eqref{eq:attn} averages, and the rows that predict answer tokens in step 6, from the last input position on, where shaded columns receive bias.}
+  %% NOTE: fig3.pdf still labels predictive entropy H_sem; re-export with H_pred
+  %% and add axis labels (attention row / key position) to both heatmaps.
+  \label{fig:pipeline}
+\end{figure*}
+
+\subsection{Uncertainty from Evidence and Prediction}
+\label{sec:uncertainty}
+To decide whether the current input suffices, the controller observes two signals: how the generator distributes attention over the available evidence, and how uncertain its next prediction is. These signals can disagree: attention can settle on one chunk while the next-token distribution remains diffuse. Both signals come from a zero-bias prefill, the forward pass over $X$ before generation.
+
+\textit{Evidence attention.} Let $\tend$ be the last position of $X$. We read attention row $\tend$ of the final layer $L$, the row whose output predicts the first answer token, average its $n_h$ heads, and normalize over the $N$ tokens in evidence spans:
+\begin{equation}
+\bar A_i=\frac{1}{n_h}\sum_{h=1}^{n_h}A^{(L,h)}_{\tend,i},\qquad
+A_i=\frac{\bar A_i}{\sum_{i'=1}^{N}\bar A_{i'}+\epsilon}.
+\label{eq:attn}
+\end{equation}
+Grounding entropy measures how widely this attention is dispersed:
+\begin{equation}
+\hgrd=-\frac{\sum_{i=1}^{N}A_i\log(A_i+\epsilon)}{\log N},\qquad N\ge 2,
+\label{eq:hgrd}
+\end{equation}
+and $\hgrd=0$ for $N\le1$. A high value of $\hgrd$ means that attention spreads across many evidence tokens instead of concentrating on a few. Dividing by $\log N$ bounds $\hgrd$ in $[0,1]$, though span length and image-patch density can still affect the score.
+
+\textit{Prediction uncertainty.} Predictive entropy $\hpred$ is the normalized entropy of the next-token distribution from the same prefill,
+\begin{equation}
+\hpred=-\frac{\sum_{v\in\mathcal{V}}p(v\mid X)\log(p(v\mid X)+\epsilon)}{\log|\mathcal{V}|},
+\label{eq:hpred}
+\end{equation}
+where $\mathcal{V}$ is the vocabulary.
+
+\textit{Retrieval decision.} The uncertainty score combines the two measurements on a common scale:
+\begin{align}
+\Uomni&=\mathrm{Norm}(\hgrd+\beta\hpred),\label{eq:uomni}\\
+\mathrm{Norm}(s)&=\mathrm{clip}\!\left(\frac{s-\mathrm{median}(S)}{1.5\,\mathrm{IQR}(S)}+0.5,\,0,\,1\right).\label{eq:norm}
+\end{align}
+Here $\beta$ weights predictive entropy, IQR is the interquartile range, and $S$ is the set of pre-intervention scores of unlabeled calibration queries for a given benchmark and backbone. Because $\hpred$ is small after division by $\log|\mathcal{V}|$, $\beta$ sets its share of the sum; Norm maps the median of $S$ to 0.5 so that one threshold serves all benchmarks. The controller triggers retrieval if $\Uomni>\tau$ and otherwise answers directly, retaining $\Uomni$ for the bias gate of Section~\ref{sec:eab}.
+
+\textit{Cold start: the probe round.} When no evidence is supplied, $\hgrd=0$, and the score would reduce to normalized predictive entropy. Instead, a probe round packs the joint top-$k$ chunks over all modalities, ranked by calibrated relevance, and one zero-bias prefill of this input provides the evidence spans: $\Uomni$ is computed on them with its own calibration statistics, and the same attention gives the route of Section~\ref{sec:routing}. If $\Uomni\le\tau$, the controller answers directly and discards the probe chunks. For Web questions, a retrieval call costs little relative to generation, so the probe round trades one extra prefill for an evidence-aware decision; Section~\ref{sec:ablation} removes it.
+
+\subsection{Modality Routing}
+\label{sec:routing}
+After retrieval is triggered, the controller selects the modalities to search. For modalities in the input, routing reads the attention of the same prefill, with no further forward pass. It favors modalities whose attention is substantial but diffuse. A modality with little mass barely affects the prediction, and one with concentrated attention has already located its evidence (Section~\ref{sec:ablation}).
+
+Let $\mathcal{I}_m$ be the evidence tokens of modality $m$, pooled over all its chunks. The attention mass $M_m$ is the share of evidence attention on modality $m$, and the conditional entropy $H_m$ measures how evenly that share spreads over $\mathcal{I}_m$:
+\begin{equation}
+\begin{gathered}
+M_m=\sum_{i\in\mathcal{I}_m}A_i,\qquad \tilde A_{m,i}=\frac{A_i}{M_m+\epsilon},\\
+H_m=\frac{-\sum_{i\in\mathcal{I}_m}\tilde A_{m,i}\log(\tilde A_{m,i}+\epsilon)}{\log(\max(|\mathcal{I}_m|,2))}.
+\end{gathered}
+\label{eq:routing}
+\end{equation}
+We set $H_m=0$ when $|\mathcal{I}_m|\le1$ and select $m^\star=\arg\max_m M_mH_m$. When the two leading scores differ by at most $\delta$, both modalities are searched, and their chunks fill the $k$ slots in order of calibrated relevance $r_j$, which is comparable across modalities (Section~\ref{sec:eab}). Modalities absent from the supplied context have no attention to compare; when the supplied context covers fewer than two candidate modalities, as the query image of OK-VQA against a text corpus, routing is skipped and retrieval searches the full pool.
+
+At cold start, the probe round of Section~\ref{sec:uncertainty} provides the evidence attention: its prefill gives $M_m\cdot H_m$ over the probe chunks, and the selected modalities are retrieved again for the final top-$k$, for instance text or image facts on WebQA. The selected retrievers return their top-$k$ chunks with scores. Routing removes nothing from the input: the supplied context remains, the retrieved chunks are packed after the supplied context and before the question, and a new prefill encodes the packed sequence and updates the span map. The $\Uomni$ of the retrieval decision is not recomputed.
+
+\subsection{Evidence Attention Bias}
+\label{sec:eab}
+The attention that a packed chunk receives can vary with its position. EAB raises the influence of relevant chunks, taking as input the retrieved chunks $\{d_j\}_{j=1}^{k}$, their evidence spans, and the uncertainty score. Because raw scores $s_j$ are not comparable across modalities, per-modality percentile calibration maps each score to $r_j=\hat F_m(s_j)\in[0,1]$, where $\hat F_m$ is the empirical cumulative distribution function (ECDF) of modality-$m$ retriever scores over all retrieval candidates of the calibration queries.
+
+With query, key, and value tensors $(Q,K,V)$, EAB adds a bias to the attention logits before the softmax:
+\begin{align}
+\mathrm{Attn}_{\mathrm{EAB}}&=\mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}+M_{\mathrm{causal}}+\Mbias\right)V,\label{eq:eab}\\
+\Mbias[a,b]&=\begin{cases}\gamma\,\Uomni\,r_j, & b\in\mathrm{span}(d_j),\ a\ge\tend,\\ 0, & \text{otherwise.}\end{cases}\label{eq:mbias}
+\end{align}
+Here $d_k$ is the key dimension, $M_{\mathrm{causal}}$ masks future positions, $a$ indexes attention rows and $b$ key positions, and $\gamma$ sets the bias strength. Only retrieved chunks receive bias; instructions, supplied context, and the question keep zero bias. The supplied context has no retriever score and thus no relevance prior, so its share of attention shrinks relative to biased chunks; Section~\ref{sec:ablation} also biases the context to test this choice. The bias acts in all decoder layers and changes neither the packed sequence nor the parameters.
+
+\textit{Bias gate.} EAB is active on triggered queries with $\Uomni>\taub$. The second threshold $\taub\ge\tau$ reserves the bias for the most uncertain queries. With $\tau=0.35$ and $\taub=0.40$, queries with $0.35<\Uomni\le0.40$ receive evidence without bias, and biasing every triggered query lowers OK-VQA accuracy from \ph{} to \ph{} (Appendix~\ref{app:supp}). EAB is active for \ph\% of OK-VQA queries.
+
+\textit{Prediction timing.} Row $\tend$, the last input position, predicts the first answer token at $\tans=\tend+1$, and every later row $a\ge\tans$ predicts the next one. EAB biases all of these rows. Starting at $\tans$ instead (decode-only EAB) would leave the first answer token to the unbiased prefill, and the first token alone determines most short answers, such as an entity or a number (Section~\ref{sec:setup}); Section~\ref{sec:ablation} compares the two. Biasing row $\tend$ changes only the final position of the prefill, so the key--value cache of the packed input is computed once and shared with the unbiased arm.
+
+\textit{Effect on chunk masses.} Fix one layer, head, attention row, and visible key set, with pre-bias attention $\alpha_i$. Let $\mu_j=\sum_{i\in\mathrm{span}(d_j)}\alpha_i$ be the attention mass of chunk $j$, and let the remaining keys form a group $j=0$ with $r_0=0$. Set $\lambda=\gamma\Uomni$ when the gate is active and $\lambda=0$ otherwise.
+
+\begin{proposition}[Bounded relevance tilt]
+\label{thm:tilt}
+Under EAB, the attention within each span keeps its proportions, and the chunk masses become
+\begin{equation}
+\mu_j'=\frac{\mu_j e^{\lambda r_j}}{\sum_{l=0}^{k}\mu_l e^{\lambda r_l}}.
+\label{eq:local}
+\end{equation}
+For any two chunks $\mu'_j/\mu'_l=(\mu_j/\mu_l)\,e^{\lambda(r_j-r_l)}$ with $|\lambda(r_j-r_l)|\le\gamma$.
+\end{proposition}
+
+As a bounded relevance prior, EAB multiplies the odds between two chunks by at most $e^{1.2}\approx3.3$ (proof in Appendix~\ref{app:dca}): it can overturn a positional preference of up to $3.3\times$ between a relevant and an irrelevant chunk, while larger position effects persist. Since the shift $\lambda(r_j-r_l)$ is the same under every ordering, it does not by itself predict lower order sensitivity (Section~\ref{sec:order}). Chunk replication gives the same reweighting only with integer copy counts (Proposition~\ref{thm:dca-local}).
+
+\input{sec_experiments}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\appendix
+\input{sec_appendix}
+
+\end{document}

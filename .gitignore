@@ -12,3 +12,13 @@ __pycache__/
 
 # Official upstream repositories (scripts/fetch_external.py); pinned in third_party/external_repos.json
 external/
+
+# LaTeX build output of the paper (latexmk -pdf paper/main.tex)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/main.pdf

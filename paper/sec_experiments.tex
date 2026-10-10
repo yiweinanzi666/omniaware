@@ -1,0 +1,179 @@
+%% ===============================================================
+\section{Experiments}
+\label{sec:experiments}
+The experiments address four research questions. \textbf{RQ1}: Does \method{} improve answer quality on Web and other evidence formats? \textbf{RQ2}: How do the trigger, score normalization, modality routing, and EAB each contribute? \textbf{RQ3}: Does EAB reduce order sensitivity, improve citation support, and make answers depend on the emphasized chunks? \textbf{RQ4}: How robust is the controller to retrieval errors, calibration, and the backbone, and what does it cost? RQ2 examines Challenge~1 through the trigger, normalization, and routing controls, and RQ3 examines Challenge~2.
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+\textit{Datasets and evidence.} WebQA~\cite{chang2022webqa} is our primary Web task: its textual questions require facts retrieved from a pool of about 390k images and 540k text snippets, each of which is one chunk. We evaluate all 4{,}966 validation questions and report separately the 2{,}511 questions whose gold facts are images (\webimg{}) and the 2{,}455 whose gold facts are text snippets. Three further benchmarks vary the evidence format. OK-VQA~\cite{marino2019okvqa} tests image-based knowledge with passages retrieved from the GS-112K Google Search corpus~\cite{luo2021weakly} (168,306 sentences), the corpus commonly used for this benchmark. HybridQA~\cite{chen2020hybridqa} asks multi-hop questions over Web tables and the passages linked from their cells. VideoRAG-Synth asks about instructional procedures shown in HowTo100M videos~\cite{miech2019howto100m}, following VideoRAG~\cite{jeong2025videorag}; each retrieved video or clip is one chunk of sampled frames and its transcript. Only OK-VQA supplies context, the question image; the other benchmarks start cold, with text and image candidates on WebQA, table and text on HybridQA, and whole videos and clips on VideoRAG-Synth (2{,}000 HybridQA and 374 VideoRAG-Synth questions). For HybridQA and VideoRAG-Synth we use the query sets and unified corpora of the UniversalRAG suite~\cite{yeo2026universalrag}, and every method reads the same candidates, the top five per modality returned by the suite's own retrievers (Appendix~\ref{app:protocol}). Appendix~\ref{app:protocol} gives span lengths and score ranges per modality.
+
+\textit{Evaluation metrics.} WebQA scores separate answer accuracy from BARTScore-based fluency (Appendix~\ref{app:webqa_scoring}); OK-VQA uses the official VQA accuracy; HybridQA and VideoRAG-Synth use the metrics of the UniversalRAG suite, exact match (EM) and ROUGE-L, with F1 and BERTScore in Appendix~\ref{app:supp}. Relative improvement over a baseline is $(\mathrm{ours}-\mathrm{baseline})/\mathrm{baseline}\times100\%$; all other differences are absolute points. For order sensitivity, we fix the retrieved chunks of each question and apply 12 orderings of the five retrieval ranks, drawn with three seeds, identically to all questions. We report the standard deviation of the score, the gap between relevance-sorted and reverse-sorted packing, and the flip rate, the share of questions whose correctness changes. We also report the attention--relevance divergence (ARD); attribution precision (AP) and Faith of citations, checked by alias matching and natural language inference (NLI); AURC and the Spearman $\rho$ between uncertainty and error; and the wrong-route (WR) and coverage (Cov.) rates of routing (definitions in Appendix~\ref{app:protocol}).
+
+\textit{Baselines.} The baselines separate gains from retrieving evidence, from deciding when and where to retrieve, and from changing how the retrieved chunks are used. (1) Direct answering without retrieval. (2) Evidence selection and use in our pipeline: always-retrieve static concatenation; a cross-encoder, bge-reranker-v2-m3, built on BGE-M3~\cite{chen2024m3}, that selects the chunks for static concatenation; and Found-in-the-Middle attention calibration~\cite{hsieh2024found} on the static input. (3) Multimodal RAG: M2-RAG~\cite{ma2025m2rag} with its official single-stage summarizer over the same chunks, with tables serialized as text; it does not accept video. (4) Adaptive retrieval: SeaKR~\cite{yao2025seakr}, which reads internal states, with its threshold set on the calibration queries to the retrieval rate of $\Uomni$. (5) Modality routing: UniversalRAG~\cite{yeo2026universalrag}, whose official router, trained after removing our evaluation questions from its training data, decides from the query whether and where to retrieve. Next-token entropy (NTE) as the trigger and a PASTA-inspired uniform bias~\cite{zhang2024pasta} are ablations of our controller (Section~\ref{sec:ablation}). All methods share the candidate pools, the backbone, the prompt format, decoding limits, at most $k=5$ retrieved chunks, truncation rules, and answer-normalization scripts, and each question is answered by every method from the same packed input; baselines receive \tbd{[[tuning budget]]}.
+
+\textit{Prompts and answer format.} All configurations receive identical instructions, and every chunk carries an identifier such as \texttt{[E3]} for citation. OK-VQA asks for a word or phrase, WebQA for one sentence, and HybridQA and VideoRAG-Synth keep the answer instructions of the UniversalRAG suite (the exact answer, and a complete sentence). The first answer token alone determines \ph\% of OK-VQA, \ph\% of HybridQA, \ph\% of VideoRAG-Synth, and \ph\% of WebQA answers, which is why EAB starts at the row that predicts it (Section~\ref{sec:eab}).
+
+\textit{Implementation and calibration.} Qwen3-VL-8B-Instruct~\cite{bai2025qwen3vl} is the primary backbone, with InternVL3.5-8B~\cite{wang2025internvl35} for transfer. Text and image retrieval use BGE-large-en-v1.5~\cite{xiao2024cpack} and CLIP ViT-L/14~\cite{radford2021clip} with FAISS~\cite{johnson2021faiss}; on HybridQA and VideoRAG-Synth these encoders score the shared candidates to obtain $r_j$. Tables are serialized row by row, and each retrieved video or clip is represented by 8 uniformly sampled frames with its transcript. For each benchmark and backbone, 500 unlabeled queries disjoint from all evaluation questions estimate the median and IQR for Eq.~\eqref{eq:norm} and the ECDFs of the retriever scores; these queries come from the training split of WebQA, from a held-out slice of the OK-VQA validation questions, and, for HybridQA and VideoRAG-Synth, whose suite has no training queries, from a held-out slice of the query set. Shared hyperparameters are $(\tau,\taub,\beta,\gamma,\delta)=(0.35,0.40,0.30,1.20,0.08)$ (Appendix~\ref{app:protocol}).
+
+\textit{Development protocol.} Before any evaluation run, we fixed on 256 development questions per benchmark, disjoint from calibration and evaluation questions, the remaining design choices by rules stated in advance and released with the code: one EAB form for all benchmarks (start row and bias form, by the largest same-input gain over static concatenation averaged across benchmarks), the uncertainty variant (by the Spearman correlation between the score and the error of direct answers), and the OK-VQA retrieval corpus (by the gain of static concatenation over direct answering). Evaluation sets are then run once with these choices frozen, and no number in this paper comes from development questions. Decoding is greedy, so each configuration is run once; random seeds only fix the evidence orderings of Section~\ref{sec:order}. Significance markers use paired bootstrap tests over questions (5{,}000 resamples, by source video on VideoRAG-Synth) against the strongest baseline ($p<0.05$). Latency covers uncertainty scoring, retrieval, evidence preparation, and generation, averaged over all queries, and is measured for all methods on \tbd{[[GPU model and count]]} with identical batch size, decoding settings, cache policy, and warmup. Code, prompts, and evaluation scripts are available at \tbd{[[anonymous repository URL]]}.
+
+\begin{table*}[t]
+\caption{Answer scores with Qwen3-VL-8B (at most $k=5$ chunks from shared pools; WebQA: QA$_{\mathrm{approx}}$, OK-VQA: VQA accuracy, HybridQA: EM, VideoRAG-Synth: ROUGE-L). Best in bold, strongest baseline underlined; an em dash marks an unsupported setting; $^\dagger$: paired-bootstrap $p<0.05$ against the strongest baseline. Latency is measured on \tbd{[[dataset]]}.}
+\label{tab:main}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Method & \makecell{WebQA\\(full val)} & \webimg{} & OK-VQA & HybridQA & \makecell{VideoRAG-\\Synth} & Latency (ms)$\downarrow$\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{No retrieval}}\\
+Direct (zero-shot) & \ph & \ph & \ph & \ph & \ph & \ph\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Evidence selection and use}}\\
+Static concatenation & \ph & \ph & \ph & \ph & \ph & \ph\\
+Cross-encoder + static concatenation & \ph & \ph & \ph & \ph & \ph & \ph\\
+Found-in-the-Middle~\cite{hsieh2024found} & \ph & \ph & \ph & \ph & \ph & \ph\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Multimodal RAG}}\\
+M2-RAG~\cite{ma2025m2rag} & \ph & \ph & \ph & \ph & --- & \ph\\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Adaptive retrieval and routing}}\\
+SeaKR~\cite{yao2025seakr} & \ph & \ph & \ph & \ph & \ph & \ph\\
+UniversalRAG~\cite{yeo2026universalrag} & \ph & \ph & \ph & \ph & \ph & \ph\\
+\midrule
+\textbf{\method{}} & \ph & \ph & \ph & \ph & \ph & \ph\\
+\method{} + cross-encoder & \ph & \ph & \ph & \ph & \ph & \ph\\
+\bottomrule
+\end{tabular}
+\end{table*}
+%% NOTE: bold, underlines, and daggers must be re-derived once every cell is filled from the V3.21 runs.
+
+\subsection{Overall Performance (RQ1)}
+\label{sec:overall}
+\ai{\method{} outperforms every baseline on WebQA (Table~\ref{tab:main}).} On the full validation set it reaches \ph{} against \ph{} for M2-RAG (\ph{}\% relative); on \webimg{} it reaches \ph{} against \ph. Of its gain over always-retrieve static concatenation on \webimg{}, the retrieval decision accounts for \ph{} points and EAB for \ph{} (Section~\ref{sec:ablation}).
+
+With the same rule and thresholds, \method{} gains \ph{}\%, \ph\%, and \ph\% over static concatenation on OK-VQA, HybridQA, and VideoRAG-Synth. M2-RAG does not accept video evidence, and UniversalRAG, which routes from the query alone, reaches \ph{} on HybridQA and \ph{} on VideoRAG-Synth; Section~\ref{sec:ablation} compares the two routing signals on WebQA.
+
+SeaKR reaches \ph{} on \webimg{} and \ph{} on OK-VQA. A cross-encoder reranker raises static concatenation to \ph{} on \webimg{}. Adding the reranker to \method{} gives \ph.
+
+\subsection{Ablation Study (RQ2)}
+\label{sec:ablation}
+
+\begin{table}[t]
+\caption{Component controls (AP: attribution precision; R\%: retrieval rate). Blocks vary the trigger under static concatenation, evidence use at the $\Uomni$ decision, and normalization, relevance, or gate. On \webimg{}, $\hgrd=0$, so the $\hgrd$-only row is omitted.}
+\label{tab:uomni_ablation}
+\footnotesize
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{OK-VQA} & \multicolumn{3}{c}{\webimg{}}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Configuration & Acc & AP & R\% & Acc & AP & R\%\\
+\midrule
+Always retrieve, static & \ph{} & \ph{} & 100.0 & \ph & \ph & 100.0\\
+NTE, static & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
+Per-format thresholds, static & \ph & \ph & \ph & \ph & \ph & \ph\\
+$\hgrd$ only, static & \ph{} & \ph{} & \ph{} & --- & --- & ---\\
+$\Uomni$, static & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
+\midrule
+$\Uomni$, replication & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
+$\Uomni$, EAB & \textbf{\ph} & \textbf{\ph} & \ph{} & \ph & \ph & \ph\\
+$\Uomni$, decode-only EAB & \ph & \ph & \ph & \ph & \ph & \ph\\
+Cold start without probe round & --- & --- & --- & \ph & \ph & \ph\\
+$\Uomni$, EAB + context bias & \ph & \ph & \ph{} & --- & --- & ---\\
+\midrule
+Raw retriever scores & \ph{} & \ph & \ph & \ph & \ph & \ph\\
+Always retrieve, relevance bias & \ph{} & \ph{} & 100.0 & \ph & \ph & 100.0\\
+Relevance bias without $\Uomni$ scaling & \ph & \ph & \ph{} & \ph & \ph & \ph\\
+Uniform (PASTA-style) bias, gated & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
+Random relevance, gated & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textit{When to retrieve.} Under static concatenation (Table~\ref{tab:uomni_ablation}, block 1), always retrieving gives \ph{} on OK-VQA and $\Uomni$ gives \ph{} at \ph{}\% retrieval, whereas NTE gives \ph{} at \ph{}\%. The two triggers disagree on \ph{}\% of queries, and questions answered without retrieval under NTE score lower (\ph{} against \ph{} for $\Uomni$; Appendix~\ref{app:supp}). Without the grounding term, NTE skips retrieval on questions whose evidence attention is still diffuse. A controller with its own predictive-entropy threshold per format gives \ph{} on OK-VQA and \ph{} on \webimg{}; \ai{it needs one tuned threshold per modality, whereas $\Uomni$ uses one threshold for all formats}. Without the probe round, $\Uomni$ would rank the cold-start \webimg{} queries exactly as NTE does; the probe round adds the grounding term over the probe chunks and changes the score from \ph{} to \ph{} (row ``Cold start without probe round'').
+
+\textit{How to use the retrieved chunks.} Holding the retrieval decision fixed (block 2), static concatenation, chunk replication, and EAB give \ph{}, \ph{}, and \ph{} on OK-VQA. Chunk replication emphasizes the same chunks as EAB, but only with integer copy counts and duplicated tokens that can displace other evidence after truncation. On \webimg{}, EAB changes the score from \ph{} under static concatenation to \ph. Decode-only EAB, which leaves the first answer token to the unbiased prefill, gives \ph{} on OK-VQA and \ph{} on \webimg{}. Biasing the supplied OK-VQA image as well, with $r=1$, gives \ph. \ai{Biasing the first answer row matters most for short answers, whose first token often carries the whole answer: on HybridQA, EAB gives \ph{} against \ph{} for decode-only EAB.}
+
+\textit{Score normalization, relevance, and gating.} With raw instead of per-modality percentile scores (block 3), the full controller drops from \ph{} to \ph{} on OK-VQA and from \ph{} to \ph{} on \webimg{}. Raw scores from different retrievers are not comparable, so the bias favors whichever modality has the larger score scale. A uniform bias on all retrieved chunks, as in PASTA, gives \ph{} on OK-VQA and random relevance gives \ph{}, so the gain requires chunk-specific relevance. A fixed bias $\gamma r_j$ that ignores $\Uomni$, close to a frozen OpenDecoder-style prior, gives \ph.
+
+\begin{table}[t]
+\caption{Modality routing on WebQA (full val, open retrieval) with the trigger and EAB fixed. Mod./q is the average number of searched modalities per triggered query; WR is the wrong-route rate and Cov.\ the coverage rate (Section~\ref{sec:setup}).}
+\label{tab:routing}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Routing rule & Score & WR$\downarrow$ & Cov.$\uparrow$ & Mod./q\\
+\midrule
+All modalities & \ph & \ph & 100.0 & 2.00\\
+Retriever-side scores & \ph & \ph & \ph & \ph\\
+UniversalRAG router (query only) & \ph & \ph & \ph & \ph\\
+Attention mass $M_m$ only & \ph & \ph & \ph & \ph\\
+Conditional entropy $H_m$ only & \ph & \ph & \ph & \ph\\
+$M_m\cdot H_m$ (ours) & \ph & \ph & \ph & \ph\\
+\midrule
+Oracle modality & \ph & 0.0 & 100.0 & \ph\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textit{Where to retrieve.} On WebQA, every question can draw on text snippets or images from the full pool, and its gold facts identify the modality it needs. We fix the trigger and EAB and change only the routing rule (Table~\ref{tab:routing}); WebQA questions start cold, so $M_m\cdot H_m$ is computed over a first joint retrieval round (Section~\ref{sec:routing}). $M_m\cdot H_m$ reaches \ph{} with a wrong-route rate of \ph\%, against \ph{} for retriever-side scores and \ph{} for the query-only router of UniversalRAG, and searching both modalities reaches \ph{} with \ph{} times as many retrieval calls. \ai{Either factor alone raises the wrong-route rate: mass alone favors a modality that has already located its evidence, and entropy alone favors modalities that the prediction barely uses.} Routing selects text for \ph\%, images for \ph\%, and both modalities for \ph\% of triggered queries.
+
+\begin{table}[t]
+\caption{Order sensitivity over 12 orderings (drawn with 3 seeds): score standard deviation (Std.) and share of questions whose correctness changes (Flip, \%). FITM: Found-in-the-Middle. Appendix~\ref{app:supp} adds gaps, ARD, and seed deviations.}
+\label{tab:order}
+\footnotesize
+\setlength{\tabcolsep}{1.6pt}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{OK-VQA} & \multicolumn{2}{c}{\webimg{}} & \multicolumn{2}{c}{HybridQA} & \multicolumn{2}{c}{VideoRAG-S.}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(l){8-9}
+Method & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$\\
+\midrule
+Static & \ph{} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+FITM & \ph & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+Replication & \ph{} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+EAB & \textbf{\ph} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Further Analysis (RQ3, RQ4)}
+
+\subsubsection{Evidence Order and Citation Support}
+\label{sec:order}
+When a fixed set of retrieved chunks is permuted, EAB reduces order sensitivity (Table~\ref{tab:order}). On OK-VQA, the standard deviation falls from \ph{} with static concatenation to \ph{} with chunk replication and \ph{} with EAB, a \ph{}\% relative reduction, and the sorted--reverse gap falls from \ph{} to \ph{} (Appendix~\ref{app:supp}). \ai{The other three settings show the same pattern} (\ph\% to \ph\% reduction). This reduction is an empirical property of the complete system, not a consequence of Proposition~\ref{thm:tilt} (Section~\ref{sec:eab}). \ai{Found-in-the-Middle calibrates positional attention without using relevance and lowers the deviation to \ph, still above EAB.} Relevance-sorted packing, which fixes one order, scores \ph{} on OK-VQA against an EAB mean of \ph. At the question level, \ph\% of OK-VQA questions change correctness across orderings under EAB, against \ph\% for static concatenation. \ai{InternVL3.5-8B shows the same ordering of methods} (Appendix~\ref{app:supp}).
+
+Higher answer scores come with better citation support (Table~\ref{tab:uomni_ablation} and Appendix~\ref{app:supp}). On OK-VQA, attribution precision rises from \ph{} to \ph{} and invalid citations fall from \ph{}\% to \ph{}\%, \ai{and the same holds on HybridQA and WebQA}. Because the generator tends to cite the chunks it attends to, raising the mass of high-relevance chunks moves citations toward supporting chunks.
+
+\begin{table}[t]
+\caption{Interventions and retrieval errors on \webimg{} (\%). Mask, CF: answers changed by masking or counterfactually editing the target chunk; Dist.: AP with two distractors; Gold@2--5: score when gold is not ranked first; $\sigma$: score under relevance noise; Misled: answers adopting an injected passage.}
+\label{tab:causal}
+\footnotesize
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{Interventions} & \multicolumn{4}{c}{Retrieval errors}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-8}
+Method & Mask & CF & Dist. & Gold@2--5 & $\sigma{=}0.1$ & $\sigma{=}0.2$ & Misled$\downarrow$\\
+\midrule
+Static & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+Replication & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+EAB & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Dependence on the Emphasized Chunks}
+\label{sec:causal}
+Attention alignment and citations do not show that answers depend on the emphasized chunks, so we intervene on \webimg{} with the retrieval decision fixed (Table~\ref{tab:causal}): where EAB is active and a retrieved text chunk contains the gold answer, we mask that chunk, replace its answer with a same-type entity, or add two distractors (controls in Appendix~\ref{app:protocol}). \ai{Masking the target chunk changes \ph\% of EAB answers against \ph\% under static concatenation, and EAB follows counterfactual edits more often (\ph\% against \ph\%), so its answers rely more on the target chunk, which also means that a wrong target misleads it more often. With distractors, EAB keeps attribution precision at \ph{} against \ph.}
+
+\subsubsection{Robustness to Retrieval Errors}
+\label{sec:noise}
+EAB raises the weight of highly scored chunks, so a confident but wrong retrieval can be amplified (Table~\ref{tab:causal}). When the gold fact is retrieved but not ranked first, EAB scores \ph{} against \ph{} for static concatenation. With Gaussian noise ($\sigma=0.1$, $0.2$) on the relevance, EAB scores \ph{} and \ph. An injected Web passage that states a wrong answer or instructs the model misleads \ph\% of EAB answers, against \ph\% for static concatenation. Proposition~\ref{thm:tilt} bounds the change in attention odds at one row by $e^{1.2}$, but not how often answers are misled.
+
+\subsubsection{Cost and Transfer}
+Entropy and routing take $O(N)$ operations for $N$ evidence tokens. Because triggered queries need a second prefill, cold-start queries add the probe prefill, and EAB requires eager or SDPA attention, we report end-to-end latency (Table~\ref{tab:main}). On OK-VQA, skipping retrieval for \ph{}\% of queries lowers average latency from \ph\,ms for always-retrieve static concatenation to \ph\,ms. Uncertainty computation adds \ph\,ms, against \ph\,ms for the 20 sampled generations behind each SeaKR decision. With per-backbone calibration, the controller improves InternVL3.5-8B on \ph{} of the four benchmarks; calibration size and transfer are in Appendix~\ref{app:supp}.
+
+%% ===============================================================
+\section{Conclusion}
+We present \method{}, a training-free latent-space controller for multimodal Web answering: an uncertainty score on evidence spans decides whether to retrieve, modality-level attention decides where, and EAB reuses the score as a bounded relevance prior. \ai{\method{} outperforms M2-RAG, SeaKR, and UniversalRAG on four benchmarks spanning text, image, table, and video evidence}, with gains from both the retrieval decision and EAB. Appendix~\ref{app:limitations} discusses limitations and future work.
