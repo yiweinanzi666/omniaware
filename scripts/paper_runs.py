@@ -95,11 +95,11 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
     frozen_flags = ["--beta", f"{dec['beta']:g}", "--tau-bias", f"{dec['tau_bias']:g}", "--tau", f"{dec['tau']:g}"]
     frozen_note = "" if frozen else " [NOT FROZEN: runs/dev_decisions.json missing, another model, or phase 1 only]"
 
-    def method(d, u_combine=None, attn_layer=None, probe=True):
+    def method(d, u_combine=None, attn_layer=None, probe=True, route=True):
         flags = ["--u-combine", u_combine or dec["u_combine"], "--attn-layer", attn_layer or dec["attn_layer"]]
         if d in COLD and probe:
-            flags += ["--probe-uncertainty", "--first-round-routing"]
-        elif d in COLD:
+            flags += ["--probe-uncertainty"]
+        if d in COLD and route:
             flags += ["--first-round-routing"]      # D17: the no-probe ablation keeps first-round routing
         return flags
 
@@ -261,7 +261,9 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                      f"perm:{o['order_id']}", "--n-eval", SUBSAMPLE]
             if model != "internvl3.5-8b":
                 extra.append("--fitm")
-            order += [run(d, tag, *extra), score(d, tag)]
+            # No routing: every arm of the order table (static, replication, EAB, FiTM) reads the same joint top-k,
+            # so the chunk set is fixed across arms and orderings; the probe round still supplies U.
+            order += [run(d, tag, *extra, route=False), score(d, tag)]
         arms = ["static", "replication", eab, decode_only] + (["fitm"] if model != "internvl3.5-8b" else [])
         order += [analyse("order", f"runs/v321_perm_*_{model}/{d}.jsonl", "--metric", METRIC[d], "--arms", *arms),
                   analyse("ard", f"runs/v321_perm_sorted_{model}/{d}.jsonl")]
