@@ -95,7 +95,8 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
         scores = {c["cid"]: {} for c in e["candidates"]}
         txt = [c for c in e["candidates"] if c["modality"] in ("text", "table")]
         if txt:
-            mats = bge.encode([f"{c['title']}: {c['text']}" if c["modality"] == "text" else c["text"] for c in txt])
+            mats = bge.encode([f"{c['title']}: {c['text']}" if c["modality"] == "text" and c["title"]
+                               and c["title"] != c["text"] else c["text"] for c in txt])
             for c, v in zip(txt, mats):
                 scores[c["cid"]][c["modality"]] = float(v @ qv)
         vids = [c for c in e["candidates"] if c["modality"] in ("video", "clip")]
@@ -103,13 +104,13 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
             with_text = [c for c in vids if c["text"]]
             if with_text:
                 for c, v in zip(with_text, bge.encode([c["text"] for c in with_text])):
-                    scores[c["cid"]]["video_text"] = float(v @ qv)
+                    scores[c["cid"]][VIDEO_CHANNELS[c["modality"]][0]] = float(v @ qv)
             if clip is not None:
                 tv = clip.encode_text([q])[0]
                 for c in vids:
                     fv = clip.encode_images(c["frames"])
                     m = fv.mean(0)
-                    scores[c["cid"]]["video_clip"] = float(m @ tv / (np.linalg.norm(m) + 1e-12))
+                    scores[c["cid"]][VIDEO_CHANNELS[c["modality"]][1]] = float(m @ tv / (np.linalg.norm(m) + 1e-12))
         imgs = [c for c in e["candidates"] if c["modality"] == "image"]
         if imgs:
             caps = [c for c in imgs if c["title"] or c["text"]]
@@ -126,11 +127,17 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
     return result
 
 
+# Transcript (BGE) and mean-frame (CLIP) channels of the two video modalities. Clips are a modality of their own
+# (D6), so they get their own channels and hence their own per-modality ECDF.
+VIDEO_CHANNELS = {"video": ("video_text", "video_clip"), "clip": ("clip_text", "clip_frames")}
+
+
 def used_channels(channels: dict[str, float], image_mode: str = "mix") -> list[str]:
     """The scored channels that define one candidate's relevance (see Calibrator.relevance)."""
-    video = [k for k in ("video_text", "video_clip") if k in channels]
-    if video:
-        return video
+    for pair in VIDEO_CHANNELS.values():
+        video = [k for k in pair if k in channels]
+        if video:
+            return video
     if "text" in channels:
         return ["text"]
     if "table" in channels:
@@ -201,9 +208,10 @@ class Calibrator:
         for key in ("text", "table"):
             if key in channels:
                 return float(channels[key])
-        video = [channels[k] for k in ("video_text", "video_clip") if k in channels]
-        if video:
-            return float(np.mean(video))
+        for pair in VIDEO_CHANNELS.values():
+            video = [channels[k] for k in pair if k in channels]
+            if video:
+                return float(np.mean(video))
         parts = [channels[k] for k, m in (("image_clip", ("clip", "mix")), ("image_cap", ("caption", "mix")))
                  if k in channels and image_mode in m] or [channels[k] for k in ("image_clip",) if k in channels]
         return float(np.mean(parts)) if parts else 0.0

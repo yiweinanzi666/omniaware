@@ -46,7 +46,9 @@ def load_relevance(examples: list[dict], cache_path: Path, write: bool = True) -
         t0 = time.time()
         todo_examples = [e for e, _ in todo]
         bge = relevance.BGE()
-        need_clip = any(c["modality"] == "image" for e in todo_examples for c in e["candidates"])
+        # CLIP scores images and the mean frame of every video or clip (paper: the video channels are the
+        # transcript BGE score and the CLIP score of the mean frame embedding).
+        need_clip = any(c["modality"] in ("image", "video", "clip") for e in todo_examples for c in e["candidates"])
         clip = relevance.CLIP() if need_clip else None
         fresh = relevance.raw_scores(todo_examples, bge, clip)
         raw.update(fresh)

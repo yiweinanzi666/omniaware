@@ -98,7 +98,8 @@ def test_clip_is_a_separate_modality_that_keeps_frames_and_video_scores(tmp_path
             return np.ones((len(images), 3))
 
     scores = relevance.raw_scores([e], FakeBGE(), FakeCLIP())[e["qid"]]
-    assert set(scores["c1"]) == {"video_text", "video_clip"}
+    assert set(scores["c1"]) == {"clip_text", "clip_frames"}          # clips are calibrated apart from videos
+    assert set(scores["v1"]) == {"video_text", "video_clip"}
 
 
 def test_video_relevance_channels():
