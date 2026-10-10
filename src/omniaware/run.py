@@ -196,8 +196,8 @@ def main(argv=None):
         ap.error("--route-rule query and --query-routes go together")
     if args.m2rag and DATASET_FAMILY[args.dataset] == "videorag":
         ap.error("M2-RAG accepts no video evidence (an em dash in the paper's main table)")
-    if args.fitm and args.model == "internvl3.5-8b":
-        ap.error("the Found-in-the-Middle adapter supports the Qwen3-VL backbones only")
+    if (args.fitm or args.m2rag) and args.model == "internvl3.5-8b":
+        ap.error("the Found-in-the-Middle and M2-RAG adapters support the Qwen3-VL backbones only")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
 
@@ -238,7 +238,7 @@ def main(argv=None):
     # Dense candidate files may cover only the intended local slice.  Keep the
     # original OK-VQA universe for split identities instead of reshuffling it.
     retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs")
-    split_source = data.LOADERS["okvqa"]() if retrieved_okvqa else examples
+    split_source = data.load_okvqa(candidates_path=False) if retrieved_okvqa else examples
     sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool)
     calib = sp["calib"]
     end = None if args.n_eval is None else args.offset + args.n_eval

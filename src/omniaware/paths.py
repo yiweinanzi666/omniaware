@@ -38,8 +38,11 @@ OKVQA_ANNOTATIONS = DATA / "okvqa_local" / "original" / "mscoco_val2014_annotati
 
 # WebQA open retrieval artifacts (global pool, encodings, FAISS indices, rankings); default is the
 # legacy directory on the experiment host, where the complete indices were built.
+_LEGACY_WEBQA_OPEN = ASSET_ROOT / "runs" / "phase1_dense_retrieval_codex_20261006"
 WEBQA_OPEN = Path(os.environ.get("OMNIAWARE_WEBQA_OPEN_DIR",
-                                 ASSET_ROOT / "runs" / "phase1_dense_retrieval_codex_20261006"))
+                                 _LEGACY_WEBQA_OPEN if _LEGACY_WEBQA_OPEN.exists() else ASSET_ROOT / "webqa_open"))
+# Citation-support NLI checker (pinned revision, see eval/citation/checker_asset_manifest.json)
+NLI_CHECKER = CACHE / "e5_citation_support" / "deberta_nli" / "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7"
 
 THIRD_PARTY = REPO_ROOT / "third_party"
 EXTERNAL = REPO_ROOT / "external"

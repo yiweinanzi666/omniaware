@@ -14,6 +14,10 @@ per-question official score (0-100); a question is *correct* when its score >= `
     latency        mean end-to-end ms: always-retrieve arms vs the U-gated system
     stats          dataset statistics: evidence tokens per modality, relevance spread r1 - r5, retrieval and
                    EAB activation rates, single-token answers and first-token changes
+    selective      AURC / rho with every system scored on its own answers (U -> gated EAB, NTE, SeaKR)
+    agreement      NTE vs U trigger agreement and the scores on skipped / retrieved questions
+    transitions    wrong->correct and correct->wrong shares between two arms (--arms before after)
+    ranges         raw retriever score ranges per channel (pass cache/relevance_<dataset>*.json)
     errors         rule-based pre-labelling of an arm's errors into the paper's four categories, plus a
                    seeded sample for manual verification
 
@@ -297,10 +301,81 @@ def errors_table(path: Path, metric: str, arm: str, correct_at: float, attributi
             "sample_for_manual_check": picked}
 
 
+# ---------------------------------------------------------- selective risk --
+def selective_table(paths_: list[Path], metric: str, eab_arm: str) -> dict:
+    """Paper appendix 'Selective risk': every system is scored on its own answers.
+    U_omni -> gated:<EAB>, NTE -> nte_trigger:static, SeaKR -> seakr (from the run(s) that hold them)."""
+    systems = {"U_omni": (lambda r: r.get("u_gate", r.get("u_pre")), f"gated:{eab_arm}"),
+               "NTE": (lambda r: (r.get("raw_pre") or {}).get("h_sem"), "nte_trigger:static"),
+               "SeaKR": (lambda r: (r.get("seakr") or {}).get("direct_eigen"), "seakr")}
+    out = {}
+    for path in paths_:
+        rows, _ = load_run(path)
+        scores = load_scores(path, metric)
+        for name, (get, arm) in systems.items():
+            if name in out:
+                continue
+            pairs = [(get(r), 1 - scores[r["qid"]][arm] / 100) for r in rows
+                     if get(r) is not None and arm in scores[r["qid"]] and math.isfinite(get(r))]
+            if len(pairs) >= 2:
+                u, err = zip(*pairs)
+                out[name] = {"run": str(path), "arm": arm, "n": len(pairs), "AURC": 100 * analysis.aurc(u, err),
+                             "spearman": analysis.spearman(u, err)}
+    return out
+
+
+# --------------------------------------------------------- trigger agreement --
+def agreement_table(path: Path, metric: str, eab_arm: str) -> dict:
+    """Appendix 'Trigger agreement': NTE (its matched threshold) against the U gate on the same questions."""
+    rows, config = load_run(path)
+    scores = load_scores(path, metric)
+    thr = config["nte_threshold"]
+    nte = [r["raw_pre"]["h_sem"] > thr for r in rows]
+    u = [bool(r["retrieve"]) for r in rows]
+    n = len(rows)
+
+    def score(arm, mask):
+        return mean([scores[r["qid"]][arm] for r, m in zip(rows, mask) if m])
+    return {"questions": n,
+            "both_retrieve": 100 * sum(a and b for a, b in zip(nte, u)) / n,
+            "both_skip": 100 * sum(not a and not b for a, b in zip(nte, u)) / n,
+            "only_nte": 100 * sum(a and not b for a, b in zip(nte, u)) / n,
+            "only_u": 100 * sum(b and not a for a, b in zip(nte, u)) / n,
+            "no_retrieval_score": {"NTE": score("direct", [not a for a in nte]), "U": score("direct", [not b for b in u])},
+            "retrieved_score": {"NTE (static)": score("static", nte), "U (EAB)": score(eab_arm, u)}}
+
+
+# --------------------------------------------------------------- transitions --
+def transitions_table(path: Path, metric: str, before: str, after: str, correct_at: float) -> dict:
+    """Error analysis: share of questions turned wrong->correct and correct->wrong from ``before`` to ``after``."""
+    rows, _ = load_run(path)
+    scores = load_scores(path, metric)
+    b = [scores[r["qid"]][before] >= correct_at for r in rows]
+    a = [scores[r["qid"]][after] >= correct_at for r in rows]
+    n = len(rows)
+    return {"questions": n, "before": before, "after": after,
+            "wrong_to_correct": 100 * sum((not x) and y for x, y in zip(b, a)) / n,
+            "correct_to_wrong": 100 * sum(x and not y for x, y in zip(b, a)) / n}
+
+
+# ---------------------------------------------------------- raw score ranges --
+def score_ranges(cache: Path) -> dict:
+    """Raw retriever scores per channel from a relevance cache (cache/relevance_<dataset>*.json)."""
+    raw = json.loads(Path(cache).read_text())
+    per = defaultdict(list)
+    for chunks in raw.values():
+        for channels in chunks.values():
+            for k, v in channels.items():
+                per[k].append(v)
+    return {k: {"n": len(v), "min": float(np.min(v)), "p5": float(np.percentile(v, 5)),
+                "median": float(np.median(v)), "p95": float(np.percentile(v, 95)), "max": float(np.max(v))}
+            for k, v in per.items()}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("analysis", choices=["order", "uncertainty", "ard", "interventions", "gold25", "noise",
-                                         "latency", "stats", "errors"])
+    ap.add_argument("analysis", choices=["order", "uncertainty", "selective", "agreement", "transitions", "ard",
+                                         "interventions", "gold25", "noise", "latency", "stats", "ranges", "errors"])
     ap.add_argument("runs", nargs="+", type=Path)
     ap.add_argument("--metric", default=None, help="official per-question metric (e.g. acc_approx, accuracy)")
     ap.add_argument("--arms", nargs="+", default=["static"])
@@ -310,7 +385,7 @@ def main(argv=None):
     ap.add_argument("--sample", type=int, default=100)
     ap.add_argument("--seed", type=int, default=2027)
     args = ap.parse_args(argv)
-    needs_metric = {"order", "uncertainty", "gold25", "noise", "errors"}
+    needs_metric = {"order", "uncertainty", "selective", "agreement", "transitions", "gold25", "noise", "errors"}
     if args.analysis in needs_metric and not args.metric:
         ap.error(f"{args.analysis} needs --metric")
     one = args.runs[0]
@@ -318,6 +393,17 @@ def main(argv=None):
         result = order_table(args.runs, args.metric, args.arms, args.correct_at, args.baseline)
     elif args.analysis == "uncertainty":
         result = {str(p): uncertainty_table(p, args.metric, args.arms[0]) for p in args.runs}
+    elif args.analysis == "selective":
+        result = selective_table(args.runs, args.metric, args.arms[0])
+    elif args.analysis == "agreement":
+        result = {str(p): agreement_table(p, args.metric, args.arms[0]) for p in args.runs}
+    elif args.analysis == "transitions":
+        if len(args.arms) != 2:
+            ap.error("transitions needs --arms <before> <after>")
+        result = {str(p): transitions_table(p, args.metric, args.arms[0], args.arms[1], args.correct_at)
+                  for p in args.runs}
+    elif args.analysis == "ranges":
+        result = {str(p): score_ranges(p) for p in args.runs}
     elif args.analysis == "ard":
         result = {str(p): ard_table(p) for p in args.runs}
     elif args.analysis == "interventions":

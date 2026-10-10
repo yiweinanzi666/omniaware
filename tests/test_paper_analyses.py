@@ -62,3 +62,23 @@ def test_latency_gold25_stats_uncertainty_interventions(tmp_path):
     assert abs(pa.ard_table(run)["eab"]["ARD"] - 0.1) < 1e-9
     e = pa.errors_table(run, "acc", "static", 50, None, 5, 0)
     assert e["errors"] == 2 and e["shares"]["ambiguous_visual_grounding"] == 100
+
+
+def test_selective_agreement_transitions_ranges(tmp_path):
+    rows = [_row("q1", raw_pre={"h_sem": 0.9, "h_grd": 0.0}, u_gate=0.9, retrieve=True, seakr={"direct_eigen": 3.0}),
+            _row("q2", raw_pre={"h_sem": 0.1, "h_grd": 0.0}, u_gate=0.1, retrieve=False, seakr={"direct_eigen": 1.0}),
+            _row("q3", raw_pre={"h_sem": 0.8, "h_grd": 0.0}, u_gate=0.2, retrieve=False, seakr={"direct_eigen": 2.0})]
+    arms = lambda d, s, e: {"direct": d, "static": s, "eab": e, "gated:eab": e, "nte_trigger:static": s, "seakr": s}
+    scores = {"q1": arms(0, 0, 100), "q2": arms(100, 100, 100), "q3": arms(0, 100, 0)}
+    run = _write(tmp_path / "r", rows, scores, {"order": "rank", "variants": [{"name": "eab"}], "nte_threshold": 0.5})
+    sel = pa.selective_table([run], "acc", "eab")
+    assert set(sel) == {"U_omni", "NTE", "SeaKR"} and sel["U_omni"]["arm"] == "gated:eab"
+    ag = pa.agreement_table(run, "acc", "eab")
+    assert abs(ag["both_retrieve"] - 100 / 3) < 1e-9 and abs(ag["only_nte"] - 100 / 3) < 1e-9
+    assert ag["no_retrieval_score"]["U"] == 50 and ag["retrieved_score"]["U (EAB)"] == 100
+    tr = pa.transitions_table(run, "acc", "static", "eab", 50)
+    assert abs(tr["wrong_to_correct"] - 100 / 3) < 1e-9 and abs(tr["correct_to_wrong"] - 100 / 3) < 1e-9
+    cache = tmp_path / "relevance.json"
+    cache.write_text(json.dumps({"q1": {"a": {"text": 0.2}, "b": {"image_clip": 0.3}}, "q2": {"a": {"text": 0.6}}}))
+    rg = pa.score_ranges(cache)
+    assert rg["text"]["min"] == 0.2 and rg["text"]["max"] == 0.6 and rg["image_clip"]["n"] == 1

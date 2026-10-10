@@ -118,7 +118,7 @@ def search(n_passages: int, k: int, limit_queries: int | None, chunk: int, tag: 
     emb = np.memmap(OUT / f"emb_{n_passages}.f16", dtype=np.float16, mode="r", shape=(n_passages, DIM))
     done = int((OUT / f"emb_{n_passages}.done").read_text())
     assert done == n_passages, f"encoding incomplete: {done}/{n_passages}"
-    examples = load_okvqa()[:limit_queries]
+    examples = load_okvqa(candidates_path=False)[:limit_queries]
     bge = relevance.BGE()
     q = torch.from_numpy(bge.encode([QUERY_PREFIX + e["question"] for e in examples])).to(bge.device, torch.float16)
     best_s = torch.full((len(examples), k), -1e4, device=bge.device)

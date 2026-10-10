@@ -165,15 +165,18 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
 
 
 def load_okvqa(candidates_path=None) -> list[dict]:
+    """OK-VQA val questions with retrieval candidates from ``candidates_path`` (default: the BM25 file);
+    ``candidates_path=False`` loads the questions alone (split universe, dense search)."""
     with zipfile.ZipFile(paths.OKVQA_ANNOTATIONS) as zf:
         name = [n for n in zf.namelist() if n.endswith(".json")][0]
         ann = json.loads(zf.read(name))
     answers = {a["question_id"]: [x["answer"] for x in a["answers"]] for a in ann["annotations"]}
     cands_by_q = {}
-    with open(candidates_path or paths.OKVQA_CANDIDATES) as fh:
-        for line in fh:
-            d = json.loads(line)
-            cands_by_q[str(d["question_id"])] = d["candidates"]
+    if candidates_path is not False:
+        with open(candidates_path or paths.OKVQA_CANDIDATES) as fh:
+            for line in fh:
+                d = json.loads(line)
+                cands_by_q[str(d["question_id"])] = d["candidates"]
     out = []
     with open(paths.OKVQA_INPUTS) as fh:
         for line in fh:

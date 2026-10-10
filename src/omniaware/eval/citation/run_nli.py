@@ -7,7 +7,7 @@ import time
 
 from ... import paths
 
-MODEL = paths.CACHE / 'e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7'
+MODEL = paths.NLI_CHECKER
 
 
 def expected_checker():
