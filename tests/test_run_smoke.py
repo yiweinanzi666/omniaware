@@ -382,3 +382,33 @@ def test_cold_start_probe_round_gates_and_routes(tmp_path, monkeypatch):
         assert "probe" in r["prefill_seconds"]
         expected = r["preds"]["static"] if r["retrieve"] else r["preds"]["direct"]
         assert r["preds"]["gated:eab:g1.2:ans1:pos:gate"] in (expected, r["preds"]["eab:g1.2:ans1:pos:gate"])
+
+
+def test_sharded_run_covers_the_split_once(tmp_path, monkeypatch):
+    from omniaware import merge_shards
+    from scripts import launch
+    examples = _examples(23)
+    monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+    monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+    monkeypatch.setattr(run, "load_relevance", lambda exs, path: {
+        e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    base = ["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+            "--n-dev", "2", "--tag", "sh"]
+    run.main(base + ["--calibrate-only"])
+    out = tmp_path / "runs" / "sh"
+    assert not (out / "okvqa.jsonl").exists()
+    config = json.loads((out / "okvqa_config.json").read_text())
+    assert config["evaluation_questions"] == 15 and "num_shards" not in config
+    for i in range(3):
+        run.main(base + ["--num-shards", "3", "--shard-id", str(i)])
+    with pytest.raises(SystemExit):
+        merge_shards.merge(out / "okvqa", expected_questions=16)       # count mismatch is refused
+    merge_shards.merge(out / "okvqa", expected_questions=15)
+    qids = [json.loads(line)["qid"] for line in (out / "okvqa.jsonl").read_text().splitlines()]
+    expected = {e["qid"] for e in data.split_examples(examples, 6, 2)["test"]}
+    assert len(qids) == len(set(qids)) == 15 and set(qids) == expected
+    assert len(list((out / "okvqa.shards").glob("*.jsonl"))) == 3
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "2,5")
+    assert launch.detect_gpus() == ["2", "5"]

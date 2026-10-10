@@ -82,6 +82,8 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
 
 
 PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
+# How a run is executed, not what it computes: excluded from the saved configuration and its checks.
+EXECUTION_ARGS = {"num_shards", "shard_id", "calibrate_only"}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -171,6 +173,12 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--fitm", action="store_true", help="Found-in-the-Middle baseline arm on the static input")
     ap.add_argument("--m2rag", action="store_true",
                     help="M2-RAG baseline arm (official single-stage summarizer) on the same chunks")
+    ap.add_argument("--num-shards", type=int, default=1,
+                    help="multi-GPU: split the evaluation questions round-robin over this many processes "
+                         "(scripts/launch.py starts them, one per GPU, after a --calibrate-only pass)")
+    ap.add_argument("--shard-id", type=int, default=0)
+    ap.add_argument("--calibrate-only", action="store_true",
+                    help="fill every cache (relevance, CE, U calibration, SeaKR) and write the config, then stop")
     ap.add_argument("--tag", required=True)
     return ap
 
@@ -193,18 +201,22 @@ def main(argv=None):
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
 
+    if not 0 <= args.shard_id < args.num_shards:
+        ap.error("--shard-id must lie in [0, --num-shards)")
     out_dir = paths.RUNS / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
     max_new = args.max_new_tokens or pipeline.MAX_NEW_TOKENS[DATASET_FAMILY[args.dataset]]
     config_path = out_dir / f"{args.dataset}_config.json"
+    out_path = out_dir / (f"{args.dataset}.jsonl" if args.num_shards == 1
+                          else f"{args.dataset}.shard{args.shard_id:02d}-of-{args.num_shards:02d}.jsonl")
     previous = None
-    if (out_dir / f"{args.dataset}.jsonl").exists():
+    if out_path.exists() or (out_dir / f"{args.dataset}.jsonl").exists():
         if not config_path.exists():
             ap.error("saved answers have no configuration; use a new --tag")
         previous = json.loads(config_path.read_text())
         saved = dict(previous)
         saved["variants"] = ",".join(v["name"] for v in saved["variants"])
-        requested = dict(vars(args), max_new_tokens=max_new)
+        requested = {k: v for k, v in dict(vars(args), max_new_tokens=max_new).items() if k not in EXECUTION_ARGS}
         changed = [k for k, v in requested.items() if saved.get(k) != v]
         if changed:
             ap.error(f"saved answers use different {', '.join(changed)}; use a new --tag")
@@ -487,24 +499,32 @@ def main(argv=None):
         if "mask" in args.intervention:
             pad_id = qwen.tok.pad_token_id if qwen.tok.pad_token_id is not None else qwen.tok.eos_token_id
 
-    out_path = out_dir / f"{args.dataset}.jsonl"
     done = set()
     if out_path.exists():
         done = {json.loads(l)["qid"] for l in out_path.open()}
-    config_path.write_text(json.dumps({
-        **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
+    config = json.dumps({
+        **{k: v for k, v in vars(args).items() if k not in EXECUTION_ARGS},
+        "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "norm_probe": vars(calibrators["probe"][1]) if "probe" in calibrators else None,
         **{f"comb_{ph}": calibrators[ph][0].to_json() for ph in calibrators},
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
         "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
-    }, indent=1))
+        "evaluation_questions": len(evals),
+    }, indent=1)
+    # Shards write the same configuration; replace atomically so readers never see a partial file.
+    tmp = config_path.with_name(f".{config_path.name}.{args.shard_id}.tmp")
+    tmp.write_text(config)
+    tmp.replace(config_path)
+    if args.calibrate_only:
+        print(f"[calibrate-only] caches and {config_path} ready", flush=True)
+        return
 
     t_start = time.time()
     with out_path.open("a") as fh:
         for i, e in enumerate(evals):
-            if e["qid"] in done:
+            if i % args.num_shards != args.shard_id or e["qid"] in done:
                 continue
             t0 = time.time()
             rel = rel_of(e)
