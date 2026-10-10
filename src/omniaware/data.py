@@ -123,7 +123,13 @@ def load_webqa(subset: str = "img", split: str = "val", allow_missing: bool = Fa
 
 
 def _asset_path(recorded: str) -> Path:
-    """Map an absolute path recorded on another host into the local asset root."""
+    """Map a path recorded in an index into the local asset root.
+
+    Indexes written by prepare_webqa_open store paths relative to OMNIAWARE_ASSETS; absolute paths
+    (older indexes) are used as they are, or mapped from another host's experiments directory."""
+    text = recorded.replace("\\", "/")
+    if not (text.startswith("/") or re.match(r"^[A-Za-z]:/", text)):   # relative: resolved against the asset root
+        return paths.ASSET_ROOT / text
     path = Path(recorded)
     if path.exists():
         return path

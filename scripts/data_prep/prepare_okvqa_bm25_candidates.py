@@ -8,7 +8,8 @@ from pathlib import Path
 import sqlite3
 import time
 
-ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ.get('ERC_ASSET_ROOT')
+            or Path(__file__).resolve().parents[2] / 'assets').resolve()  # legacy experiments/eab_first_token
 SQL = ('SELECT doc_id, contents, bm25(documents) AS score FROM documents '
        'WHERE documents MATCH ? ORDER BY score ASC, doc_id ASC LIMIT 5')
 

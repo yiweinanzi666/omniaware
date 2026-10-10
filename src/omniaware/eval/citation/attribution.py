@@ -25,11 +25,14 @@ English Punkt data load, otherwise the regex SENTENCE. The splitter name is writ
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
+import sys
 from functools import lru_cache
 from pathlib import Path
 
+from ... import paths
 from ...interventions import normalize
 
 VALID = re.compile(r"\[E(\d+)\]")
@@ -54,12 +57,25 @@ def parse_citations(answer: str, n_sources: int) -> dict:
 
 @lru_cache(maxsize=1)
 def _punkt():
-    """NLTK's English Punkt tokenizer when nltk and its punkt data are installed, else None."""
-    try:
-        from nltk.tokenize import PunktTokenizer
-        return PunktTokenizer("english")
-    except (ImportError, LookupError, OSError):
+    """The pinned English Punkt tokenizer (NLTK 3.9.2 and the frozen punkt_tab tables installed by
+    ``scripts/setup/download_models.py --only nltk`` under <assets>/cache/e5_citation_support), or None when those
+    assets are absent; the regex fallback is then named in every output (``splitter_name``).  Assets that are
+    present but differ from their manifest raise instead of silently changing the splitter."""
+    cache = paths.CACHE / "e5_citation_support"
+    manifest = cache / "sentence_splitter_assets.json"
+    if not manifest.exists():
         return None
+    record = json.loads(manifest.read_text(encoding="utf8"))
+    for item in record["files"]:
+        if hashlib.sha256((paths.ASSET_ROOT / item["path"]).read_bytes()).hexdigest() != item["sha256"]:
+            raise RuntimeError(f"{item['path']} differs from the sha256 frozen in {manifest}")
+    sys.path.insert(0, str(cache / "nltk_runtime"))
+    import nltk
+    if nltk.__version__ != record["nltk_version"]:
+        raise RuntimeError(f"nltk {nltk.__version__} loaded, the citation protocol pins {record['nltk_version']}")
+    nltk.data.path = [str(cache / "nltk_data")]
+    from nltk.tokenize import PunktTokenizer
+    return PunktTokenizer("english")
 
 
 def splitter_name() -> str:

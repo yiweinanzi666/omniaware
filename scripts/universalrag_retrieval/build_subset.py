@@ -25,6 +25,19 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 from omniaware import paths  # noqa: E402
 
+VIDEO_EXTENSIONS = (".mp4", ".mkv", ".webm", ".mov")   # yt-dlp picks the container; the index names the .mp4
+
+
+def find_video(path: Path) -> Path | None:
+    """The downloaded file behind an index path: the path itself, or the same name in another container."""
+    if path.exists():
+        return path
+    for ext in VIDEO_EXTENSIONS:
+        alt = path.with_suffix(ext)
+        if alt.exists():
+            return alt
+    return None
+
 
 def main(argv=None):
     import pandas as pd
@@ -53,7 +66,7 @@ def main(argv=None):
             shutil.copy2(ds / f"{name}.parquet", full)
         df = pd.read_parquet(full)
         video_of = (lambda i: i.rsplit("_", 1)[0]) if name == "clip" else (lambda i: i)
-        keep = [i for i in df.index if "videorag" in i and (args.root / video_of(i)).exists()]
+        keep = [i for i in df.index if "videorag" in i and find_video(args.root / video_of(i)) is not None]
         if name == "video":
             wanted = [i for i in df.index if "videorag" in i]
             missing = sorted(set(wanted) - set(keep))

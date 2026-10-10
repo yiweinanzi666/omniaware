@@ -18,7 +18,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 
-ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ.get('ERC_ASSET_ROOT')
+            or Path(__file__).resolve().parents[2] / 'assets').resolve()  # legacy experiments/eab_first_token
 REPOSITORY = 'MrZilinXiao/mbeir_test_webqa_task2'
 REVISION = 'bffbce531a1503ac57284131528dd1c7f7bfd268'
 TARGETS = ['30218009', '30009006', '30179094', '30098171', '30029642']

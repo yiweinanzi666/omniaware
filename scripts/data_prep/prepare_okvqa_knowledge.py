@@ -12,7 +12,8 @@ import time
 
 import requests
 
-ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ.get('ERC_ASSET_ROOT')
+            or Path(__file__).resolve().parents[2] / 'assets').resolve()  # legacy experiments/eab_first_token
 CACHE = ROOT / 'cache/okvqa_knowledge_20261004'
 DATA = ROOT / 'data/okvqa_knowledge_dpr_first3m'
 URL = 'https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz'
@@ -139,7 +140,8 @@ def build():
     write(DATA / 'manifest.json', dict(status='CORPUS_COMPLETE_INDEX_PENDING', documents=kept,
         input_rows=seen, skipped_empty=skipped, corpus_bytes=target.stat().st_size,
         corpus_sha256=digest.hexdigest(), source_url=URL, compressed_source_sha256=downloaded['sha256'],
-        legacy_rule_source=str(SOURCE), legacy_rule_source_sha256=hashes(SOURCE)['sha256'],
+        legacy_rule_source=str(SOURCE) if SOURCE.exists() else None,
+        legacy_rule_source_sha256=hashes(SOURCE)['sha256'] if SOURCE.exists() else None,
         rule='First 3,000,000 TSV data rows in source order; strip title/text; skip empty; zero-based row ID; title + newline + text',
         historical_byte_identity='Unverified: historical TSV/corpus checksum unavailable',
         annotation_answers_read=False, model_calls=0, elapsed_seconds=time.perf_counter() - start,
