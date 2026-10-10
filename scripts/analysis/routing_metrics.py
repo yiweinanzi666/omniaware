@@ -6,7 +6,8 @@
 Among triggered queries (retrieve = true) with gold modalities M* and searched modalities M':
 WR = share with M' ∩ M* empty, Cov = share with M* ⊆ M'. An empty route (rule 'all', or a cold
 start without routing) searches every modality offered by the candidates. The score column is the
-official per-question score of ``--arm`` from <run>.official_scores.jsonl when present.
+official per-question score of ``--arm`` from <run>.official_scores.jsonl when present, averaged over the run's
+own questions (aligned by qid; a missing score is an error, not a silent gap).
 """
 import argparse
 from collections import Counter
@@ -17,6 +18,19 @@ from pathlib import Path
 def searched(row):
     route = row.get("route") or {}
     return set(route.get("modalities") or row.get("candidate_modalities") or [])
+
+
+def aligned_score(rows, scores_path, arm, metric):
+    """Mean official score of ``arm`` over the run's questions, aligned by qid (M-48)."""
+    by_qid = {}
+    for line in Path(scores_path).read_text().splitlines():
+        if line.strip():
+            d = json.loads(line)
+            by_qid[d["qid"]] = d["scores"][arm][metric]
+    missing = [r["qid"] for r in rows if r["qid"] not in by_qid]
+    if missing:
+        raise SystemExit(f"{scores_path}: no score for {len(missing)} questions (first: {missing[0]})")
+    return sum(by_qid[r["qid"]] for r in rows) / len(rows)
 
 
 def routing_metrics(rows, all_modalities):
@@ -51,8 +65,7 @@ def main():
         result = routing_metrics(rows, args.modalities)
         scores_path = path.with_name(path.stem + ".official_scores.jsonl")
         if args.arm and args.metric and scores_path.exists():
-            scores = [json.loads(line)["scores"][args.arm][args.metric] for line in scores_path.read_text().splitlines()]
-            result["score"] = sum(scores) / len(scores)
+            result["score"] = aligned_score(rows, scores_path, args.arm, args.metric)
         table[str(path)] = result
     print(json.dumps(table, indent=1, ensure_ascii=False))
 

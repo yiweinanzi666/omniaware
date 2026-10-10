@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import json
 import random
 import time
@@ -183,7 +184,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--norm-from", default=None,
                     help="reuse norm_pre/norm_post from another run's *_config.json (calibration transfer)")
     ap.add_argument("--no-calibration", action="store_true",
-                    help="heuristic default statistics: Norm(median 0, IQR 1) and per-question min-max relevance")
+                    help="heuristic default statistics: Norm(median 0, IQR 1); relevance normalisation is unchanged "
+                         "(use --relevance-norm minmax for that)")
     ap.add_argument("--image-mode", default="mix", choices=["mix", "clip", "caption"])
     ap.add_argument("--beta", type=float, default=0.30)
     ap.add_argument("--tau", type=float, default=0.35)
@@ -231,8 +233,8 @@ def main(argv=None):
         ap.error(f"unknown --order {args.order}")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
-    if args.no_calibration:
-        args.relevance_norm = "minmax"
+    # --no-calibration only swaps the U statistics for defaults (below); the relevance normalisation is a
+    # separate switch (--relevance-norm) so the ablation changes one thing (D16).
     if (args.route_rule == "query") != (args.query_routes is not None):
         ap.error("--route-rule query and --query-routes go together")
     if args.m2rag and DATASET_FAMILY[args.dataset] == "videorag":
@@ -504,16 +506,22 @@ def main(argv=None):
     def cold(e):
         return not e["query_images"]
 
+    # Wall-clock of the probe rounds of the question being evaluated (reset per question; D15).
+    timing = {"probe": 0.0}
+
     def probe(e, rel):
         """Cold-start probe round (paper Sec. 4.2-4.3): the joint top-k by calibrated relevance in rank
         order, one zero-bias prefill. H_grd over these spans makes U informative without supplied context,
         and the same attention gives the M_m*H_m route."""
+        t_probe = time.perf_counter()
         first = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, None)
         enc_1 = qwen.encode(*evidence_segments(e, first, rel))
         _, attn_1, logits_1 = qwen.run(enc_1, None, 1, decode_static=False)
-        return {"chunks": first, "enc": enc_1, "attn": attn_1, "seconds": qwen.last_prefill_seconds,
-                "raw": pipeline.raw_uncertainty(attn_1, enc_1, [c["cid"] for c in first], logits_1, args.beta,
-                                                qwen.vocab_size)}
+        out = {"chunks": first, "enc": enc_1, "attn": attn_1, "seconds": qwen.last_prefill_seconds,
+               "raw": pipeline.raw_uncertainty(attn_1, enc_1, [c["cid"] for c in first], logits_1, args.beta,
+                                               qwen.vocab_size)}
+        timing["probe"] += time.perf_counter() - t_probe
+        return out
 
     def resolve_route(e, rel, initial, calibrating=False, probe_out=None):
         """Initial-evidence route; cold-start queries take the probe-round pathway when enabled.
@@ -661,6 +669,10 @@ def main(argv=None):
         "ucal": runio.digest([ucal_fp[e["qid"]] for e in calib]),
         "seakr": runio.digest([seakr_fingerprint(e) for e in calib]) if args.seakr_samples else None,
     }
+    # Fingerprint of the evaluated questions and their candidate lists: analysis scripts pair or pool runs only
+    # when these agree (paper_analyses checks it), so a stale candidate set cannot slip into a table.
+    candidate_sha = hashlib.sha256(json.dumps([[e["qid"], [c["cid"] for c in e["candidates"]]] for e in evals],
+                                              ensure_ascii=False).encode()).hexdigest()
     config_text = runio.dumps_strict({
         **{k: v for k, v in vars(args).items() if k not in EXECUTION_ARGS},
         "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
@@ -671,7 +683,7 @@ def main(argv=None):
         "seakr_missing_calibration": seakr_missing_calibration,
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
-        "evaluation_questions": len(evals),
+        "evaluation_questions": len(evals), "candidate_sha256": candidate_sha,
         "split_sizes": {"universe": len(examples), "calib": len(calib), "dev": len(sp["dev"]), "test": len(sp["test"])},
         "dropped_for_missing_assets": dropped,
         "candidate_shortfall": shortfall,
@@ -709,6 +721,8 @@ def main(argv=None):
                    "preds": {}}
             # Pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
             # Every compared arm is decoded here from the same prompt; no cached baselines.
+            timing["probe"] = 0.0
+            t_direct = time.perf_counter()
             enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
             pre_info = {}
 
@@ -722,6 +736,7 @@ def main(argv=None):
 
             res_d, _, _ = qwen.run(enc_d, None, max_new, decode_static=gate_off)
             direct_prefill = qwen.last_prefill_seconds
+            direct_s = time.perf_counter() - t_direct          # encode + gate + prefill + direct decode
             rec["u_pre"] = pre_info["u_pre"]
             rec["raw_pre"] = pre_info["raw_pre"]
             probe_out = probe(e, rel) if args.probe_uncertainty and cold(e) else None
@@ -735,9 +750,11 @@ def main(argv=None):
             rec["preds"]["direct"] = res_d["static"].text
             rec["tokens"] = {"direct": res_d["static"].tokens}
 
+            t_route, probe_before = time.perf_counter(), timing["probe"]
             route = resolve_route(e, rel, pre_info.get("route"), probe_out=probe_out)
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
                                    ce_of and ce_of(e))
+            route_s = time.perf_counter() - t_route - (timing["probe"] - probe_before)   # route + index lookup
             # Joint input (D4): the same top-k over all candidates, with no probe and no route. The
             # external baselines (CE, FiTM, M2-RAG, SeaKR) read this input; the Omni-Aware arms keep `chunks`.
             joint = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, None,
@@ -762,8 +779,10 @@ def main(argv=None):
                 rec["route"] = route
             if "gold_modalities" in e:
                 rec["gold_modalities"] = e["gold_modalities"]
+            t_enc = time.perf_counter()
             segments, split = evidence_segments(e, chunks, rel)
             enc = qwen.encode(segments, split)
+            encode_s = time.perf_counter() - t_enc
             if args.answer_style == "cite":
                 rec["citation_sources"] = pipeline.citation_sources(segments, chunks)
             rel_sel = {c["cid"]: eab_rel[c["cid"]] for c in chunks}
@@ -781,6 +800,10 @@ def main(argv=None):
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             rec["prefill_seconds"] = {"direct": direct_prefill, "evidence": qwen.last_prefill_seconds,
                                       **({"probe": probe_out["seconds"]} if probe_out else {})}
+            # Measured stages on the question's paths (paper latency, D15): analysis adds the stages of each arm's
+            # actual path. direct = encode + gate + direct prefill + direct decode; probe = every probe round of the
+            # question (cold start or first-round routing); route = route + index lookup; encode = evidence packing.
+            rec["seconds_stage"] = {"direct": direct_s, "probe": timing["probe"], "route": route_s, "encode": encode_s}
             rec["arm_seconds"] = {"direct": res_d["static"].seconds}
             rec["ard"] = {}
             for name, r in res.items():
