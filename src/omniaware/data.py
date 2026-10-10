@@ -426,9 +426,11 @@ IMAGE_SUBSET_OF = {"webqa_img": "webqa_full", "webqa_open_img": "webqa_open_full
 # calibration reserve (calib = the first n_calib of them), the next N_DEV are dev, and the rest is test.  The test
 # set therefore does not depend on n_calib.
 CALIB_RESERVE = {"okvqa": 500, "hybridqa": 500, "videorag_synth": 100}
-# Training-split pools (WebQA): calib = the first n_calib of the shuffled pool, dev = the next N_DEV; every
-# question of the evaluation universe is test.
+# Training-split pools (WebQA): calib = the first n_calib of the pool's first TRAIN_RESERVE questions, dev = the
+# N_DEV questions after that reserve, so dev does not move with n_calib (calibration-size ablation up to 1000);
+# every question of the evaluation universe is test.
 N_CALIB_TRAIN = {"webqa": 500}
+TRAIN_RESERVE = {"webqa": 1000}
 N_DEV = {"okvqa": 256, "webqa": 256, "hybridqa": 256, "videorag_synth": 50}
 
 
@@ -462,16 +464,19 @@ def split_examples(examples: list[dict], n_calib: int, n_dev: int, seed: int = 2
 
     Held-out (``calib_pool`` is None): ``examples`` are shuffled, calib = the first ``n_calib`` of the first
     ``reserve`` questions, dev = the next ``n_dev``, test = the rest.  Test does not depend on ``n_calib``.
-    Training pool (``calib_pool`` given): calib = the first ``n_calib`` and dev = the next ``n_dev`` of the shuffled
-    pool, and every question of ``examples`` is test.
+    Training pool (``calib_pool`` given): calib = the first ``n_calib`` of the shuffled pool's first ``reserve``
+    questions (default: ``n_calib``), dev = the ``n_dev`` after them, and every question of ``examples`` is test.
     ``eval`` = dev + test (legacy key).  Raises on an oversized request, an empty test set or any overlap.
     """
     order = _shuffled(examples, seed)
     if calib_pool is not None:
         pool = _shuffled(calib_pool, seed)
-        if n_calib < 1 or n_calib + n_dev > len(pool):
-            raise ValueError(f"training pool has {len(pool)} questions, need {n_calib} calibration + {n_dev} dev")
-        calib, dev, test = pool[:n_calib], pool[n_calib:n_calib + n_dev], order
+        pool_reserve = n_calib if reserve is None else reserve
+        if not 1 <= n_calib <= pool_reserve:
+            raise ValueError(f"n_calib {n_calib} must lie in [1, {pool_reserve}], the training-pool reserve")
+        if pool_reserve + n_dev > len(pool):
+            raise ValueError(f"training pool has {len(pool)} questions, need a {pool_reserve} reserve + {n_dev} dev")
+        calib, dev, test = pool[:n_calib], pool[pool_reserve:pool_reserve + n_dev], order
     else:
         if reserve is None:
             raise ValueError("held-out calibration needs the reserve size (CALIB_RESERVE)")

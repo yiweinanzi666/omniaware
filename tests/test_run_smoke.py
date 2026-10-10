@@ -16,6 +16,7 @@ def tiny_reserves(monkeypatch):
     # used below, so that calibration, dev and test are all non-empty.
     for family, reserve in {"okvqa": 6, "webqa": 4, "videorag_synth": 4}.items():
         monkeypatch.setitem(data.CALIB_RESERVE, family, reserve)
+    monkeypatch.setitem(data.TRAIN_RESERVE, "webqa", 4)
 
 
 def _examples(n):

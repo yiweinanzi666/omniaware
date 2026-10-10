@@ -77,6 +77,17 @@ def test_training_pool_test_set_is_independent_of_the_calibration_size():
     assert tests[0] == tests[1] == tests[2]
 
 
+def test_training_pool_dev_is_independent_of_the_calibration_size_under_the_reserve():
+    # The calibration-size ablation (100 / 500 / 1000) must not move the dev questions the settings were frozen on.
+    val, train = _examples("v", 300), _examples("t", 2000)
+    splits = [split_examples(val, n_calib=n, n_dev=256, calib_pool=train, reserve=data.TRAIN_RESERVE["webqa"])
+              for n in (100, 500, 1000)]
+    assert _ids(splits[0]["dev"]) == _ids(splits[1]["dev"]) == _ids(splits[2]["dev"])
+    assert all(not set(_ids(sp["calib"])) & set(_ids(sp["dev"])) for sp in splits)
+    with pytest.raises(ValueError, match="training-pool reserve"):
+        split_examples(val, n_calib=1001, n_dev=256, calib_pool=train, reserve=data.TRAIN_RESERVE["webqa"])
+
+
 def test_split_is_deterministic_and_order_independent():
     a = split_examples(_examples("v", 40), n_calib=5, n_dev=5, reserve=5)
     b = split_examples(list(reversed(_examples("v", 40))), n_calib=5, n_dev=5, reserve=5)

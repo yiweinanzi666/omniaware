@@ -254,6 +254,7 @@ def main(argv=None):
             ap.error(f"{args.dataset} has no training-split loader; use --calib-source heldout")
         calib_pool = data.TRAIN_LOADERS[split_universe](**({"allow_missing": True} if args.allow_missing_assets else {}))
         dropped["calibration_pool"] = getattr(calib_pool, "meta", {}).get("dropped", {})
+        reserve = data.TRAIN_RESERVE[family]
         if args.n_calib is None:
             args.n_calib = data.N_CALIB_TRAIN[family]
     else:
