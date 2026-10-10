@@ -140,7 +140,7 @@ def _asset_path(recorded: str) -> Path:
 
 def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | None = None,
                     allow_missing: bool = False) -> Examples:
-    """WebQA with open retrieval over the full public pool (544,489 texts, 389,750 images).
+    """WebQA with open retrieval over the pool built by scripts.setup.prepare_webqa_open (its sizes: webqa_open/pool_stats.json).
 
     Candidates are the BGE text top-k and the CLIP image top-k returned by FAISS for the question
     (scripts/webqa_open_retrieval: encode_webqa_queries --split <split>, then search_dense_queries

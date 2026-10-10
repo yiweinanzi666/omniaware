@@ -10,7 +10,72 @@ Omni-Aware 是一个面向多模态 Web 问答的检索控制方法。它在证�
 
 > **当前状态：** 本仓库**还没有任何正式结果**。旧仓库和论文 V3.20 中的数字都不能当作结果；论文 V3.21 中的数字目前全部是占位符 `\ph`。所有结果都必须按 [docs/PROTOCOL.md](docs/PROTOCOL.md) 与 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 重新产生。
 
-快速导航：[1 环境](#1-环境) · [2 资产目录](#2-资产目录与环境变量) · [3 模型](#3-下载模型) · [4 数据集与-benchmark](#4-数据集与-benchmark) · [5 实验](#5-实验多卡) · [6 评分与分析](#6-评分与分析) · [7 论文表格](#7-论文表格与代码的对应) · [8 测试](#8-测试)
+快速导航：[0 一键全流程](#0-一键全流程) · [1 环境](#1-环境) · [2 资产目录](#2-资产目录与环境变量) · [3 模型](#3-下载模型) · [4 数据集与-benchmark](#4-数据集与-benchmark) · [5 实验](#5-实验多卡) · [6 评分与分析](#6-评分与分析) · [7 论文表格](#7-论文表格与代码的对应) · [8 测试](#8-测试)
+
+## 0. 一键全流程
+
+`scripts/run_all.sh` 把从一台新服务器到论文全部表格的流程串成 12 步。每步结束时在 `runs/.pipeline/` 写一个完成标记；中途失败或中断后，修好问题再执行同一条命令，会从未完成的那一步继续（各脚本在步内部也能续跑）。
+
+### 0.1 准备（只做一次）
+
+1. **机器**：Linux，NVIDIA GPU（每个 8B 进程约 20 GB 显存），磁盘约 1 TB（模型约 45 GB，WebQA 图片与编码、DPR 维基、COCO、HowTo100M 视频占大头）。
+2. **主环境**（Python 3.11）：
+   ```bash
+   git clone https://github.com/yiweinanzi666/omniaware.git && cd omniaware
+   conda create -n omniaware python=3.11 -y && conda activate omniaware
+   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124    # 按本机 CUDA 版本选择
+   sudo apt install -y p7zip-full ffmpeg                                              # 解压 WebQA 图片；视频抽帧
+   ```
+3. **两份需要手动下载的数据**（许可原因，脚本无法自动下载；缺了脚本会停下并告诉你放在哪里）：
+   - WebQA：从 [WebQA 官方仓库](https://github.com/WebQnA/WebQA) 的 Google Drive 下载 `WebQA_train_val.json`、`WebQA_test.json` 和全部 `imgs.7z.0*`，放到 `$WEBQA_DIR`；
+   - OK-VQA 的 GS 语料：从 [luomancs/retriever_reader_for_okvqa](https://github.com/luomancs/retriever_reader_for_okvqa) README 的 Corpus 一节下载 `okvqa_train_corpus.csv`（必需）和 `okvqa_full_corpus.csv`（附录对照用），放到 `$GS_DIR`。
+4. **UniversalRAG 环境**（Python 3.12，只用于 HybridQA / VideoRAG 的特征提取与路由器训练）：第一步 `env` 会把官方仓库取到 `external/UniversalRAG`，之后执行
+   ```bash
+   (cd external/UniversalRAG && pip install uv && uv sync)    # 路由器训练还需要与本机 CUDA 匹配的 flash-attn
+   ```
+5. **设置路径**（写进 `~/.bashrc`）：
+   ```bash
+   export OMNIAWARE_ASSETS=/data/omniaware_assets             # 所有大文件
+   export WEBQA_DIR=/data/downloads/webqa                     # 第 3 条的 WebQA 文件
+   export GS_DIR=/data/downloads/okvqa_gs                     # 第 3 条的 GS 语料
+   export GPUS=auto                                           # 或 0,1,2,3；80 GB 卡可再设 PROCS_PER_GPU=2
+   # 国内网络可加：export HF_ENDPOINT=https://hf-mirror.com
+   ```
+
+### 0.2 执行
+
+```bash
+bash scripts/run_all.sh --list      # 12 个步骤、各自的作用与完成状态
+bash scripts/run_all.sh             # 从头跑到尾；中断后重跑同一条命令即可续跑
+```
+
+| 步骤 | 内容 | 主要产物 |
+|---|---|---|
+| `env` | `pip install -e ".[all]"`，取固定 commit 的官方仓库，跑 CPU 测试 | `external/` |
+| `models` | 下载全部模型（固定 commit）、BARTScore、spaCy、NLTK Punkt，并校验完整性 | `$OMNIAWARE_ASSETS/cache/` |
+| `webqa` | 解压图片、构建开放检索全池、BGE/CLIP 编码、val 与 train 的 top-5 检索 | `$OMNIAWARE_ASSETS/webqa_open/` |
+| `okvqa` | OK-VQA 问题与 COCO 图片；GS-112K、GS-168K（附录）、DPR 维基 3M 三种稠密候选 | `$OMNIAWARE_CACHE/okvqa_*/` |
+| `universalrag_data` | HybridQA 与 VideoRAG 下载、子集语料、套件特征、共享候选池、视频抽帧 | `$OMNIAWARE_ASSETS/universalrag/` |
+| `universalrag_router` | 剔除我们的评测题后训练 UniversalRAG 路由器 | `external/UniversalRAG/route/train/checkpoints/` |
+| `check` | `check_assets`：所有资产齐全且完整 | — |
+| `verify` | 在真实 Qwen3-VL-8B 上核对提示模板、分段 prefill 与 EAB（任一项不符即停止） | `runs/verify_real_model_8b.json` |
+| `dev` | dev 网格 → `dev_select --phase 1` → β×τ_b 网格 → `dev_select --phase 2`，冻结全部选择 | `runs/dev_decisions.json` |
+| `main` | Qwen3-VL-8B 的全部 test 阶段：main、universalrag、ablation、routing、order、citation、interventions、analysis | `runs/v321_*` |
+| `transfer` | InternVL3.5-8B 的骨干迁移（main、order） | `runs/v321_*_internvl3.5-8b` |
+| `paper` | 编译 `paper/main.pdf` | `paper/main.pdf` |
+
+常用操作：
+
+```bash
+bash scripts/run_all.sh --only check          # 只跑一步
+bash scripts/run_all.sh --from dev            # 从某一步开始（资产已准备好时）
+bash scripts/run_all.sh --redo webqa          # 清除某步的完成标记并重跑
+```
+
+- `dev` 结束后先看 `runs/dev_decisions.json` 中的 `framing`：它按 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的预先登记规则决定论文能主张什么，`main` 阶段只读取这个冻结文件。
+- 论文中的 `\ph` 需要按 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md) 从 `runs/` 的评分与分析输出手工填入；`paper` 一步只负责编译。
+- 只想先在小规模上试跑：`python -m omniaware.run --dataset okvqa_gs --split dev --calib-source heldout --model 2b --n-eval 20 --tag smoke`（需要先完成 `env`、`models`、`okvqa`）。
+- 下面第 1～8 节是每一步的展开说明，排查问题时查阅。
 
 ## 目录
 
@@ -160,7 +225,7 @@ python -m scripts.setup.prepare_okvqa --download        # 官方问题与标注 
 **GS 训练语料 gs112k**（Luo et al., EMNLP 2021，OK-VQA 文献常用的 Google Search 语料）。上游仓库 [luomancs/retriever_reader_for_okvqa](https://github.com/luomancs/retriever_reader_for_okvqa) 的 Corpus 一节提供两份语料；需要手动从其 README 给出的 Google Drive 链接下载（仓库中未固定链接）：
 
 - `okvqa_train_corpus.csv`：112,724 句，只由训练题收集。**本仓库默认使用它**，名称 `gs112k`、数据集 `okvqa_gs`，用于 dev 选型。
-- `okvqa_full_corpus.csv`：168,306 句，由训练题和测试题收集，因此含有评测题的检索结果。仅作附录对照（语料名 `gs168k_full`），不参与 dev 选型，也没有接入加载器。
+- `okvqa_full_corpus.csv`：168,306 句，由训练题和测试题收集，因此含有评测题的检索结果。仅作附录对照（语料名 `gs168k_full`，数据集 `okvqa_gs_full`，运行标签 `v321_gsfull`），不参与 dev 选型。
 
 ```bash
 python -m omniaware.okvqa_dense --corpus gs112k prepare --csv okvqa_train_corpus.csv   # 需要 text 列，否则报错
@@ -302,12 +367,16 @@ python -m scripts.launch --gpus 0,1,2,3 --procs-per-gpu 2 -- <同上的 run 参�
 
 ### 5.2 论文全流程
 
+`bash scripts/run_all.sh --from dev` 依次执行下面的命令（第 0 节）。手动执行时：
+
 ```bash
-# 1. dev 网格（网格与选择规则见 docs/DEV_DECISIONS.md）
+# 1. dev 网格 phase 1：30 个 EAB 候选（形式 × γ）、3 种 U 设置、2 种 OK-VQA 语料（docs/DEV_DECISIONS.md）
 python -m scripts.paper_runs --stage dev --run --gpus auto
-# 2. 按预先登记的规则冻结选择 -> runs/dev_decisions.json，并决定论文框架（docs/DEV_DECISIONS.md）
-python -m scripts.analysis.dev_select
-# 3. test，每个阶段只跑一次（自动读取冻结的选择）
+python -m scripts.analysis.dev_select --phase 1            # -> runs/dev_decisions.json（phase 1）
+# 2. phase 2：所选 EAB 候选上的 β × τ_b 网格；τ 由离线门控计算
+python -m scripts.paper_runs --stage dev_beta --run --gpus auto
+python -m scripts.analysis.dev_select --phase 2            # -> 完整的 runs/dev_decisions.json，含论文框架 framing
+# 3. test：每个阶段只跑一次，自动读取冻结的选择；没有完整的 phase-2 文件时直接报错
 for s in main universalrag ablation routing order citation interventions analysis; do
   python -m scripts.paper_runs --stage $s --run --gpus auto
 done
@@ -316,7 +385,7 @@ python -m scripts.paper_runs --model internvl3.5-8b --stage main  --run --gpus a
 python -m scripts.paper_runs --model internvl3.5-8b --stage order --run --gpus auto
 ```
 
-`python -m scripts.paper_runs --list` 列出各阶段的命令数及其对应的论文表格，`--stage X --print` 只打印命令。`universalrag` 阶段需要先按 4.4 节得到路由结果。`dev_select` 接受 `--runs`（默认 `runs`）、`--model`（默认 `8b`）与 `--output`。
+`python -m scripts.paper_runs --list` 列出各阶段的命令数、对应的论文表格，以及缺少的文件或冻结选择；`--stage X --print` 只打印命令。`universalrag` 阶段需要先完成 4.4 节的路由器训练（它自己导出查询并调用 `route_queries`）。
 
 ## 6. 评分与分析
 

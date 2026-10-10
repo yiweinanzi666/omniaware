@@ -2,10 +2,13 @@
 per eligible question (predictions or a failure reason)."""
 import json
 
+import pytest
+
 from omniaware import data, paths, run
 
 from test_run_smoke import FakeQwen, _examples
-from test_run_smoke import tiny_reserves  # noqa: F401  (autouse: protocol reserves sized to the synthetic data)
+
+pytestmark = pytest.mark.usefixtures("tiny_reserves")
 
 
 def test_interventions_decode_replication_on_the_perturbed_input(tmp_path, monkeypatch):

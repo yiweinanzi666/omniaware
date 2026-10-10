@@ -101,6 +101,9 @@ def launch(run_args: list[str], gpus: list[str], procs_per_gpu: int = 1, python:
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if "--" not in argv:
+        if argv and argv[0] in ("-h", "--help"):
+            print(__doc__)
+            return
         raise SystemExit("usage: python -m scripts.launch [--gpus 0,1|auto] [--procs-per-gpu K] -- <omniaware.run args>")
     split = argv.index("--")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

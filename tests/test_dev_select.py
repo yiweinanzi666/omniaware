@@ -125,7 +125,6 @@ def test_max_statistic_correction_has_the_nominal_size_under_the_null():
         best = res["best"]
         corrected += res["lower_bound"][best] > 0
         # naive: the best candidate's own percentile bootstrap, no correction for the choice of the best
-        pooled = np.mean([v.mean(axis=0) for v in diffs.values()], axis=0)
         boot = np.zeros(400)
         r2 = np.random.default_rng(s + 1000)
         for v in diffs.values():

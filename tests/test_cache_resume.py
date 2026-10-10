@@ -8,7 +8,8 @@ from omniaware import data, merge_shards, paths, relevance, rerank, runio
 from omniaware import run
 from scripts import launch
 from test_run_smoke import FakeQwen, _examples, _webqa_examples
-from test_run_smoke import tiny_reserves  # noqa: F401  (autouse: protocol reserves sized to the synthetic data)
+
+pytestmark = pytest.mark.usefixtures("tiny_reserves")
 
 
 # ------------------------------------------------------------------ runio --

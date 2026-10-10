@@ -10,13 +10,7 @@ from omniaware import data, paths, run
 from omniaware.qwen_eab import Result
 
 
-@pytest.fixture(autouse=True)
-def tiny_reserves(monkeypatch):
-    # The synthetic universes hold a few dozen questions: shrink the calibration reserves to the --n-calib
-    # used below, so that calibration, dev and test are all non-empty.
-    for family, reserve in {"okvqa": 6, "webqa": 4, "videorag_synth": 4}.items():
-        monkeypatch.setitem(data.CALIB_RESERVE, family, reserve)
-    monkeypatch.setitem(data.TRAIN_RESERVE, "webqa", 4)
+pytestmark = pytest.mark.usefixtures("tiny_reserves")
 
 
 def _examples(n):
