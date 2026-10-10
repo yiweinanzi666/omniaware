@@ -27,7 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
-from scripts.analysis.dev_select import BETAS, DEV_DATASETS, EAB_CANDIDATES, TAU_BIASES, TAUS, eab_name  # noqa: E402
+from scripts.analysis.dev_select import (BETAS, DEV_DATASETS, EAB_CANDIDATES, OKVQA_LOADERS, TAU_BIASES,  # noqa: E402
+                                        TAUS, eab_name)
 from omniaware import paths  # noqa: E402
 
 CALIB = {"webqa_open_full": "train", "webqa_open_img": "train", "okvqa": "heldout", "okvqa_dense": "heldout",
@@ -60,8 +61,7 @@ def decisions(model: str) -> dict | None:
 
 def okvqa_candidate_files() -> dict[str, Path]:
     dense = os.environ.get("ERC_OKVQA_DENSE_CANDIDATES", paths.LOCAL_CACHE / "okvqa_dense" / "candidates_full.jsonl")
-    return {"okvqa": Path(paths.OKVQA_CANDIDATES), "okvqa_dense": Path(dense),
-            "okvqa_gs": paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl"}
+    return {"okvqa_dense": Path(dense), "okvqa_gs": paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl"}
 
 
 def control_arm(rows: str, form: str, gamma: float) -> tuple[str, str]:
@@ -120,7 +120,7 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
 
     # ---- dev: phase 1 (base grid, U settings), phase 2 (beta x tau_b) -------------------------------------------
     dev = []
-    for d in ["webqa_open_full", "okvqa", "okvqa_dense", "okvqa_gs", "hybridqa", "videorag_synth"]:
+    for d in ["webqa_open_full", *OKVQA_LOADERS, "hybridqa", "videorag_synth"]:
         tag = f"v321dev_base_{model}"
         dev += [run(d, tag, "--variants", ",".join(EAB_CANDIDATES), split_="dev", hyper=PAPER_FLAGS,
                     u_combine="sum", attn_layer="last"), score(d, tag)]

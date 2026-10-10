@@ -43,7 +43,9 @@ TAU_BIASES = (0.2, 0.4, 0.6)
 TAUS = (0.25, 0.35, 0.45)
 PAPER = {"gamma": 1.2, "beta": 0.30, "tau_bias": 0.40, "tau": 0.35, "rows": "ans1", "form": "pos"}
 DEV_DATASETS = ["webqa_open_full", "okvqa_gs", "hybridqa", "videorag_synth"]   # U-setting runs exist for these
-OKVQA_LOADERS = ["okvqa", "okvqa_dense", "okvqa_gs"]                              # D3: gs168k_full is not a candidate
+# D3: gs168k_full is not a candidate; the BM25 candidates (loader "okvqa") cannot be rebuilt from this repository
+# (README 4.2), so the dev choice is between the two corpora whose build steps are complete.
+OKVQA_LOADERS = ["okvqa_dense", "okvqa_gs"]
 U_SETTINGS = ["base", "zsum", "mid"]          # sum/last (paper), zsum/last, sum/mid
 METRIC = {"webqa_open_full": "acc_approx", "okvqa": "vqa_accuracy", "okvqa_dense": "vqa_accuracy",
           "okvqa_gs": "vqa_accuracy", "hybridqa": "em", "videorag_synth": "rouge_l"}

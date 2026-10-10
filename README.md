@@ -171,7 +171,7 @@ python -m omniaware.okvqa_dense --corpus gs112k search --k 20                   
 
 `okvqa_dense` 的段落按 BGE 官方用法编码（无前缀），问题调用 `relevance.BGE.encode(query=True)`（即 BGE 查询指令），与重打分使用同一函数。
 
-**dev 网格的三种 OK-VQA 语料**。以下三条路线都必须先构建，`paper_runs` 才能使用对应选项。缺语料时 `paper_runs` 会跳过该选项，因此运行 dev 阶段前用 `python -m scripts.paper_runs --list` 核对哪些选项被跳过：
+**dev 网格的 OK-VQA 语料**。参加选型的是 `okvqa_gs` 与 `okvqa_dense` 两种，运行 dev 阶段前两者都必须构建；缺任何一个，`paper_runs --stage dev --run` 直接报错（`--list` 会列出缺失的文件）。第 3 条 BM25 路线只为旧结果保留，不参加选型：
 
 1. **okvqa_gs（GS 训练语料）**：如上。
 2. **okvqa_dense（DPR 维基，3M 段落）**：
@@ -200,7 +200,7 @@ python -m omniaware.okvqa_dense --corpus gs112k search --k 20                   
        --output $OMNIAWARE_ASSETS/data/okvqa_bm25_candidates
    ```
 
-   缺口：`prepare_okvqa_bm25_candidates` 读取 `data/okvqa_local/{calibration,development}_inputs.jsonl`，这两个输入由旧主机的流程生成，仓库中没有；数据集 `okvqa` 读取的 `paths.OKVQA_CANDIDATES`（`validation_candidates.jsonl`）由 `prepare_okvqa_val_assets.py` 产生，而它的 `finalize` 步骤要求旧主机的冻结锁文件 `runs/local_m4_20261004/supplements_queue_lock.json`。在补齐这些之前，论文的三选一中的 `okvqa` 选项不能复现；要么补齐，要么在论文中删去该选项。
+   缺口：`prepare_okvqa_bm25_candidates` 读取 `data/okvqa_local/{calibration,development}_inputs.jsonl`，这两个输入由旧主机的流程生成，仓库中没有；数据集 `okvqa` 读取的 `paths.OKVQA_CANDIDATES`（`validation_candidates.jsonl`）由 `prepare_okvqa_val_assets.py` 产生，而它的 `finalize` 步骤要求旧主机的冻结锁文件 `runs/local_m4_20261004/supplements_queue_lock.json`。因此 `okvqa`（BM25）**不参加** dev 语料选择（`scripts/analysis/dev_select.py` 的 `OKVQA_LOADERS` 只含 `okvqa_dense` 与 `okvqa_gs`），加载器仅为旧结果保留。
 
 `scripts/data_prep/build_full_dpr_index.py`（无参数，读取 `cache/okvqa_knowledge_20261004/psgs_w100.tsv.gz`，即上面的下载）建立全部 2,100 万段落的 BM25 索引，它**不是** dev 语料，只用于附录的对照。`scripts/data_prep` 中的脚本都使用 `OMNIAWARE_ASSETS`（未设置时为 `<仓库>/assets`）作为根目录，路径为旧主机的布局。
 

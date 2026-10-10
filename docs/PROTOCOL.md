@@ -6,7 +6,7 @@
 
 | 数据集（`--dataset`） | 评测数据（test） | calib | dev | 说明 |
 |---|---|---|---|---|
-| `okvqa` / `okvqa_dense` / `okvqa_gs` | OK-VQA val 5,046 − 500 − 256 = **4,290** | 500（保留区，`heldout`） | 256 | 三种语料候选之一；默认 `okvqa_gs`（GS 训练语料 112,724 句）；`okvqa_gs` 的全量 168,306 句版只在附录作对照 |
+| `okvqa` / `okvqa_dense` / `okvqa_gs` | OK-VQA val 5,046 − 500 − 256 = **4,290** | 500（保留区，`heldout`） | 256 | dev 在 `okvqa_dense` 与 `okvqa_gs` 两种语料中选一种（`okvqa` BM25 无法复现，不参加）；默认 `okvqa_gs`（GS 训练语料 112,724 句）；`okvqa_gs` 的全量 168,306 句版只在附录作对照 |
 | `webqa_img` / `webqa_full`（旧名，仅用于历史运行） | WebQA val 图像题 2,511 / 全部 4,966 | 训练集前 `n_calib` 题 | 训练集接下来的 256 题 | **distractor 设置**：每题自带的正负事实池，不是开放检索 |
 | `webqa_open_img` / `webqa_open_full` | 同上（**全部 4,966 道 val 为 test**；`webqa_open_img` 为同一划分下的图像题子集） | 训练集前 `n_calib` 题（需要先为 train 生成检索结果） | 训练集接下来的 256 题 | **开放检索**：在全局文本池和图片池中取 BGE 文本 top-5 与 CLIP 图像 top-5；论文的"Web 检索"设定以此为准 |
 | `hybridqa` | UniversalRAG 套件 HybridQA 2,000 − 500 − 256 = **1,244** | 500（保留区，`heldout`） | 256 | 候选为 UniversalRAG 检索器在 HybridQA 段落池与表格池中各取的 top-5（所有臂共享）；语料为套件子集（仅 HybridQA 段落与表格） |
