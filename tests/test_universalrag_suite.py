@@ -62,7 +62,9 @@ def test_videorag_loader_builds_video_chunks_with_frames_and_transcript(tmp_path
 
 def test_video_relevance_channels():
     cal = relevance.Calibrator({"video_text": [0.1, 0.2, 0.3, 0.4], "video_clip": [0.0, 1.0]})
-    assert cal.relevance({"video_text": 0.35, "video_clip": 0.5}) == pytest.approx((0.75 + 0.5) / 2)
+    # Two-channel percentiles need calibrated candidates scored on both channels (see test_relevance_calibration).
+    with pytest.raises(ValueError):
+        cal.relevance({"video_text": 0.35, "video_clip": 0.5})
     assert relevance.Calibrator.raw({"video_text": 0.2, "video_clip": 0.4}) == pytest.approx(0.3)
 
 

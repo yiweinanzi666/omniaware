@@ -43,6 +43,22 @@ STATE = _State()
 _ORIG_SDPA = sdpa_attention_forward
 
 
+def _additive_mask(attention_mask, query, q_pos0: int, q_len: int, kv_len: int) -> torch.Tensor:
+    """Additive float mask for the rows of this forward pass: the causal mask when the model passes none,
+    the boolean mask converted to 0 / finfo.min, or the additive float mask as given."""
+    dtype = query.dtype
+    neg = torch.finfo(dtype).min
+    if attention_mask is None:
+        rows = torch.arange(q_pos0, kv_len, device=query.device)[:, None]
+        cols = torch.arange(kv_len, device=query.device)[None, :]
+        mask = torch.zeros(q_len, kv_len, device=query.device, dtype=dtype)
+        return mask.masked_fill(cols > rows, neg)[None, None]
+    if attention_mask.dtype == torch.bool:
+        mask = torch.zeros(attention_mask.shape, device=query.device, dtype=dtype)
+        return mask.masked_fill(~attention_mask, neg)
+    return attention_mask.to(dtype)
+
+
 def _eab_sdpa(module, query, key, value, attention_mask, **kwargs):
     layer = getattr(module, "_erc_layer", None)
     if layer is None:
@@ -50,38 +66,42 @@ def _eab_sdpa(module, query, key, value, attention_mask, **kwargs):
     st = STATE
     q_len, kv_len = query.shape[2], key.shape[2]
     q_pos0 = kv_len - q_len
+    biased = st.bias is not None and (st.layers is None or layer in st.layers)
+    capturing = st.capture_layer is not None and layer == st.capture_layer
+    if not (biased or capturing):
+        return _ORIG_SDPA(module, query, key, value, attention_mask, **kwargs)
 
-    if st.capture_layer is not None and layer == st.capture_layer:
+    # One additive mask serves both the captured row and the real attention call, so the captured
+    # attention is the softmax the model actually uses (attention mask and EAB column bias included).
+    mask = _additive_mask(attention_mask, query, q_pos0, q_len, kv_len)
+    first_row = max(st.q_start - q_pos0, 0)
+    if biased and first_row < q_len:
+        dtype = query.dtype
+        col = torch.zeros(kv_len, device=query.device, dtype=dtype)
+        n = min(kv_len, st.bias.numel())
+        col[:n] = st.bias[:n].to(device=query.device, dtype=dtype)
+        mask = mask.expand(mask.shape[0], mask.shape[1], q_len, kv_len).clone()
+        mask[..., first_row:, :] += col
+        attention_mask = mask
+    if capturing:
+        # Head-averaged attention of the last query row, i.e. the t_end row of a prefill (the row that
+        # predicts the first answer token); the suffix forward always ends on that row.
         k = key if key.shape[1] == query.shape[1] else repeat_kv(key, query.shape[1] // key.shape[1])
         scale = kwargs.get("scaling") or module.scaling
-        logits = (query[:, :, -1:, :].float() @ k.float().transpose(-1, -2)) * scale
+        logits = (query[:, :, -1:, :].float() @ k.float().transpose(-1, -2)) * scale + mask[..., -1:, :].float()
         st.captured = torch.softmax(logits, dim=-1).mean(dim=1)[0, 0].detach().float().cpu()
-
-    if st.bias is not None and (st.layers is None or layer in st.layers):
-        first_row = max(st.q_start - q_pos0, 0)
-        if first_row < q_len:
-            dtype = query.dtype
-            neg = torch.finfo(dtype).min
-            if attention_mask is None:
-                rows = torch.arange(q_pos0, kv_len, device=query.device)[:, None]
-                cols = torch.arange(kv_len, device=query.device)[None, :]
-                mask = torch.zeros(q_len, kv_len, device=query.device, dtype=dtype)
-                mask = mask.masked_fill(cols > rows, neg)[None, None]
-            elif attention_mask.dtype == torch.bool:
-                mask = torch.zeros(attention_mask.shape, device=query.device, dtype=dtype)
-                mask = mask.masked_fill(~attention_mask, neg)
-            else:
-                mask = attention_mask.to(dtype).clone()
-            col = torch.zeros(kv_len, device=query.device, dtype=dtype)
-            n = min(kv_len, st.bias.numel())
-            col[:n] = st.bias[:n].to(device=query.device, dtype=dtype)
-            mask = mask.expand(mask.shape[0], mask.shape[1], q_len, kv_len).clone()
-            mask[..., first_row:, :] += col
-            attention_mask = mask
     return _ORIG_SDPA(module, query, key, value, attention_mask, **kwargs)
 
 
 AttentionInterface.register("sdpa", _eab_sdpa)
+
+
+def require_sdpa(model) -> None:
+    """EAB works only through the globally registered sdpa function. Any other attention backend would
+    silently turn every EAB variant into the static arm, so loading fails instead."""
+    impl = getattr(model.config.text_config, "_attn_implementation", None)
+    if impl != "sdpa":
+        raise RuntimeError(f"EAB requires sdpa attention in the text decoder, got {impl!r}")
 
 
 def _crop(cache, length: int) -> None:
@@ -124,7 +144,9 @@ class Result:
     first_logits: torch.Tensor = field(repr=False)
     tokens: list[int] = field(default_factory=list)
     seconds: float = 0.0                                          # decode time of this arm
-    attention: torch.Tensor | None = field(default=None, repr=False)  # last layer, first answer row
+    # Head-averaged last-layer attention of the t_end row (the prefill row that predicts the first answer
+    # token), computed under this arm's own bias; equal to the static arm's for decode-only variants.
+    attention: torch.Tensor | None = field(default=None, repr=False)
 
 
 def tag_text_layers(model) -> list[int]:
@@ -154,6 +176,7 @@ class QwenEAB:
         self.tok = self.processor.tokenizer
         cls = InternVLForConditionalGeneration if self.kind == "internvl" else Qwen3VLForConditionalGeneration
         self.model = cls.from_pretrained(model_path, dtype=dtype, attn_implementation="sdpa").to(device).eval()
+        require_sdpa(self.model)
         self.layers = tag_text_layers(self.model)
         self.n_layers = len(self.layers)
         cfg = self.model.config
@@ -170,7 +193,7 @@ class QwenEAB:
             self.size = {"shortest_edge": min_pixels, "longest_edge": max_pixels}
         self.eos = {self.tok.convert_tokens_to_ids("<|im_end|>"), self.tok.eos_token_id,
                     self.tok.convert_tokens_to_ids("<|endoftext|>")}
-        self.vocab_size = self.model.config.text_config.vocab_size
+        self.vocab_size = len(self.tok)     # |V| of the next-token entropy; padded output rows are excluded
 
     def _internvl_images(self, images):
         out = self.processor.image_processor(images=images, crop_to_patches=self.max_patches > 1,
@@ -276,11 +299,9 @@ class QwenEAB:
 
     @torch.no_grad()
     def _decode(self, cache, first_logits: torch.Tensor, max_new_tokens: int) -> list[int]:
-        """Greedy decoding; the head-averaged last-layer attention of the first generated token's row
-        (the first row EAB biases) is kept in ``self.last_answer_attention``."""
+        """Greedy decoding from the first answer token's logits."""
         tokens = []
         logits = first_logits
-        self.last_answer_attention = None
         for _ in range(max_new_tokens):
             nxt = int(torch.argmax(logits).item())
             if nxt in self.eos:
@@ -288,9 +309,7 @@ class QwenEAB:
             tokens.append(nxt)
             if len(tokens) == max_new_tokens:
                 break
-            logits = self._step(torch.tensor([[nxt]]), cache, capture=len(tokens) == 1)
-            if len(tokens) == 1:
-                self.last_answer_attention = STATE.captured
+            logits = self._step(torch.tensor([[nxt]]), cache)
         return tokens
 
     def _timed_decode(self, cache, first_logits, max_new_tokens):
@@ -307,7 +326,8 @@ class QwenEAB:
 
         ``decode_static`` (bool or callable(grounding, logits) -> bool) controls whether the
         unbiased answer itself is decoded and returned as "static".
-        Returns (results, grounding attention, unbiased first-token logits).
+        Every Result.attention is captured on the t_end row (the last row of the suffix forward), under
+        that arm's own bias. Returns (results, grounding attention, unbiased first-token logits).
         """
         self._sync()
         t0 = time.perf_counter()
@@ -322,7 +342,7 @@ class QwenEAB:
         if decode_static(grounding, base_logits) if callable(decode_static) else decode_static:
             toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
             results["static"] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                       sec, self.last_answer_attention)
+                                       sec, grounding)
             _crop(cache, enc.length)
         variants = make_variants(grounding, base_logits) if make_variants else {}
         # variants that keep the prompt unbiased share the static suffix cache
@@ -336,8 +356,9 @@ class QwenEAB:
             self._activate(enc, spec)
             toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
             self._activate(enc, None)
+            # Decode-only bias starts after the t_end row, so that row (and its attention) is unbiased.
             results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                   sec, self.last_answer_attention)
+                                   sec, grounding)
             if spec is None:
                 unbiased = results[name]
             _crop(cache, enc.length)
@@ -346,20 +367,25 @@ class QwenEAB:
             t0 = time.perf_counter()
             _crop(cache, enc.split)
             self._activate(enc, spec)
-            logits = self._step(suffix, cache)
+            logits = self._step(suffix, cache, capture=True)
+            attention = STATE.captured
             toks, sec = self._timed_decode(cache, logits, max_new_tokens)
             self._activate(enc, None)
             results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks,
-                                   time.perf_counter() - t0, self.last_answer_attention)
+                                   time.perf_counter() - t0, attention)
         STATE.reset()
         return results, grounding, base_logits.cpu()
 
 
 # ------------------------------------------------------------- uncertainty --
-def predictive_entropy(logits: torch.Tensor) -> float:
-    logp = torch.log_softmax(logits.float(), dim=-1)
+def predictive_entropy(logits: torch.Tensor, vocab_size: int) -> float:
+    """Next-token entropy over the first ``vocab_size`` logits (the tokenizer's vocabulary), normalised by
+    log|V|. Padding rows of the output layer are excluded from the distribution."""
+    if not 1 < vocab_size <= logits.numel():
+        raise ValueError(f"vocab_size {vocab_size} must lie in (1, {logits.numel()}]")
+    logp = torch.log_softmax(logits[:vocab_size].float(), dim=-1)
     h = -(logp.exp() * logp).sum().item()
-    return h / math.log(logits.numel())
+    return h / math.log(vocab_size)
 
 
 def grounding_entropy(attn: torch.Tensor | None, token_idx: list[int]) -> float:

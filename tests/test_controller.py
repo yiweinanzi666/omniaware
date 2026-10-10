@@ -15,11 +15,35 @@ def test_norm_maps_median_to_half_and_clips():
     assert n(-100) == 0.0 and n(100) == 1.0
 
 
+def test_constant_calibration_falls_back_to_unit_scale_everywhere():
+    """IQR ~ 0 must not turn Norm into a step function, and zsum must use the same fallback."""
+    from omniaware.pipeline import Combiner
+    n = Norm.fit([0.3] * 5)                           # IQR 0
+    assert n(0.3) == pytest.approx(0.5)
+    assert n(0.3 + 0.6) == pytest.approx(0.9)         # linear: (0.6 / 1.5) + 0.5
+    assert 0.5 < n(0.3 + 1e-3) < 0.6                  # not a jump to 1
+    raws = [{"h_grd": 0.0, "h_sem": 0.3}] * 5
+    z = Combiner.fit(raws, 1.0, "zsum")
+    assert z({"h_grd": 0.0, "h_sem": 0.3}) == 0.0
+    assert z({"h_grd": 0.0, "h_sem": 0.6}) == pytest.approx(0.3)   # (0.6 - 0.3) / 1
+
+
 def test_entropies_are_normalised():
-    assert predictive_entropy(torch.zeros(1000)) == pytest.approx(1.0)
+    assert predictive_entropy(torch.zeros(1000), 1000) == pytest.approx(1.0)
     peaked = torch.full((1000,), -1e4)
     peaked[3] = 0
-    assert predictive_entropy(peaked) == pytest.approx(0.0, abs=1e-6)
+    assert predictive_entropy(peaked, 1000) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_entropy_is_over_the_real_vocabulary_only():
+    """Padded output rows (beyond |V|) are excluded and the normalisation is log|V|, not log(padded size)."""
+    logits = torch.zeros(1000)
+    logits[160:] = -50.0                               # padding rows: essentially zero probability
+    assert predictive_entropy(logits, 160) == pytest.approx(1.0)          # uniform over the real vocabulary
+    # Normalised by log(1000) with the padding carrying no mass: log(160) / log(1000).
+    assert predictive_entropy(logits, 1000) == pytest.approx(math.log(160) / math.log(1000), abs=1e-6)
+    with pytest.raises(ValueError):
+        predictive_entropy(logits, 1001)
     attn = torch.tensor([0.5, 0.25, 0.25, 0.0])
     assert grounding_entropy(attn, [1, 2]) == pytest.approx(1.0)
     assert grounding_entropy(attn, [0]) == 0.0           # N <= 1

@@ -35,9 +35,9 @@ CITATION_INSTRUCTION = (
 )
 
 
-def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "default",
-                   image_pixels: dict[str, int] | None = None) -> tuple[list[Segment], int]:
-    """User turn = [query images] [evidence chunks] [question suffix]; returns (segments, split index)."""
+def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "default") -> tuple[list[Segment], int]:
+    """User turn = [query images] [evidence chunks] [question suffix]; returns (segments, split index).
+    Every evidence chunk is labelled [E<j>] (the paper's chunk identifier), whatever the answer style."""
     segs = [Segment(text="<|im_start|>user\n")]
     for img in e["query_images"]:
         segs += [Segment(image=img, chunk="__query__"), Segment(text="\n")]
@@ -45,17 +45,16 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
         segs.append(Segment(text="Based on the following evidence, answer the question.\n\n"))
         for j, c in enumerate(chunks, 1):
             cid = c["cid"]
-            label = f"[E{j}]" if answer_style == "cite" else f"Document {j}"
+            label = f"[E{j}]"
             if c["modality"] == "image":
                 head = f"{label} (image): {c['title']}\n" if c["title"] else f"{label} (image):\n"
                 tail = f"\nCaption: {_trim(c['text'], 60)}\n\n" if c["text"] and c["text"] != c["title"] else "\n\n"
-                cap = (image_pixels or {}).get(cid)
-                segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid, max_pixels=cap),
+                segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid),
                          Segment(text=tail, chunk=cid)]
             elif c["modality"] == "video":
                 segs.append(Segment(text=f"{label} (video):\n", chunk=cid))
                 for frame in c["frames"]:
-                    segs.append(Segment(image=frame, chunk=cid, max_pixels=(image_pixels or {}).get(cid)))
+                    segs.append(Segment(image=frame, chunk=cid))
                 tail = f"\nTranscript: {_trim(c['text'])}\n\n" if c["text"] else "\n\n"
                 segs.append(Segment(text=tail, chunk=cid))
             elif c["modality"] == "table":
@@ -74,13 +73,24 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
 
 
 # ----------------------------------------------------------------- control --
+IQR_FLOOR = 1e-6
+
+
+def robust_scale(iqr: float) -> float:
+    """Scale of a calibrated quantity: its IQR, or 1 when the calibration values are (almost) constant.
+    Norm and the zsum terms share this fallback. Dividing by a near-zero IQR would turn the map into a step
+    function (the gate becomes binary) and zsum would silently drop the term, so both fall back to a unit scale
+    instead: a median-centred linear map. This is a documented choice, not a tuned value."""
+    return iqr if iqr >= IQR_FLOOR else 1.0
+
+
 @dataclass
 class Norm:
     median: float
     iqr: float
 
     def __call__(self, s: float) -> float:
-        return float(np.clip((s - self.median) / (1.5 * max(self.iqr, 1e-6)) + 0.5, 0.0, 1.0))
+        return float(np.clip((s - self.median) / (1.5 * robust_scale(self.iqr)) + 0.5, 0.0, 1.0))
 
     @classmethod
     def fit(cls, values: list[float]) -> "Norm":
@@ -92,8 +102,9 @@ class Norm:
 @dataclass
 class Combiner:
     """s = H_grd + beta * H_pred ('sum', paper Eq. uomni) or, with 'zsum', the same after standardising each
-    term on the calibration queries, (H - median) / IQR, so that beta weighs the two terms on one scale
-    (a term that is constant on the calibration queries, e.g. H_grd without evidence, contributes 0)."""
+    term on the calibration queries, (H - median) / scale, so that beta weighs the two terms on one scale.
+    A term that is constant on the calibration queries (H_grd without evidence) is centred on its constant
+    value and scaled by the robust_scale fallback."""
     beta: float
     mode: str = "sum"
     grd: Norm | None = None
@@ -104,7 +115,7 @@ class Combiner:
             return raw["h_grd"] + self.beta * raw["h_sem"]
 
         def z(x, n):
-            return (x - n.median) / n.iqr if n.iqr > 0 else 0.0
+            return (x - n.median) / robust_scale(n.iqr)
         return z(raw["h_grd"], self.grd) + self.beta * z(raw["h_sem"], self.pred)
 
     @classmethod
@@ -124,10 +135,20 @@ class Combiner:
         return cls(d["beta"], d["mode"], d["grd"] and Norm(**d["grd"]), d["pred"] and Norm(**d["pred"]))
 
 
-def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float) -> dict:
-    tokens = [t for c in evidence_ids if c in enc.spans for t in range(*enc.spans[c])]
+def context_ids(e: dict) -> list[str]:
+    """Supplied-context chunk ids of a question: its query image (none for text-only questions)."""
+    return ["__query__"] if e["query_images"] else []
+
+
+def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float, vocab_size: int) -> dict:
+    """Raw H_grd (over the evidence spans) and H_pred (over the vocabulary). An evidence id without a span in
+    the encoded prompt is an error, not a silent drop: it would make H_grd describe different evidence."""
+    missing = [c for c in evidence_ids if c not in enc.spans]
+    if missing:
+        raise KeyError(f"evidence ids without a span in the encoded prompt: {missing}")
+    tokens = [t for c in evidence_ids for t in range(*enc.spans[c])]
     h_grd = grounding_entropy(attn, tokens)
-    h_sem = predictive_entropy(logits)
+    h_sem = predictive_entropy(logits, vocab_size)
     return {"h_grd": h_grd, "h_sem": h_sem, "s": h_grd + beta * h_sem}
 
 

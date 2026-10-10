@@ -112,7 +112,7 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
                     scores[c["cid"]]["video_clip"] = float(m @ tv / (np.linalg.norm(m) + 1e-12))
         imgs = [c for c in e["candidates"] if c["modality"] == "image"]
         if imgs:
-            caps = [c for c in imgs if (c["title"] or c["text"]) and not c["cid"].startswith("f")]
+            caps = [c for c in imgs if c["title"] or c["text"]]
             if caps:
                 mats = bge.encode([f"{c['title']}: {c['text']}" for c in caps])
                 for c, v in zip(caps, mats):
@@ -126,43 +126,74 @@ def raw_scores(examples: list[dict], bge: BGE, clip: CLIP | None) -> dict[str, d
     return result
 
 
-class Calibrator:
-    """Per-channel ECDF frozen on calibration scores."""
+def used_channels(channels: dict[str, float], image_mode: str = "mix") -> list[str]:
+    """The scored channels that define one candidate's relevance (see Calibrator.relevance)."""
+    video = [k for k in ("video_text", "video_clip") if k in channels]
+    if video:
+        return video
+    if "text" in channels:
+        return ["text"]
+    if "table" in channels:
+        return ["table"]
+    parts = [k for k, modes in (("image_clip", ("clip", "mix")), ("image_cap", ("caption", "mix")))
+             if k in channels and image_mode in modes]
+    if not parts and "image_clip" in channels:
+        parts = ["image_clip"]
+    return parts
 
-    def __init__(self, sorted_scores: dict[str, list[float]]):
+
+class Calibrator:
+    """Per-channel ECDF frozen on calibration scores.
+
+    A candidate scored on several channels (video text and clip, image clip and caption) has the mean of its
+    channel percentiles as the raw combined score. The mean of percentiles is not itself uniform (its spread
+    shrinks), so ``combined`` holds a second ECDF per channel set, fitted on the calibration candidates'
+    means; relevance is then again a percentile of the calibration distribution.
+    """
+
+    def __init__(self, sorted_scores: dict[str, list[float]], combined: dict[tuple, list[float]] | None = None):
         self.sorted = {k: sorted(v) for k, v in sorted_scores.items()}
+        self.combined = {k: sorted(v) for k, v in (combined or {}).items()}
 
     @classmethod
-    def fit(cls, raw: dict, qids: list[str]) -> "Calibrator":
+    def fit(cls, raw: dict, qids: list[str], image_mode: str = "mix") -> "Calibrator":
         pools: dict[str, list[float]] = {}
         for qid in qids:
             for ch in raw[qid].values():
                 for k, v in ch.items():
                     pools.setdefault(k, []).append(v)
-        return cls(pools)
+        cal = cls(pools)
+        combined: dict[tuple, list[float]] = {}
+        for qid in qids:
+            for channels in raw[qid].values():
+                used = used_channels(channels, image_mode)
+                if len(used) > 1:
+                    combined.setdefault(tuple(used), []).append(cal._mean_ecdf(used, channels))
+        cal.combined = {k: sorted(v) for k, v in combined.items()}
+        return cal
 
     def ecdf(self, channel: str, value: float) -> float:
         arr = self.sorted.get(channel)
         if not arr:
-            return 0.5
+            raise ValueError(f"no calibration scores for channel {channel!r}")
         return bisect.bisect_right(arr, value) / len(arr)
 
+    def _mean_ecdf(self, used: list[str], channels: dict[str, float]) -> float:
+        return float(np.mean([self.ecdf(k, channels[k]) for k in used]))
+
     def relevance(self, channels: dict[str, float], image_mode: str = "mix") -> float:
-        video = [self.ecdf(k, channels[k]) for k in ("video_text", "video_clip") if k in channels]
-        if video:
-            return float(np.mean(video))
-        if "text" in channels:
-            return self.ecdf("text", channels["text"])
-        if "table" in channels:
-            return self.ecdf("table", channels["table"])
-        parts = []
-        if image_mode in ("clip", "mix") and "image_clip" in channels:
-            parts.append(self.ecdf("image_clip", channels["image_clip"]))
-        if image_mode in ("caption", "mix") and "image_cap" in channels:
-            parts.append(self.ecdf("image_cap", channels["image_cap"]))
-        if not parts and "image_clip" in channels:
-            parts.append(self.ecdf("image_clip", channels["image_clip"]))
-        return float(np.mean(parts)) if parts else 0.5
+        """r_j in [0, 1]: the channel's percentile, or for several channels the percentile of their mean
+        percentile within the calibration candidates scored on the same channels. Missing calibration data
+        is an error (an absent channel never silently maps to a constant)."""
+        used = used_channels(channels, image_mode)
+        if not used:
+            raise ValueError(f"no relevance channel among {sorted(channels)} (image_mode={image_mode!r})")
+        if len(used) == 1:
+            return self.ecdf(used[0], channels[used[0]])
+        pool = self.combined.get(tuple(used))
+        if not pool:
+            raise ValueError(f"no calibration candidates scored on the channels {used}")
+        return bisect.bisect_right(pool, self._mean_ecdf(used, channels)) / len(pool)
 
     @staticmethod
     def raw(channels: dict[str, float], image_mode: str = "mix") -> float:
