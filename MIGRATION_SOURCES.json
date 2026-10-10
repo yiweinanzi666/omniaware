@@ -45,17 +45,23 @@
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/answer_format.py",
    "target": "src/omniaware/answer_format.py",
-   "sha256": "b80190c3ee12d8676d3d3c5bdcd079c2b5fb810cc2710aabf28c560ae58c3fd0"
+   "sha256": "b80190c3ee12d8676d3d3c5bdcd079c2b5fb810cc2710aabf28c560ae58c3fd0",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/table_rows_lossless.py",
    "target": "src/omniaware/table_render.py",
-   "sha256": "89d0ef2b932f497a163dc57a9e0acff8b3def4cb2b1f1eb33619a5f1daed370f"
+   "sha256": "89d0ef2b932f497a163dc57a9e0acff8b3def4cb2b1f1eb33619a5f1daed370f",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/eab_first_token/mmqa_official_eval.py",
    "target": "src/omniaware/eval/mmqa_official.py",
-   "sha256": "aedadbb97bf0aa1a638e90998c731ed3c6dd0bd3f95db3a1f92defbd6d770e00"
+   "sha256": "aedadbb97bf0aa1a638e90998c731ed3c6dd0bd3f95db3a1f92defbd6d770e00",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/eab_first_token/score_webqa.py",
@@ -75,7 +81,9 @@
   {
    "source": "experiments/eab_first_token/test_mmqa_official_eval.py",
    "target": "tests/test_mmqa_official.py",
-   "sha256": "8f9f313514cac7daa57bc98d490091df354c2d55d1f75b6f1d0f289260308706"
+   "sha256": "8f9f313514cac7daa57bc98d490091df354c2d55d1f75b6f1d0f289260308706",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/eab_first_token/test_score_webqa.py",
@@ -90,12 +98,16 @@
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/test_answer_format.py",
    "target": "tests/test_answer_format.py",
-   "sha256": "9c1e329074ec6fe7190780ec4b49388f857083f277b90f1482272beb327df336"
+   "sha256": "9c1e329074ec6fe7190780ec4b49388f857083f277b90f1482272beb327df336",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/test_table_rows.py",
    "target": "tests/test_table_render.py",
-   "sha256": "03afab8e19017f58b3a8b8d6eba92a65140a8941f9b880a3dd27a194a8c73169"
+   "sha256": "03afab8e19017f58b3a8b8d6eba92a65140a8941f9b880a3dd27a194a8c73169",
+   "status": "removed",
+   "note": "MMQA 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md 删除清单）"
   },
   {
    "source": "experiments/emnlp_repro_codex_review/okvqa_full_official_independent_root_20261008T1922/evidence/vqaEval_py3.py",
@@ -105,7 +117,9 @@
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/official_video_eval.py",
    "target": "third_party/videomme/official_video_eval.py",
-   "sha256": "5ab5d0304b61f6285d75553cdb46377f2f29cba84963bd7879cc2efa435d46c3"
+   "sha256": "5ab5d0304b61f6285d75553cdb46377f2f29cba84963bd7879cc2efa435d46c3",
+   "status": "removed",
+   "note": "Video-MME 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/emnlp_repro_codex_review/webqa_official_vs_lenient_20261008/official_source/eval_1022.py",
@@ -155,17 +169,23 @@
   {
    "source": "experiments/eab_first_token/fetch_videomme_short.py",
    "target": "scripts/data_prep/fetch_videomme_short.py",
-   "sha256": "044dc4fb465fee8090b668be7ab85c2cb05914354ef4aad6fec08e525f835d43"
+   "sha256": "044dc4fb465fee8090b668be7ab85c2cb05914354ef4aad6fec08e525f835d43",
+   "status": "removed",
+   "note": "Video-MME 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/prepare_videomme_frames.py",
    "target": "scripts/data_prep/prepare_videomme_frames.py",
-   "sha256": "959eff326837c4c5f251d127c16c40523ca76b3b3255a378660050a24c5dd541"
+   "sha256": "959eff326837c4c5f251d127c16c40523ca76b3b3255a378660050a24c5dd541",
+   "status": "removed",
+   "note": "Video-MME 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/emnlp_repro_codex_review/pro6000_three_official_20261008/prepare_dense_video.py",
    "target": "scripts/data_prep/prepare_videomme_frames32.py",
-   "sha256": "3447cb4eaeb27f1e4e0c0161f9b24f7ee95b6235cba6810c83ca35a9c9b1de5b"
+   "sha256": "3447cb4eaeb27f1e4e0c0161f9b24f7ee95b6235cba6810c83ca35a9c9b1de5b",
+   "status": "removed",
+   "note": "Video-MME 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/fetch_webqa_parquet_images.py",
@@ -177,22 +197,30 @@
   {
    "source": "experiments/eab_first_token/dragin_rind.py",
    "target": "src/omniaware/baselines/dragin_rind.py",
-   "sha256": "15bd99fa4cf2d146c8433fcc371fafe7200e9bf818fbd453a3d7c78463431c5c"
+   "sha256": "15bd99fa4cf2d146c8433fcc371fafe7200e9bf818fbd453a3d7c78463431c5c",
+   "status": "removed",
+   "note": "DRAGIN 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/test_dragin_rind.py",
    "target": "tests/test_dragin_rind.py",
-   "sha256": "9d17e05b48f4985a587c9cf4651d0e2ba8bd5caa926b4d04d787d1dfdca2ef6e"
+   "sha256": "9d17e05b48f4985a587c9cf4651d0e2ba8bd5caa926b4d04d787d1dfdca2ef6e",
+   "status": "removed",
+   "note": "DRAGIN 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/dragin_qwen_observation.py",
    "target": "src/omniaware/baselines/dragin_qwen_observation.py",
-   "sha256": "a9314bdd027357d048b09fc12c3c0099872945bd94ca0dc525da2fdc87b8d1d3"
+   "sha256": "a9314bdd027357d048b09fc12c3c0099872945bd94ca0dc525da2fdc87b8d1d3",
+   "status": "removed",
+   "note": "DRAGIN 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/test_dragin_qwen_observation.py",
    "target": "tests/test_dragin_qwen_observation.py",
-   "sha256": "d9aa8453ae7a870a153c1e43e90665b1a875679e2887de7cf1aec7868cee5cd0"
+   "sha256": "d9aa8453ae7a870a153c1e43e90665b1a875679e2887de7cf1aec7868cee5cd0",
+   "status": "removed",
+   "note": "DRAGIN 已于 2026-10-11 删除（见 docs/LEGACY_MAP.md）"
   },
   {
    "source": "experiments/eab_first_token/fitm_attention.py",
@@ -246,48 +274,73 @@
   },
   {
    "source": "experiments/eab_first_token/multimodal_retrieval.py",
-   "target": "legacy_staging/multimodal_retrieval.py",
-   "sha256": "5f151211341836907e30900634d533f6e32b7d6d1ce33f4320abe3c009a7b780"
+   "target": "src/omniaware/rerank.py",
+   "sha256": "5f151211341836907e30900634d533f6e32b7d6d1ce33f4320abe3c009a7b780",
+   "legacy_target": "legacy_staging/multimodal_retrieval.py",
+   "status": "extracted",
+   "note": "函数与常量按 AST 提取到 rerank.py（见 extracted_objects）"
   },
   {
    "source": "experiments/eab_first_token/analyze_ce_modality_selection.py",
-   "target": "legacy_staging/analyze_ce_modality_selection.py",
-   "sha256": "b70b0e86282115d7aa8524b1398bad11e25e89c6273a2a5209ec7294380d901f"
+   "target": "src/omniaware/rerank.py",
+   "sha256": "b70b0e86282115d7aa8524b1398bad11e25e89c6273a2a5209ec7294380d901f",
+   "legacy_target": "legacy_staging/analyze_ce_modality_selection.py",
+   "status": "extracted",
+   "note": "函数提取到 rerank.py（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/score_ce_calibration.py",
    "target": "legacy_staging/score_ce_calibration.py",
-   "sha256": "f917db5a456f7a8e3846f62984c9e125e40cf8911c4ec28fca2316c386953924"
+   "sha256": "f917db5a456f7a8e3846f62984c9e125e40cf8911c4ec28fca2316c386953924",
+   "status": "removed",
+   "note": "未作为独立模块迁入，LEGACY_MAP 未列出；如需要从旧仓库 c8d08ebb 读取"
   },
   {
    "source": "experiments/eab_first_token/prepare_webqa.py",
-   "target": "legacy_staging/prepare_webqa.py",
-   "sha256": "8b509c264504dbe7acd8bc90353e45c1fa76e38586bc0eae49362c73dfb6ffbe"
+   "target": "src/omniaware/rerank.py",
+   "sha256": "8b509c264504dbe7acd8bc90353e45c1fa76e38586bc0eae49362c73dfb6ffbe",
+   "legacy_target": "legacy_staging/prepare_webqa.py",
+   "status": "extracted",
+   "note": "函数与常量提取到 rerank.py（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/score_visual_candidates.py",
-   "target": "legacy_staging/score_visual_candidates.py",
-   "sha256": "674a519091f6297fb30d18f3b88edacf0b4a35be30c387de37610c3c183a2ff6"
+   "target": "src/omniaware/rerank.py",
+   "sha256": "674a519091f6297fb30d18f3b88edacf0b4a35be30c387de37610c3c183a2ff6",
+   "legacy_target": "legacy_staging/score_visual_candidates.py",
+   "status": "extracted",
+   "note": "函数提取到 rerank.py（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/test_multimodal_retrieval.py",
-   "target": "legacy_staging/test_multimodal_retrieval.py",
-   "sha256": "3fca4c4b35ae9aaacc2737905087c2455bb68d44930a349d7436d47ae6486229"
+   "target": "tests/test_rerank.py",
+   "sha256": "3fca4c4b35ae9aaacc2737905087c2455bb68d44930a349d7436d47ae6486229",
+   "legacy_target": "legacy_staging/test_multimodal_retrieval.py",
+   "status": "merged",
+   "note": "测试并入 tests/test_rerank.py（LEGACY_MAP：rerank 测试）"
   },
   {
    "source": "experiments/eab_first_token/run_order_mechanism.py",
-   "target": "legacy_staging/run_order_mechanism.py",
-   "sha256": "2f797f67f5113e580e7afce29fccc3c85c8ded8df296febca2548961a7c9a1ce"
+   "target": "src/omniaware/order.py",
+   "sha256": "2f797f67f5113e580e7afce29fccc3c85c8ded8df296febca2548961a7c9a1ce",
+   "legacy_target": "legacy_staging/run_order_mechanism.py",
+   "status": "extracted",
+   "note": "函数提取到 order.py（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/test_order_mechanism.py",
-   "target": "legacy_staging/test_order_mechanism.py",
-   "sha256": "5581fed6001f45e36c148723a83304416c50db2c4ce51a8be04037f4878f9dc6"
+   "target": "tests/test_order.py",
+   "sha256": "5581fed6001f45e36c148723a83304416c50db2c4ce51a8be04037f4878f9dc6",
+   "legacy_target": "legacy_staging/test_order_mechanism.py",
+   "status": "merged",
+   "note": "测试并入 tests/test_order.py（LEGACY_MAP：order 测试）"
   },
   {
    "source": "experiments/eab_first_token/runs/e5_citation_support_preparation/prepare_inputs.py",
    "target": "legacy_staging/e5_prepare_inputs.py",
-   "sha256": "bd721fb0444a4434dc09a4dcd5e83100f8595aa784d436fe126eb66748d61074"
+   "sha256": "bd721fb0444a4434dc09a4dcd5e83100f8595aa784d436fe126eb66748d61074",
+   "status": "removed",
+   "note": "E5 交接准备脚本，未迁移（见 docs/citation_support_protocol.md）"
   },
   {
    "source": "experiments/eab_first_token/prepare_citation_support_intake.py",
@@ -347,7 +400,9 @@
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/fetch_mirror_gaps.py",
    "target": "scripts/webqa_open_retrieval/fetch_mirror_gaps.py",
-   "sha256": "1ef3cca62e0e6a50b51db2eccb35f095a833d8afaceb67b7e77bf39977438006"
+   "sha256": "1ef3cca62e0e6a50b51db2eccb35f095a833d8afaceb67b7e77bf39977438006",
+   "status": "removed",
+   "note": "一次性修复少数图片的脚本，未迁移（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/prepare_clip_assets.py",
@@ -377,7 +432,9 @@
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/encode_calibration_queries.py",
    "target": "scripts/webqa_open_retrieval/encode_calibration_queries.py",
-   "sha256": "1f00161f14eb190a8724fc894c32365a3ca344ecca90bddcc06cc94c2798e30e"
+   "sha256": "1f00161f14eb190a8724fc894c32365a3ca344ecca90bddcc06cc94c2798e30e",
+   "status": "removed",
+   "note": "已由 scripts/webqa_open_retrieval/encode_webqa_queries.py 取代（支持任意问题集）"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/search_dense_queries.py",
@@ -392,37 +449,51 @@
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/calibrate_dense_relevance.py",
    "target": "scripts/webqa_open_retrieval/calibrate_dense_relevance.py",
-   "sha256": "0279f6353c6b242c85b040945c6c22675ef6736d7d8793ddcb6a2e299eb11feb"
+   "sha256": "0279f6353c6b242c85b040945c6c22675ef6736d7d8793ddcb6a2e299eb11feb",
+   "status": "removed",
+   "note": "只服务 train256 的校准步骤，已删除；校准见 src/omniaware/relevance.py"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/validate_dense_relevance.py",
    "target": "scripts/webqa_open_retrieval/validate_dense_relevance.py",
-   "sha256": "0e65c2372325ca148bd3424060b26ef96d72ea4e13c199b03523218dd3fa27e1"
+   "sha256": "0e65c2372325ca148bd3424060b26ef96d72ea4e13c199b03523218dd3fa27e1",
+   "status": "removed",
+   "note": "只服务 train256 的校准步骤，已删除；校验见 validate_dense_index.py 与 validate_dense_search.py"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/join_dense_source_metadata.py",
    "target": "scripts/webqa_open_retrieval/join_dense_source_metadata.py",
-   "sha256": "d2dba67a4f2a6ec85becc9327b5a689994770662e68a0b660973a3eab10220bf"
+   "sha256": "d2dba67a4f2a6ec85becc9327b5a689994770662e68a0b660973a3eab10220bf",
+   "status": "removed",
+   "note": "只服务 train256 的连接步骤，已删除（LEGACY_MAP：删除编排脚本和连接步骤）"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/validate_dense_source_metadata.py",
    "target": "scripts/webqa_open_retrieval/validate_dense_source_metadata.py",
-   "sha256": "1115170a0d12500451dcbeb1860689be17a5fdb3ce6c7703ad35a6caf5c5eeb4"
+   "sha256": "1115170a0d12500451dcbeb1860689be17a5fdb3ce6c7703ad35a6caf5c5eeb4",
+   "status": "removed",
+   "note": "只服务 train256 的连接步骤，已删除（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/continue_dense_cpu.py",
    "target": "scripts/webqa_open_retrieval/continue_dense_cpu.py",
-   "sha256": "89b645bb71c807bca3415f54c821d6faefe66216f4323719a1df5ea28cb91ea3"
+   "sha256": "89b645bb71c807bca3415f54c821d6faefe66216f4323719a1df5ea28cb91ea3",
+   "status": "removed",
+   "note": "编排脚本，已删除（LEGACY_MAP）"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/test_dense_relevance.py",
    "target": "scripts/webqa_open_retrieval/test_dense_relevance.py",
-   "sha256": "872e4b961d78c51ce20ae53a4f59a1181ad3e4bf776836f6fa525ea9a5482446"
+   "sha256": "872e4b961d78c51ce20ae53a4f59a1181ad3e4bf776836f6fa525ea9a5482446",
+   "status": "removed",
+   "note": "随 calibrate_dense_relevance 一并删除"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/test_dense_continuation.py",
    "target": "scripts/webqa_open_retrieval/test_dense_continuation.py",
-   "sha256": "ce8cde99bcf4627776e0ec7702d76fd4b7e2c8ab61c32b053427cadf267aabd8"
+   "sha256": "ce8cde99bcf4627776e0ec7702d76fd4b7e2c8ab61c32b053427cadf267aabd8",
+   "status": "removed",
+   "note": "随 continue_dense_cpu 一并删除"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/README.md",
@@ -432,12 +503,16 @@
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/DENSE_ECDF_PROTOCOL.md",
    "target": "scripts/webqa_open_retrieval/docs/DENSE_ECDF_PROTOCOL.md",
-   "sha256": "e2238fc1edfe84377d1c2f069c2019fbfb7d85fc7c7798dc0ef53b4f87ebdba2"
+   "sha256": "e2238fc1edfe84377d1c2f069c2019fbfb7d85fc7c7798dc0ef53b4f87ebdba2",
+   "status": "removed",
+   "note": "旧流程说明，已由 scripts/webqa_open_retrieval/docs/README.md 取代"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/SOURCE_METADATA_PROTOCOL.md",
    "target": "scripts/webqa_open_retrieval/docs/SOURCE_METADATA_PROTOCOL.md",
-   "sha256": "ef5a790c244cec684aafd85b6d7802c9a453f97a660174e6d3a65799426eecae"
+   "sha256": "ef5a790c244cec684aafd85b6d7802c9a453f97a660174e6d3a65799426eecae",
+   "status": "removed",
+   "note": "旧流程说明，已由 scripts/webqa_open_retrieval/docs/README.md 取代"
   },
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/GLOBAL_POOL_REPORT.md",
@@ -447,7 +522,9 @@
   {
    "source": "experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006/DENSE_PIPELINE_READINESS.md",
    "target": "scripts/webqa_open_retrieval/docs/DENSE_PIPELINE_READINESS.md",
-   "sha256": "38b2b058e8bae5da6d12b14c23f962ed69200c22e5559c0d630ea7c48790b0f9"
+   "sha256": "38b2b058e8bae5da6d12b14c23f962ed69200c22e5559c0d630ea7c48790b0f9",
+   "status": "removed",
+   "note": "旧流程说明，已由 scripts/webqa_open_retrieval/docs/README.md 取代"
   },
   {
    "source": "experiments/eab_first_token/runs/claude_direct_repair_20261005/round_005/candidates/build_full_dpr_index.py",
@@ -461,8 +538,11 @@
   },
   {
    "source": "experiments/eab_first_token/runs/claude_direct_repair_20261005/round_005/analysis/okvqa_passage_answer_recall.py",
-   "target": "scripts/analysis/okvqa_passage_answer_recall.py",
-   "sha256": "c0d7c3bba7bd52d3721ffe43b4060875baabeeba840464425dffd897a4ae4230"
+   "target": "scripts/analysis/answer_recall.py",
+   "sha256": "c0d7c3bba7bd52d3721ffe43b4060875baabeeba840464425dffd897a4ae4230",
+   "legacy_target": "scripts/analysis/okvqa_passage_answer_recall.py",
+   "status": "renamed",
+   "note": "对应 LEGACY_MAP：answer_recall.py"
   },
   {
    "source": "experiments/eab_first_token/runs/e5_citation_support_preparation/checker_asset_manifest.json",

@@ -68,3 +68,14 @@ T08 本次要求答案全部引用并集，因此本包是 ALCE-style CiteRec，
 4. `python3 -B score_nli.py --ledger NEW_INTAKE_DIR/answer_ledger.jsonl --requests NEW_INTAKE_DIR/cite_rec_nli_inputs.jsonl --results NEW_INTAKE_DIR/nli_results.jsonl --output NEW_INTAKE_DIR/cite_rec.json`。
 
 以上命令中的占位路径不是已完成输出。CPU fixture tests 只验证句子分割与 ALCE API 一致、引用并集、无引用/空答案分母、非法引用、原始记录保留、缺失答案和缺失 NLI 结果拒绝；fixture 不进入真实实验结果。
+
+## 论文的 Faith / AP / Inv 口径（D9，2026-10-10）
+
+论文主表和附录中的 Faith、AP、Inv 由 `omniaware.eval.citation.attribution` 按下面的口径计算（与上面的 E5/CiteRec 实验是两套独立的计算）：
+
+- **归因支持 `gated:*` 与 `replication` 臂。** gated 臂中未检索的题不计入 AP 分母，同时报告覆盖率（retrieved share）。
+- **alias 命中与 NLI 判定分别报告。** alias 判定为"gold 别名同时出现在引用它的答案陈述与被引块中"；NLI 判定为 DeBERTa 检查器的蕴含 logit 最大。两者不做短路组合（此前 alias 命中会跳过 NLI，已取消）。
+- **Faith** 对所有答案取平均，**AP** 只对至少有一条引用的答案取平均；覆盖率 × AP 不超过 Faith。
+- **前提长度。** <!-- TODO(G6): 前提截断/分段规则（D9：不截断，超长时按 DeBERTa 窗口分段取 max）由 G6 改写本节 --> 
+
+论文的 Faith/AP 数字必须能由 `runs/<tag>/<dataset>.jsonl` 用上述命令重算。

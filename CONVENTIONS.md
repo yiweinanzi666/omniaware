@@ -42,7 +42,7 @@ runs/  cache/         运行输出与缓存，不进 git
 
 ## 2. 代码风格
 
-- Python 3.10+，遵循 PEP 8，行宽 120；`python -m pyflakes src tests` 必须没有警告。
+- Python 3.11+（`requires-python>=3.11`，D13；`hashlib.file_digest` 需要 3.11），遵循 PEP 8，行宽 120；`python -m pyflakes src tests` 必须没有警告。依赖固定为 `transformers==5.5.3`，并声明 nltk、faiss 等运行时依赖（D13）。
 - 模块开头用一段 docstring 写清楚：做什么、对应论文哪一节、有哪些已知限制。
 - 函数只做一件事。命令行参数只在 `run.py` 和各评测入口里解析。
 - 不用宽泛的 `except`，失败要明确报错。数据缺失必须计数并报告，不能静默跳过。
@@ -66,11 +66,12 @@ runs/  cache/         运行输出与缓存，不进 git
 
 - **只用官方评测**：OK-VQA VQAEval、WebQA acc_approx（可加 BARTScore）、HybridQA EM/F1 与 VideoRAG ROUGE-L/BERTScore（按 UniversalRAG 论文 Table 1）。入口只有一个：`python -m omniaware.eval.score_official`。
 - **禁止**宽松匹配、同义词表、按题修补评分规则。如果某个官方评测确有缺陷，在论文中说明并单独报告，不改分数。
+- **例外：引用支持度的 alias 判定。** `src/omniaware/eval/citation/attribution.py` 中的 alias 判定（某个 gold 别名出现在被引块中）是字符串匹配，字面上违反上一条。豁免理由：(1) 它只用于引用支持度（Faith、AP），**不改变任何答案分数**，答案分数仍只用官方指标；(2) 按 D9，alias 判定与 NLI 判定分别报告，论文两者都给出，不做短路组合；(3) alias 命中是可解释的快速信号，用于判断引用的块是否含答案词。该例外只适用于 `eval/citation/`，不得扩展到答案评分或其它指标。
 - 评分不在推理时进行，不读取模型输入之外的任何信息去影响生成。
 
 ## 6. 实验协议（详见 docs/PROTOCOL.md）
 
 - 所有对照臂（direct、static、EAB、gated 等）在**同一次运行、同一输入、同一提示词**下生成。不和旧运行的缓存预测比较。
 - 校准集无标签，优先取训练集，并且永远不参与评测。
-- 超参数只在 dev 上选；test 只在设置冻结后跑一次。
+- 超参数只在 dev 上选（γ、β、τ_b、τ 的规则见 `docs/DEV_DECISIONS.md`，δ 为先验设定）；test 只在设置冻结后跑一次。
 - 报告的数字必须能从 `runs/` 里的逐题文件用 `score_official` 重算出来。论文中不允许出现任何无法这样重算的数字。
