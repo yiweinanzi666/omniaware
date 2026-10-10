@@ -4,19 +4,18 @@
 
 Every arm in the prediction file (direct, static, EAB variants, gated arms) is scored
 with the same official evaluator, and each arm is compared with the reference arms by a
-paired bootstrap over questions (clustered by video for Video-MME).  Gold answers are read
-from the original annotation files (WebQA: the reference stored with the question).
+paired bootstrap over questions (clustered by source video for VideoRAG).  Gold answers are read
+from the original annotation files (WebQA and the UniversalRAG suite: the reference stored with the
+question).
 
-Metrics: OK-VQA VQA accuracy (VQAEval, 10 annotators); MMQA list F1 / EM (upstream
-evaluate.py); Video-MME option accuracy (upstream answer parser; unparsed = wrong, and the
-upstream parsed-answer denominator is reported separately); WebQA acc_approx (published
-validation approximation), optionally x normalized ParaBank BARTScore (--bart).
+Metrics: OK-VQA VQA accuracy (VQAEval, 10 annotators); WebQA acc_approx (published validation
+approximation), optionally x normalized ParaBank BARTScore (--bart); HybridQA EM / F1 and
+VideoRAG-Synth ROUGE-L, optionally BERTScore (--bart), as in UniversalRAG (eval/universalrag_metrics.py).
 """
 import argparse
 from contextlib import redirect_stdout
 from copy import deepcopy
 from datetime import datetime, timezone
-import gzip
 import hashlib
 import importlib.util
 from io import StringIO
@@ -28,7 +27,6 @@ import zipfile
 import numpy as np
 
 from .. import paths
-from ..answer_format import parse_mmqa
 
 
 def module(path, name):
@@ -63,38 +61,6 @@ def paired(a, b, cluster_ids=None):
             'wins': int((delta > 0).sum()), 'losses': int((delta < 0).sum()), 'ties': int((delta == 0).sum())}
 
 
-def video_official_comparison(a, b, valid_a, valid_b, cluster_ids):
-    """Use the official script's parsed-answer denominator in both arms."""
-    result = paired(a, b, cluster_ids)
-    values = np.column_stack([a, b, valid_a, valid_b]).astype(float)
-    groups = {}
-    for group, row in zip(cluster_ids, values):
-        groups.setdefault(group, np.zeros(4))[:] += row
-    sums = np.asarray(list(groups.values()))
-    total = sums.sum(axis=0)
-    baseline, ours = total[:2] / total[2:]
-    rng = np.random.default_rng(20261008)
-    boot = []
-    for _ in range(20):
-        sampled = sums[rng.integers(len(sums), size=(250, len(sums)))].sum(axis=1)
-        rates = np.divide(sampled[:, :2], sampled[:, 2:], out=np.zeros_like(sampled[:, :2]), where=sampled[:, 2:] != 0)
-        boot.extend((rates[:, 1] - rates[:, 0]).tolist())
-    result.update(baseline=float(baseline), ours=float(ours), delta_pp=float(ours - baseline),
-                  relative_percent=float(100 * (ours - baseline) / baseline) if baseline else None,
-                  paired_ci95_pp=np.quantile(boot, [.025, .975]).tolist(),
-                  baseline_answered=int(total[2]), ours_answered=int(total[3]))
-    return result
-
-
-def mmqa_scores(answers, refs):
-    from .mmqa_official import score_predictions  # executes the pinned upstream evaluator
-    means, fractions = score_predictions(answers, refs)
-    scores = {q: {m: 100 * v for m, v in row.items()} for q, row in fractions.items()}
-    for metric, mean in means.items():
-        assert np.isclose(mean, np.mean([row[metric] for row in scores.values()]))
-    return scores
-
-
 def score_okvqa(preds, qids):
     with zipfile.ZipFile(paths.OKVQA_ANNOTATIONS) as archive:
         name = next(n for n in archive.namelist() if n.endswith('.json'))
@@ -109,29 +75,6 @@ def score_okvqa(preds, qids):
             evaluator.evaluate(qids)
         scores[arm] = {q: {'vqa_accuracy': evaluator.evalQA[q]} for q in qids}
     return scores, ['vqa_accuracy'], None
-
-
-def score_mmqa(preds, qids, split='dev'):
-    with gzip.open(paths.MMQA_DIR / f'MMQA_{split}.jsonl.gz', 'rt') as stream:
-        original = {r['qid']: r for r in map(json.loads, stream)}
-    refs = [{'qid': q, 'gold_answers': [[str(a['answer']) for a in original[q]['answers']]]} for q in qids]
-    # Answers are JSON arrays when the run used the list format; otherwise one string.
-    scores = {arm: mmqa_scores({q: parse_mmqa(answers[q])[0] for q in qids}, refs)
-              for arm, answers in preds.items()}
-    return scores, ['list_f1', 'list_em'], None
-
-
-def score_videomme(preds, qids):
-    import pyarrow.parquet as pq
-    original = {r['question_id']: r for r in
-                pq.read_table(paths.VIDEOMME_DIR / 'official_annotations.parquet').to_pylist()}
-    official = module(paths.THIRD_PARTY / 'videomme' / 'official_video_eval.py', 'official_video')
-    scores, parsed = {}, {}
-    for arm, answers in preds.items():
-        parsed[arm] = {q: official.extract_characters_regex(answers[q]) for q in qids}
-        scores[arm] = {q: {'choice_accuracy': 100 * int(parsed[arm][q] == original[q]['answer'])} for q in qids}
-    clusters = [original[q]['videoID'] for q in qids]
-    return scores, ['choice_accuracy'], {'clusters': clusters, 'parsed': parsed}
 
 
 def score_webqa(preds, qids, records, bart=False):
@@ -156,7 +99,7 @@ def score_webqa(preds, qids, records, bart=False):
     return scores, metrics, {'acc_approx_provenance': provenance}
 
 
-SCORERS = {'okvqa': score_okvqa, 'mmqa_table': score_mmqa, 'videomme': score_videomme}
+SCORERS = {'okvqa': score_okvqa}
 
 
 def score_run(path, references=('static', 'direct'), bart=False):
@@ -175,7 +118,7 @@ def score_run(path, references=('static', 'direct'), bart=False):
     preds = {arm: {q: by_qid[q]['preds'][arm] or '' for q in qids} for arm in arms}
     if family == 'webqa':
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart)
-    elif family in ('hybridqa', 'infoseek', 'videorag'):
+    elif family in ('hybridqa', 'videorag'):
         from .universalrag_metrics import score as universalrag_score
         scores, metrics, extra = universalrag_score(family, preds, qids, by_qid, bertscore=bart)
     else:
@@ -193,14 +136,6 @@ def score_run(path, references=('static', 'direct'), bart=False):
             summary['comparisons'][ref] = {
                 arm: {m: paired([scores[ref][q][m] for q in qids], [scores[arm][q][m] for q in qids], clusters)
                       for m in metrics} for arm in arms if arm != ref}
-    if 'parsed' in extra:
-        parsed = extra['parsed']
-        summary['answered'] = {arm: sum(bool(v) for v in parsed[arm].values()) for arm in arms}
-        summary['official_parsed_denominator'] = {
-            ref: {arm: video_official_comparison(
-                [scores[ref][q]['choice_accuracy'] for q in qids], [scores[arm][q]['choice_accuracy'] for q in qids],
-                [bool(parsed[ref][q]) for q in qids], [bool(parsed[arm][q]) for q in qids], clusters)
-                for arm in arms if arm != ref} for ref in references if ref in arms}
     if 'acc_approx_provenance' in extra:
         summary['webqa_metric_provenance'] = extra['acc_approx_provenance']
     details = [{'qid': q, 'scores': {arm: scores[arm][q] for arm in arms}} for q in qids]

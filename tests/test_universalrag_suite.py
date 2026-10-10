@@ -70,7 +70,7 @@ def test_universalrag_metrics():
     assert um.exact_match("The 1960.", "1960") == 1 and um.f1("founded 1960", "1960") == pytest.approx(2 / 3)
     assert um.rouge_l("detach the caliper", "Detach the brake caliper.") == pytest.approx(2 * 1 * 0.75 / 1.75)
     recs = {"q": {"golds": ["Jeep Wagoneer", "Wagoneer"]}}
-    s, m, _ = um.score("infoseek", {"a": {"q": "wagoneer"}}, ["q"], recs)
-    assert m == ["accuracy"] and s["a"]["q"]["accuracy"] == 100
+    with pytest.raises(ValueError):
+        um.score("infoseek", {"a": {"q": "wagoneer"}}, ["q"], recs)
     s, m, _ = um.score("hybridqa", {"a": {"q": "a jeep wagoneer"}}, ["q"], recs)
     assert s["a"]["q"]["em"] == 100

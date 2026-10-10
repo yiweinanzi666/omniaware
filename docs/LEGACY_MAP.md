@@ -60,3 +60,9 @@
 | `deliveries/`、`Each Stage Review Work/`、根目录约 30 个 `EMNLP_INCREMENT_*.json` | 交付快照与进度记录，不是代码 |
 
 需要追溯时，到旧仓库用 `git show c8d08ebb:<路径>` 读取。
+
+## 2026-10-11 范围调整后删除的迁移代码
+
+以下迁移过来的代码已随评测与对照方法的删减一并删除（历史保留在 git 中）：MMQA 加载器、官方评测包装、
+JSON 列表答案解析（`answer_format.py`）与表格渲染（`table_render.py`）；Video-MME 加载器、官方答案解析
+（`third_party/videomme/`）、帧准备脚本；DRAGIN 的 RIND 打分与 Qwen 观测（`baselines/dragin_*`）。

@@ -1,4 +1,4 @@
-"""Run the migrated baselines (DRAGIN, Found-in-the-Middle, M2-RAG) on our encoded inputs.
+"""Run the migrated baselines (Found-in-the-Middle, M2-RAG) on our encoded inputs.
 
 Each function answers one question with the same backbone, prompt format, candidate chunks and
 generation cap as the Omni-Aware arms of the run, so the arms differ only in the method.
@@ -39,17 +39,6 @@ def greedy(qwen, inputs: dict, max_new_tokens: int) -> str:
     return qwen.tok.decode(out[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
 
 
-# ------------------------------------------------------------------- DRAGIN --
-def dragin_score(qwen, enc_d, nlp, max_new_tokens: int) -> dict:
-    """Question-only draft and its RIND diagnostics (upstream single-decision DRAGIN, query from the question)."""
-    from .dragin_qwen_observation import observe_dragin_draft
-    STATE.reset()
-    if hasattr(qwen.model.model, "rope_deltas"):
-        qwen.model.model.rope_deltas = None
-    return observe_dragin_draft(qwen.model, hf_inputs(qwen, enc_d), qwen.tok, nlp,
-                                generation_config=generation_config(qwen, max_new_tokens))
-
-
 # ------------------------------------------------------- Found-in-the-Middle --
 def fitm_sources(qwen, enc, chunk_ids: list[str]) -> list[dict]:
     """Document token indices of each retrieved chunk, split into text and vision positions."""
@@ -80,8 +69,8 @@ def fitm_answer(qwen, enc, chunk_ids: list[str], max_new_tokens: int) -> tuple[s
 
 # ------------------------------------------------------------------- M2-RAG --
 def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_new_tokens: int,
-                 multi_stage: bool, document_tokens: int = 384) -> tuple[str, dict]:
-    """Official M2RAG summarizer over the same chunks, then the document-only answer extractor."""
+                 document_tokens: int = 384) -> tuple[str, dict]:
+    """Official M2RAG single-stage summarizer over the same chunks, then the document-only answer extractor."""
     from .m2rag_official import build_official_summarizer
     from .m2rag_qwen import LocalQwenVLM
     from .m2rag_webqa import extractor_messages, official_query, prepare_sources
@@ -95,7 +84,7 @@ def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_n
     prepared = prepare_sources(qwen.tok, sources, image_paths, {c["cid"]: rel[c["cid"]] for c in chunks})
     STATE.reset()
     backend = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=document_tokens)
-    summarizer = build_official_summarizer(backend, multi_stage=multi_stage)
+    summarizer = build_official_summarizer(backend, multi_stage=False)
     document = summarizer.summarize(query_list=[official_query(e["qid"], e["question"], prepared)], dry_run=False)
     extractor = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=max_new_tokens)
     answer = extractor.chat(extractor_messages(e["question"], document))["response"].strip()

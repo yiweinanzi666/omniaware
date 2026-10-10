@@ -1,3 +1,5 @@
+> 2026-10-11：MMQA 已从评测中删除，下文中 MMQA 的行仅作历史记录。论文的 Faith / AP / Inv 由 `omniaware.eval.citation.attribution` 计算（别名匹配后接本协议的 DeBERTa 检查器）。
+
 # E5 新运行的引用支持实验：准备与后续接口
 
 本包准备 T08 的 CiteRec 新实验，使用当前正式全集和既有来源。它不恢复旧 Table 5 的原始输出，不声称本次检查器就是旧表的精确检查器，也不回填历史数值。当前生成调用、NLI 调用及真实 CiteRec 结果均为 0。

@@ -6,7 +6,7 @@ per-question official score (0-100); a question is *correct* when its score >= `
 
     order          order sensitivity: std over the 12 seeded permutations, sorted - reverse gap, flip rate
                    (one run per --order perm:<id>, all 14 schedule entries)
-    uncertainty    AURC and Spearman rho of U_pre, next-token entropy, SeaKR and DRAGIN scores vs answer error
+    uncertainty    AURC and Spearman rho of U_pre, next-token entropy, H_grd and SeaKR scores vs answer error
     ard            mean attention-relevance divergence per arm
     interventions  Mask / CF / random-edit / rerun change rates, Misled (injection) on eligible questions
     gold25         score on questions whose top chunk is not gold while a gold fact is at ranks 2-5
@@ -104,7 +104,6 @@ UNCERTAINTIES = {
     "NTE": lambda r: (r.get("raw_pre") or {}).get("h_sem"),
     "H_grd": lambda r: (r.get("raw_pre") or {}).get("h_grd"),
     "SeaKR": lambda r: (r.get("seakr") or {}).get("direct_eigen"),
-    "DRAGIN": lambda r: (r.get("dragin") or {}).get("masked_max_score"),
 }
 
 

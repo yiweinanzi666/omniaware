@@ -7,10 +7,12 @@
 | 数据集（`--dataset`） | 评测数据 | 校准来源（`--calib-source`） | 说明 |
 |---|---|---|---|
 | `okvqa` / `okvqa_dense` | OK-VQA val 5,046 | `heldout`（训练集候选尚未生成） | BM25 或 BGE 维基段落候选 |
-| `mmqa_table` | MMQA dev 单表题 369（`--mmqa-scope legacy299` 为旧口径） | `train` | 候选为该题自己的表格行块与文本、图片 |
-| `videomme` | Video-MME Short 900 | `heldout` | 证据固定（全部帧 + 字幕），帧目录和字幕长度都是选项 |
 | `webqa_img` / `webqa_full` | WebQA val 图像题 2,511 / 全部 4,966 | `train` | **distractor 设置**：每题自带的正负事实池，不是开放检索 |
 | `webqa_open_img` / `webqa_open_full` | 同上 | `train`（需要先为 train 生成检索结果）或 `heldout` | **开放检索**：在全部 54.4 万文本和 39.0 万图片中取 BGE 文本 top-5 与 CLIP 图像 top-5；论文的"Web 检索"设定应以此为准 |
+| `hybridqa` | UniversalRAG 套件 HybridQA 2,000 | `heldout` | 候选为 UniversalRAG 检索器在统一表格池与段落池中各取的 top-5（所有臂共享） |
+| `videorag_synth` | UniversalRAG 套件 VideoRAG-Synth 374 | `heldout` | 候选为整段视频与视频片段各 top-5；每个候选 = 均匀采样帧 + 字幕 |
+
+已删除的设置：MMQA-table（每题自带 gold 表格，检索不起作用）、Video-MME（证据固定，不涉及检索）、InfoSeek 与 VideoRAG-WikiHow（2026-10-11 决定）。
 
 - `--split dev|test`：先用固定种子 `--split-seed`（默认 2027）把数据打乱，然后依次取出 calib（仅 heldout 时）、dev（`--n-dev`，默认 256）和 test。三者互不相交，运行时会断言检查。
 - 调参（τ、τ_bias、β、γ、k、提示词、帧数等）**只看 dev**。test 在设置冻结后只跑一次。
@@ -34,14 +36,17 @@
 | `gated:<eab 变体>` | 完整系统 |
 | `replication`、`gated:replication` | 复制对照（`--replication-gamma`）：每块重复 ⌈exp(γ·U·r)⌉ 份，门控与 EAB 相同 |
 
-论文主表中的对照方法：
-- **DRAGIN、Found-in-the-Middle、M2-RAG**：实现在 `src/omniaware/baselines/`，有单元测试，但还没有接入 `run.py`。接入时必须满足两个条件：与本方法使用相同的候选池、k、解码上限和提示词格式；作为同一次运行里的额外对照臂生成。
+论文主表中的对照方法（都在同一次运行里、用相同候选池、k、解码上限和提示词格式生成）：
+- **SeaKR**（`--seakr-samples 20`）：触发阈值在校准集上与 U 的检索率对齐，检索后选特征值得分最低的文档作答。
+- **Found-in-the-Middle**（`--fitm`）、**M2-RAG**（`--m2rag`，官方单阶段摘要）。
+- **UniversalRAG**（`--route-rule query --query-routes`）：路由器用其官方脚本训练，训练数据先剔除我们的评测题。
 - **Cross-encoder + static**：用 `--selector ce` 运行，取 `static` 臂。
-- 没有实现的方法（SeaKR、SAM-RAG、ViDoRAG、Visual-RAG）不能出现在结果表里。
+- 消融表中的对照：NTE 触发（`nte_trigger:static`、`nte_shared:static`）、PASTA 式统一偏置（`pasta:*`）、复制对照、各路由规则。
+- 已删除、不得出现在结果表里的方法：DRAGIN、M2-RAG 多阶段、SAM-RAG、ViDoRAG、Visual-RAG。
 
 - 要判断 EAB 本身的效果，比较 `<eab>` 与 `static`，或 `gated:<eab>` 与 `gated:static`；要判断检索门控的效果，比较 `gated:static` 与 `static` 和 `direct`。
-- 提示词、帧数、字幕、答案格式（`--answer-style`）对所有臂同时生效，所以这些改动带来的提升**不能**算作方法贡献。如果要报告这类工程改进，单独列一行。
-- `ans2`（decode-only）在数学上无法改变第一个答案 token（见 `tests/test_qwen_eab.py`）。单 token 答案（选项字母、单词）的数据集应同时报告 `ans1`（EAB-P）。
+- 提示词、帧数、答案格式（`--answer-style`）对所有臂同时生效，所以这些改动带来的提升**不能**算作方法贡献。如果要报告这类工程改进，单独列一行。
+- `ans2`（decode-only）在数学上无法改变第一个答案 token（见 `tests/test_qwen_eab.py`）。单 token 答案（单词、数字）的数据集应同时报告 `ans1`（EAB-P）。
 
 ## 4. 评分与统计
 
@@ -50,7 +55,7 @@ python -m omniaware.eval.score_official runs/<tag>/<dataset>.jsonl
 ```
 
 - 只用官方指标（见 CONVENTIONS §5）。WebQA validation 没有隐藏测试集的关键词，只能报告 acc_approx（以及 × BARTScore 的近似综合分），不能称为排行榜分数。
-- 对每个臂与参考臂（默认 `static` 和 `direct`）做配对 bootstrap（5,000 次），Video-MME 按视频聚类重采样。报告均值差、95% 区间和胜/负/平。
+- 对每个臂与参考臂（默认 `static` 和 `direct`）做配对 bootstrap（5,000 次），VideoRAG-Synth 按源视频聚类重采样。报告均值差、95% 区间和胜/负/平。
 - greedy 解码下结果是确定的。"多个 seed"只有在 seed 确实控制了某个随机过程（例如顺序打乱或采样）时才有意义，要写明 seed 控制的是什么。
 
 ## 5. 顺序敏感性

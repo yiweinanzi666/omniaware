@@ -19,17 +19,18 @@ src/omniaware/        唯一的方法实现（每个概念只有一处代码）
   pipeline.py         提示词、U_omni 归一化、EAB 偏置形式
   routing.py          模态路由 M_m·H_m
   run.py              一次运行：解码所有对照臂，写逐题 JSONL
-  answer_format.py    MMQA JSON 列表答案解析
-  table_render.py     表格的无损行渲染
+  interventions.py    干预实验（遮盖、反事实、干扰项、注入）与相关度噪声
+  analysis.py         ARD、AURC、Spearman 等逐题分析量
   rerank.py           cross-encoder 选证（bge-reranker）与按模态 CE 百分位
   order.py            固定排列表、复制份数、顺序标准差统计
-  baselines/          对照方法：DRAGIN 触发、Found-in-the-Middle、M2-RAG
+  baselines/          对照方法：SeaKR、Found-in-the-Middle、M2-RAG、UniversalRAG
   eval/               只放官方评测：score_official.py 是唯一答案评分入口
   eval/citation/      CiteRec 引用支持度（NLI），以及从运行结果导出的工具
 third_party/          原样保存的官方评测脚本及来源、许可
 scripts/data_prep/    生成资产的数据准备脚本（每个数据集一次）
 scripts/webqa_open_retrieval/  WebQA 全语料池、BGE/CLIP 编码、FAISS 索引与检索
-scripts/analysis/     基于运行输出的分析（统计功效、证据是否包含答案）
+scripts/universalrag_retrieval/  UniversalRAG 套件候选池导出、视频帧采样
+scripts/analysis/     基于运行输出的分析（论文各分析表、路由、统计功效、证据是否包含答案）
 tests/                单元测试与端到端测试（CPU 即可运行）
 docs/                 实验协议、新旧代码对照
 runs/  cache/         运行输出与缓存，不进 git
@@ -63,7 +64,7 @@ runs/  cache/         运行输出与缓存，不进 git
 
 ## 5. 评分
 
-- **只用官方评测**：OK-VQA VQAEval、MMQA list F1/EM、Video-MME 官方选项解析、WebQA acc_approx（可加 BARTScore）。入口只有一个：`python -m omniaware.eval.score_official`。
+- **只用官方评测**：OK-VQA VQAEval、WebQA acc_approx（可加 BARTScore）、HybridQA EM/F1 与 VideoRAG ROUGE-L/BERTScore（按 UniversalRAG 论文 Table 1）。入口只有一个：`python -m omniaware.eval.score_official`。
 - **禁止**宽松匹配、同义词表、按题修补评分规则。如果某个官方评测确有缺陷，在论文中说明并单独报告，不改分数。
 - 评分不在推理时进行，不读取模型输入之外的任何信息去影响生成。
 

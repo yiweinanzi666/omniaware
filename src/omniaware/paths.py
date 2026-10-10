@@ -30,12 +30,7 @@ BARTSCORE = Path(os.environ.get("OMNIAWARE_BARTSCORE", CACHE / "bartscore"))
 WEBQA_JSON = DATA / "WebQA_train_val.json"
 WEBQA_IMAGES = CACHE / "webqa_full4966_images" / "images"
 
-MMQA_DIR = DATA / "mmqa_official"
-MMQA_IMAGES = MMQA_DIR / "images" / "final_dataset_images"
-MMQA_OFFICIAL_EVAL = MMQA_DIR / "official_eval"
 
-VIDEOMME_DIR = DATA / "videomme_short"
-VIDEOMME_FRAMES = DATA / "videomme_short_frames"
 
 OKVQA_INPUTS = DATA / "okvqa_val5046_assets" / "validation_inputs.jsonl"
 OKVQA_CANDIDATES = DATA / "okvqa_val5046_assets" / "validation_candidates.jsonl"

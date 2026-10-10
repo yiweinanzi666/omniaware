@@ -36,21 +36,24 @@ def test_okvqa_uses_vqa_accuracy_not_any_match(tmp_path, monkeypatch):
     assert cmp["wins"] == 2 and cmp["losses"] == 0
 
 
-def test_videomme_parses_letters_and_clusters_by_video(tmp_path, monkeypatch):
-    pa = pytest.importorskip("pyarrow")
-    pq = pytest.importorskip("pyarrow.parquet")
-    table = pa.table({"question_id": ["001-1", "001-2", "002-1"], "videoID": ["v1", "v1", "v2"],
-                      "answer": ["A", "B", "C"]})
-    pq.write_table(table, tmp_path / "official_annotations.parquet")
-    monkeypatch.setattr(paths, "VIDEOMME_DIR", tmp_path)
-    run = _write_run(tmp_path / "videomme.jsonl", "videomme", {
-        "001-1": {"static": "A", "eab": "The answer is A."},
-        "001-2": {"static": "none of these", "eab": "B"},
-        "002-1": {"static": "D", "eab": "C. something"}})
-    summary, _ = score_official.score_run(run, references=("static",))
-    assert summary["means"]["static"]["choice_accuracy"] == pytest.approx(100 / 3)
-    assert summary["means"]["eab"]["choice_accuracy"] == pytest.approx(100.0)
-    assert summary["answered"] == {"static": 2, "eab": 3}
+def test_universalrag_suite_scores_and_clusters_videorag_by_video(tmp_path):
+    rows = [{"qid": "videorag_synth_v1_1", "dataset": "videorag", "golds": ["Detach the caliper."],
+             "preds": {"static": "Remove the wheel.", "eab": "Detach the caliper."}},
+            {"qid": "videorag_synth_v1_2", "dataset": "videorag", "golds": ["Tighten the bolts."],
+             "preds": {"static": "Tighten the bolts.", "eab": "Tighten the bolts."}},
+            {"qid": "videorag_synth_v2_1", "dataset": "videorag", "golds": ["Add salt."],
+             "preds": {"static": "Add pepper.", "eab": "Add salt."}}]
+    path = tmp_path / "videorag_synth.jsonl"
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    summary, details = score_official.score_run(path, references=("static",))
+    assert summary["metrics"] == ["rouge_l"] and summary["means"]["eab"]["rouge_l"] == pytest.approx(100.0)
+    assert summary["comparisons"]["static"]["eab"]["rouge_l"]["delta_pp"] > 0
+    hq = tmp_path / "hybridqa.jsonl"
+    hq.write_text(json.dumps({"qid": "hybridqa_x", "dataset": "hybridqa", "golds": ["1960"],
+                              "preds": {"static": "In 1960.", "eab": "1960"}}) + "\n")
+    summary, _ = score_official.score_run(hq, references=("static",))
+    assert summary["means"]["eab"]["em"] == 100 and summary["means"]["static"]["em"] == 0
+    assert summary["means"]["static"]["f1"] == pytest.approx(200 / 3)
 
 
 def test_runs_with_inconsistent_arms_are_rejected(tmp_path):

@@ -10,17 +10,12 @@ from .qwen_eab import BiasSpec, Segment, chunk_mass, grounding_entropy, predicti
 
 INSTRUCTION = {
     "okvqa": "Answer the question using a single word or phrase.",
-    "mmqa_table": "Answer the question using a single word or phrase.",
     "webqa": "Answer the question in one short sentence.",
-    "videomme": "Answer with the option's letter from the given choices directly.",
     # UniversalRAG suite: its own answer formats (eval/eval.py reformat)
     "hybridqa": "Please respond with only the exact answer.",
-    "infoseek": "Please respond with only the exact answer.",
     "videorag": "Please respond in a complete sentence.",
 }
-# Match saved baseline budgets; a short-answer instruction must still allow complete lists.
-MAX_NEW_TOKENS = {"okvqa": 30, "mmqa_table": 256, "webqa": 384, "videomme": 4,
-                  "hybridqa": 32, "infoseek": 32, "videorag": 128}
+MAX_NEW_TOKENS = {"okvqa": 30, "webqa": 384, "hybridqa": 32, "videorag": 128}
 MAX_NEW_TOKENS["okvqa_dense"] = MAX_NEW_TOKENS["okvqa"]
 MAX_DOC_WORDS = 160
 
@@ -31,21 +26,6 @@ def _trim(text: str, n: int = MAX_DOC_WORDS) -> str:
 
 
 SHORT_INSTRUCTION = "Answer the question using a single word or phrase."
-# Answer formats from the Pro6000 runs (pro6000_three_official_20261008/run_refined.py).
-JSON_LIST_INSTRUCTION = (
-    "Use the provided tables to answer the question. Identify the column being asked for, "
-    "then find every row satisfying all conditions. Return values from the requested column, "
-    "not from the columns used as conditions. Keep each answer cell as one string, including "
-    "names or date ranges within that cell; do not return a whole row. For calculations, return "
-    "the calculated value. For yes/no questions use [\"Yes\"] or [\"No\"]. "
-    "Return only a valid JSON array of answer strings, with double quotes inside strings escaped. "
-    "Do not include explanations."
-)
-STRICT_LETTER_INSTRUCTION = (
-    "These frames appear in chronological order and the subtitles contain spoken content. "
-    "Use the visual and subtitle evidence to select the option that best answers the question. "
-    "Return exactly one uppercase letter: A, B, C, or D. Do not include explanations."
-)
 # Citation output format of the CiteRec protocol (docs/citation_support_protocol.md).
 CITATION_INSTRUCTION = (
     'Answer the question using the supplied evidence and images. '
@@ -53,52 +33,14 @@ CITATION_INSTRUCTION = (
     'Cite the supplied evidence that supports each statement using its exact [E<number>] identifier. '
     'Use only identifiers present in the supplied evidence. Do not include explanations or a reference list.'
 )
-TABLE_INSTRUCTION = (
-    "Use the provided tables to answer the question. Apply every condition to the matching rows, "
-    "then compute any requested count, average, minimum, maximum, or most recent value. "
-    "For a question that first looks up a value, use that value to complete the remaining lookup. "
-    "Return only the final answer; include every requested item."
-)
-
-
-VIDEOMME_OFFICIAL_INSTRUCTION = ("Select the best answer to the following multiple-choice question based on the video. "
-                                 "Respond with only the letter (A, B, C, or D) of the correct option.")
-
-
-def videomme_official_segments(e: dict, chunks: list[dict] | None) -> tuple[list[Segment], int]:
-    """Official Video-MME prompt (MME-Benchmarks/Video-MME README): frames, then
-    "This video's subtitles are listed below:", the instruction, question, options, "The best answer is:"."""
-    segs = [Segment(text="<|im_start|>user\n")]
-    for c in chunks or []:
-        if c["modality"] == "image":
-            segs += [Segment(image=c["image"], chunk=c["cid"]), Segment(text="\n", chunk=c["cid"])]
-    for c in chunks or []:
-        if c["modality"] == "text":
-            segs.append(Segment(text=f"This video's subtitles are listed below:\n{c['text']}\n", chunk=c["cid"]))
-    split = len(segs)
-    q = (VIDEOMME_OFFICIAL_INSTRUCTION + "\n" + e["question"] + "\n" + "\n".join(e["options"])
-         + "\nThe best answer is:<|im_end|>\n<|im_start|>assistant\n")
-    segs.append(Segment(text=q))
-    return segs, split
 
 
 def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "default",
                    image_pixels: dict[str, int] | None = None) -> tuple[list[Segment], int]:
     """User turn = [query images] [evidence chunks] [question suffix]; returns (segments, split index)."""
-    if answer_style == "videomme_official":
-        if e["dataset"] != "videomme":
-            raise ValueError("answer style videomme_official is defined for videomme")
-        return videomme_official_segments(e, chunks)
     segs = [Segment(text="<|im_start|>user\n")]
     for img in e["query_images"]:
         segs += [Segment(image=img, chunk="__query__"), Segment(text="\n")]
-    query_chunks = e.get("query_chunks", [])
-    for c in query_chunks:
-        segs.append(Segment(text=f"Provided table:\n{c.get('prompt_text', c['text'])}\n\n", chunk=c["cid"]))
-    if query_chunks and chunks:
-        # Initial table rows stay visible in both branches and are never duplicated.
-        initial_ids = {c["cid"] for c in query_chunks}
-        chunks = [c for c in chunks if c["cid"] not in initial_ids]
     if chunks:
         segs.append(Segment(text="Based on the following evidence, answer the question.\n\n"))
         for j, c in enumerate(chunks, 1):
@@ -117,27 +59,15 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
                 tail = f"\nTranscript: {_trim(c['text'])}\n\n" if c["text"] else "\n\n"
                 segs.append(Segment(text=tail, chunk=cid))
             elif c["modality"] == "table":
-                segs.append(Segment(text=f"{label} (table):\n{c.get('prompt_text', c['text'])}\n\n", chunk=cid))
+                segs.append(Segment(text=f"{label} (table):\n{c['text']}\n\n", chunk=cid))
             else:
                 body = f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]
                 segs.append(Segment(text=f"{label} (text): {_trim(body)}\n\n", chunk=cid))
     split = len(segs)
     q = f"Question: {e['question']}\n"
-    if e.get("options"):
-        q += "\n".join(e["options"]) + "\n"
-    instruction = SHORT_INSTRUCTION if answer_style == "short" and not e.get("options") else INSTRUCTION[e["dataset"]]
-    if answer_style == "table" and e["dataset"] == "mmqa_table":
-        instruction = TABLE_INSTRUCTION
-    if answer_style == "json_list":
-        if e["dataset"] != "mmqa_table":
-            raise ValueError("answer style json_list is defined for mmqa_table")
-        instruction = JSON_LIST_INSTRUCTION
+    instruction = SHORT_INSTRUCTION if answer_style == "short" else INSTRUCTION[e["dataset"]]
     if answer_style == "cite":
         instruction = CITATION_INSTRUCTION
-    if answer_style == "strict_letter":
-        if e["dataset"] != "videomme":
-            raise ValueError("answer style strict_letter is defined for videomme")
-        instruction = STRICT_LETTER_INSTRUCTION
     q += instruction + "<|im_end|>\n<|im_start|>assistant\n"
     segs.append(Segment(text=q))
     return segs, split

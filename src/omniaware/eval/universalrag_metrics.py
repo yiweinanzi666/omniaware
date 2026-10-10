@@ -1,11 +1,11 @@
 """Metrics of the UniversalRAG suite (Yeo et al., Table 1), which its repository does not ship.
 
     HybridQA   EM and F1 (SQuAD answer normalisation, max over answer + aliases)
-    InfoSeek   Acc: normalised exact match against answer + aliases
     VideoRAG   ROUGE-L F-measure (rouge_score's default tokenisation, no stemming) and, with
                bertscore=True, BERTScore F1 (bert_score package, its default English model)
 
-All values are per question on a 0-100 scale, like the other official scorers.
+All values are per question on a 0-100 scale, like the other official scorers. VideoRAG-Synth has several
+questions per source video (index videorag_synth_<video>_<n>), so its bootstrap is clustered by video.
 """
 from __future__ import annotations
 
@@ -70,11 +70,6 @@ def score(family: str, preds: dict[str, dict[str, str]], qids: list[str], record
             for q in qids:
                 scores[arm][q] = {"em": 100 * max(exact_match(answers[q], g) for g in golds[q]),
                                   "f1": 100 * max(f1(answers[q], g) for g in golds[q])}
-    elif family == "infoseek":
-        metrics = ["accuracy"]
-        for arm, answers in preds.items():
-            for q in qids:
-                scores[arm][q] = {"accuracy": 100 * max(exact_match(answers[q], g) for g in golds[q])}
     elif family == "videorag":
         metrics = ["rouge_l"] + (["bertscore_f1"] if bertscore else [])
         for arm, answers in preds.items():
@@ -90,4 +85,5 @@ def score(family: str, preds: dict[str, dict[str, str]], qids: list[str], record
                     scores[arm][q]["bertscore_f1"] = 100 * v
     else:
         raise ValueError(family)
-    return scores, metrics, None
+    extra = {"clusters": [q.rsplit("_", 1)[0] for q in qids]} if family == "videorag" else None
+    return scores, metrics, extra

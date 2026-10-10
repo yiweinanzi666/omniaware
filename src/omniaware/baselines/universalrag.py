@@ -28,7 +28,7 @@ INDEX_PREFIX = {"webqa": "webqa_"}
 
 
 # Datasets loaded from the UniversalRAG suite keep the upstream index as qid.
-SUITE_FAMILIES = {"hybridqa", "infoseek", "videorag"}
+SUITE_FAMILIES = {"hybridqa", "videorag"}
 
 
 def upstream_index(example: dict) -> str:

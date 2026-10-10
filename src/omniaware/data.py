@@ -11,7 +11,6 @@ Example = {
 
 from __future__ import annotations
 
-import gzip
 import html
 import json
 import random
@@ -157,189 +156,6 @@ def load_webqa_open(subset: str = "img", split: str = "val", rankings: Path | No
     return out
 
 
-# ------------------------------------------------------------------- MMQA --
-def _read_jsonl_gz(path: Path):
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            yield json.loads(line)
-
-
-def _table_chunks(table: dict, rows_per_chunk: int, answer_rows: set[int]) -> list[dict]:
-    t = table["table"]
-    header = [h["column_name"] for h in t["header"]]
-    labels = [re.sub(r"\[\[([^\]]+)\]\]", lambda m: m.group(1).rsplit("|", 1)[-1], _clean(h)) for h in header]
-    name = f"{_clean(table['title'])} - {_clean(t.get('table_name', ''))}"
-    rows = [[_clean(c["text"]) for c in r] for r in t["table_rows"]]
-    chunks = []
-    for start in range(0, len(rows), rows_per_chunk):
-        block = rows[start:start + rows_per_chunk]
-        lines = [f"Table: {name}", "Columns: " + " | ".join(header)]
-        lines += [" | ".join(r) for r in block]
-        cell_lines = [f"Table: {name}"] + [
-            f"Row {start + i + 1}: " + "; ".join(f"{h} = {v}" for h, v in zip(labels, row, strict=True))
-            for i, row in enumerate(block)]
-        idx = set(range(start, start + len(block)))
-        chunks.append({
-            "cid": f"tab{start // rows_per_chunk}", "modality": "table", "title": name,
-            "text": "\n".join(lines), "cell_text": "\n".join(cell_lines),
-            "image": None, "gold": bool(idx & answer_rows),
-        })
-    return chunks
-
-
-def load_mmqa_table(rows_per_chunk: int = 8, include_images: bool = True, split: str = "dev",
-                    scope: str = "tableq") -> list[dict]:
-    """MMQA questions answered from a single table alone.
-
-    scope='tableq': every question whose modalities are only tables (369 dev questions,
-    including the 70 same-table comparison questions ['table', 'table']);
-    scope='legacy299': the earlier literal filter modalities == ['table'] (299 dev questions).
-    """
-    if scope == "tableq":
-        def keep(md):
-            return set(md["modalities"]) == {"table"}
-    elif scope == "legacy299":
-        def keep(md):
-            return md["modalities"] == ["table"]
-    else:
-        raise ValueError(scope)
-    questions = [q for q in _read_jsonl_gz(paths.MMQA_DIR / f"MMQA_{split}.jsonl.gz") if keep(q["metadata"])]
-    need_tables = {q["metadata"]["table_id"] for q in questions}
-    need_texts = {t for q in questions for t in q["metadata"]["text_doc_ids"]}
-    need_images = {t for q in questions for t in q["metadata"]["image_doc_ids"]}
-    tables = {t["id"]: t for t in _read_jsonl_gz(paths.MMQA_DIR / "MMQA_tables.jsonl.gz") if t["id"] in need_tables}
-    texts = {t["id"]: t for t in _read_jsonl_gz(paths.MMQA_DIR / "MMQA_texts.jsonl.gz") if t["id"] in need_texts}
-    images = {t["id"]: t for t in _read_jsonl_gz(paths.MMQA_DIR / "MMQA_images.jsonl.gz") if t["id"] in need_images}
-    out = []
-    for q in questions:
-        md = q["metadata"]
-        answer_rows = {r for a in q["answers"] for r, _c in a.get("table_indices", [])}
-        cands = _table_chunks(tables[md["table_id"]], rows_per_chunk, answer_rows)
-        for i, tid in enumerate(md["text_doc_ids"]):
-            if tid in texts:
-                t = texts[tid]
-                cands.append({"cid": f"txt{i}", "modality": "text", "title": _clean(t["title"]),
-                              "text": _clean(t["text"]), "image": None, "gold": False})
-        if include_images:
-            for i, iid in enumerate(md["image_doc_ids"]):
-                im = images.get(iid)
-                if im is None:
-                    continue
-                p = paths.MMQA_IMAGES / im["path"]
-                if p.exists():
-                    cands.append({"cid": f"img{i}", "modality": "image", "title": _clean(im["title"]),
-                                  "text": _clean(im["title"]), "image": str(p), "gold": False})
-        golds = [_clean(a["answer"]) for a in q["answers"]]
-        out.append({
-            "dataset": "mmqa_table", "qid": q["qid"], "question": _clean(q["question"]),
-            "qcate": md["type"], "query_images": [], "candidates": cands, "fixed_evidence": False,
-            "golds": golds,
-        })
-    return out
-
-
-# --------------------------------------------------------------- Video-MME --
-_SRT_TIME = re.compile(r"(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)")
-
-
-def _parse_srt(path: Path) -> list[tuple[float, str]]:
-    items, t0 = [], None
-    for line in path.read_text(errors="ignore").splitlines():
-        m = _SRT_TIME.search(line)
-        if m:
-            h, mi, s, ms = map(int, m.groups()[:4])
-            t0 = h * 3600 + mi * 60 + s + ms / 1000
-            continue
-        text = re.sub(r"<[^>]+>", "", line).strip()
-        if text and not text.isdigit() and t0 is not None:
-            items.append((t0, text))
-    return items
-
-
-def _parse_srt_intervals(path: Path) -> list[tuple[float, float, str]]:
-    """(start, end, text) per SRT block; the lines of one block are joined with spaces."""
-    def seconds(h, m, s, ms):
-        return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
-
-    blocks, current = [], None
-    for line in path.read_text(errors="ignore").splitlines():
-        m = _SRT_TIME.search(line)
-        if m:
-            g = m.groups()
-            current = [seconds(*g[:4]), seconds(*g[4:]), []]
-            blocks.append(current)
-            continue
-        text = re.sub(r"<[^>]+>", "", line).strip()
-        if current is not None and text:
-            current[2].append(text)
-        elif not text:
-            current = None
-    return [(a, b, " ".join(t)) for a, b, t in blocks]
-
-
-def frame_aligned_subtitles(intervals: list[tuple[float, float, str]], frame_seconds: list[float]) -> str:
-    """Official Video-MME rule (video-slicer slice_and_extract.py): for each sampled frame time t take the
-    first subtitle with start < t < end, skip empty ones, join with newlines."""
-    lines = []
-    for t in frame_seconds:
-        text = next((s for a, b, s in intervals if a < t < b), "")
-        if text.strip():
-            lines.append(text)
-    return "\n".join(lines)
-
-
-def load_videomme_short(max_subtitle_words: int | None = 220, frames_dir: Path | None = None,
-                        subtitles: str = "frames") -> list[dict]:
-    """Video-MME Short; frames come from ``frames_dir`` (8-frame default, or the 32-frame set).
-
-    subtitles='frames' (official protocol): only the subtitles at the sampled frame times;
-    'words': the first ``max_subtitle_words`` words of the whole transcript (legacy runs; None = all);
-    'none': the subtitle-free setting.
-    """
-    import pandas as pd
-
-    frames_dir = Path(frames_dir) if frames_dir else paths.VIDEOMME_FRAMES
-    df = pd.read_parquet(paths.VIDEOMME_DIR / "official_annotations.parquet")
-    df = df[df["duration"] == "short"]
-    out, no_frames = [], 0
-    for row in df.itertuples():
-        fdir = frames_dir / row.videoID
-        meta_path = fdir / "frames.json"
-        if not meta_path.exists():
-            no_frames += 1
-            continue
-        meta = json.loads(meta_path.read_text())
-        cands = []
-        for f in meta["frames"]:
-            sec = f["actual_seconds"]
-            cands.append({"cid": f"f{f['index']}", "modality": "image",
-                          "title": f"Frame at {int(sec) // 60:02d}:{int(sec) % 60:02d}",
-                          "text": "", "image": str(frames_dir / f["path"]), "gold": None})
-        srt = paths.VIDEOMME_DIR / "subtitles" / f"{row.videoID}.srt"
-        if srt.exists() and subtitles == "frames":
-            text = frame_aligned_subtitles(_parse_srt_intervals(srt), [f["actual_seconds"] for f in meta["frames"]])
-            if text:
-                cands.append({"cid": "sub", "modality": "text", "title": "Subtitles", "text": text,
-                              "image": None, "gold": None})
-        elif srt.exists() and subtitles == "words":
-            words = " ".join(t for _s, t in _parse_srt(srt)).split()
-            if words:
-                cands.append({"cid": "sub", "modality": "text", "title": "Subtitles",
-                              "text": " ".join(words[:max_subtitle_words] if max_subtitle_words else words),
-                              "image": None, "gold": None})
-        options = [str(o) for o in row.options]
-        out.append({
-            "dataset": "videomme", "qid": row.question_id, "question": _clean(row.question),
-            "qcate": row.task_type, "query_images": [], "candidates": cands, "fixed_evidence": True,
-            "options": options, "gold_letter": row.answer, "golds": [row.answer],
-            "video_id": row.videoID,
-        })
-    if no_frames:
-        print(f"[data] videomme: {no_frames} questions skipped, no frames under {frames_dir}", flush=True)
-    return out
-
-
-# ------------------------------------------------------------------ OK-VQA --
 def load_okvqa(candidates_path=None) -> list[dict]:
     with zipfile.ZipFile(paths.OKVQA_ANNOTATIONS) as zf:
         name = [n for n in zf.namelist() if n.endswith(".json")][0]
@@ -396,8 +212,6 @@ def _webqa_open_full(**kw):
 # Web-aligned benchmarks of the UniversalRAG suite (Yeo et al.), queries from its dataset/query/*.json.
 UNIVERSALRAG_TARGETS = {          # loader name -> (query file, dataset family, default modalities)
     "hybridqa": ("hybridqa", "hybridqa", ("table", "paragraph")),
-    "infoseek": ("infoseek", "infoseek", ("paragraph", "image")),
-    "videorag_wikihow": ("videorag_wikihow", "videorag", ("video", "clip")),
     "videorag_synth": ("videorag_synth", "videorag", ("video", "clip")),
 }
 _UR_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "image": "image",
@@ -425,14 +239,14 @@ def _video_script(root: Path, video_path: str) -> str:
 def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, top: int = 5,
                       rankings: Path | None = None, root: Path | None = None,
                       frames_dir: Path | None = None) -> list[dict]:
-    """HybridQA / InfoSeek / VideoRAG queries with candidates from UniversalRAG's own retrievers.
+    """HybridQA / VideoRAG-Synth queries with candidates from UniversalRAG's own retrievers.
 
     Candidates are the top ``top`` of each modality list exported by
     scripts/universalrag_retrieval/export_rankings.py; their contents come from the suite's unified corpora
     (dataset/paragraph|document|table|image.parquet, videos with scripts, clip.parquet). Videos and clips
     become one 'video' chunk: sampled frames (prepare_frames.py) plus the transcript. ``gold`` marks the
     annotated table/videos of the question (HybridQA: the gt table and its linked passages; VideoRAG:
-    gt_videos); InfoSeek has no evidence labels (None).
+    gt_videos).
     """
     import pandas as pd
     query_file, family, default_modalities = UNIVERSALRAG_TARGETS[target]
@@ -501,8 +315,6 @@ LOADERS = {
     "webqa_full": _webqa_full,
     "webqa_open_img": _webqa_open_img,
     "webqa_open_full": _webqa_open_full,
-    "mmqa_table": load_mmqa_table,
-    "videomme": load_videomme_short,
     "okvqa": load_okvqa,
     "okvqa_dense": load_okvqa_dense,
     **{name: (lambda name: lambda **kw: load_universalrag(name, **kw))(name) for name in UNIVERSALRAG_TARGETS},
@@ -513,7 +325,6 @@ LOADERS = {
 TRAIN_LOADERS = {
     "webqa_img": lambda: load_webqa("img", split="train"),
     "webqa_full": lambda: load_webqa("all", split="train"),
-    "mmqa_table": lambda: load_mmqa_table(split="train"),
     "webqa_open_img": lambda: load_webqa_open("img", split="train"),
     "webqa_open_full": lambda: load_webqa_open("all", split="train"),
 }

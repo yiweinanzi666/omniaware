@@ -41,8 +41,7 @@ def load_relevance(examples: list[dict], cache_path: Path) -> dict:
 
 # Loader name -> dataset family used for prompts and generation caps.
 DATASET_FAMILY = {"webqa_img": "webqa", "webqa_full": "webqa", "webqa_open_img": "webqa", "webqa_open_full": "webqa",
-                  "mmqa_table": "mmqa_table",
-                  "videomme": "videomme", "okvqa": "okvqa", "okvqa_dense": "okvqa",
+                  "okvqa": "okvqa", "okvqa_dense": "okvqa",
                   **{name: family for name, (_, family, _) in data.UNIVERSALRAG_TARGETS.items()}}
 
 
@@ -99,19 +98,9 @@ def main(argv=None):
     ap.add_argument("--split-seed", type=int, default=2027)
     ap.add_argument("--offset", type=int, default=0)
     ap.add_argument("--n-eval", type=int, default=None, help="evaluate only a slice of the split (default: all)")
-    ap.add_argument("--mmqa-scope", choices=["tableq", "legacy299"], default="tableq")
-    ap.add_argument("--video-frames-dir", default=None, help="Video-MME frame directory (default: 8-frame set)")
-    ap.add_argument("--subtitles", choices=["frames", "words", "none"], default="frames",
-                    help="Video-MME: frames = official frame-aligned subtitles; words = first --subtitle-words "
-                         "words (legacy); none = subtitle-free setting")
-    ap.add_argument("--subtitle-words", type=int, default=220, help="Video-MME --subtitles words cap; 0 keeps all")
     ap.add_argument("--k", type=int, default=5)
     ap.add_argument("--min-per-modality", type=int, default=0,
                     help="keep the top-m chunks of every modality before global top-k filling")
-    ap.add_argument("--mmqa-provided-context", action="store_true",
-                    help="MMQA diagnostic: keep all provided table rows as initial context in both branches")
-    ap.add_argument("--table-format", choices=["rows", "cells"], default="rows",
-                    help="MMQA prompt display; cells labels every value with its column, keeping retrieval text unchanged")
     ap.add_argument("--modality-routing", action="store_true",
                     help="route retrieval by the paper's initial-evidence M_m H_m; cold start keeps joint retrieval")
     ap.add_argument("--route-rule", default="mh",
@@ -158,11 +147,9 @@ def main(argv=None):
     ap.add_argument("--tau-bias", type=float, default=0.40)
     ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
                     help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
-    ap.add_argument("--answer-style", default="default",
-                    choices=["default", "short", "table", "json_list", "strict_letter", "cite", "videomme_official"],
-                    help="short: one word/phrase; table: MMQA table reasoning; json_list: MMQA JSON array "
-                         "(scored as a list); strict_letter: Video-MME single option letter; videomme_official: the official Video-MME prompt; cite: statements with "
-                         "[E<j>] citations for CiteRec (raise --max-new-tokens). Applies to every arm.")
+    ap.add_argument("--answer-style", default="default", choices=["default", "short", "cite"],
+                    help="short: one word/phrase; cite: statements with [E<j>] citations for the citation metrics "
+                         "(raise --max-new-tokens). Applies to every arm.")
     ap.add_argument("--variants", default="pasta:g1.2:ans2,eab:g1.2:ans2:pos:gate")
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-new-tokens", type=int, default=None,
@@ -173,20 +160,13 @@ def main(argv=None):
     ap.add_argument("--seakr-threshold", type=float, default=None,
                     help="fixed SeaKR eigen threshold; default: matched on the calibration questions to U's "
                          "retrieval rate there")
-    ap.add_argument("--dragin", action="store_true",
-                    help="DRAGIN baseline (single decision, query = question): RIND on a question-only draft; "
-                         "threshold matched on calibration to U's retrieval rate (needs spaCy en_core_web_sm)")
     ap.add_argument("--fitm", action="store_true", help="Found-in-the-Middle baseline arm on the static input")
-    ap.add_argument("--m2rag", choices=["single", "multi"], default=None,
-                    help="M2-RAG baseline arm (official summarizer, single- or multi-stage) on the same chunks")
+    ap.add_argument("--m2rag", action="store_true",
+                    help="M2-RAG baseline arm (official single-stage summarizer) on the same chunks")
     ap.add_argument("--tag", required=True)
     args = ap.parse_args(argv)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
         ap.error(f"unknown --order {args.order}")
-    if args.mmqa_provided_context and args.dataset != "mmqa_table":
-        ap.error("--mmqa-provided-context requires --dataset mmqa_table")
-    if args.table_format == "cells" and args.dataset != "mmqa_table":
-        ap.error("--table-format cells requires --dataset mmqa_table")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
     if args.no_calibration:
@@ -195,8 +175,6 @@ def main(argv=None):
         ap.error("--route-rule query and --query-routes go together")
     if args.route_rule in ("mass", "entropy") and not (args.modality_routing or args.first_round_routing):
         ap.error("--route-rule mass/entropy ablates the attention route; add --first-round-routing or --modality-routing")
-    if args.first_round_routing and args.mmqa_provided_context:
-        ap.error("--first-round-routing is the cold-start pathway; provided tables already give initial evidence")
 
     out_dir = paths.RUNS / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -217,18 +195,12 @@ def main(argv=None):
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     loader_kwargs = {}
-    if args.dataset == "mmqa_table":
-        loader_kwargs["scope"] = args.mmqa_scope
-    if args.dataset == "videomme":
-        loader_kwargs.update(frames_dir=args.video_frames_dir, subtitles=args.subtitles,
-                             max_subtitle_words=(args.subtitle_words or None) if args.subtitles == "words" else None)
     if args.dataset in data.UNIVERSALRAG_TARGETS:
         loader_kwargs.update(top=args.universalrag_top,
                              modalities=tuple(args.universalrag_modalities) if args.universalrag_modalities else None)
     examples = data.LOADERS[args.dataset](**loader_kwargs)
     # Input variants get their own relevance / calibration caches.
-    data_tag = "".join(f"_{k}-{Path(str(v)).name if k == 'frames_dir' else v}"
-                       for k, v in sorted(loader_kwargs.items()) if v is not None)
+    data_tag = "".join(f"_{k}-{v}" for k, v in sorted(loader_kwargs.items()) if v is not None)
     calib_pool = None
     if args.calib_source == "train":
         if args.dataset not in data.TRAIN_LOADERS:
@@ -249,13 +221,6 @@ def main(argv=None):
                      "generate candidates for the original OK-VQA split before running this slice")
         calib = [by_qid[e["qid"]] for e in calib]
         evals = [by_qid[e["qid"]] for e in evals]
-    for e in calib + evals:
-        if args.table_format == "cells":
-            for c in e["candidates"]:
-                if c["modality"] == "table":
-                    c["prompt_text"] = c["cell_text"]
-        if args.mmqa_provided_context:
-            e["query_chunks"] = [c for c in e["candidates"] if c["modality"] == "table"]
     assert not {e["qid"] for e in calib} & {e["qid"] for e in evals}, "calibration overlaps evaluation"
     print(f"[data] {args.dataset}: {len(examples)} total, calib {len(calib)} ({args.calib_source}), "
           f"{args.split} {len(evals)}", flush=True)
@@ -297,11 +262,9 @@ def main(argv=None):
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
     style = data_tag + ("" if args.answer_style == "default" else f"_{args.answer_style}")
     style += f"_mpm{args.min_per_modality}" if args.min_per_modality else ""
-    style += "_provided_table" if args.mmqa_provided_context else ""
     style += "_route" if args.modality_routing else ""
     style += "_r1route" if args.first_round_routing else ""
     style += f"_rule-{args.route_rule}" if args.route_rule != "mh" else ""
-    style += "_cells" if args.table_format == "cells" else ""
     style += f"_px{args.max_pixels}" if args.max_pixels != 256 * 32 * 32 else ""
     style += f"_patches{args.max_patches}" if args.max_patches != 1 else ""
     style += f"_sel-{args.selector}" if args.selector != "relevance" else ""
@@ -311,7 +274,7 @@ def main(argv=None):
         return pipeline.build_segments(e, chunks, args.answer_style)
 
     def variant_specs(e, enc, rel_sel, u_eab):
-        context_ids = (["__query__"] if e["query_images"] else []) + [c["cid"] for c in e.get("query_chunks", [])]
+        context_ids = ["__query__"] if e["query_images"] else []
         specs = {}
         for v in variants:
             rel_v = rel_sel
@@ -419,8 +382,7 @@ def main(argv=None):
         route = routing.initial_route(attn_d, enc_d, e, args.route_rule) if args.modality_routing else None
         route = resolve_route(e, rel, route, calibrating=True)
         chunks = select_chunks(e, rel, args.k, "rank", 0, args.min_per_modality, route, ce_of and ce_of(e))
-        query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
-        pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
+        pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
         enc = qwen.encode(*evidence_segments(e, chunks, rel))
         _, attn, logits = qwen.run(enc, None, 1, decode_static=False)
         post = pipeline.raw_uncertainty(attn, enc, [c["cid"] for c in chunks], logits, args.beta)
@@ -451,21 +413,6 @@ def main(argv=None):
     nte_norm = pipeline.Norm.fit([args.beta * h for h in h_cal])
 
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
-
-    dragin_threshold, nlp = None, None
-    if args.dragin:
-        import spacy
-        from .baselines.dragin_rind import calibrate_threshold
-        nlp = spacy.load("en_core_web_sm")
-        dcache_path = cache_dir / f"dragin_{args.dataset}_{args.model}_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json"
-        dcache = json.loads(dcache_path.read_text()) if dcache_path.exists() else {}
-        for e in calib:
-            if e["qid"] not in dcache:
-                enc_d = qwen.encode(*pipeline.build_segments(e, None, args.answer_style))
-                dcache[e["qid"]] = baseline_arms.dragin_score(qwen, enc_d, nlp, max_new)["masked_max_score"]
-                dcache_path.write_text(json.dumps(dcache))
-        dragin_threshold = calibrate_threshold([dcache[e["qid"]] for e in calib], target_rate=u_rate)["threshold"]
-        print(f"[dragin] threshold {dragin_threshold:.4f} (U retrieval rate {u_rate:.3f})", flush=True)
 
     seakr_threshold = None
     if args.seakr_samples:
@@ -499,7 +446,7 @@ def main(argv=None):
     config_path.write_text(json.dumps({
         **vars(args), "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
         "variants": [vars(v) for v in variants], "model_path": str(model_path),
-        "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold, "dragin_threshold": dragin_threshold,
+        "max_new_tokens": max_new, "seakr_threshold_used": seakr_threshold,
         "intervention_entity_types": ("spacy+rules" if iv_nlp else "rules") if args.intervention else None,
         "nte_threshold": nte_threshold, "nte_norm": vars(nte_norm), "u_retrieval_rate_calibration": u_rate,
     }, indent=1))
@@ -516,8 +463,6 @@ def main(argv=None):
                                                     f"noise:{args.relevance_noise}:{args.noise_draw}:{e['qid']}")
             rec = {"qid": e["qid"], "dataset": e["dataset"], "qcate": e["qcate"], "question": e["question"],
                    "golds": e["golds"],
-                   "query_chunks": [c["cid"] for c in e.get("query_chunks", [])],
-                   "options": e.get("options"), "gold_letter": e.get("gold_letter"),
                    "preds": {}}
             # Pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
             # Every compared arm is decoded here from the same prompt; no cached baselines.
@@ -525,8 +470,7 @@ def main(argv=None):
             pre_info = {}
 
             def gate_off(attn_d, logits_d):
-                query_ids = ["__query__"] + [c["cid"] for c in e.get("query_chunks", [])]
-                pre = pipeline.raw_uncertainty(attn_d, enc_d, query_ids, logits_d, args.beta)
+                pre = pipeline.raw_uncertainty(attn_d, enc_d, ["__query__"], logits_d, args.beta)
                 pre_info.update(raw_pre=pre, u_pre=norm_pre(pre["s"]))
                 if args.modality_routing:
                     pre_info["route"] = routing.initial_route(attn_d, enc_d, e, args.route_rule)
@@ -601,18 +545,12 @@ def main(argv=None):
                     rec["tokens"]["replication"] = res_r["static"].tokens
                     rec["replication_prompt_tokens"] = enc_r.length
                 arms.append("replication")
-            if args.dragin:
-                d = baseline_arms.dragin_score(qwen, enc_d, nlp, max_new)
-                retrieve_d = d["masked_max_score"] > dragin_threshold
-                rec["dragin"] = {"masked_max_score": d["masked_max_score"], "retrieve": retrieve_d}
-                # single-decision DRAGIN: keep the draft, or regenerate with the retrieved chunks
-                rec["preds"]["dragin"] = rec["preds"]["static"] if retrieve_d else d["draft_text"].strip()
             if args.fitm:
                 rec["preds"]["fitm"], rec["fitm"] = baseline_arms.fitm_answer(qwen, enc, [c["cid"] for c in chunks], max_new)
                 arms.append("fitm")
             if args.m2rag:
                 rec["preds"]["m2rag"], rec["m2rag"] = baseline_arms.m2rag_answer(
-                    qwen, e, chunks, rel, max_new, multi_stage=args.m2rag == "multi")
+                    qwen, e, chunks, rel, max_new)
             if args.seakr_samples:
                 direct_eigen = seakr.score_input(qwen, enc_d, args.seakr_samples, args.seakr_max_new_tokens)
                 info_s = {"direct_eigen": direct_eigen, "retrieve": direct_eigen > seakr_threshold}

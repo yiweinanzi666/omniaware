@@ -44,7 +44,7 @@ def route_modalities(attention, spans, modalities, margin=0.08, eps=1e-9, rule="
 
 
 def initial_route(attention, enc, example, rule="mh"):
-    modalities = {c["cid"]: c["modality"] for c in example.get("query_chunks", [])}
+    modalities = {}
     if example["query_images"]:
         modalities["__query__"] = "image"
     return route_modalities(attention, enc.spans, modalities, rule=rule)
