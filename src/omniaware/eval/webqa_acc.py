@@ -42,15 +42,18 @@ def _selected_ast(source, function_names=(), constant_names=()):
 
 def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
     """Return the unmodified published approximate metric and its provenance."""
-    import spacy
-    from word2number import w2n
-
     source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
     sources, source_hashes = {}, {}
     for filename in OFFICIAL_FILES:
         raw = (source_dir / filename).read_bytes()
         source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+        if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+            raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                               f"{OFFICIAL_FILES[filename]}; the official source has changed")
         sources[filename] = raw.decode("utf-8")
+    import spacy
+    from word2number import w2n
+
     nlp = spacy.load(spacy_model, disable=["ner", "textcat", "parser"])
     namespace = dict(re=re, string=string, Counter=Counter, w2n=w2n, nlp=nlp)
     tree = _selected_ast(

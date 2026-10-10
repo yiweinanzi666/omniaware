@@ -138,6 +138,8 @@ def score_run(path, references=('static', 'direct'), bart=False):
                       for m in metrics} for arm in arms if arm != ref}
     if 'acc_approx_provenance' in extra:
         summary['webqa_metric_provenance'] = extra['acc_approx_provenance']
+    if 'bertscore' in extra:          # fixed model and reference rule of the BERTScore column
+        summary['bertscore'] = extra['bertscore']
     details = [{'qid': q, 'scores': {arm: scores[arm][q] for arm in arms}} for q in qids]
     return summary, details
 

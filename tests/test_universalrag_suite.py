@@ -14,7 +14,7 @@ def _tree(tmp_path):
         {"index": "h1", "question": "Founded when ?", "answer": "1960", "aliases": [], "source": "HybridQA",
          "gt_tables": "T_0", "gt_retrieval": "table+paragraph"}]))
     (root / "dataset" / "query" / "videorag_synth.json").write_text(json.dumps([
-        {"index": "v1", "question": "Next step?", "answer": "Detach the caliper.", "source": "videorag_synth",
+        {"index": "videorag_synth_abc_1", "question": "Next step?", "answer": "Detach the caliper.", "source": "videorag_synth",
          "gt_videos": ["dataset/videorag/videos/abc.mp4"], "gt_retrieval": "video"}]))
     pd.DataFrame({"text": ["Table: T\nclub | founded\nA | 1960", "Table: other"]},
                  index=pd.Index(["hybridqa-T_0", "hybridqa-U_0"], name="psg_id")).to_parquet(root / "dataset" / "table.parquet")
@@ -30,7 +30,7 @@ def _tree(tmp_path):
         (rk / target).mkdir(parents=True)
         for m, ids in lists.items():
             (rk / target / f"{m}.jsonl").write_text(json.dumps(
-                {"qid": "h1" if target == "hybridqa" else "v1",
+                {"qid": "h1" if target == "hybridqa" else "videorag_synth_abc_1",
                  "candidates": [{"source_id": i, "score": 1.0} for i in ids]}) + "\n")
     key = fr / data.frame_key("dataset/videorag/videos/abc.mp4")
     key.mkdir(parents=True)
@@ -50,6 +50,7 @@ def test_hybridqa_loader_marks_gt_table_and_passages(tmp_path):
 def test_videorag_loader_builds_video_chunks_with_frames_and_transcript(tmp_path):
     root, rk, fr = _tree(tmp_path)
     [e] = data.load_universalrag("videorag_synth", ("video",), root=root, rankings=rk, frames_dir=fr)
+    assert e["cluster_id"] == "abc"            # the source video, from the query index
     [v] = e["candidates"]                      # zzz.mp4 has no frames -> skipped
     assert v["modality"] == "video" and v["gold"] is True and len(v["frames"]) == 2 and "caliper" in v["text"]
     segs, split = pipeline.build_segments(e, e["candidates"], "cite")

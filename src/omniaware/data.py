@@ -236,6 +236,17 @@ _UR_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "imag
 _UR_PREFIX = {"paragraph": "p", "document": "d", "table": "t", "image": "i", "video": "v", "clip": "c"}
 
 
+_VIDEORAG_QID = re.compile(r"videorag_synth_(.+)_(\d+)")
+
+
+def videorag_video_id(qid) -> str:
+    """Source video of a VideoRAG-Synth query whose index is videorag_synth_<video>_<n>; other formats raise."""
+    m = _VIDEORAG_QID.fullmatch(str(qid))
+    if m is None:
+        raise ValueError(f"VideoRAG-Synth query id {qid!r} is not videorag_synth_<video>_<n>")
+    return m.group(1)
+
+
 def frame_key(source_id: str) -> str:
     """Directory name of a ranked video or clip under paths.UNIVERSALRAG_FRAMES."""
     return re.sub(r"[^A-Za-z0-9_.-]", "_", source_id.replace("dataset/", "", 1))
@@ -321,6 +332,8 @@ def load_universalrag(target: str, modalities: tuple[str, ...] | None = None, to
             "candidates": cands, "fixed_evidence": False,
             "golds": [a for a in [q["answer"], *(q.get("aliases") or [])] if a],
             "gold_modalities": gold_modalities,
+            # VideoRAG-Synth clusters its bootstrap by source video (index videorag_synth_<video>_<n>)
+            **({"cluster_id": videorag_video_id(qid)} if family == "videorag" else {}),
         })
     if missing_frames:
         print(f"[data] {target}: {missing_frames} ranked videos/clips have no frames under {frames_dir}", flush=True)
