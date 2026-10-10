@@ -28,6 +28,11 @@ def _nonempty_dir(path) -> bool:
     return Path(path).is_dir() and any(Path(path).iterdir())
 
 
+def _m2rag_source() -> Path:
+    cached = paths.CACHE / "official_m2rag" / "src"
+    return cached if cached.exists() else paths.EXTERNAL / "M2RAG" / "src"
+
+
 ASSETS = {   # name -> (path, needed by, check)
     "Qwen3-VL-8B-Instruct": (paths.QWEN_8B, "all main runs", model_complete),
     "InternVL3.5-8B-HF": (paths.INTERNVL_8B, "backbone transfer", model_complete),
@@ -62,7 +67,7 @@ ASSETS = {   # name -> (path, needed by, check)
     "HybridQA rankings": (paths.UNIVERSALRAG_RANKINGS / "hybridqa" / "table.jsonl", "HybridQA", _exists),
     "VideoRAG rankings": (paths.UNIVERSALRAG_RANKINGS / "videorag_synth" / "video.jsonl", "VideoRAG-Synth", _exists),
     "VideoRAG frames": (paths.UNIVERSALRAG_FRAMES, "VideoRAG-Synth", _nonempty_dir),
-    "M2-RAG official source": (paths.EXTERNAL / "M2RAG" / "src", "M2-RAG baseline", _exists),
+    "M2-RAG official source": (_m2rag_source(), "M2-RAG baseline", _exists),   # same choice as baselines/m2rag_official.py
     "BARTScore official source": (paths.EXTERNAL / "BARTScore" / "bart_score.py", "BARTScore", _exists),
 }
 OPTIONAL = {"OK-VQA BM25 candidates", "OK-VQA DPR-wiki candidates", "InternVL3.5-8B-HF"}

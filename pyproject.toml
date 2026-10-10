@@ -2,11 +2,11 @@
 name = "omniaware"
 version = "0.1.0"
 description = "Omni-Aware: uncertainty-gated retrieval and Evidence Attention Bias for multimodal QA"
-requires-python = ">=3.10"
+requires-python = ">=3.11"                              # hashlib.file_digest; tested on 3.11
 dependencies = [
     "numpy>=1.26",
     "torch>=2.4",
-    "transformers>=4.57",
+    "transformers==5.5.3",                                 # the tested version (Qwen3-VL and AttentionInterface depend on it)
     "pillow>=10",
 ]
 
@@ -16,9 +16,11 @@ webqa = ["spacy>=3.7", "word2number>=1.1"]
 vision = ["torchvision>=0.19", "av>=12"]                 # Qwen3-VL processor; video frame sampling
 baselines = ["pyyaml>=6", "tabulate>=0.9"]               # imported by the official M2-RAG summarizer
 eval = ["bert-score>=0.3.13", "sentencepiece>=0.2"]      # VideoRAG BERTScore; DeBERTa NLI tokenizer
+citation = ["nltk==3.9.2"]                              # citation metrics: NLTK Punkt (checked against the pinned version)
+faiss = ["faiss-cpu>=1.8"]                              # WebQA dense index (scripts/webqa_open_retrieval); GPU build: conda install faiss-gpu
 setup = ["huggingface_hub>=0.24", "gdown>=5", "requests>=2.31", "yt-dlp>=2024.8"]
 dev = ["pytest>=8", "pyflakes>=3"]
-all = ["omniaware[data,webqa,vision,baselines,eval,setup,dev]"]
+all = ["omniaware[data,webqa,vision,baselines,eval,citation,faiss,setup,dev]"]
 
 [project.scripts]
 omniaware-run = "omniaware.run:main"

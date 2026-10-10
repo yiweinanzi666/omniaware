@@ -47,7 +47,7 @@
       "ref": "2410d1dbf208f0e799459aff9376e5747dbf41a2",
       "sparse": null,
       "license": "MIT",
-      "role": "InternVL2-40B backbone transfer (chat template and model code)"
+      "role": "InternVL3.5-8B backbone transfer (chat template and model code; checkpoint OpenGVLab/InternVL3_5-8B-HF)"
     },
     {
       "name": "WebQA",

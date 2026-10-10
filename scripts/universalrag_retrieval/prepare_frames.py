@@ -2,7 +2,7 @@
 
     python -m scripts.universalrag_retrieval.prepare_frames --target videorag_synth --frames 8
 
-For every ranked video (dataset/videorag/videos/<id>.mp4) and clip (<video path>_<segment>, with start and
+For every ranked video (dataset/videorag/videos/<id>.mp4, or the same name in another container) and clip (<video path>_<segment>, with start and
 end times from dataset/clip.parquet) writes <UNIVERSALRAG_FRAMES>/<key>/frames.json and PNGs, with ``key``
 from ``frame_key``. Frames are the midpoints of ``--frames`` equal temporal bins, as for Video-MME.
 """
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 from omniaware import paths  # noqa: E402
 from omniaware.data import frame_key  # noqa: E402
+from scripts.universalrag_retrieval.build_subset import find_video  # noqa: E402
 
 
 def sample_frames(video: Path, out: Path, count: int, start: float | None = None, end: float | None = None):
@@ -61,11 +62,19 @@ def main():
     if any(m == "clip" for m, _ in keys):
         import pandas as pd
         times = pd.read_parquet(root / "dataset" / "clip.parquet")["frame_time"].to_dict()
+    missing = 0
     for modality, sid in sorted(keys):
         video = sid.rsplit("_", 1)[0] if modality == "clip" else sid
+        source = find_video(root / video)
+        if source is None:
+            missing += 1
+            continue
         start, end = (float(times[sid][0]), float(times[sid][1])) if modality == "clip" else (None, None)
-        sample_frames(root / video, paths.UNIVERSALRAG_FRAMES / frame_key(sid), args.frames, start, end)
-    print(f"[frames] {len(keys)} videos/clips -> {paths.UNIVERSALRAG_FRAMES}")
+        sample_frames(source, paths.UNIVERSALRAG_FRAMES / frame_key(sid), args.frames, start, end)
+    print(f"[frames] {len(keys) - missing} videos/clips -> {paths.UNIVERSALRAG_FRAMES}")
+    if missing:
+        print(f"[frames] {missing} ranked videos have no file under {root} in any container; no frames written "
+              "for them (data.load_universalrag counts them)", flush=True)
 
 
 if __name__ == "__main__":

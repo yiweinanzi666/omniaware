@@ -1,3 +1,5 @@
+> **LEGACY.** This directory documents the first experiment-host pool (`build_global_webqa_pool.py`, which does not run from this repository). The paper's pool numbers come from `scripts/setup/prepare_webqa_open.py pool` (`pool_stats.json`), which builds a different text key. Do not mix the two outputs.
+
 # Phase1 global retrieval assets
 
 This is a newly reconstructed public WebQA corpus protocol. It does not establish recovery of the historical paper corpus or row order. `GLOBAL_POOL_MANIFEST.json` binds 544489 exact-text documents and 389750 image IDs; original fact aliases remain available. No question/answer labels are used by the encoding jobs.

@@ -10,7 +10,7 @@
 以下官方文件不在 git 中，放在资产目录（`OMNIAWARE_ASSETS`）下：
 
 - WebQA 的 ParaBank BARTScore：`cache/bartscore/`，包括 `official_source/bart_score.py`、`bart_score.pth`、`bart-large-cnn-config/` 和 provenance 文件。
-- M2-RAG 官方源码：`cache/official_m2rag/`，git commit `ea6b9977f5a153215b38cd9a6aa3e4702ffbda22`（由 `baselines/m2rag_official.py` 原样执行）。
+- M2-RAG 官方源码：由 `scripts/fetch_external.py` 检出到 `external/M2RAG/`，commit `ea6b9977f5a153215b38cd9a6aa3e4702ffbda22`；若资产目录下存在 `cache/official_m2rag/`（旧主机的副本），`baselines/m2rag_official.py` 优先使用它。`check_assets` 检查的是两者中实际被使用的那一个。
 - 引用支持度的 NLI 检查器与分句器：`cache/e5_citation_support/`，包括 DeBERTa-v3-large-mnli-fever-anli-ling-wanli（revision `b3546ea6…`，文件哈希见 `src/omniaware/eval/citation/checker_asset_manifest.json`）和固定版本的 NLTK Punkt。
 - cross-encoder：`cache/bge-reranker-v2-m3/`。
 

@@ -1,3 +1,5 @@
+> **LEGACY（旧池）。** 本文记录的 544,489 文本与 389,750 图像来自 `build_global_webqa_pool.py`，该脚本无法在本仓库运行。论文池统计以 `scripts/setup/prepare_webqa_open.py pool` 写出的 `pool_stats.json` 为准；两者的文本键不同，两种产物不要混用。
+
 # WebQA 全局公开事实池准备
 
 **已完成全部train、val、test公开事实的全局池：544,489份精确正文去重文本＋389,750个图像ID，共934,239个检索文档。** 全部787,697个原snippet ID通过alias映射保留；尚未创建embedding或FAISS索引。

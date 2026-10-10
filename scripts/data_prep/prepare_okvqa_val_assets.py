@@ -16,7 +16,8 @@ import requests
 
 from .prepare_okvqa_bm25_candidates import QueryTokenizer, SQL, sha256, write
 
-ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ['ERC_ASSET_ROOT']).resolve()  # legacy experiments/eab_first_token
+ROOT = Path(os.environ.get('OMNIAWARE_ASSETS') or os.environ.get('ERC_ASSET_ROOT')
+            or Path(__file__).resolve().parents[2] / 'assets').resolve()  # legacy experiments/eab_first_token
 OUTPUT = ROOT / 'data/okvqa_val5046_assets'
 ORIGINAL = ROOT / 'data/okvqa_local'
 BASE = ROOT / 'data/okvqa_dpr_first3m_fts5_question_only_top5_v1/protocol.json'

@@ -1,4 +1,11 @@
-"""Build a global public WebQA fact inventory, without decoding Q/A or keeping roles."""
+"""LEGACY (not runnable from this repository).  Build a global public WebQA fact inventory, without decoding Q/A
+or keeping roles.
+
+This is the first pool builder of the experiment host.  It imports prepare_eab_recovery_confirmation.py from the
+asset root (not shipped) and hard-codes a macOS path, so it cannot be rerun here.  It is kept because the
+544,489 texts / 389,750 images of docs/GLOBAL_POOL_REPORT.md come from it.  The pool used now is built by
+scripts/setup/prepare_webqa_open.py; its pool_stats.json holds the counts to report in the paper.
+"""
 from pathlib import Path
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
