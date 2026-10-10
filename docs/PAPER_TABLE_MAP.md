@@ -17,7 +17,8 @@
 | UniversalRAG | `v321_universalrag` | `universalrag` |
 | Omni-Aware | `v321_main` | `gated:EAB` |
 | Omni-Aware + cross-encoder | `v321_ce` | `gated:EAB` |
-| Latency 列 | `paper_analyses latency` | 始终检索 / 门控臂由 prefill + 解码时间算出；FITM、M2-RAG、SeaKR 为各自的实测墙钟时间 |
+| Latency 列 | `paper_analyses latency` | 始终检索 / 门控臂由 prefill + 解码时间算出（冷启动另加探测轮 prefill）；FITM、M2-RAG、SeaKR 为各自的实测墙钟时间 |
+| † 显著性 | `paper_analyses paired <基线运行> <本方法运行> --arms <基线臂> gated:EAB` | 跨运行配对 bootstrap（SeaKR、UniversalRAG、CE 在各自的运行里）；同一运行内用 `score_official --reference` |
 
 列：WebQA 全量 = `webqa_open_full`；WebQA-img = `webqa_open_img`；OK-VQA = dev 冻结的语料（默认 `okvqa_gs`，指标 `vqa_accuracy`）；HybridQA = `hybridqa`（`em`，附录 `f1`）；VideoRAG-Synth = `videorag_synth`（`rouge_l`，附录 `bertscore_f1`，需 `--bart`）。显著性：`official_summary.json` 中的配对 bootstrap。
 
@@ -79,8 +80,16 @@ Score 列为 `gated:EAB`；WR、Cov.、Mod./q 由 `scripts/analysis/routing_metr
 | 校准迁移、校准规模、不校准 | `v321_transfer_okvqa`（`--norm-from`）、`v321_calib<n>`、`v321_ablation_nocal` |
 | 跨模态分数归一化 | `v321_ablation_minmax`、`v321_ablation_raw` |
 | 引用支持（Faith、AP、Inv） | `attribution` 的 `Faith`、`AP`、`Inv` |
-| 选择性风险（AURC、ρ） | `paper_analyses uncertainty`（U_omni、NTE、H_grd、SeaKR） |
+| 选择性风险（AURC、ρ） | `paper_analyses selective`（每个系统用自己的答案：U→gated:EAB、NTE→nte_trigger:static、SeaKR→seakr） |
+| 触发一致性 | `paper_analyses agreement` |
+| 不确定性计算开销 | `paper_analyses latency` 的 `prefill_direct_ms`、`prefill_probe_ms` |
+| 原始检索分数范围 | `paper_analyses ranges cache/relevance_<dataset>*.json` |
 | 骨干迁移 | stage `main`，`--model internvl3.5-8b` |
 | 次要指标 | `score_official --bart` 的 `f1` / `bertscore_f1` |
 | 数据统计、首 token 占比 | `paper_analyses stats` |
-| 错误分析 | `paper_analyses errors`（规则预标注 + 抽样人工核对） |
+| 错误分析 | `paper_analyses errors`（规则预标注 + 抽样人工核对）；EAB 的错→对 / 对→错与按偏置最多证据块分类的退化：`paper_analyses transitions --arms gated:static gated:EAB` |
+| 重排器召回（gold 在 top-k 中） | `paper_analyses stats runs/v321_ce/<dataset>.jsonl` 与 `v321_main` 的 `gold_in_topk` |
+
+## 多卡
+
+上面每条 `omniaware.run` 命令都可以经 `scripts.launch` 在多卡上运行（`paper_runs --gpus auto` 会自动包装）；分片合并后的 `<dataset>.jsonl` 与单卡运行的格式完全一致，下游评分与分析不变。

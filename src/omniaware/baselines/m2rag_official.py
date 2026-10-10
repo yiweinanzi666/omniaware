@@ -15,7 +15,9 @@ from .. import paths
 
 
 OFFICIAL_COMMIT = "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22"
-OFFICIAL_ROOT = paths.CACHE / "official_m2rag"
+# The pinned official checkout (scripts/fetch_external.py) or a copy on the legacy host.
+OFFICIAL_ROOT = (paths.CACHE / "official_m2rag" if (paths.CACHE / "official_m2rag").exists()
+                 else paths.EXTERNAL / "M2RAG")
 _NAMESPACE = "_eab_official_m2rag"
 
 

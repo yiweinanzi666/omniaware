@@ -11,9 +11,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-data = ["pandas>=2.0", "pyarrow>=14"]
+data = ["pandas>=2.0", "pyarrow>=14", "fastparquet>=2024.2"]
 webqa = ["spacy>=3.7", "word2number>=1.1"]
-dev = ["pytest>=8"]
+vision = ["torchvision>=0.19", "av>=12"]                 # Qwen3-VL processor; video frame sampling
+baselines = ["pyyaml>=6", "tabulate>=0.9"]               # imported by the official M2-RAG summarizer
+eval = ["bert-score>=0.3.13", "sentencepiece>=0.2"]      # VideoRAG BERTScore; DeBERTa NLI tokenizer
+setup = ["huggingface_hub>=0.24", "gdown>=5", "requests>=2.31", "yt-dlp>=2024.8"]
+dev = ["pytest>=8", "pyflakes>=3"]
+all = ["omniaware[data,webqa,vision,baselines,eval,setup,dev]"]
 
 [project.scripts]
 omniaware-run = "omniaware.run:main"
