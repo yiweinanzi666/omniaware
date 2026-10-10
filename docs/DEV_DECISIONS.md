@@ -1,29 +1,40 @@
-# Dev 阶段预先登记的决策规则（2026-10-11，在看到任何 dev 结果之前写定）
+# Dev 阶段预先登记的决策规则（2026-10-11 登记；2026-10-10 修订，见文末）
 
-目的：避免在测试集上挑选设置，也避免事后按结果选择论文主张。规则由 `scripts/analysis/dev_select.py` 机械执行，结果写入 `runs/dev_decisions.json`，`scripts/paper_runs.py` 的所有 test 阶段读取它。
+目的：避免在测试集上挑选设置，也避免事后按结果选择论文主张。规则由 `scripts/analysis/dev_select.py` 机械执行，结果写入 `runs/dev_decisions.json`（含所用 dev 运行文件的 sha256）。`scripts/paper_runs.py` 的 test 阶段只读取 **phase 2 完整** 的决定文件；缺失、模型不匹配或只有 phase 1 时直接报错退出。
 
-## 运行
+## 运行（两阶段，因为 β、τ_b 会改变 EAB 偏置的强度）
 
 ```bash
-python -m scripts.paper_runs --stage dev --run      # 每个数据集 --split dev（默认 256 题）
-python -m scripts.analysis.dev_select               # -> runs/dev_decisions.json
+python -m scripts.paper_runs --stage dev --run            # phase 1 的全部 dev 运行（--split dev）
+python -m scripts.analysis.dev_select --phase 1           # -> runs/dev_decisions.json（phase 1）
+python -m scripts.paper_runs --stage dev_beta --run       # β × τ_b 网格，使用 phase-1 选出的 EAB 候选
+python -m scripts.analysis.dev_select --phase 2           # -> 完整的 runs/dev_decisions.json（phase 2）
+python -m scripts.paper_runs --stage main --run           # test 阶段（只在 phase 2 完整时运行）
 ```
 
 dev 网格：
-- **EAB 形式（6 种）**：起始行 {ans1（从预测第一个答案 token 的行开始，论文默认）、ans2（decode-only）、q（从问题开始）} × 偏置形式 {pos：γUr，ctr：γU(2r−1)}。
+- **EAB 候选（30 个）**：起始行 {ans1（从预测第一个答案 token 的行开始，论文默认）、ans2（decode-only）、q（从问题开始）} × 偏置形式 {pos：γUr，ctr：γU(2r−1)} × **γ ∈ {0.6, 0.9, 1.2, 1.5, 2.0}**。在默认 β、τ_b 下于同一个 base 运行中全部计算。
+- **β × τ_b（5 × 3 = 15 个运行）**：β ∈ {0, 0.15, 0.3, 0.5, 1.0}，τ_b ∈ {0.2, 0.4, 0.6}，只跑 phase-1 选出的那一个 EAB 候选。
+- **τ ∈ {0.25, 0.35, 0.45}**：没有单独的运行。τ 只决定门控 `retrieve = (u_gate > τ)`，而每个臂对每题都解码，所以门控后的分数可以从所选 (β, τ_b) 的运行中离线精确算出（`paper_analyses tau` 会与运行自身的门控分数核对，不一致即报错）。
 - **不确定性设置（3 种）**：sum + 末层（论文）、zsum（两项各自标准化）+ 末层、sum + 中间层。
-- **OK-VQA 检索语料（3 种）**：BM25 维基（`okvqa`）、BGE 维基 3M（`okvqa_dense`）、BGE GS-112K（`okvqa_gs`）。
+- **OK-VQA 检索语料（3 种）**：BM25 维基（`okvqa`）、BGE 维基 3M（`okvqa_dense`）、BGE GS-112K 训练语料（`okvqa_gs`，112,724 句）。`gs168k_full` 含测试题的检索结果，不参加选型，只用于附录。
 - 冷启动数据集（WebQA、HybridQA、VideoRAG-Synth）一律使用探测轮（`--probe-uncertainty --first-round-routing`）。
+- 缺少任一语料的候选文件时，dev 阶段直接报错，不跳过。
 
 ## 规则
 
-1. **EAB 形式只选一种，全局通用。** 指标是同一输入下 EAB 相对 static 的逐题增益：先在每个数据集内取平均，再对数据集取平均（每个数据集权重相同）。选平均增益最大的形式。"EAB 有效"当且仅当分层 bootstrap 的 95% 区间下界大于 0。不允许按数据集分别选择。
-2. **不确定性设置。** 指标是门控分数与直答错误的 Spearman ρ，跨数据集取平均；选 ρ 最大的设置。"U 优于 NTE"当且仅当所选设置的平均 ρ 大于下一 token 熵的平均 ρ。
-3. **OK-VQA 语料。** 选 static − direct 差值最大的语料。"检索有用"当且仅当这个差值 ≥ 0；否则 OK-VQA 在论文中作为"检索可能有害、门控用来避免伤害"的场景报告，不作为增益来源。
-4. **其余超参数不再调整。** (τ, τ_b, β, γ, δ) = (0.35, 0.40, 0.30, 1.2, 0.08)、k = 5 保持论文值；β、τ_b 的敏感性只在附录报告。
-5. **最佳候选的乐观偏差。** dev 上的选择存在 best-of-K 偏差（EAB 有 6 个候选），所以论文中的所有数字只来自 test，dev 数字不进正文。
+选择顺序：语料 → 不确定性设置 → EAB 候选 → β、τ_b → τ。每一步只用前面步骤的结果。
 
-## 论文框架（由规则 1、2 机械决定）
+1. **OK-VQA 语料。** 选 static − direct 差值最大的语料。"检索有用"当且仅当这个差值 ≥ 0；否则 OK-VQA 在论文中作为"检索可能有害、门控用来避免伤害"的场景报告，不作为增益来源。
+2. **不确定性设置。** 指标是门控分数与直答错误的 Spearman ρ，跨 4 个 dev 数据集（WebQA、OK-VQA-GS、HybridQA、VideoRAG-Synth）取平均；选 ρ 最大的设置。"U 优于 NTE"当且仅当所选设置的平均 ρ 大于下一 token 熵的平均 ρ。
+3. **EAB 候选（形式 × γ）只选一种，全局通用。** 指标是同一输入下 EAB 相对 static 的逐题增益：先在每个数据集内取平均，再对数据集取平均（每个数据集权重相同）。选平均增益最大的候选。不允许按数据集分别选择。
+   **"EAB 有效"的判据做 30 选 1 的 max-statistic bootstrap 校正**：题目在数据集内分层、各候选共享同一组重采样（配对）；对每个 bootstrap 样本计算各候选的标准化偏差 t*_k = (g*_k − g_k)/se_k，取 M* = max_k t*_k；所选候选的单侧同时下界为 g − q_{0.95}(M*)·se。"EAB 有效"当且仅当该下界大于 0（等价于 p_max-stat < 0.05）。零效应仿真见 `tests/test_dev_select.py`。
+4. **β、τ_b。** 在 phase-2 的 15 个运行上，对 phase-1 的 EAB 候选计算按数据集等权的平均增益，选最大者（网格中先出现者优先）。这一步不再做显著性检验：EAB 有效性已由规则 3 判定。
+5. **τ。** 在所选 (β, τ_b) 的运行上，离线计算三个 τ 下按数据集等权的平均门控分数，选最大者；并列时取最接近论文值 0.35 的一个。
+6. **其余超参数不再调整。** δ = 0.08（路由边际，固定先验，未调参）、k = 5 保持论文值。
+7. **最佳候选的乐观偏差。** 所有选择都在 dev 上完成；论文中的数字只来自 test，dev 数字不进正文。β×τ_b 与 τ 在 test 上的扫描只作为**敏感性报告，不参与选择**（paper_runs 的命令注释和 fills 中已标明）。
+
+## 论文框架（由规则 2、3 机械决定）
 
 | framing | 条件 | 论文主张 |
 |---|---|---|
@@ -32,3 +43,11 @@ dev 网格：
 | 3 | 两者都不成立 | 不投 WWW 2027 正会（改投短文或下一个会议） |
 
 结果出来后，规则只能用于决定，不能修改。若需修改规则，必须在本文件中注明修改时间和原因，并在论文附录中披露。
+
+## 修订记录
+
+**2026-10-10（修复组 G5，对应审查 S-2、S-7、S-18）**。修订时仓库中没有任何 dev 结果（审查报告确认 dev 阶段从未运行），因此修订不是事后按结果调整。修订原因：
+- 原规则没有 γ、β、τ_b、τ 的选择步骤，论文中的这四个值无来源（S-2）；新规则把它们纳入 dev 网格和选择，τ 离线计算。
+- 原 EAB 有效性判据是对 6 个候选中最优者做普通 bootstrap 区间，零效应下的误判率约 15–18%（S-18）。现改为 max-statistic 校正，候选增至 30 个。
+- 原 dev 选择在缺失或 NaN 时仍写出决定（S-7）；现在直接报错，决定文件记录所用文件的 sha256。
+- 原规则 4 写"(τ, τ_b, β, γ, δ) 保持论文值"，已废止；论文值 (0.35, 0.40, 0.30, 1.2) 现在只是 dev 网格中的一格，也是并列时的优先值。
