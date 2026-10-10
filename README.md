@@ -250,8 +250,8 @@ done
     --train-data ../../$R/train_data.json --output-dir route/train/checkpoints/qwen3_vl_2b_filtered)
 for d in webqa_open_full hybridqa videorag_synth; do       # 导出查询并路由；paper_runs 的 universalrag 阶段读取 *.routes.json
   python -m omniaware.baselines.universalrag export --dataset $d --output $R/$d.queries.json
-  python $U/route/train/route_qwen3_vl.py --model-path $U/route/train/checkpoints/qwen3_vl_2b_filtered \
-      --input $R/$d.queries.json --output $R/$d.routes.json
+  python -m scripts.universalrag_retrieval.route_queries --queries $R/$d.queries.json \
+      --model-path $U/route/train/checkpoints/qwen3_vl_2b_filtered --output $R/$d.routes.json
 done
 ```
 

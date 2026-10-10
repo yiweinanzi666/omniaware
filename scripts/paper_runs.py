@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 from scripts.analysis.dev_select import BETAS, DEV_DATASETS, EAB_CANDIDATES, TAU_BIASES, TAUS, eab_name  # noqa: E402
+from omniaware import paths  # noqa: E402
 
 CALIB = {"webqa_open_full": "train", "webqa_open_img": "train", "okvqa": "heldout", "okvqa_dense": "heldout",
          "okvqa_gs": "heldout", "hybridqa": "heldout", "videorag_synth": "heldout"}
@@ -58,7 +59,6 @@ def decisions(model: str) -> dict | None:
 
 
 def okvqa_candidate_files() -> dict[str, Path]:
-    from omniaware import paths
     dense = os.environ.get("ERC_OKVQA_DENSE_CANDIDATES", paths.LOCAL_CACHE / "okvqa_dense" / "candidates_full.jsonl")
     return {"okvqa": Path(paths.OKVQA_CANDIDATES), "okvqa_dense": Path(dense),
             "okvqa_gs": paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl"}
@@ -194,7 +194,8 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                 "--output", f"runs/{tag}/{d}.queries.json"],
                # G3's router (scripts/universalrag_retrieval/route_queries.py): official UniversalRAG router, fixed checkpoint
                ["python", "-m", "scripts.universalrag_retrieval.route_queries", "--queries",
-                f"runs/{tag}/{d}.queries.json", "--output", f"runs/{tag}/{d}.routes.json"],
+                f"runs/{tag}/{d}.queries.json", "--model-path", str(paths.UNIVERSALRAG_ROUTER),
+                "--output", f"runs/{tag}/{d}.routes.json"],
                run(d, tag, "--variants", eab, "--route-rule", "query", "--query-routes", f"runs/{tag}/{d}.routes.json"),
                score(d, tag)]
     s["universalrag"] = {"fills": "Table main, UniversalRAG row (arm 'universalrag'); WebQA-img column = the image "
@@ -210,7 +211,9 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                             (["--no-calibration"], "nocal")):      # D16: nocal changes only the U statistics
             abl += [run(d, f"v321_ablation_{name}_{model}", "--variants", eab, *flags),
                     score(d, f"v321_ablation_{name}_{model}")]
-        for n in (100, 1000):
+        # Calibration size: the default is the whole reserve (OK-VQA held-out 500, WebQA training pool 500 of a
+        # 1,000 reserve), so OK-VQA adds 100 and WebQA-img adds 100 and 1,000; dev and test do not move (D1, D2).
+        for n in ((100,) if d == okvqa else (100, 1000)):
             abl += [run(d, f"v321_calib{n}_{model}", "--variants", eab, "--n-calib", str(n)),
                     score(d, f"v321_calib{n}_{model}")]
         # SENSITIVITY ONLY (not selected, not in dev_select): the beta x tau_b grid is reported on test
@@ -222,9 +225,11 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
     for d in ("webqa_open_img", "hybridqa"):
         t = f"v321_ablation_noprobe_{model}"          # cold start without the probe round: U = Norm(beta H_pred)
         abl += [run(d, t, "--variants", eab, probe=False), score(d, t)]
-    for d in ("hybridqa", "videorag_synth", "webqa_open_img"):
-        t = f"v321_transfer_okvqa_{model}"
-        abl += [run(d, t, "--variants", eab, "--norm-from", f"runs/v321_main_{model}/{okvqa}_config.json"),
+    # Calibration transfer only between cold-start datasets: their gate reads the probe-round statistic, which
+    # OK-VQA (supplied context, no probe round) does not have, so --norm-from refuses an OK-VQA source.
+    for d in ("videorag_synth", "webqa_open_img"):
+        t = f"v321_transfer_hybridqa_{model}"
+        abl += [run(d, t, "--variants", eab, "--norm-from", f"runs/v321_main_{model}/hybridqa_config.json"),
                 score(d, t)]
     s["ablation"] = {"fills": "Table uomni_ablation (incl. decode-only EAB" + (f" [{decode_note}]" if decode_note else "")
                               + ", no probe round); appendix calibration size and transfer, score normalization; "

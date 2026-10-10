@@ -92,7 +92,7 @@ Score 列为 `gated:EAB`；WR、Cov.、Mod./q 由 `scripts/analysis/routing_metr
 | β 与 τ_bias 敏感性（仅报告，不用于选择） | `v321_beta<β>_tb<τ_b>`，网格 β ∈ {0, 0.15, 0.3, 0.5, 1.0}，τ_b ∈ {0.2, 0.4, 0.6}。`TODO(G5)`：dev 阶段须增加 (β, τ_b) 与 γ、τ 网格（D7） |
 | τ 敏感性（仅报告） | `v321_tau<τ>`，τ ∈ {0.25, 0.35, 0.45}。`TODO(G5)`：目前无 `--tau` 命令 |
 | 校准规模 | `v321_ablation_nocal`（不校准）、`v321_calib100`、与 `v321_ablation`（500）。**1,000 不再运行**（超过 OK-VQA 保留区，D1）。`TODO(G5)`：删去 `--n-calib 1000` |
-| 校准迁移 | 只在冷启动数据集之间（`--norm-from` 的来源须带 `norm_probe`，否则报错；S-20）：HybridQA → VideoRAG-Synth、HybridQA → WebQA-img。`TODO(G5)`：目前的 `v321_transfer_okvqa`（OK-VQA 来源，无探测统计量）须删除 |
+| 校准迁移 | 只在冷启动数据集之间（`--norm-from` 的来源须带 `norm_probe`，否则报错；S-20）：HybridQA → VideoRAG-Synth、HybridQA → WebQA-img。运行标签 `v321_transfer_hybridqa_<model>` |
 | 跨模态分数归一化 | `v321_ablation_minmax`（需 `--relevance-norm minmax`，D16）、`v321_ablation_raw` |
 | 引用支持（Faith、AP、Inv） | `attribution` 的 `Faith`、`AP`、`Inv`，alias 与 NLI 判定分别报告（D9） |
 | 选择性风险（AURC、ρ） | `paper_analyses selective`（每个系统用自己的答案：U→gated:EAB、NTE→nte_trigger:static、SeaKR→seakr） |

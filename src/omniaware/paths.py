@@ -56,5 +56,8 @@ EXTERNAL = REPO_ROOT / "external"
 UNIVERSALRAG_ROOT = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_DIR", EXTERNAL / "UniversalRAG"))
 UNIVERSALRAG_RANKINGS = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_RANKINGS", ASSET_ROOT / "universalrag" / "rankings"))
 UNIVERSALRAG_FRAMES = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_FRAMES", ASSET_ROOT / "universalrag" / "frames"))
+# Router checkpoint trained after removing our evaluation questions (README 4.4); read by route_queries.py.
+UNIVERSALRAG_ROUTER = Path(os.environ.get("OMNIAWARE_UNIVERSALRAG_ROUTER",
+                                         UNIVERSALRAG_ROOT / "route" / "train" / "checkpoints" / "qwen3_vl_2b_filtered"))
 RUNS = Path(os.environ.get("OMNIAWARE_RUNS", REPO_ROOT / "runs"))
 LOCAL_CACHE = Path(os.environ.get("OMNIAWARE_CACHE", REPO_ROOT / "cache"))
