@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import gc
-import hashlib
 import json
 import random
 import time
@@ -17,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from . import (analysis, answers, data, interventions, order as order_mod, paths, pipeline, prompts, relevance,
+from. import (analysis, answers, data, interventions, order as order_mod, paths, pipeline, prompts, relevance,
                rerank, routing, runio, signals)
 from .actions import DIRECT, V2_ACTIONS
 from .baselines import arms as baseline_arms, seakr, universalrag
@@ -97,6 +96,9 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
     if e["fixed_evidence"]:
         chosen = list(candidates)
     elif ce is not None:
+        unscored = [c["cid"] for c in candidates if c["cid"] not in ce["logits"]]
+        if unscored:
+            raise ValueError(f"{e['qid']}: no cross-encoder score for candidates {unscored[:3]}")
         chosen = rerank.ce_select(candidates, rel, ce["logits"], ce["calibration"])
     else:
         ranked = sorted(candidates, key=lambda c: -score[c["cid"]])
@@ -119,6 +121,12 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
             raise ValueError(f"{e['qid']}: permutation needs exactly {len(permutation)} chunks, got {len(chosen)}")
         chosen = [chosen[i] for i in permutation]
     return chosen
+
+
+def rerank_chunks(e: dict, rel: dict[str, float], logits: dict[str, float]) -> list[dict]:
+    """The cross-encoder top-k exactly as the CE baseline (--selector ce) selects and shows it: the top
+    rerank.TOP_K candidates by cross-encoder logit over the whole pool, presented in relevance order."""
+    return select_chunks(e, rel, rerank.TOP_K, "rank", 0, ce={"logits": logits, "calibration": None})
 
 
 PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
@@ -144,19 +152,19 @@ def modality_pool(example: dict, modality: str) -> dict:
             "fixed_evidence": False}
 
 
-def v2_action_chunks(e: dict, rel: dict[str, float], joint: list[dict], rerank_rel: dict[str, float], k: int,
+def v2_action_chunks(e: dict, rel: dict[str, float], joint: list[dict], ce_logits: dict[str, float], k: int,
                      seed: int) -> dict[str, list[dict] | None]:
     """Candidate list of each v2 action. None is direct (the question alone, no evidence).
 
     static_text and static_image are the retriever top-k inside one modality pool. static_mixed is the joint top-k
-    by calibrated relevance (the list of the static joint arm). rerank_static is the top-k by cross-encoder logit
-    over the whole candidate pool. An empty list means the action has no candidates.
+    by calibrated relevance (the list of the static joint arm). rerank_static is the cross-encoder top-k of the CE
+    baseline (rerank_chunks). An empty list means the action has no candidates.
     """
     return {DIRECT: None,
             "static_text": select_chunks(modality_pool(e, "text"), rel, k, "rank", seed),
             "static_image": select_chunks(modality_pool(e, "image"), rel, k, "rank", seed),
             "static_mixed": joint,
-            "rerank_static": select_chunks(e, rerank_rel, k, "rank", seed)}
+            "rerank_static": rerank_chunks(e, rel, ce_logits)}
 
 
 def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, direct, decoded: dict,
@@ -187,7 +195,8 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
         records[name] = signals.action_record(
             result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
             None if name == DIRECT else direct_logits,
-            signals.retriever_signals(e["candidates"], rel, chosen))
+            signals.retriever_signals(e["candidates"], rel, chosen),
+            [] if name == DIRECT else [c["cid"] for c in chosen])
     return records
 
 
@@ -201,7 +210,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--n-calib", type=int, default=None,
                     help="calibration questions (default: the dataset's protocol size, data.CALIB_RESERVE / N_CALIB_TRAIN)")
     ap.add_argument("--calib-source", choices=["train", "heldout"], default="train",
-                    help="train: unlabeled training-split queries (paper); heldout: carve them out of the eval data")
+                    help="train: calibration questions from the training split, labelled (the v2 table scores them); "
+                         "heldout: carved out of the evaluation data")
     ap.add_argument("--n-dev", type=int, default=None,
                     help="size of the frozen dev split (default: data.N_DEV); the test split starts after it, so "
                          "changing it changes the test set")
@@ -304,6 +314,9 @@ def build_parser() -> argparse.ArgumentParser:
                          "arm keep relevance. Requires --v2")
     ap.add_argument("--decisions", default=None,
                     help="frozen decisions JSON. Checked and hashed into the config; this process does not search a grid")
+    ap.add_argument("--max-empty-rate", type=float, default=None,
+                    help="single-process runs: after the outputs and completion marker are written, exit non-zero when "
+                         "the empty-answer rate exceeds this value (default: only warn above 0.5%%)")
     return ap
 
 
@@ -316,6 +329,10 @@ def check_v2_args(ap, args) -> None:
         ap.error("--v2 keeps static_mixed on the relevance top-k: drop --selector and pass --v2-reranker instead")
     if args.v2 and not args.v2_reranker:
         ap.error("--v2 needs cross-encoder logits for rerank_static: add --v2-reranker")
+    if args.v2 and args.k != rerank.TOP_K:
+        ap.error(f"--v2 rerank_static is the cross-encoder baseline, which takes exactly k={rerank.TOP_K}")
+    if args.v2 and args.order != "rank":
+        ap.error("--v2 shows static_text, static_image and rerank_static in relevance order; drop --order")
 
 
 def check_decisions_file(ap, args) -> None:
@@ -340,7 +357,7 @@ def main(argv=None):
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
         ap.error(f"CE selectors take exactly k={rerank.TOP_K} and no --min-per-modality")
     # --no-calibration only swaps the U statistics for defaults (below); the relevance normalisation is a
-    # separate switch (--relevance-norm) so the ablation changes one thing (D16).
+    # separate switch (--relevance-norm) so that the ablation changes one thing.
     if (args.route_rule == "query") != (args.query_routes is not None):
         ap.error("--route-rule query and --query-routes go together")
     if args.m2rag and DATASET_FAMILY[args.dataset] == "videorag":
@@ -363,8 +380,19 @@ def main(argv=None):
 
     if not 0 <= args.shard_id < args.num_shards:
         ap.error("--shard-id must lie in [0, --num-shards)")
+    if args.max_empty_rate is not None and not 0 <= args.max_empty_rate <= 1:
+        ap.error("--max-empty-rate must lie in [0, 1]")
     out_dir = paths.RUNS / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
+    # One writer per output file: a second process on the same tag (or shard) is refused while the first runs.
+    lock_name = (f"{args.dataset}.lock" if args.num_shards == 1
+                 else f"{args.dataset}.shard{args.shard_id:02d}-of-{args.num_shards:02d}.lock")
+    with runio.run_lock(out_dir / lock_name):
+        evaluate(ap, args, out_dir, norm_source)
+
+
+def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
+    """Decode the questions of one run into its output directory (the caller holds the run lock)."""
     max_new = args.max_new_tokens or pipeline.MAX_NEW_TOKENS[DATASET_FAMILY[args.dataset]]
     config_path = out_dir / f"{args.dataset}_config.json"
     out_path = out_dir / (f"{args.dataset}.jsonl" if args.num_shards == 1
@@ -397,6 +425,11 @@ def main(argv=None):
     # Image subsets are cut from their full split (data.IMAGE_SUBSET_OF), so the full loader defines the universe.
     split_universe = data.IMAGE_SUBSET_OF.get(args.dataset, args.dataset)
     examples = data.LOADERS[split_universe](**loader_kwargs)
+    if args.route_rule == "query" and any("suite_score" not in c for e in examples for c in e["candidates"]):
+        # Checked before the model loads. The released WebQA candidates come from this repository's BGE/CLIP
+        # retrieval and carry no suite score, so the UniversalRAG baseline is not defined on them.
+        ap.error(f"--route-rule query needs a UniversalRAG suite_score on every candidate; {args.dataset} has "
+                 "candidates without one")
     dropped = {"universe": getattr(examples, "meta", {}).get("dropped", {})}
     # Protocol sizes (docs/PROTOCOL.md section 1, data.CALIB_RESERVE / N_CALIB_TRAIN / N_DEV).
     family = data.protocol_family(args.dataset)
@@ -466,9 +499,12 @@ def main(argv=None):
         lo, hi = min(scores.values(), default=0.0), max(scores.values(), default=1.0)
         return {c: (s - lo) / (hi - lo) if hi > lo else 1.0 for c, s in scores.items()}
 
+    # Cross-encoder logits are needed on the evaluated questions; the calibration questions only when the CE
+    # selector's per-modality percentile is fitted on them.
+    ce_questions = calib + evals if args.selector != "relevance" else evals
     ce_table = None
     if args.selector != "relevance" or args.v2_reranker:
-        ce_table = rerank.ce_logits(calib + evals, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER,
+        ce_table = rerank.ce_logits(ce_questions, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER,
                                     write=writes_caches)
     ce_of = ce_rel_of = None
     if args.selector != "relevance":
@@ -620,7 +656,7 @@ def main(argv=None):
     def cold(e):
         return not e["query_images"]
 
-    # Wall-clock of the probe rounds of the question being evaluated (reset per question; D15).
+    # Wall-clock of the probe rounds of the question being evaluated (reset per question).
     timing = {"probe": 0.0}
 
     def probe(e, rel):
@@ -778,15 +814,14 @@ def main(argv=None):
     # Fingerprints of every cache this configuration was calibrated from (a resumed or sharded run must match them).
     cache_fingerprints = {
         "relevance": runio.digest([relevance_fingerprint(e) for e in calib + evals]),
-        "ce": (runio.digest([rerank.ce_fingerprint(e, paths.RERANKER) for e in calib + evals])
+        "ce": (runio.digest([rerank.ce_fingerprint(e, paths.RERANKER) for e in ce_questions])
                if ce_table is not None else None),
         "ucal": runio.digest([ucal_fp[e["qid"]] for e in calib]),
         "seakr": runio.digest([seakr_fingerprint(e) for e in calib]) if args.seakr_samples else None,
     }
     # Fingerprint of the evaluated questions and their candidate lists: analysis scripts pair or pool runs only
     # when these agree (paper_analyses checks it), so a stale candidate set cannot slip into a table.
-    candidate_sha = hashlib.sha256(json.dumps([[e["qid"], [c["cid"] for c in e["candidates"]]] for e in evals],
-                                              ensure_ascii=False).encode()).hexdigest()
+    candidate_sha = runio.digest([[e["qid"], [c["cid"] for c in e["candidates"]]] for e in evals])
     # The answer instruction of this run's arms (prompts.py); M2-RAG's extractor reads the same string.
     run_instruction = prompts.instruction_for_style(family, args.answer_style,
                                                     cite_instruction=pipeline.CITATION_INSTRUCTION,
@@ -810,6 +845,7 @@ def main(argv=None):
                               for part in ("calib", "dev", "test")},
         **run_instruction,
         "cache_fingerprints": cache_fingerprints,
+        "protocol_differences": baseline_arms.PROTOCOL_DIFFERENCES,
     }, indent=1)
     if config_path.exists() and (has_outputs or args.num_shards > 1):
         saved = json.loads(config_path.read_text(encoding="utf8"))
@@ -876,7 +912,7 @@ def main(argv=None):
             chunks = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, route,
                                    ce_of and ce_of(e))
             route_s = time.perf_counter() - t_route - (timing["probe"] - probe_before)   # route + index lookup
-            # Joint input (D4): the same top-k over all candidates, with no probe and no route. The
+            # Joint input: the same top-k over all candidates, with no probe and no route. The
             # external baselines (CE, FiTM, M2-RAG, SeaKR) read this input; the Omni-Aware arms keep `chunks`.
             joint = select_chunks(e, rel, args.k, args.order, args.seed, args.min_per_modality, None,
                                   ce_of and ce_of(e))
@@ -921,7 +957,7 @@ def main(argv=None):
             res, _, _ = qwen.run(enc, make_variants, max_new, decode_static=True)
             rec["prefill_seconds"] = {"direct": direct_prefill, "evidence": qwen.last_prefill_seconds,
                                       **({"probe": probe_out["seconds"]} if probe_out else {})}
-            # Measured stages on the question's paths (paper latency, D15): analysis adds the stages of each arm's
+            # Measured stages on the question's paths (paper latency): analysis adds the stages of each arm's
             # actual path. direct = encode + gate + direct prefill + direct decode; probe = every probe round of the
             # question (cold start or first-round routing); route = route + index lookup; encode = evidence packing.
             rec["seconds_stage"] = {"direct": direct_s, "probe": timing["probe"], "route": route_s, "encode": encode_s}
@@ -972,7 +1008,7 @@ def main(argv=None):
                     if args.answer_style == "cite":   # copies are numbered [E1..] in their own prompt
                         rec["replication_citation_sources"] = pipeline.citation_sources(seg_r, copies)
                 arms.append("replication")
-            # Baseline arms read the joint input (D4). Wall time: everything each method runs itself.
+            # Baseline arms read the joint input. Wall time: everything each method runs itself.
             joint_ids = rec["chunks_joint"]
             rec["baseline_seconds"] = {}
             if args.fitm:
@@ -1045,15 +1081,20 @@ def main(argv=None):
     notes = []
     if args.num_shards == 1:
         # A single process owns every question: mark the file complete only if all of them are in it.
-        answered = [r["qid"] for r in runio.load_partial_jsonl(out_path)]
+        written = runio.load_partial_jsonl(out_path)
+        answered = [r["qid"] for r in written]
         if sorted(answered) != sorted(e["qid"] for e in evals):
             raise SystemExit(f"{out_path} holds {len(answered)} answers for {len(evals)} evaluation questions")
-        written = runio.load_partial_jsonl(out_path)
         empty_report = answers.summarize_empty([f for row in written for f in answers.question_empty_flags(row)])
         if empty_report.get("empty_answer_warning"):
             print(empty_report["empty_answer_warning"], flush=True)
-        runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path, extra=empty_report)
+        marker = runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path,
+                                               extra=empty_report)
         notes.append(f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}")
+        if args.max_empty_rate is not None and empty_report["empty_answer_rate"] > args.max_empty_rate:
+            raise SystemExit(f"empty answer rate {empty_report['empty_answer_rate']:.6f} exceeds --max-empty-rate "
+                             f"{args.max_empty_rate} ({empty_report['n_empty']} of {empty_report['n_answers']} "
+                             f"decoded strings are empty); outputs and {marker.name} were written")
     if args.route_rule == "query":
         notes.append(f"universalrag_fallback {tallies['universalrag_fallback']}")
     if args.seakr_samples:

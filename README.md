@@ -42,7 +42,7 @@ python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2
 - **S2**：解码校准集与开发集，官方评分，生成逐题动作表。开发集上做 go/no-go（`v2_table.py gate`，+8% 判据），校准集上生成冻结决定（`v2_table.py select`）。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
 - **S4**：读取冻结的 `runs/v2_decisions/<dataset>.json`，全量测试集只跑一次，评分后用 `v2_table.py apply` 产出主表输入。不搜索网格。
 - **image_evidence_check**：50 道图像题的证据管线诊断。
-- **offline_v2**：见上面的当前状态。探索性，旧管线，含已知 bug，返工后需重写，不是主表。
+- **offline_v2**：`runs/offline_v2/REPORT.md`，由 `scripts/analysis/offline_v2.py` 生成。探索性结果，来自含已知 bug 的旧管线，不是主表。
 
 GPU 时间都是**估计值**，不是实测，也不要写成测量结果：
 
@@ -162,7 +162,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -e ".[all]"                         # transformers==5.5.3（已测试版本）及全部可选依赖，含 nltk、faiss-cpu
 python -m spacy download en_core_web_sm
 python scripts/fetch_external.py                # 官方仓库（固定 commit）-> external/：SeaKR、M2RAG、UniversalRAG、BARTScore、WebQA、VQA ...
-python -m pytest                                # CPU 上约 10 秒（沙箱实测 8 秒：120 通过、6 跳过）
+python -m pytest                                # CPU 上约 20 秒（2026-10-13 实测：449 通过、5 跳过）
 ```
 
 需要 **7z**（p7zip）解压 WebQA 的图片分卷（4.1 节）：

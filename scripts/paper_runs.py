@@ -37,8 +37,11 @@ METRIC = {"webqa_open_full": "acc_approx", "webqa_open_img": "acc_approx", "okvq
           "okvqa_dense": "vqa_accuracy", "okvqa_gs": "vqa_accuracy", "okvqa_gs_full": "vqa_accuracy", "hybridqa": "em", "videorag_synth": "rouge_l"}
 COLD = {"webqa_open_full", "webqa_open_img", "hybridqa", "videorag_synth"}   # no supplied context
 SUBSAMPLE = "1000"     # the 14-ordering runs (and their OK-VQA / WebQA-img / HybridQA / VideoRAG siblings): first 1,000
-# SeaKR runs on the full test split (D5); only the order experiment is subsampled and the paper says so.
+# SeaKR runs on the full test split; only the order experiment is subsampled, and the paper says so.
 PAPER_EAB = eab_name(1.2, "ans1", "pos")
+# The v1 pipeline (this file) is the mechanism-analysis and baseline pipeline. Its runs decode the EAB arm, which the
+# analyses read as gated:<EAB>. Its results feed the mechanism section and the baselines, not the v2 main table.
+V1_NOTE = "v1 pipeline: mechanism analysis and baselines, not the v2 main table"
 PAPER_FLAGS = ["--beta", "0.3", "--tau-bias", "0.4", "--tau", "0.35"]
 PLACEHOLDER = {"eab_variant": PAPER_EAB, "gamma": 1.2, "eab_rows": "ans1", "eab_form": "pos", "beta": 0.3,
                "tau_bias": 0.4, "tau": 0.35, "u_combine": "sum", "attn_layer": "last", "okvqa_loader": "okvqa_gs"}
@@ -54,7 +57,7 @@ def load_decisions(model: str) -> dict | None:
 
 
 def decisions(model: str) -> dict | None:
-    """Frozen test-stage choices: only a complete phase-2 file counts (S-7)."""
+    """Frozen test-stage choices: only a complete phase-2 file counts."""
     d = load_decisions(model)
     return d if d and d.get("phase") == 2 else None
 
@@ -67,7 +70,7 @@ def okvqa_candidate_files() -> dict[str, Path]:
 def control_arm(rows: str, form: str, gamma: float) -> tuple[str, str]:
     """The decode-only control of the ablation: the frozen EAB with its first-answer row removed (ans2).
     If the frozen rows are already ans2 that control would be the same string as the main form; the control is then
-    ans1 (EAB applied to the first answer row), and the fills text says so (M-38)."""
+    ans1 (EAB applied to the first answer row), and the fills text says so."""
     control_rows = "ans1" if rows == "ans2" else "ans2"
     note = ("" if rows != "ans2" else "frozen form is ans2: the decode-only control is ans1 instead")
     return eab_name(gamma, control_rows, form), note
@@ -100,7 +103,7 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
         if d in COLD and probe:
             flags += ["--probe-uncertainty"]
         if d in COLD and route:
-            flags += ["--first-round-routing"]      # D17: the no-probe ablation keeps first-round routing
+            flags += ["--first-round-routing"]      # the no-probe ablation keeps first-round routing
         return flags
 
     def run(d, tag, *extra, split_=None, hyper=None, **kw):
@@ -158,8 +161,7 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
     main = []
     if model == "internvl3.5-8b":     # backbone transfer: static vs the controller, with its own calibration
         for d in datasets:
-            # The main method decodes no eab: arm (A4). Cold-start runs keep their probe round and route.
-            main += [run(d, f"v321_main_{model}", "--replication-gamma", "1.2"),
+            main += [run(d, f"v321_main_{model}", "--variants", eab, "--replication-gamma", "1.2"),
                      score(d, f"v321_main_{model}")]
         transfer_order = []
         from omniaware.order import permutation_schedule
@@ -174,27 +176,29 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                 "order": {"fills": "appendix: OK-VQA order deviations of InternVL3.5-8B" + frozen_note,
                           "commands": transfer_order, "requires": "frozen", "missing": []}}
     for d in datasets:
-        # The main method decodes no eab: arm (A4). The baselines (static_joint, FiTM, M2-RAG, SeaKR, CE) read the
-        # joint top-k of run.py, which no probe round or route changes, so they are run like the main method.
+        # The EAB arm is decoded with the main run, so that the column analysis compares gated:<EAB> with the
+        # baselines. The baselines (static_joint, FiTM, M2-RAG, SeaKR, CE) read the joint top-k of run.py, which no
+        # probe round or route changes, so they are run like the main method.
         extra = ["--replication-gamma", "1.2"]
         if model != "internvl3.5-8b":
             extra.append("--fitm")
         if d != "videorag_synth":
             extra.append("--m2rag")
-        main += [run(d, f"v321_main_{model}", *extra), score(d, f"v321_main_{model}"),
-                 run(d, f"v321_ce_{model}", "--selector", "ce"),
+        main += [run(d, f"v321_main_{model}", "--variants", eab, *extra), score(d, f"v321_main_{model}"),
+                 run(d, f"v321_ce_{model}", "--variants", eab, "--selector", "ce"),
                  score(d, f"v321_ce_{model}"),
-                 # SeaKR on the full test split (D5): no --n-eval, same questions as the other main arms
-                 run(d, f"v321_seakr_{model}", "--seakr-samples", "20"),
+                 # SeaKR on the full test split: no --n-eval, same questions as the other main arms
+                 run(d, f"v321_seakr_{model}", "--variants", eab, "--seakr-samples", "20"),
                  score(d, f"v321_seakr_{model}")]
-    s["main"] = {"fills": "Table main (joint static, FiTM, M2-RAG, CE, SeaKR on the full test split; "
-                          "no eab: variant in the main command — mechanism EAB is --analysis-eab or the ablation stage; "
-                          "UniversalRAG in its own stage); "
+    s["main"] = {"fills": "Table main of the v1 pipeline (joint static, FiTM, M2-RAG, CE, SeaKR on the full test split, "
+                          "and the gated EAB arm of the main run); " + V1_NOTE + "; "
                           "backbone transfer with --model internvl3.5-8b" + frozen_note,
                  "commands": main, "requires": "frozen", "missing": []}
 
+    # UniversalRAG's query route ranks by the suite retriever's own scores (suite_score). WebQA candidates come from
+    # this repository's BGE/CLIP retrieval and carry no such score, so the baseline has no WebQA cell (see run.main).
     ur = []
-    for d in ("webqa_open_full", "hybridqa", "videorag_synth"):
+    for d in ("hybridqa", "videorag_synth"):
         tag = f"v321_universalrag_{model}"
         ur += [["python", "-m", "omniaware.baselines.universalrag", "export", "--dataset", d,
                 "--output", f"runs/{tag}/{d}.queries.json"],
@@ -204,9 +208,10 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                 "--output", f"runs/{tag}/{d}.routes.json"],
                run(d, tag, "--variants", eab, "--route-rule", "query", "--query-routes", f"runs/{tag}/{d}.routes.json"),
                score(d, tag)]
-    s["universalrag"] = {"fills": "Table main, UniversalRAG row (arm 'universalrag'); WebQA-img column = the image "
-                                  "questions of webqa_open_full (analysis 'column'); OK-VQA column: none (the router "
-                                  "reads text queries only)" + frozen_note,
+    s["universalrag"] = {"fills": "Table main, UniversalRAG row (arm 'universalrag') for HybridQA and VideoRAG-Synth. "
+                                  "WebQA cells: NOT AVAILABLE, because the UniversalRAG query route needs suite scores "
+                                  "that WebQA candidates do not have. OK-VQA: none (the router reads text queries only). "
+                                  + V1_NOTE + frozen_note,
                          "commands": ur, "requires": "frozen", "missing": []}
 
     abl = []
@@ -214,11 +219,11 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
         tag = f"v321_ablation_{model}"
         abl += [run(d, tag, "--variants", ablation_variants, "--replication-gamma", "1.2"), score(d, tag)]
         for flags, name in ((["--relevance-norm", "raw"], "raw"), (["--relevance-norm", "minmax"], "minmax"),
-                            (["--no-calibration"], "nocal")):      # D16: nocal changes only the U statistics
+                            (["--no-calibration"], "nocal")):      # nocal changes only the U statistics
             abl += [run(d, f"v321_ablation_{name}_{model}", "--variants", eab, *flags),
                     score(d, f"v321_ablation_{name}_{model}")]
         # Calibration size: the default is the whole reserve (OK-VQA held-out 500, WebQA training pool 500 of a
-        # 1,000 reserve), so OK-VQA adds 100 and WebQA-img adds 100 and 1,000; dev and test do not move (D1, D2).
+        # 1,000 reserve), so OK-VQA adds 100 and WebQA-img adds 100 and 1,000; dev and test do not move.
         for n in ((100,) if d == okvqa else (100, 1000)):
             abl += [run(d, f"v321_calib{n}_{model}", "--variants", eab, "--n-calib", str(n)),
                     score(d, f"v321_calib{n}_{model}")]
@@ -237,25 +242,26 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
         t = f"v321_transfer_hybridqa_{model}"
         abl += [run(d, t, "--variants", eab, "--norm-from", f"runs/v321_main_{model}/hybridqa_config.json"),
                 score(d, t)]
-    # Appendix full-corpus control (D3): the 168K GS corpus includes retrieval results for test questions, so it
+    # Appendix full-corpus control: the 168K GS corpus includes retrieval results for test questions, so it
     # is reported apart and never selected; static_joint and the gated controller on the same questions.
     t = f"v321_gsfull_{model}"
     abl += [run("okvqa_gs_full", t, "--variants", eab), score("okvqa_gs_full", t)]
     s["ablation"] = {"fills": "Table uomni_ablation (incl. decode-only EAB" + (f" [{decode_note}]" if decode_note else "")
                               + ", no probe round); appendix calibration size and transfer, score normalization; "
-                              "beta x tau_b grid = SENSITIVITY ONLY, reported and never selected" + frozen_note,
+                              "beta x tau_b grid = SENSITIVITY ONLY, reported and never selected; " + V1_NOTE
+                              + frozen_note,
                      "commands": abl, "requires": "frozen", "missing": []}
 
     route = []
-    for rule in ["all", "retriever", "query", "mass", "entropy", "mh", "oracle"]:
+    # The query rule (UniversalRAG router) is not run here: it has no WebQA cell (see the universalrag stage).
+    for rule in ["all", "retriever", "mass", "entropy", "mh", "oracle"]:
         tag = f"v321_route_{rule}_{model}"
         extra = ["--variants", eab, "--route-rule", rule]
-        if rule == "query":
-            extra += ["--query-routes", f"runs/v321_universalrag_{model}/webqa_open_full.routes.json"]
         route += [run("webqa_open_full", tag, *extra), score("webqa_open_full", tag),
                   ["python", "-m", "scripts.analysis.routing_metrics", f"runs/{tag}/webqa_open_full.jsonl",
                    "--arm", f"gated:{eab}", "--metric", "acc_approx"]]
-    s["routing"] = {"fills": "Table routing (WebQA, open retrieval)" + frozen_note, "commands": route,
+    s["routing"] = {"fills": "Table routing (WebQA, open retrieval; the UniversalRAG query rule has no WebQA cell, "
+                             "see the universalrag stage); " + V1_NOTE + frozen_note, "commands": route,
                     "requires": "frozen", "missing": []}
 
     from omniaware.order import permutation_schedule
@@ -311,43 +317,47 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
         path = f"runs/v321_main_{model}/{d}.jsonl"
         seakr = f"runs/v321_seakr_{model}/{d}.jsonl"
         ce = f"runs/v321_ce_{model}/{d}.jsonl"
-        ur_path = f"runs/v321_universalrag_{model}/webqa_open_full.jsonl" if d.startswith("webqa_open") else (
-            f"runs/v321_universalrag_{model}/{d}.jsonl")
+        ur_path = f"runs/v321_universalrag_{model}/{d}.jsonl"
         an += [analyse("uncertainty", path, "--metric", METRIC[d], "--arms", "direct"),
                analyse("uncertainty", seakr, "--metric", METRIC[d], "--arms", "direct"),
                analyse("latency", path), analyse("latency", seakr),
                analyse("latency", ce),                                    # CE and Omni+CE (gated:<EAB> of the CE run)
                analyse("stats", path, "--arms", "static", eab),
                analyse("errors", path, "--metric", METRIC[d], "--arms", f"gated:{eab}"),
-               # F11: U and NTE from the main run, SeaKR from the SeaKR run (each system from its own run)
+               # U and NTE come from the main run, SeaKR from the SeaKR run (each system from its own run)
                analyse("selective", path, "--seakr-run", seakr, "--metric", METRIC[d], "--arms", eab),
                analyse("agreement", path, "--metric", METRIC[d], "--arms", f"gated:{eab}"),
                analyse("transitions", path, "--metric", METRIC[d], "--arms", "gated:static", f"gated:{eab}"),
                analyse("stats", ce, "--arms", "static"),       # reranker recall
-               analyse("ranges", f"cache/relevance_{d}*.json"),
+               analyse("ranges", str(paths.LOCAL_CACHE / f"relevance_{d}*.json")),
                analyse("tau", path, "--metric", METRIC[d], "--arms", eab, "--taus", *map(str, TAUS))]
-        # significance of the controller against every baseline of this column; strongest + Holm (M-10, D18)
+        # Significance of the controller against every baseline of this column (Holm over the column).
         baselines = [f"{path}:static", f"{seakr}:seakr", f"{ce}:static"]
         if d != "videorag_synth":
             baselines.append(f"{path}:m2rag")
-        if d in ("webqa_open_full", "webqa_open_img", "hybridqa", "videorag_synth"):
+        if d in ("hybridqa", "videorag_synth"):
             baselines.append(f"{ur_path}:universalrag")
-            if d != "webqa_open_img":                               # same run as webqa_open_full: reported once
-                an.append(analyse("latency", ur_path))              # UniversalRAG row (router time reported apart)
+            an.append(analyse("latency", ur_path))                  # UniversalRAG row (router time reported apart)
         restrict = ["--restrict-modality", "image"] if d == "webqa_open_img" else []   # image questions of the full run
         an.append(analyse("column", path, "--metric", METRIC[d], "--arms", f"gated:{eab}",
                           *[x for b in baselines for x in ("--compare", b)], *restrict))
     for name in ("raw", "minmax"):
         an.append(analyse("ard", f"runs/v321_ablation_{name}_{model}/webqa_open_img.jsonl"))
     s["analysis"] = {"fills": "selective risk, latency, dataset statistics, first-token shares, error analysis, column "
-                              "significance (strongest baseline, Holm); tau = SENSITIVITY ONLY, offline from the main run, "
-                              "never selected" + frozen_note,
+                              "significance (Holm over the baselines of each column; a strongest baseline is named only "
+                              "when the caller fixes it); tau = SENSITIVITY ONLY, offline from the main run, never "
+                              "selected; " + V1_NOTE + frozen_note,
                      "commands": an, "requires": "frozen", "missing": []}
     return s
 
 
+def format_command(cmd: list[str]) -> str:
+    """A command line a user can paste: POSIX quoting elsewhere, the Windows command-line rules on Windows."""
+    return subprocess.list2cmdline(cmd) if os.name == "nt" else shlex.join(cmd)
+
+
 def expand_globs(cmd: list[str]) -> list[str]:
-    """Shell-free globbing: a pattern argument becomes its sorted matches; no match is an error (M-45)."""
+    """Shell-free globbing: a pattern argument becomes its sorted matches; no match is an error."""
     out = []
     for tok in cmd:
         if any(c in tok for c in "*?"):
@@ -362,7 +372,7 @@ def expand_globs(cmd: list[str]) -> list[str]:
 
 def check_stage(name: str, st: dict, model: str) -> None:
     if st["missing"]:
-        raise SystemExit(f"stage {name}: missing OK-VQA candidate corpus, refusing to skip silently (S-12): "
+        raise SystemExit(f"stage {name}: missing OK-VQA candidate corpus, refusing to skip silently: "
                          + ", ".join(st["missing"]))
     if st["requires"] == "frozen" and decisions(model) is None:
         raise SystemExit(f"stage {name} needs the frozen test choices: {DECISIONS} is missing, for another model, or not "
@@ -401,7 +411,7 @@ def main(argv=None):
             cmd = ["python", "-m", "scripts.launch", "--gpus", args.gpus, "--procs-per-gpu", str(args.procs_per_gpu),
                    "--", *cmd[3:]]
         if args.print or not args.run:          # patterns are shown as written; they are expanded only to run
-            print(" ".join(shlex.quote(c) for c in cmd))
+            print(format_command(cmd))
         if args.run:
             subprocess.run(expand_globs(cmd), check=True)
 

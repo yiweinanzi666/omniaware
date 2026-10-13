@@ -2,7 +2,7 @@
 
 本表对应 `paper/main.tex`、`paper/sec_experiments.tex`、`paper/sec_appendix.tex` 的当前稿。v2 实验**还没有跑**。表中的数字在论文里都是 `\ph`。
 
-`offline_v2` **不是**下表任何一行的来源。它是探索性的，来自旧管线，含已知 bug，返工后仍需重写：
+`offline_v2` **不是**下表任何一行的来源。它是探索性的，来自旧管线，含已知 bug：
 
 ```bash
 python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2

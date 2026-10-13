@@ -68,7 +68,7 @@ dev 网格：
 
 **本节在 2026-10-13 返工后改写，取代此前基于“逐题退化率二项检验”的版本。** 原因：那个定义把“得分低于最强单一动作的题”一律记为失败，而任何在两路之间真正切换的策略都必然在一部分题上比最强单一动作差（WebQA 上 direct 比 static 好的题就占 23%），于是只有几乎不切换的策略能通过，所有真正切换的策略都会被否决。
 
-写定日期：2026-10-13（返工改写）。预注册提交：本分支 `v2/arbitration` 上 2026-10-13 的返工提交（`git log --oneline -- docs/DEV_DECISIONS.md` 的最新一条）。
+写定日期：2026-10-13（返工改写）。这些规则与实现它们的代码在同一批提交里写定，早于修复后管线的任何 GPU 运行；它们没有先于代码单独提交，所以严格说是“在看到新数据之前冻结”，不是独立的预注册。旧管线的离线探索结果（`runs/offline_v2`）在写定时已经可见，规则的形式参考了它。
 
 上文的 EAB / β / τ 规则不变。v2 是单独的决定，由 `scripts/analysis/v2_table.py select` 机械执行（`scripts/v2_runs.py --stage s2` 生成该命令），调用 `omniaware.arbitration` 的 `select_rule` 与 `select_cal`，结果写入 `runs/v2_decisions/<dataset>.json`。`scripts/analysis/dev_select.py` 的 `select_v2` 调用同样两个函数，是另一个入口，正式流程以 `v2_runs.py` 生成的命令为准。测试阶段（`v2_runs.py --stage s4`）只读取这个冻结文件，不搜索网格。
 

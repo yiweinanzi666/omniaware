@@ -119,17 +119,33 @@ def test_holm_adjusts_in_step_down_order():
     assert pa.holm([0.2]) == [0.2]
 
 
-def test_column_picks_the_strongest_baseline_and_adjusts_over_the_column(tmp_path):
+def test_column_lists_every_baseline_and_names_no_strongest_unless_told(tmp_path):
     qids = [f"q{i}" for i in range(6)]
     rows = [_row(q, gold_modalities=["image"]) for q in qids]
     ours = _write(tmp_path / "main", rows, {q: {"gated:eab": 100.0, "static": 50.0} for q in qids}, CFG)
     seakr = _write(tmp_path / "seakr", rows, {q: {"seakr": float(v)} for q, v in zip(qids, [40, 30, 50, 20, 60, 40])}, CFG)
     ce = _write(tmp_path / "ce", rows, {q: {"static": float(v)} for q, v in zip(qids, [100, 100, 80, 100, 100, 100])}, CFG)
     t = pa.column_table(ours, "gated:eab", "acc", [f"{ce}:static", f"{seakr}:seakr"])
-    assert t["m"] == 2 and t["strongest"] == f"{ce}:static"
+    # ce has the higher mean, but the column does not choose on its own scores: no strongest is named
+    assert t["m"] == 2 and t["strongest"] is None and t["strongest_p_holm"] is None
     by = {c["baseline"]: c for c in t["comparisons"]}
     assert by[f"{seakr}:seakr"]["p_two_sided"] < 0.05 and by[f"{ce}:static"]["p_two_sided"] > 0.05
     assert all(c["p_holm"] >= c["p_two_sided"] - 1e-12 for c in t["comparisons"])
+
+
+def test_column_names_the_strongest_baseline_only_when_the_caller_fixes_it(tmp_path):
+    qids = [f"q{i}" for i in range(6)]
+    rows = [_row(q, gold_modalities=["image"]) for q in qids]
+    ours = _write(tmp_path / "main", rows, {q: {"gated:eab": 100.0, "static": 50.0} for q in qids}, CFG)
+    seakr = _write(tmp_path / "seakr", rows, {q: {"seakr": float(v)} for q, v in zip(qids, [40, 30, 50, 20, 60, 40])}, CFG)
+    ce = _write(tmp_path / "ce", rows, {q: {"static": float(v)} for q, v in zip(qids, [100, 100, 80, 100, 100, 100])}, CFG)
+    fixed = f"{seakr}:seakr"
+    t = pa.column_table(ours, "gated:eab", "acc", [f"{ce}:static", f"{seakr}:seakr"], strongest=fixed)
+    assert t["strongest"] == fixed
+    by = {c["baseline"]: c for c in t["comparisons"]}
+    assert t["strongest_p_holm"] == by[fixed]["p_holm"] and t["strongest_delta_pp"] == by[fixed]["delta_pp"]
+    with pytest.raises(SystemExit, match="not one of the --compare"):
+        pa.column_table(ours, "gated:eab", "acc", [f"{ce}:static"], strongest=fixed)
 
 
 def test_column_refuses_a_baseline_from_another_dataset(tmp_path):

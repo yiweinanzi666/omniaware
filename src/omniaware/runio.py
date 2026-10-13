@@ -9,9 +9,12 @@ scripts/launch.py and eval/score_official.py.
 - dumps_strict: JSON with NaN and infinities written as null, so every output is strict JSON;
 - completion marker <dataset>.merged.json: written when a run's answers are complete (single process or merged
   shards). It records the number of questions and the sha256 of the configuration and of the output.
+- run_lock: a lock file next to the outputs, so that two processes never append to the same output file. A lock
+  whose process is gone (a crash) is removed and taken over; a live holder is an error.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import math
@@ -132,6 +135,67 @@ def read_frozen_decisions(path) -> str:
         raise FrozenDecisionsError(f"frozen decisions file must be a JSON object: {path}. "
                                    "No default hyperparameters were substituted.")
     return sha256_file(path)
+
+
+def _process_alive(pid: int) -> bool:
+    """Whether a process with this id exists. Windows has no signal 0, so it asks the kernel instead."""
+    if os.name == "nt":
+        import ctypes
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        still_active, access_denied, query_limited = 259, 5, 0x1000
+        handle = kernel32.OpenProcess(query_limited, False, pid)
+        if not handle:
+            return ctypes.get_last_error() == access_denied   # the process exists but belongs to another user
+        try:
+            code = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return True
+            return code.value == still_active
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _lock_holder(path: Path):
+    try:
+        return int(path.read_text(encoding="utf8").strip())
+    except (OSError, ValueError):
+        return None
+
+
+@contextlib.contextmanager
+def run_lock(path):
+    """Hold ``path`` for the duration of a run; refuse to start while a live process holds it.
+
+    The lock is created exclusively (O_EXCL) and holds the process id. It is removed on normal exit and on an
+    exception. A lock left behind by a process that no longer exists is replaced.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    while True:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            holder = _lock_holder(path)
+            if holder is not None and _process_alive(holder):
+                raise SystemExit(f"{path.name}: process {holder} is writing into {path.parent} right now; wait for it, "
+                                 "or use a new --tag")
+            print(f"[lock] removing the lock of process {holder}, which is no longer running: {path.name}", flush=True)
+            path.unlink(missing_ok=True)
+            continue
+        with os.fdopen(fd, "w", encoding="utf8") as fh:
+            fh.write(f"{os.getpid()}\n")
+        break
+    try:
+        yield path
+    finally:
+        path.unlink(missing_ok=True)
 
 
 def config_path_for(out_dir, dataset: str) -> Path:

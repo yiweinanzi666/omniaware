@@ -42,7 +42,7 @@ The tables also report gain versus \texttt{static\_mixed}.
 The oracle is the per-question best action in the same set.
 Evidence Attention Bias is not a main-method arm.
 All actions in a run share one prompt, one budget, and one candidate pool.
-The prompt is frozen on the development split.
+The prompt is fixed before any model run.
 The test split is scored once, after the frozen decision file \texttt{runs/v2\_decisions/} is written.
 Grids are not selected on the test split.
 The operating point previously taken from a test-set grid (Table~20 in the audited draft) is withdrawn.
@@ -56,7 +56,7 @@ The risk-control claim is reported as the mean paired gap to the strong baseline
 A score below \texttt{direct} is not described as better than no retrieval.
 
 \textit{Development gates.}
-Two preregistered gates are criteria, not results, and this draft does not claim that either has passed.
+Two gates, written down before any GPU run of the repaired pipeline, are criteria, not results, and this draft does not claim that either has passed.
 After the pipeline fixes, the development-set per-question oracle is compared with the strongest single action against a relative gap of 8\%.
 A selector is eligible for the frozen test run when, on the development split, its relative gain over that baseline is at least 5\%, and the lower end of its paired interval is positive.
 The test split is not used to make those choices.
@@ -64,7 +64,7 @@ The test split is not used to make those choices.
 \textit{Figures withdrawn by the root-cause report.}
 The following numbers are copied from the root-cause report of 13~October~2026.
 They come from the legacy pipeline, which has known prompt and format problems; they motivate the protocol and are not results of the method. They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
-Relative gains of +33\% on WebQA and +15\% on OK-VQA used historical cached baselines: a cached static score of 17.9 against 23.4 for static retrieval on the same 512-question batch, a gap of 5.5 points, under different prompts, budgets, and retrieval scores.
+Relative gains of +33\% on WebQA (official QA score 18.1 to 24.2 on the 4{,}966 validation questions) and +15\% on OK-VQA compared against historical cached baselines produced under different prompts, budgets, and retrieval scores. On one 512-question batch the cached static score was 17.9 where static retrieval decoded in the same run scored 23.4, a gap of 5.5 points from the protocol alone.
 The same report withdraws a trained controller's +8.43\% and a +14.4\% chosen on a 32-question development set.
 On a 256-question OK-VQA development slice, official VQA accuracy was 61.5 for direct answering, 36.3 for static retrieval, 48.1 for the gated static arm, and 36.3 for EAB.
 Direct answering won 82 questions and lost 10 against static retrieval.
@@ -186,7 +186,7 @@ Oracle & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [
 
 \subsection{Ablations}
 \label{sec:ablation}
-Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the preregistered $\delta=0.10$ and $\epsilon=1.0$.
+Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the fixed $\delta=0.10$ and $\epsilon=1.0$.
 The $\delta$ row is a development-split description.
 It is not a point selected on the test set.
 Refitting uses the calibration split only.
@@ -249,8 +249,7 @@ Action & acc$_{\mathrm{approx}}$ & norm.\ BART & QA$_{\mathrm{approx}}$ \\
 
 \begin{table}[t]
 \caption{Cost placeholders on the stage-s4 runs.
-Calls, input tokens, and latency are \ph{}.
-The cheap variant decodes evidence actions only when the direct signal is below its threshold.}
+Calls, input tokens, and latency are \ph{}.}
 \label{tab:cost}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -261,7 +260,6 @@ System & Calls & Input tokens & Latency \\
 Always \texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
 SeaKR & \ph{} & \ph{} & \ph{} \\
 v2, all actions & \ph{} & \ph{} & \ph{} \\
-v2, cheap variant & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table}

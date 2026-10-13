@@ -9,7 +9,9 @@ tf32_ce_calibrated_k5_dev256 (direct and static, the latter as static_mixed).
 Each question becomes a row of the per-question action table (docs/V2_REWORK_SPEC.md, section 2). The sorted
 question ids are permuted with numpy.random.default_rng(seed); the first half calibrates, the second half is
 evaluated. The calibration half fits and risk-controls v2-Rule and v2-Cal, and also sets a naive single-threshold
-baseline that has no risk control. Writes results.json and REPORT.md under --out.
+baseline that has no risk control. A second analysis keeps only the questions where both direct and static_mixed
+answers are non-empty, and repeats the split and every step on those questions. Writes results.json and REPORT.md
+under --out.
 """
 from __future__ import annotations
 
@@ -23,11 +25,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT))
 from omniaware import answers, arbitration, runio  # noqa: E402
 from omniaware.actions import DIRECT, V2_ACTIONS  # noqa: E402
 from omniaware.eval import score_official  # noqa: E402
-from scripts.analysis.v2_table import decision_fields  # noqa: E402
 
 STATIC = "static_mixed"
 ACTIONS = (DIRECT, STATIC)
@@ -40,8 +40,12 @@ OKVQA_DIR = Path(r"C:\rc\experiments\omniaware_github_20261009\a100_20261012\res
                  r"\fast_math_v1\runs\tf32_ce_calibrated_k5_dev256")
 DELTA = 0.1
 EPSILONS = (0.0, 1.0)
+AUDIT_EPSILON = 1.0                 # the v2-Rule setting whose direct choices the WebQA note audits
 GRID_STEPS = 20
 SUBSET_WEBQA = {"img": "image_question", "text": "text_question"}
+CAL_NOTE = "（对内部拆分种子敏感，见下方种子范围）"
+SHORT_WORDS = 3                     # "<= 3 words" against ">= 4 words"
+MIN_NONEMPTY = 8                    # v2-Cal needs at least 4 calibration questions, so 8 questions for the split
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -88,7 +92,8 @@ def load_webqa(path: Path) -> list[dict]:
 
 def load_okvqa(directory: Path) -> list[dict]:
     """One row per OK-VQA question. margin is -h_sem of the question's own entropy: pre-retrieval for direct and
-    post-retrieval for static_mixed. The retriever top-1 is the largest calibrated relevance of the evidence pool."""
+    post-retrieval for static_mixed. The retriever top-1 of static_mixed is the largest relevance among the evidence
+    it received (``rel`` holds the relevance of each selected evidence); direct received no evidence."""
     records = {r["qid"]: r for r in read_jsonl(directory / "okvqa_gs.jsonl")}
     official = {r["qid"]: r["scores"] for r in read_jsonl(directory / "okvqa_gs.official_scores.jsonl")}
     if set(records) != set(official):
@@ -119,6 +124,15 @@ def split_halves(rows: list[dict], seed: int) -> tuple[list[dict], list[dict]]:
         raise RuntimeError("the calibration and evaluation halves overlap or lose questions")
     by_qid = {r["qid"]: r for r in rows}
     return ([by_qid[q] for q in ordered if q in calib_ids], [by_qid[q] for q in ordered if q in eval_ids])
+
+
+def both_nonempty(row: dict) -> bool:
+    return not any(row["actions"][action]["answer_empty"] for action in ACTIONS)
+
+
+def length_class(answer: str) -> str:
+    """'short' for at most SHORT_WORDS normalised words, 'long' otherwise (the empty answer is short)."""
+    return "short" if len(arbitration.normalize_answer(answer)) <= SHORT_WORDS else "long"
 
 
 def naive_threshold(calib: list[dict]) -> dict:
@@ -152,7 +166,7 @@ def _policy_block(name: str, rows: list[dict], choices: list[str], best_scores: 
         "vs_best_single": score_official.paired(best_scores, scores),
         "capture_ratio": float((scores.mean() - best_scores.mean()) / gap_oracle) if gap_oracle > 0 else None,
         "chosen": dict(Counter(choices)),
-        "decision": decision_fields(decision) if decision and "kind" in decision else decision,
+        "decision": arbitration.decision_fields(decision) if decision and "kind" in decision else decision,
     }
 
 
@@ -165,6 +179,21 @@ def cal_seed_spread(calib: list[dict], evaluation: list[dict], seeds: range = ra
         choices = [arbitration.apply_decision(cal, r["actions"])["action"] for r in evaluation]
         means.append(float(np.mean([r["scores"][c] for r, c in zip(evaluation, choices)])))
     return {"seeds": len(means), "min": min(means), "median": float(np.median(means)), "max": max(means)}
+
+
+def direct_audit(evaluation: list[dict], choices: list[str]) -> dict:
+    """What the direct choices of v2-Rule rest on: static_mixed being empty, and direct and static_mixed answers in
+    different length classes. Counted on the questions where v2-Rule chose direct and on the whole evaluation half."""
+    picked = [r for r, c in zip(evaluation, choices) if c == DIRECT]
+
+    def differs(r: dict) -> bool:
+        return length_class(r["actions"][DIRECT]["answer"]) != length_class(r["actions"][STATIC]["answer"])
+
+    return {"rule_direct": len(picked),
+            "rule_direct_static_empty": sum(bool(r["actions"][STATIC]["answer_empty"]) for r in picked),
+            "rule_direct_length_differs": sum(differs(r) for r in picked),
+            "evaluation": len(evaluation),
+            "evaluation_length_differs": sum(differs(r) for r in evaluation)}
 
 
 def evaluate_dataset(rows: list[dict], calib: list[dict], evaluation: list[dict], seed: int) -> dict:
@@ -182,14 +211,17 @@ def evaluate_dataset(rows: list[dict], calib: list[dict], evaluation: list[dict]
         _policy_block("朴素基线", evaluation, naive_choices(naive["tau"], evaluation), best_scores, oracle, naive),
         _policy_block("逐题上限", evaluation, oracle_choices(evaluation), best_scores, oracle, None),
     ]
+    audit = None
     for eps in EPSILONS:
         rule = arbitration.select_rule(calib, delta=DELTA, epsilon=eps)
         choices = [arbitration.apply_decision(rule, r["actions"])["action"] for r in evaluation]
         blocks.append(_policy_block(f"v2-Rule ε={eps:g}", evaluation, choices, best_scores, oracle, rule))
+        if eps == AUDIT_EPSILON:
+            audit = direct_audit(evaluation, choices)
     for eps in EPSILONS:
         cal = arbitration.select_cal(calib, delta=DELTA, epsilon=eps, seed=seed)
         choices = [arbitration.apply_decision(cal, r["actions"])["action"] for r in evaluation]
-        blocks.append(_policy_block(f"v2-Cal ε={eps:g}", evaluation, choices, best_scores, oracle, cal))
+        blocks.append(_policy_block(f"v2-Cal ε={eps:g}{CAL_NOTE}", evaluation, choices, best_scores, oracle, cal))
     empty = {}
     for action in ACTIONS:
         flags = [bool(r["actions"][action]["answer_empty"]) for r in rows]
@@ -197,7 +229,7 @@ def evaluate_dataset(rows: list[dict], calib: list[dict], evaluation: list[dict]
     return {"questions": len(rows), "calib": len(calib), "eval": n, "best_single": best,
             "calib_qids_sha256": runio.digest(sorted(r["qid"] for r in calib)),
             "eval_qids_sha256": runio.digest(sorted(r["qid"] for r in evaluation)),
-            "naive": naive, "empty_rates": empty, "blocks": blocks,
+            "naive": naive, "empty_rates": empty, "blocks": blocks, "direct_audit": audit,
             "cal_seed_spread": cal_seed_spread(calib, evaluation)}
 
 
@@ -207,10 +239,17 @@ def run(webqa_path: Path, okvqa_dir: Path, seed: int) -> dict:
     loaded = {"webqa": load_webqa(webqa_path), "okvqa": load_okvqa(okvqa_dir)}
     results = {"exploratory": True, "paper_table": False, "seed": seed, "delta": DELTA, "epsilons": list(EPSILONS),
                "inputs": {k: {"path": str(v), "sha256": runio.sha256_file(v)} for k, v in inputs.items()},
-               "datasets": {}}
+               "datasets": {}, "both_nonempty": {}}
     for name, rows in loaded.items():
         calib, evaluation = split_halves(rows, seed)
         results["datasets"][name] = evaluate_dataset(rows, calib, evaluation, seed)
+        kept = [r for r in rows if both_nonempty(r)]
+        if len(kept) < MIN_NONEMPTY:
+            raise ValueError(f"{name}: {len(kept)} questions have both answers non-empty; "
+                             f"the split needs at least {MIN_NONEMPTY}")
+        kept_calib, kept_eval = split_halves(kept, seed)
+        results["both_nonempty"][name] = evaluate_dataset(kept, kept_calib, kept_eval, seed)
+        results["both_nonempty"][name]["dropped"] = len(rows) - len(kept)
     return results
 
 
@@ -251,6 +290,34 @@ def _decision_lines(block: dict) -> list[str]:
     return lines
 
 
+def _section(title: str, data: dict) -> list[str]:
+    lines = [f"## {title}（校准 {data['calib']} 题，评测 {data['eval']} 题）", "",
+             f"最强单一动作（校准半选出）：{data['best_single']}。", "",
+             "| 策略 | 评测半均分 | 配对差 [95% CI] | 相对提升 | 上限差距比例 | 被选动作计数 |",
+             "|---|---:|---:|---:|---:|---|"]
+    lines += [_block_row(b) for b in data["blocks"]]
+    lines += ["", "决定的关键字段："]
+    for block in data["blocks"]:
+        if block["decision"]:
+            lines += _decision_lines(block)
+    spread = data["cal_seed_spread"]
+    lines += ["", f"v2-Cal ε=1 对内部拆分种子的敏感性（种子 0–{spread['seeds'] - 1}）：评测半均分 "
+              f"最小 {spread['min']:.2f}，中位 {spread['median']:.2f}，最大 {spread['max']:.2f}。"]
+    lines += ["", "空答案率（全部题目）：" + "；".join(
+        f"{a} {e['empty']}/{e['questions']} = {e['rate']:.2f}" for a, e in data["empty_rates"].items()), ""]
+    return lines
+
+
+def _audit_lines(audit: dict) -> list[str]:
+    return [
+        f"v2-Rule ε={AUDIT_EPSILON:g} 在评测半选中 direct 的题：{audit['rule_direct']} 题，其中 static_mixed 为空答案"
+        f"（含仅 Sources 行）的题 {audit['rule_direct_static_empty']} 题，direct 与 static_mixed 答案长度类别不同的题 "
+        f"{audit['rule_direct_length_differs']} 题。",
+        f"评测半全部 {audit['evaluation']} 题中，direct 与 static_mixed 答案长度类别不同（≤{SHORT_WORDS} 词对 "
+        f"≥{SHORT_WORDS + 1} 词，按规范化词数计）的题 {audit['evaluation_length_differs']} 题。",
+    ]
+
+
 def render(results: dict) -> str:
     seed = results["seed"]
     lines = [
@@ -260,22 +327,17 @@ def render(results: dict) -> str:
         f"复现：`python scripts/analysis/offline_v2.py --seed {seed} --out runs/offline_v2`。"
         f"对排序后的 qid 做 numpy.random.default_rng({seed}).permutation，前一半校准，后一半评测；δ={results['delta']}，"
         "ε 取 0 与 1（0–100 量纲）。配对差是 评测半 相对最强单一动作 的差值，单位为分，CI 为 95% 百分位区间。", "",
+        "v2-Cal 的结果依赖内部拆分种子（种子 20 个取值的范围见各节末尾）。", "",
     ]
     for name, data in results["datasets"].items():
-        lines += [f"## {name}（校准 {data['calib']} 题，评测 {data['eval']} 题）", "",
-                  f"最强单一动作（校准半选出）：{data['best_single']}。", "",
-                  "| 策略 | 评测半均分 | 配对差 [95% CI] | 相对提升 | 上限差距比例 | 被选动作计数 |",
-                  "|---|---:|---:|---:|---:|---|"]
-        lines += [_block_row(b) for b in data["blocks"]]
-        lines += ["", "决定的关键字段："]
-        for block in data["blocks"]:
-            if block["decision"]:
-                lines += _decision_lines(block)
-        spread = data["cal_seed_spread"]
-        lines += ["", f"v2-Cal ε=1 对内部拆分种子的敏感性（种子 0–{spread['seeds'] - 1}）：评测半均分 "
-                  f"最小 {spread['min']:.2f}，中位 {spread['median']:.2f}，最大 {spread['max']:.2f}。"]
-        lines += ["", "空答案率（全部题目）：" + "；".join(
-            f"{a} {e['empty']}/{e['questions']} = {e['rate']:.2f}" for a, e in data["empty_rates"].items()), ""]
+        lines += _section(f"{name}", data)
+        if data["direct_audit"] is not None and name == "webqa":
+            lines += ["WebQA 增益的来源检查（旧管线伪影）：", ""] + [f"- {x}" for x in _audit_lines(data["direct_audit"])]
+            lines += [""]
+    lines += ["# 只在两路答案都非空的题上重算", "",
+              "保留 direct 与 static_mixed 答案都非空的题；校准与评测都只用这些题，划分、δ、ε、种子与上表相同。", ""]
+    for name, data in results["both_nonempty"].items():
+        lines += _section(f"{name}，两路非空，去掉 {data['dropped']} 题", data)
     return "\n".join(lines) + "\n"
 
 
@@ -286,7 +348,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--webqa", type=Path, default=WEBQA_SCORES, help="WebQA OFFICIAL_SCORES.jsonl")
     parser.add_argument("--okvqa-dir", type=Path, default=OKVQA_DIR, help="OK-VQA run directory")
     args = parser.parse_args(argv)
-    results = run(args.webqa, args.okvqa_dir, args.seed)
+    try:
+        results = run(args.webqa, args.okvqa_dir, args.seed)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     runio.atomic_write_text(args.out / "results.json", runio.dumps_strict(results, ensure_ascii=False, indent=2) + "\n")
     runio.atomic_write_text(args.out / "REPORT.md", render(results))
     print((args.out / "REPORT.md").read_text(encoding="utf-8"))

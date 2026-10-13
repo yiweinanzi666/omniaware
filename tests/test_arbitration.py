@@ -19,6 +19,7 @@ from omniaware.arbitration import (
     encode_json_float,
     normalize_answer,
     policy_scores,
+    reference_action,
     select_cal,
     select_rule,
     token_f1,
@@ -365,3 +366,101 @@ def test_an_action_available_on_some_questions_can_still_be_selected():
     for row, name in zip(evaluation, chosen):
         assert row["actions"][name]["available"]
     assert np.mean(policy_scores(decision, evaluation)) > np.mean([row["scores"][DIRECT] for row in evaluation])
+
+
+def _question(available, direct_margin=2.0):
+    """One question with direct and every evidence action; only the names in ``available`` are available."""
+    return {name: _record(f"{name}-answer", margin=direct_margin if name == DIRECT else 0.5,
+                          available=name in available)
+            for name in (DIRECT, *EVIDENCE)}
+
+
+def _rule_decision(**overrides):
+    decision = {"kind": "rule", "fallback": False, "best_single": DIRECT, "confidence": "margin",
+                "tau": encode_json_float(-math.inf), "evidence_choice": "best", "evidence_ranking": list(EVIDENCE),
+                "action_ranking": [DIRECT, *EVIDENCE]}
+    decision.update(overrides)
+    return decision
+
+
+def test_direct_unavailable_is_never_returned_even_when_direct_is_always_chosen():
+    """tau = -inf makes direct the choice whenever it is available. Without it the rule must take evidence."""
+    actions = _question(available={"static_text", "static_mixed"})
+    assert apply_decision(_rule_decision(), actions)["action"] == "static_text"        # e* = first evidence in ranking
+    confident = _rule_decision(evidence_choice="confident", tau=encode_json_float(math.inf))
+    actions = _question(available={"static_image"})
+    assert apply_decision(confident, actions)["action"] == "static_image"
+
+
+def test_no_available_evidence_uses_the_ranking_and_nothing_available_is_an_error():
+    decision = _rule_decision(tau=encode_json_float(math.inf))
+    assert apply_decision(decision, _question(available={DIRECT}))["action"] == DIRECT
+    with pytest.raises(ValueError, match="no available action"):
+        apply_decision(decision, _question(available=set()))
+
+
+def test_reference_action_is_a_star_when_available_else_the_first_available_in_the_ranking():
+    decision = {"action_ranking": ["static_mixed", DIRECT, "static_text"]}
+    assert reference_action(decision, _question({"static_mixed", DIRECT})) == "static_mixed"
+    assert reference_action(decision, _question({DIRECT, "static_text"})) == DIRECT
+    assert reference_action(decision, _question({"static_text"})) == "static_text"
+    with pytest.raises(ValueError, match="no available action"):
+        reference_action(decision, _question(set()))
+
+
+def test_reference_action_is_the_action_of_the_fallback_decision():
+    calib = _random_rows(60, seed=4)
+    decision = select_rule(calib)
+    fallback = {"kind": "single", "action_ranking": decision["action_ranking"]}
+    rng = np.random.default_rng(4)
+    for row in calib:
+        for name in V2_ACTIONS:
+            if rng.random() < 0.3 and name != decision["action_ranking"][-1]:
+                row["actions"][name]["available"] = False
+        assert apply_decision(fallback, row["actions"])["action"] == reference_action(decision, row["actions"])
+
+
+def test_a_non_finite_confidence_is_refused_with_a_message_that_names_no_question():
+    decision = _rule_decision(tau=encode_json_float(0.0))
+    actions = _question(available={DIRECT, *EVIDENCE})
+    actions[DIRECT]["first_token"]["margin"] = None          # a NaN margin reaches apply as null
+    with pytest.raises(ValueError, match="not finite") as info:
+        apply_decision(decision, actions)
+    assert "question" not in str(info.value) and "qid" not in str(info.value)
+    actions[DIRECT]["first_token"]["margin"] = math.inf
+    with pytest.raises(ValueError, match="not finite"):
+        apply_decision(decision, actions)
+
+
+def test_a_non_finite_confidence_of_an_evidence_action_is_refused_when_it_is_compared():
+    """The "confident" choice compares the confidence of every available evidence action. The "best" choice takes
+    e* without reading any confidence, so it is not affected."""
+    actions = _question(available={DIRECT, *EVIDENCE})
+    actions["static_text"]["first_token"]["margin"] = None
+    confident = _rule_decision(evidence_choice="confident", tau=encode_json_float(math.inf))
+    with pytest.raises(ValueError, match="not finite"):
+        apply_decision(confident, actions)
+    best = _rule_decision(evidence_choice="best", tau=encode_json_float(math.inf))
+    assert apply_decision(best, actions)["action"] == "static_text"
+
+
+def test_a_non_finite_neg_entropy_is_refused():
+    decision = _rule_decision(confidence="neg_entropy")
+    actions = _question(available={DIRECT, *EVIDENCE})
+    actions[DIRECT]["first_token"]["entropy"] = math.inf
+    with pytest.raises(ValueError, match="not finite"):
+        apply_decision(decision, actions)
+
+
+def test_a_star_unavailable_on_a_question_applies_to_both_families():
+    calib = _random_rows(60, seed=8)
+    rule, cal = select_rule(calib), select_cal(calib, seed=0)
+    for decision in (rule, cal):
+        row = copy.deepcopy(calib[1])
+        star = decision["best_single"]
+        row["actions"][star]["available"] = False
+        chosen = apply_decision(decision, row["actions"])["action"]
+        assert chosen != star and _available(row["actions"], chosen)
+    cal_row = copy.deepcopy(calib[2])
+    cal_row["actions"][DIRECT]["available"] = False           # the cal features need direct: the reference is used
+    assert apply_decision(cal, cal_row["actions"])["action"] == reference_action(cal, cal_row["actions"])

@@ -1,6 +1,6 @@
-"""Dry-run checks for S1, S2 and S4. These tests do not launch a model or a scoring step."""
+"""Dry-run checks for S1, S2 and S4, and the stage's stop rules. These tests do not launch a model or a scoring step."""
 import json
-import shlex
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -8,72 +8,100 @@ from pathlib import Path
 import pytest
 
 import scripts.v2_runs as v2
+from omniaware import paths
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / "scripts" / "v2_runs.py"
-PY = shlex.quote(sys.executable)
+IMAGE_CHECK = ROOT / "scripts" / "analysis" / "image_evidence_check.py"
+V2_TABLE = ROOT / "scripts" / "analysis" / "v2_table.py"
 
 
 def _cli(*args):
-    return subprocess.run(
-        [sys.executable, str(RUNS), *args],
-        cwd=ROOT, capture_output=True, text=True,
-    )
+    return subprocess.run([sys.executable, str(RUNS), *args], cwd=ROOT, capture_output=True, text=True)
+
+
+def _fmt(*argv):
+    return v2.format_argv(list(argv))
 
 
 @pytest.mark.parametrize("dataset,source", [("webqa_full", "train"), ("okvqa_gs", "heldout")])
-def test_s1_dry_run_names_dataset_dev_split_and_v2_flags(dataset, source):
-    tag = ROOT / "runs" / f"v2_s1_{dataset}"
-    assert not tag.exists()
+def test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate(dataset, source):
     result = _cli("--stage", "s1", "--dataset", dataset, "--n", "50", "--dry-run")
     assert result.returncode == 0, result.stderr
     assert result.stderr == ""
     lines = result.stdout.splitlines()
     assert len(lines) == 2
-    assert lines[1] == f"{PY} scripts/analysis/image_evidence_check.py --n 50"
+    assert lines[1] == _fmt(sys.executable, str(IMAGE_CHECK), "--n", "50")
     cmd = lines[0]
-    assert cmd.startswith(PY + " -m omniaware.run ")
+    assert cmd.startswith(_fmt(sys.executable, "-m", "omniaware.run") + " ")
     assert f"--dataset {dataset}" in cmd
     assert "--split dev" in cmd and "--split test" not in cmd
     assert "--n-eval 50" in cmd
     assert f"--calib-source {source}" in cmd
     assert "--n-calib 500" in cmd and "--n-dev 256" in cmd
     assert "--v2 --v2-reranker" in cmd
-    assert "--selector" not in cmd
-    assert not any(flag in cmd for flag in ("--v2-actions", "--save-signals", "--empty-answer-accounting",
-                                            "--shared-prompt-registry"))
-    assert not tag.exists()
+    assert "--max-empty-rate 0.005" in cmd
+    assert "--fitm" not in cmd and "--seakr-samples" not in cmd and "--selector" not in cmd
 
 
-@pytest.mark.parametrize("dataset,source", [("webqa_full", "train"), ("webqa_open_img", "train"),
-                                            ("okvqa_gs", "heldout")])
-def test_s2_dry_run_decodes_calib_and_dev_then_scores_gates_and_selects(dataset, source):
-    result = _cli("--stage", "s2", "--dataset", dataset, "--dry-run")
+def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_for_webqa():
+    result = _cli("--stage", "s2", "--dataset", "webqa_full", "--dry-run")
     assert result.returncode == 0, result.stderr
     lines = result.stdout.splitlines()
-    calib_tag, dev_tag = f"v2_s2_{dataset}_calib", f"v2_s2_{dataset}_dev"
-    decodes, rest = lines[:2], lines[2:]
-    calib, dev = decodes
-    assert calib.startswith(PY + " -m omniaware.run ") and dev.startswith(PY + " -m omniaware.run ")
-    assert f"--tag {calib_tag}" in calib and "--split calib" in calib
+    calib_tag, dev_tag = "v2_s2_webqa_full_calib", "v2_s2_webqa_full_dev"
+    calib, dev, *rest = lines
+    assert calib.startswith(_fmt(sys.executable, "-m", "omniaware.run") + " ") and f"--tag {calib_tag}" in calib
+    assert "--split calib" in calib
     assert f"--tag {dev_tag}" in dev and "--split dev" in dev
-    for cmd in decodes:
-        assert f"--dataset {dataset}" in cmd and f"--calib-source {source}" in cmd
-        assert "--n-calib 500" in cmd and "--n-dev 256" in cmd and "--v2 --v2-reranker" in cmd
-        assert "--n-eval" not in cmd and "--split test" not in cmd
+    # The baseline arms run on the dev decode only; the calibration table reads the v2 actions alone.
+    assert "--fitm --m2rag --seakr-samples 20" in dev
+    assert "--fitm" not in calib and "--seakr-samples" not in calib
+    for cmd in (calib, dev):
+        assert "--calib-source train" in cmd and "--n-calib 500" in cmd and "--n-dev 256" in cmd
+        assert "--v2 --v2-reranker" in cmd and "--n-eval" not in cmd and "--split test" not in cmd
+    run_file = lambda tag: str(paths.RUNS / tag / "webqa_full.jsonl")   # noqa: E731
     assert rest == [
-        f"{PY} -m omniaware.eval.score_official runs/{calib_tag}/{dataset}.jsonl",
-        f"{PY} -m omniaware.eval.score_official runs/{dev_tag}/{dataset}.jsonl",
-        f"{PY} scripts/analysis/v2_table.py build --run runs/{calib_tag}/{dataset}.jsonl",
-        f"{PY} scripts/analysis/v2_table.py build --run runs/{dev_tag}/{dataset}.jsonl",
-        f"{PY} scripts/analysis/v2_table.py gate --table runs/{dev_tag}/{dataset}.v2_actions.jsonl",
-        f"{PY} scripts/analysis/v2_table.py select --table runs/{calib_tag}/{dataset}.v2_actions.jsonl "
-        f"--out runs/v2_decisions/{dataset}.json",
+        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(calib_tag), "--bart"),
+        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(dev_tag), "--bart"),
+        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(calib_tag), "--bart"),
+        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(dev_tag), "--bart"),
+        _fmt(sys.executable, str(V2_TABLE), "gate", "--table",
+             str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
+        _fmt(sys.executable, str(V2_TABLE), "select", "--table",
+             str(paths.RUNS / calib_tag / "webqa_full.v2_actions.jsonl"), "--out",
+             str(paths.RUNS / "v2_decisions" / "webqa_full.json")),
     ]
     assert "image_evidence_check.py" not in result.stdout
 
 
-def test_s4_dry_run_decodes_test_then_scores_builds_and_applies(tmp_path):
+def test_s2_okvqa_has_no_bart_flags_and_uses_heldout_calibration():
+    result = _cli("--stage", "s2", "--dataset", "okvqa_gs", "--dry-run")
+    assert result.returncode == 0, result.stderr
+    assert "--bart" not in result.stdout
+    assert all("--calib-source heldout" in line for line in result.stdout.splitlines()[:2])
+
+
+@pytest.mark.parametrize("dataset", ["webqa_full", "webqa_open_img"])
+def test_webqa_is_the_bart_dataset_of_both_settings(dataset):
+    assert dataset in v2.WEBQA_DATASETS
+    assert "--bart" in v2.score_command("t", dataset) and "--bart" in v2.build_command("t", dataset)
+
+
+def test_no_seakr_leaves_the_baseline_arm_out_and_says_so():
+    result = _cli("--stage", "s2", "--dataset", "webqa_full", "--no-seakr", "--dry-run")
+    assert result.returncode == 0, result.stderr
+    first = result.stdout.splitlines()[0]
+    assert first.startswith("NOTE: --no-seakr") and "no SeaKR row" in first
+    dev = [line for line in result.stdout.splitlines() if "--tag v2_s2_webqa_full_dev" in line][0]
+    assert "--fitm --m2rag" in dev and "--seakr-samples" not in dev
+
+
+def test_no_seakr_is_rejected_for_s1():
+    result = _cli("--stage", "s1", "--dataset", "webqa_full", "--no-seakr", "--dry-run")
+    assert result.returncode != 0 and "S1 runs no baseline arms" in result.stderr
+
+
+def test_s4_dry_run_decodes_test_with_baselines_then_scores_builds_and_applies(tmp_path):
     decisions = tmp_path / "decisions.json"
     decisions.write_text(json.dumps({"note": "frozen"}), encoding="utf-8")
     result = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions), "--dry-run")
@@ -81,26 +109,27 @@ def test_s4_dry_run_decodes_test_then_scores_builds_and_applies(tmp_path):
     lines = result.stdout.splitlines()
     assert len(lines) == 4
     run_line, score, build, apply_line = lines
-    assert run_line.startswith(PY + " -m omniaware.run ") and "--dataset webqa_full" in run_line
-    assert "--split test" in run_line and "--split dev" not in run_line and "--n-eval" not in run_line
-    quoted = shlex.quote(str(decisions))
-    assert "--v2 --v2-reranker" in run_line and f"--decisions {quoted}" in run_line
-    assert "--tau" not in run_line and "--beta" not in run_line
+    assert run_line.startswith(_fmt(sys.executable, "-m", "omniaware.run") + " ")
+    assert "--dataset webqa_full" in run_line and "--split test" in run_line and "--n-eval" not in run_line
+    assert "--v2 --v2-reranker" in run_line and "--fitm --m2rag --seakr-samples 20" in run_line
+    assert f"--decisions {v2.format_argv([str(decisions)])}" in run_line
     tag = "v2_s4_webqa_full"
-    assert score == f"{PY} -m omniaware.eval.score_official runs/{tag}/webqa_full.jsonl"
-    assert build == f"{PY} scripts/analysis/v2_table.py build --run runs/{tag}/webqa_full.jsonl"
-    assert apply_line == (f"{PY} scripts/analysis/v2_table.py apply --table runs/{tag}/webqa_full.v2_actions.jsonl "
-                          f"--decisions {quoted} --out runs/{tag}/webqa_full.v2_main.json")
+    run_file = str(paths.RUNS / tag / "webqa_full.jsonl")
+    assert score == _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file, "--bart")
+    assert build == _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file, "--bart")
+    assert apply_line == _fmt(sys.executable, str(V2_TABLE), "apply", "--table",
+                              str(paths.RUNS / tag / "webqa_full.v2_actions.jsonl"), "--decisions", str(decisions),
+                              "--out", str(paths.RUNS / tag / "webqa_full.v2_main.json"))
 
 
-def test_s4_okvqa_gs_uses_heldout_calib(tmp_path):
+def test_s4_okvqa_gs_uses_heldout_calib_and_no_bart(tmp_path):
     decisions = tmp_path / "dev_decisions.json"
     decisions.write_text("{}", encoding="utf-8")
     result = _cli("--stage", "s4", "--dataset", "okvqa_gs", "--decisions", str(decisions), "--dry-run")
     assert result.returncode == 0, result.stderr
-    cmd = result.stdout.splitlines()[0]
-    assert "--dataset okvqa_gs" in cmd and "--split test" in cmd and "--calib-source heldout" in cmd
-    assert shlex.quote(str(decisions)) in cmd
+    run_line, score, build, _apply = result.stdout.splitlines()
+    assert "--dataset okvqa_gs" in run_line and "--split test" in run_line and "--calib-source heldout" in run_line
+    assert "--bart" not in score and "--bart" not in build
 
 
 def test_plain_okvqa_is_not_a_dataset_of_the_v2_stages():
@@ -133,3 +162,42 @@ def test_dry_run_does_not_launch_a_model(monkeypatch, capsys):
     v2.main(["--stage", "s2", "--dataset", "webqa_open_img", "--dry-run"])
     out = capsys.readouterr().out
     assert "webqa_open_img" in out and "--v2 --v2-reranker" in out
+
+
+class _Exit:
+    """Fake subprocess.run: records the commands and returns the scripted exit codes in order."""
+
+    def __init__(self, codes):
+        self.codes, self.calls = list(codes), []
+
+    def __call__(self, cmd, **kwargs):
+        self.calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, self.codes.pop(0))
+
+
+def test_gate_failure_stops_the_stage_before_the_selection(monkeypatch):
+    fake = _Exit([1])                    # the gate reports FAIL (exit 1); the selection is the next command
+    monkeypatch.setattr(v2.subprocess, "run", fake)
+    commands = [[sys.executable, str(V2_TABLE), "gate", "--table", "dev.jsonl"],
+                [sys.executable, str(V2_TABLE), "select", "--table", "calib.jsonl", "--out", "d.json"]]
+    with pytest.raises(SystemExit) as info:
+        v2.execute(commands)
+    assert "gate FAIL" in str(info.value) and "not run" in str(info.value)
+    assert [call[2] for call in fake.calls] == ["gate"]
+
+
+def test_a_failing_step_stops_the_stage_with_its_command(monkeypatch):
+    fake = _Exit([2, 0])
+    monkeypatch.setattr(v2.subprocess, "run", fake)
+    commands = [[sys.executable, "-m", "omniaware.run", "--tag", "t"], [sys.executable, "-m", "omniaware.eval"]]
+    with pytest.raises(SystemExit) as info:
+        v2.execute(commands)
+    assert "exit code 2" in str(info.value) and "omniaware.run" in str(info.value)
+    assert len(fake.calls) == 1
+
+
+def test_the_printed_command_quotes_for_the_platform():
+    if os.name == "nt":
+        assert v2.format_argv(["x", "a b"]) == 'x "a b"'
+    else:
+        assert v2.format_argv(["x", "a b"]) == "x 'a b'"

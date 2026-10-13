@@ -24,8 +24,9 @@ model, split, calibration). Restricting a run to a subset (e.g. the image questi
     agreement      NTE vs U trigger agreement and the scores on skipped / retrieved questions
     transitions    wrong->correct and correct->wrong shares between two arms (--arms before after)
     paired         paired bootstrap across two runs: <baseline run> <our run> --arms <baseline arm> <our arm>
-    column         one table column: the controller against every --compare <run>:<arm> baseline, the strongest
-                   baseline by mean, Holm-adjusted two-sided p-values (--restrict-modality for subset baselines)
+    column         one table column: the controller against every --compare <run>:<arm> baseline, with Holm-adjusted
+                   two-sided p-values (--restrict-modality for subset baselines). The strongest baseline is named only
+                   when the caller passes it with --strongest <run>:<arm>; it is never chosen on the test column
     tau            gated score and retrieval rate for several tau values, offline from one run (the gate only decides
                    retrieve = u_gate > tau and every arm is decoded for every question); checked against the run
     ranges         raw retriever score ranges per channel (pass cache/relevance_<dataset>*.json)
@@ -199,7 +200,7 @@ def uncertainty_table(path: Path, metric: str, arm: str) -> dict:
 
 # ---------------------------------------------------------------------- ARD --
 def ard_table(path: Path) -> dict:
-    """Mean attention-relevance divergence per arm over finite values only (M-54). n_missing counts the questions
+    """Mean attention-relevance divergence per arm over finite values only. n_missing counts the questions
     where the arm has no value or a non-finite one."""
     rows, _ = load_run(path)
     arms = sorted({a for r in rows for a in (r.get("ard") or {})})
@@ -223,9 +224,9 @@ def _failed(entry) -> tuple[bool, str | None]:
 
 
 def intervention_table(path: Path) -> dict:
-    """Fixed denominator (M-55): every kind is over the same eligible questions. Failures are counted with their
+    """Fixed denominator: every kind is over the same eligible questions. Failures are counted with their
     reason; 'changed' is given as a share of successful interventions and 'changed_of_eligible' counts a failure as
-    unchanged. Eligibility is per arm when the run records eab_active (M-49)."""
+    unchanged. Eligibility is per arm when the run records eab_active."""
     rows, _ = load_run(path)
     eligible = [r for r in rows if (r.get("interventions") or {}).get("eligible")]
     out = {"questions": len(rows), "eligible": len(eligible), "kinds": {}}
@@ -280,7 +281,7 @@ def gold25_table(path: Path, metric: str) -> dict:
 
 
 def noise_table(runs: list[Path], metric: str) -> dict:
-    """Noise draws (M-47): every sigma has exactly the draws {0, 1, 2}; configurations and questions must agree;
+    """Noise draws: every sigma has exactly the draws {0, 1, 2}; configurations and questions must agree;
     scores are aligned by qid before the draws are averaged."""
     by_sigma = defaultdict(list)
     for path in runs:
@@ -307,7 +308,7 @@ def noise_table(runs: list[Path], metric: str) -> dict:
 
 # ------------------------------------------------------------------ latency --
 def latency_table(path: Path) -> dict:
-    """Measured end-to-end wall-clock per arm, in ms (paper latency, D15). Nothing is assembled across runs: every
+    """Measured end-to-end wall-clock per arm, in ms (paper latency). Nothing is assembled across runs: every
     stage is timed inside run.py with perf_counter on the question it belongs to, and an arm's time is the sum of
     the measured stages on that arm's own path:
       direct           encode + gate + direct prefill + direct decode                  (seconds_stage.direct)
@@ -318,7 +319,7 @@ def latency_table(path: Path) -> dict:
       always:a         probe + retrieval(a)   (the routed static input, probe included when the route used it)
       universalrag     retrieve: route (index lookup) + encode + evidence prefill + static decode; else direct path.
                        The UniversalRAG router runs offline, so its own inference time is not in this number.
-      static_joint     (when present, D4) encode + evidence prefill + decode: no probe, no route
+      static_joint     (when present) encode + evidence prefill + decode: no probe, no route
       baseline arms    their own measured wall-clock (baseline_seconds: FiTM, M2-RAG, SeaKR)
     Rows without seconds_stage (runs made before the timing fields) are an error."""
     rows, _ = load_run(path)
@@ -452,7 +453,7 @@ def _risk(rows: list[dict], scores: dict, get, arm: str, path: Path) -> dict | N
 
 def selective_table(path: Path, seakr_path: Path, metric: str, eab_arm: str) -> dict:
     """Paper appendix 'Selective risk': every system is scored on its own answers. U_omni -> gated:<EAB> and NTE ->
-    nte_trigger:static come from the main run; SeaKR -> seakr comes from the SeaKR run (F11: each system from its own
+    nte_trigger:static come from the main run; SeaKR -> seakr comes from the SeaKR run (each system from its own
     run, never from whichever file happens to come first)."""
     rows, _ = load_run(path)
     scores = load_scores(path, metric)
@@ -561,9 +562,11 @@ def paired_test(a_path: Path, a_arm: str, b_path: Path, b_arm: str, metric: str,
     return {"questions": len(qids), "baseline": f"{a_path}:{a_arm}", "ours": f"{b_path}:{b_arm}", **result}
 
 
-def column_table(ours: Path, our_arm: str, metric: str, compare: list[str], restrict: str | None = None) -> dict:
+def column_table(ours: Path, our_arm: str, metric: str, compare: list[str], restrict: str | None = None,
+                 strongest: str | None = None) -> dict:
     """One table column: the controller against every baseline (``<run>:<arm>``), Holm-adjusted over the column.
-    The strongest baseline is the one with the highest mean official score on the column, chosen by the code."""
+    No baseline is named the strongest unless the caller passes ``strongest`` (a dev decision or a fixed choice):
+    choosing it by the column's own scores would select on the test set. Holm adjusts over all baselines."""
     o_rows, o_cfg = load_run(ours)
     o_scores = load_scores(ours, metric)
     o_q = qid_set(o_rows)
@@ -594,10 +597,15 @@ def column_table(ours: Path, our_arm: str, metric: str, compare: list[str], rest
     adjusted = holm([c["p_two_sided"] for c in comps])
     for c, p in zip(comps, adjusted):
         c["p_holm"] = p
-    strongest = max(comps, key=lambda c: c["baseline_mean"])
-    return {"ours": f"{ours}:{our_arm}", "n": len(o_q), "ours_mean": comps[0]["ours_mean"],
-            "comparisons": comps, "m": len(comps), "strongest": strongest["baseline"],
-            "strongest_delta_pp": strongest["delta_pp"], "strongest_p_holm": strongest["p_holm"]}
+    out = {"ours": f"{ours}:{our_arm}", "n": len(o_q), "ours_mean": comps[0]["ours_mean"],
+           "comparisons": comps, "m": len(comps), "strongest": None, "strongest_delta_pp": None,
+           "strongest_p_holm": None}
+    if strongest is not None:
+        named = [c for c in comps if c["baseline"] == strongest]
+        if not named:
+            raise SystemExit(f"--strongest {strongest} is not one of the --compare baselines of this column")
+        out.update(strongest=strongest, strongest_delta_pp=named[0]["delta_pp"], strongest_p_holm=named[0]["p_holm"])
+    return out
 
 
 # ---------------------------------------------------------- tau sensitivity --
@@ -660,6 +668,9 @@ def main(argv=None):
     ap.add_argument("--baseline", default="static", help="order: arm whose std the others are compared to")
     ap.add_argument("--compare", action="append", default=None,
                     help="column: a baseline as <run>:<arm> (repeat for each baseline of the column)")
+    ap.add_argument("--strongest", default=None,
+                    help="column: the strongest baseline as <run>:<arm>, fixed by the caller (e.g. from the dev decisions); "
+                         "omitted: the column lists its baselines without naming one")
     ap.add_argument("--seakr-run", type=Path, default=None, help="selective: the SeaKR run (SeaKR system)")
     ap.add_argument("--restrict-modality", default=None, help="column/paired: baseline keeps questions with this gold modality")
     ap.add_argument("--pair-subset", action="store_true", help="paired: allow pairing a subset run explicitly")
@@ -697,7 +708,8 @@ def main(argv=None):
     elif args.analysis == "column":
         if not args.compare:
             ap.error("column needs --compare <run>:<arm> (one or more)")
-        result = column_table(one, args.arms[0], args.metric, args.compare, restrict=args.restrict_modality)
+        result = column_table(one, args.arms[0], args.metric, args.compare, restrict=args.restrict_modality,
+                              strongest=args.strongest)
     elif args.analysis == "tau":
         result = {str(p): tau_table(p, args.metric, args.arms[0], args.taus) for p in args.runs}
     elif args.analysis == "ranges":

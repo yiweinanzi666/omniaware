@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from . import prompts
+from. import prompts
 from .qwen_eab import BiasSpec, Segment, chunk_mass, grounding_entropy, predictive_entropy
 
 # Frozen per-family strings live in prompts.INSTRUCTIONS. This alias keeps older callers working.
@@ -14,11 +14,26 @@ INSTRUCTION = prompts.INSTRUCTIONS
 MAX_NEW_TOKENS = {"okvqa": 30, "webqa": 384, "hybridqa": 32, "videorag": 128}
 MAX_NEW_TOKENS["okvqa_dense"] = MAX_NEW_TOKENS["okvqa"]
 MAX_DOC_WORDS = 160
+MAX_CAPTION_WORDS = 60
 
 
 def _trim(text: str, n: int = MAX_DOC_WORDS) -> str:
     words = text.split()
     return text if len(words) <= n else " ".join(words[:n]) + " ..."
+
+
+def chunk_text(c: dict) -> str:
+    """The text one evidence chunk contributes to the prompt after the word budget: the title and text of a
+    passage (160 words), the caption of an image (60 words, empty when it only repeats the title), the transcript
+    of a video (160 words), or a table in full. Every arm that shows a chunk as text uses this string."""
+    if c["modality"] == "image":
+        return _trim(c["text"], MAX_CAPTION_WORDS) if c["text"] and c["text"] != c["title"] else ""
+    if c["modality"] in ("video", "clip"):
+        return _trim(c["text"]) if c["text"] else ""
+    if c["modality"] == "table":
+        return c["text"]
+    body = f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]
+    return _trim(body)
 
 
 SHORT_INSTRUCTION = "Answer the question using a single word or phrase."
@@ -44,20 +59,21 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
             label = f"[E{j}]"
             if c["modality"] == "image":
                 head = f"{label} (image): {c['title']}\n" if c["title"] else f"{label} (image):\n"
-                tail = f"\nCaption: {_trim(c['text'], 60)}\n\n" if c["text"] and c["text"] != c["title"] else "\n\n"
+                caption = chunk_text(c)
+                tail = f"\nCaption: {caption}\n\n" if caption else "\n\n"
                 segs += [Segment(text=head, chunk=cid), Segment(image=c["image"], chunk=cid),
                          Segment(text=tail, chunk=cid)]
-            elif c["modality"] in ("video", "clip"):      # UniversalRAG clips are video chunks too (D6)
+            elif c["modality"] in ("video", "clip"):      # UniversalRAG clips are video chunks too
                 segs.append(Segment(text=f"{label} (video):\n", chunk=cid))
                 for frame in c["frames"]:
                     segs.append(Segment(image=frame, chunk=cid))
-                tail = f"\nTranscript: {_trim(c['text'])}\n\n" if c["text"] else "\n\n"
+                transcript = chunk_text(c)
+                tail = f"\nTranscript: {transcript}\n\n" if transcript else "\n\n"
                 segs.append(Segment(text=tail, chunk=cid))
             elif c["modality"] == "table":
-                segs.append(Segment(text=f"{label} (table):\n{c['text']}\n\n", chunk=cid))
+                segs.append(Segment(text=f"{label} (table):\n{chunk_text(c)}\n\n", chunk=cid))
             else:
-                body = f"{c['title']}: {c['text']}" if c["title"] and c["title"] != c["text"] else c["text"]
-                segs.append(Segment(text=f"{label} (text): {_trim(body)}\n\n", chunk=cid))
+                segs.append(Segment(text=f"{label} (text): {chunk_text(c)}\n\n", chunk=cid))
     split = len(segs)
     q = f"Question: {e['question']}\n"
     if answer_style == "cite":

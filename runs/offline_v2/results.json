@@ -41,9 +41,9 @@
           "rate": 0.08256141763995167
         },
         "static_mixed": {
-          "empty": 447,
+          "empty": 454,
           "questions": 4966,
-          "rate": 0.09001208215867902
+          "rate": 0.09142166733789771
         }
       },
       "blocks": [
@@ -240,7 +240,7 @@
           }
         },
         {
-          "name": "v2-Cal ε=0",
+          "name": "v2-Cal ε=0（对内部拆分种子敏感，见下方种子范围）",
           "mean": 41.32004936465373,
           "vs_best_single": {
             "baseline": 41.32004936465373,
@@ -277,26 +277,26 @@
           }
         },
         {
-          "name": "v2-Cal ε=1",
-          "mean": 43.74857940786063,
+          "name": "v2-Cal ε=1（对内部拆分种子敏感，见下方种子范围）",
+          "mean": 43.78410261380417,
           "vs_best_single": {
             "baseline": 41.32004936465373,
-            "ours": 43.74857940786063,
-            "delta_pp": 2.428530043206898,
-            "relative_percent": 5.877364815745664,
+            "ours": 43.78410261380417,
+            "delta_pp": 2.464053249150442,
+            "relative_percent": 5.963335685794846,
             "paired_ci95_pp": [
-              1.276596230639619,
-              3.58842125337729
+              1.314271509125375,
+              3.6270515013214286
             ],
             "p_two_sided": 0.0001999600079984003,
-            "wins": 326,
-            "losses": 227,
-            "ties": 1930
+            "wins": 324,
+            "losses": 224,
+            "ties": 1935
           },
-          "capture_ratio": 0.18389498307044283,
+          "capture_ratio": 0.18658489805579298,
           "chosen": {
-            "direct": 1565,
-            "static_mixed": 918
+            "direct": 1557,
+            "static_mixed": 926
           },
           "decision": {
             "kind": "cal",
@@ -306,9 +306,9 @@
             "delta": 0.1,
             "epsilon": 1.0,
             "n_calib": 2483,
-            "n_accepted": 18,
-            "calib_utility": 2.2924448166836275,
-            "lam": -3.2348218968692017,
+            "n_accepted": 20,
+            "calib_utility": 2.203877988986365,
+            "lam": -3.173801920748188,
             "seed": 20261013,
             "n_fit": 1241,
             "n_risk": 1242,
@@ -331,11 +331,18 @@
           }
         }
       ],
+      "direct_audit": {
+        "rule_direct": 1013,
+        "rule_direct_static_empty": 57,
+        "rule_direct_length_differs": 428,
+        "evaluation": 2483,
+        "evaluation_length_differs": 947
+      },
       "cal_seed_spread": {
         "seeds": 20,
-        "min": 42.680486880817384,
-        "median": 43.304263373284456,
-        "max": 43.60657768408194
+        "min": 42.68552111360031,
+        "median": 43.27158130862187,
+        "max": 43.66559866809878
       }
     },
     "okvqa": {
@@ -552,7 +559,7 @@
           }
         },
         {
-          "name": "v2-Cal ε=0",
+          "name": "v2-Cal ε=0（对内部拆分种子敏感，见下方种子范围）",
           "mean": 58.59375,
           "vs_best_single": {
             "baseline": 58.59375,
@@ -589,7 +596,7 @@
           }
         },
         {
-          "name": "v2-Cal ε=1",
+          "name": "v2-Cal ε=1（对内部拆分种子敏感，见下方种子范围）",
           "mean": 58.59375,
           "vs_best_single": {
             "baseline": 58.59375,
@@ -626,12 +633,665 @@
           }
         }
       ],
+      "direct_audit": {
+        "rule_direct": 128,
+        "rule_direct_static_empty": 0,
+        "rule_direct_length_differs": 10,
+        "evaluation": 128,
+        "evaluation_length_differs": 10
+      },
       "cal_seed_spread": {
         "seeds": 20,
         "min": 58.59375,
         "median": 58.59375,
         "max": 58.59375
       }
+    }
+  },
+  "both_nonempty": {
+    "webqa": {
+      "questions": 4235,
+      "calib": 2117,
+      "eval": 2118,
+      "best_single": "static_mixed",
+      "calib_qids_sha256": "8588052647bed680d91a97aa0e9491c563987fd4130461559410b0bf4a47a1cb",
+      "eval_qids_sha256": "595dddee74b2eeaa69a17360092354f342f3cd894cd093cf90a236b88713c607",
+      "naive": {
+        "kind": "naive_threshold",
+        "tau": 0.4444143571423164,
+        "calib_mean": 47.27410953571298
+      },
+      "empty_rates": {
+        "direct": {
+          "empty": 0,
+          "questions": 4235,
+          "rate": 0.0
+        },
+        "static_mixed": {
+          "empty": 0,
+          "questions": 4235,
+          "rate": 0.0
+        }
+      },
+      "blocks": [
+        {
+          "name": "direct",
+          "mean": 45.67736984455166,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 45.67736984455166,
+            "delta_pp": -1.3377911599123598,
+            "relative_percent": -2.8454463014288907,
+            "paired_ci95_pp": [
+              -3.177580632002337,
+              0.524028570911531
+            ],
+            "p_two_sided": 0.16156768646270747,
+            "wins": 470,
+            "losses": 488,
+            "ties": 1160
+          },
+          "capture_ratio": -0.11273341091384924,
+          "chosen": {
+            "direct": 2118
+          },
+          "decision": null
+        },
+        {
+          "name": "static_mixed",
+          "mean": 47.015161004464034,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 47.015161004464034,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 2118
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "static_mixed": 2118
+          },
+          "decision": null
+        },
+        {
+          "name": "最强单一动作 static_mixed",
+          "mean": 47.015161004464034,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 47.015161004464034,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 2118
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "static_mixed": 2118
+          },
+          "decision": null
+        },
+        {
+          "name": "朴素基线",
+          "mean": 48.34001212435087,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 48.34001212435087,
+            "delta_pp": 1.324851119886843,
+            "relative_percent": 2.817923179633586,
+            "paired_ci95_pp": [
+              0.04723866559177263,
+              2.659595646438561
+            ],
+            "p_two_sided": 0.04799040191961608,
+            "wins": 266,
+            "losses": 214,
+            "ties": 1638
+          },
+          "capture_ratio": 0.11164297550572794,
+          "chosen": {
+            "direct": 1162,
+            "static_mixed": 956
+          },
+          "decision": {
+            "kind": "naive_threshold",
+            "tau": 0.4444143571423164
+          }
+        },
+        {
+          "name": "逐题上限",
+          "mean": 58.882017059539926,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 58.882017059539926,
+            "delta_pp": 11.8668560550759,
+            "relative_percent": 25.24048796503995,
+            "paired_ci95_pp": [
+              10.748585205618433,
+              13.022472238817306
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 470,
+            "losses": 0,
+            "ties": 1648
+          },
+          "capture_ratio": 1.0,
+          "chosen": {
+            "direct": 1630,
+            "static_mixed": 488
+          },
+          "decision": null
+        },
+        {
+          "name": "v2-Rule ε=0",
+          "mean": 48.34001212435087,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 48.34001212435087,
+            "delta_pp": 1.324851119886843,
+            "relative_percent": 2.817923179633586,
+            "paired_ci95_pp": [
+              0.04723866559177263,
+              2.659595646438561
+            ],
+            "p_two_sided": 0.04799040191961608,
+            "wins": 266,
+            "losses": 214,
+            "ties": 1638
+          },
+          "capture_ratio": 0.11164297550572794,
+          "chosen": {
+            "direct": 1162,
+            "static_mixed": 956
+          },
+          "decision": {
+            "kind": "rule",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 2117,
+            "n_accepted": 30,
+            "calib_utility": 2.1007581903591945,
+            "evidence_choice": "best",
+            "tau": 0.4444143571423164
+          }
+        },
+        {
+          "name": "v2-Rule ε=1",
+          "mean": 48.34001212435087,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 48.34001212435087,
+            "delta_pp": 1.324851119886843,
+            "relative_percent": 2.817923179633586,
+            "paired_ci95_pp": [
+              0.04723866559177263,
+              2.659595646438561
+            ],
+            "p_two_sided": 0.04799040191961608,
+            "wins": 266,
+            "losses": 214,
+            "ties": 1638
+          },
+          "capture_ratio": 0.11164297550572794,
+          "chosen": {
+            "direct": 1162,
+            "static_mixed": 956
+          },
+          "decision": {
+            "kind": "rule",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 2117,
+            "n_accepted": 34,
+            "calib_utility": 2.1007581903591945,
+            "evidence_choice": "best",
+            "tau": 0.4444143571423164
+          }
+        },
+        {
+          "name": "v2-Cal ε=0（对内部拆分种子敏感，见下方种子范围）",
+          "mean": 48.71742667617409,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 48.71742667617409,
+            "delta_pp": 1.7022656717100648,
+            "relative_percent": 3.6206739173953624,
+            "paired_ci95_pp": [
+              0.5681222853336199,
+              2.920073145871617
+            ],
+            "p_two_sided": 0.004599080183963208,
+            "wins": 221,
+            "losses": 167,
+            "ties": 1730
+          },
+          "capture_ratio": 0.14344706498583817,
+          "chosen": {
+            "static_mixed": 1172,
+            "direct": 946
+          },
+          "decision": {
+            "kind": "cal",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 2117,
+            "n_accepted": 13,
+            "calib_utility": 2.0164948533761633,
+            "lam": 2.687682790305407,
+            "seed": 20261013,
+            "n_fit": 1058,
+            "n_risk": 1059,
+            "n_params": 4,
+            "models": {
+              "direct": {
+                "features": [
+                  "conf_direct",
+                  "conf_star",
+                  "token_f1_to_star"
+                ],
+                "dropped": [
+                  "conf_gap",
+                  "kl_to_direct",
+                  "retriever_top1"
+                ],
+                "n_params": 4
+              }
+            }
+          }
+        },
+        {
+          "name": "v2-Cal ε=1（对内部拆分种子敏感，见下方种子范围）",
+          "mean": 48.71742667617409,
+          "vs_best_single": {
+            "baseline": 47.015161004464034,
+            "ours": 48.71742667617409,
+            "delta_pp": 1.7022656717100648,
+            "relative_percent": 3.6206739173953624,
+            "paired_ci95_pp": [
+              0.5681222853336199,
+              2.920073145871617
+            ],
+            "p_two_sided": 0.004599080183963208,
+            "wins": 221,
+            "losses": 167,
+            "ties": 1730
+          },
+          "capture_ratio": 0.14344706498583817,
+          "chosen": {
+            "static_mixed": 1172,
+            "direct": 946
+          },
+          "decision": {
+            "kind": "cal",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 2117,
+            "n_accepted": 15,
+            "calib_utility": 2.0164948533761633,
+            "lam": 2.687682790305407,
+            "seed": 20261013,
+            "n_fit": 1058,
+            "n_risk": 1059,
+            "n_params": 4,
+            "models": {
+              "direct": {
+                "features": [
+                  "conf_direct",
+                  "conf_star",
+                  "token_f1_to_star"
+                ],
+                "dropped": [
+                  "conf_gap",
+                  "kl_to_direct",
+                  "retriever_top1"
+                ],
+                "n_params": 4
+              }
+            }
+          }
+        }
+      ],
+      "direct_audit": {
+        "rule_direct": 1162,
+        "rule_direct_static_empty": 0,
+        "rule_direct_length_differs": 484,
+        "evaluation": 2118,
+        "evaluation_length_differs": 825
+      },
+      "cal_seed_spread": {
+        "seeds": 20,
+        "min": 48.0979863643426,
+        "median": 48.478355435641355,
+        "max": 48.924554919342384
+      },
+      "dropped": 731
+    },
+    "okvqa": {
+      "questions": 256,
+      "calib": 128,
+      "eval": 128,
+      "best_single": "direct",
+      "calib_qids_sha256": "0a8319f2cf4fb229894c2f7baddad31207020fb68473ca9be7d1f6cda3bbbc6e",
+      "eval_qids_sha256": "a053ed115373686eb4994694db28d8efdb377084c303b1441302cecf1a5782ba",
+      "naive": {
+        "kind": "naive_threshold",
+        "tau": -0.18220247365492095,
+        "calib_mean": 64.375
+      },
+      "empty_rates": {
+        "direct": {
+          "empty": 0,
+          "questions": 256,
+          "rate": 0.0
+        },
+        "static_mixed": {
+          "empty": 0,
+          "questions": 256,
+          "rate": 0.0
+        }
+      },
+      "blocks": [
+        {
+          "name": "direct",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": null
+        },
+        {
+          "name": "static_mixed",
+          "mean": 32.03125,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 32.03125,
+            "delta_pp": -26.5625,
+            "relative_percent": -45.333333333333336,
+            "paired_ci95_pp": [
+              -34.6875,
+              -18.90625
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 4,
+            "losses": 42,
+            "ties": 82
+          },
+          "capture_ratio": -13.076923076923077,
+          "chosen": {
+            "static_mixed": 128
+          },
+          "decision": null
+        },
+        {
+          "name": "最强单一动作 direct",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": null
+        },
+        {
+          "name": "朴素基线",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 127,
+            "static_mixed": 1
+          },
+          "decision": {
+            "kind": "naive_threshold",
+            "tau": -0.18220247365492095
+          }
+        },
+        {
+          "name": "逐题上限",
+          "mean": 60.625,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 60.625,
+            "delta_pp": 2.03125,
+            "relative_percent": 3.466666666666667,
+            "paired_ci95_pp": [
+              0.3125,
+              4.375
+            ],
+            "p_two_sided": 0.0621875624875025,
+            "wins": 4,
+            "losses": 0,
+            "ties": 124
+          },
+          "capture_ratio": 1.0,
+          "chosen": {
+            "direct": 124,
+            "static_mixed": 4
+          },
+          "decision": null
+        },
+        {
+          "name": "v2-Rule ε=0",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 128,
+            "n_accepted": 4,
+            "calib_utility": null
+          }
+        },
+        {
+          "name": "v2-Rule ε=1",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 128,
+            "n_accepted": 4,
+            "calib_utility": null
+          }
+        },
+        {
+          "name": "v2-Cal ε=0（对内部拆分种子敏感，见下方种子范围）",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 128,
+            "n_accepted": 3,
+            "calib_utility": null,
+            "seed": 20261013,
+            "n_fit": 64,
+            "n_risk": 64
+          }
+        },
+        {
+          "name": "v2-Cal ε=1（对内部拆分种子敏感，见下方种子范围）",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 128,
+            "n_accepted": 3,
+            "calib_utility": null,
+            "seed": 20261013,
+            "n_fit": 64,
+            "n_risk": 64
+          }
+        }
+      ],
+      "direct_audit": {
+        "rule_direct": 128,
+        "rule_direct_static_empty": 0,
+        "rule_direct_length_differs": 10,
+        "evaluation": 128,
+        "evaluation_length_differs": 10
+      },
+      "cal_seed_spread": {
+        "seeds": 20,
+        "min": 58.59375,
+        "median": 58.59375,
+        "max": 58.59375
+      },
+      "dropped": 0
     }
   }
 }

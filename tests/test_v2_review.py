@@ -1,4 +1,4 @@
-"""A4, A5, A7: EAB is opt-in, image diagnostic fixture, M2-RAG image, SeaKR question set."""
+"""EAB opt-in, the WebQA image-input check, the M2-RAG query image and the v1 baseline commands."""
 import json
 
 import pytest
@@ -72,13 +72,16 @@ def test_main_baselines_share_the_main_methods_probe_and_route():
 
     # SeaKR runs on the full test split, like the other main arms
     assert {n_eval(c) for c in seakr} == {n_eval(c) for c in others} == {None}
-    # The baselines read the joint input, which no probe or route changes. They are run with the same probe and
-    # route flags as the main method of their dataset (S-4 was a wrong fix: the main method lost its probe).
+    # The baselines read the joint input, which no probe or route changes. They run with the same probe and route
+    # flags as the main method of their dataset.
     for c in runs:
         dataset = c[c.index("--dataset") + 1]
         cold = dataset in pr.COLD
         assert ("--probe-uncertainty" in c) == cold and ("--first-round-routing" in c) == cold, dataset
-    assert all(not any(str(part).startswith("eab:") for part in c) for c in runs)
+    # The main, CE and SeaKR runs of the v1 pipeline all decode the EAB arm (the column analyses read gated:<EAB>).
+    eab = pr.PLACEHOLDER["eab_variant"]
+    for c in runs:
+        assert c[c.index("--variants") + 1] == eab, c
 
 
 def test_m2rag_inputs_contain_the_question_image():
@@ -90,34 +93,34 @@ def test_m2rag_inputs_contain_the_question_image():
     assert "/synthetic/question.jpg" in urls
 
 
-def test_image_evidence_fixture_runs_without_assets(tmp_path):
+def test_image_evidence_fixture_checks_the_inputs_run_py_would_build(tmp_path):
     out = tmp_path / "report.json"
     assert image_evidence.main(["--fixture", "--output", str(out), "--gpu-probe"]) == 0
     report = json.loads(out.read_text(encoding="utf8"))
-    assert report["gpu_probe_executed"] is False
-    assert report["gpu_probe_command"].startswith("python -m scripts.analysis.image_evidence_check")
-    assert report["max_pixels"] == 256 * 32 * 32
-    assert report["n"] >= 1
-    assert report["budget_looks_too_small"] is True
-    assert any("EMPTY" not in line for line in report["findings"])
-    assert any("too small" in line for line in report["findings"])
-    assert any("path mismatch" in line for line in report["findings"])
-    assert any("title/image order" in line for line in report["findings"])
-    images = [im for q in report["questions"] for im in q["images"]]
-    read = [im for im in images if im["read"]]
-    unread = [im for im in images if not im["read"]]
-    assert read and unread
-    for im in read:
-        assert im["pixels"] == im["width"] * im["height"]
-        assert im["visual_tokens"] > 0
-    for im in unread:
-        assert im["width"] is None and im["visual_tokens"] is None
-    golds = [im for im in images if im["gold"]]
-    assert golds and golds[0]["rank"] == 1
-    assert report["questions"][0]["gold_in_context"] is True
+    assert report["gpu_probe_executed"] is False and "Describe the image" in report["gpu_probe"]
+    assert report["max_pixels"] == 256 * 32 * 32 and report["n"] == 1
+    actions = report["questions"][0]["actions"]
+    assert set(actions) == {"static_image", "static_mixed"}
+    # static_image: the image candidates by relevance; the gold image ranks second among them (0.5 vs 0.7 for ib).
+    image_input = actions["static_image"]
+    assert image_input["selected"] == ["ib", "ig", "iswap", "imiss"]
+    assert image_input["gold_image_positions"] == [2]
+    # static_mixed: the joint top-5 (text first by relevance), so the gold image is third.
+    assert actions["static_mixed"]["selected"] == ["tp", "ib", "ig", "iswap", "imiss"]
+    assert actions["static_mixed"]["gold_image_positions"] == [3]
+    summary = report["summary"]
+    assert summary["static_image"]["unreadable_images"] == 1          # the missing file is sent, and reported
+    assert summary["static_image"]["images_over_budget"] == 1         # the 800x800 image
+    assert summary["static_image"]["images_with_id_mismatch"] == 1    # iswap reuses gold.png under another id
+    assert summary["static_mixed"]["images_with_pairing_error"] == 0  # every image has its own title and caption
+    big = next(im for im in actions["static_image"]["images"] if im["cid"] == "ib")
+    assert big["pixels"] == 800 * 800 and big["resized_pixels"] <= 256 * 32 * 32
+    assert big["visual_tokens"] == big["resized_pixels"] // (28 * 28)     # both sides are multiples of 28
+    assert any("cannot be opened" in line for line in report["findings"])
+    assert not any("already checked" in line.lower() for line in report["findings"])
 
 
-def test_image_evidence_real_run_errors_when_annotations_are_missing(tmp_path, monkeypatch):
+def test_image_evidence_real_run_names_the_inputs_it_needs(tmp_path, monkeypatch):
     monkeypatch.setattr("omniaware.paths.WEBQA_JSON", tmp_path / "missing.json")
-    with pytest.raises(SystemExit, match="not found"):
+    with pytest.raises(SystemExit, match="needs real WebQA inputs"):
         image_evidence.main(["--n", "50", "--output", str(tmp_path / "nope.json")])

@@ -83,26 +83,43 @@ def pixel_budget(qwen) -> dict:
     return {"shortest_edge": min(qwen.size["shortest_edge"], cap), "longest_edge": cap}
 
 
+PROTOCOL_DIFFERENCES = {
+    "m2rag.summarizer": "The official M2RAG single-stage summarizer writes an intermediate document (at most 384 "
+                        "tokens) from the chunks before the answer extractor reads it. Every other arm reads the "
+                        "chunks directly. This is the M2RAG protocol and is kept.",
+    "m2rag.extractor_prompt": "The extractor's own constraints (EXTRACTOR_INSTRUCTION) follow the run's shared "
+                              "answer instruction. The official constraints are kept.",
+    "m2rag.chat_template": "The official flat-content user message through LocalQwenVLM, not the ChatML prompt of "
+                           "the other arms.",
+    "m2rag.video": "M2-RAG accepts no video evidence, so it is not run on VideoRAG-Synth.",
+    "fitm": "None: Found-in-the-Middle reads the joint input with the run's prompt and pixel budget.",
+}
+
+
 def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_new_tokens: int,
                  document_tokens: int = 384, instruction: str | None = None) -> tuple[str, dict]:
     """Official M2RAG single-stage summarizer over the same chunks, then the document-only answer extractor.
 
     The question's own images (OK-VQA query images) reach both the summarizer and the extractor, as
-    the question image does for every other arm. Images use the same pixel budget as the other arms;
-    the chat template is the official one (see the paper's appendix). ``instruction`` is the run's answer
-    instruction; run.py passes the one every arm decodes with. Without it, the dataset family's instruction is used.
+    the question image does for every other arm. Images use the same pixel budget as the other arms, and each
+    source text is the word-budgeted text every other arm shows (pipeline.chunk_text). The chat template is the
+    official one. The remaining differences are listed in PROTOCOL_DIFFERENCES and written to the run configuration.
+    ``instruction`` is the run's answer instruction; run.py passes the one every arm decodes with. Without it, the
+    dataset family's instruction is used.
     """
     from .m2rag_official import build_official_summarizer
     from .m2rag_qwen import LocalQwenVLM
     from .m2rag_webqa import extractor_messages, official_query, prepare_sources
-    from .. import prompts
+    from .. import pipeline, prompts
     query_images = list(e.get("query_images") or [])
     if instruction is None and e.get("dataset"):
         instruction = prompts.instruction_text(e["dataset"])
     sources, image_paths = [], {}
     for j, c in enumerate(chunks):
         fact_id = str(900000 + j) if c["modality"] == "image" else c["cid"]
-        text = f"{c['title']}: {c['text']}" if c.get("title") and c["title"] != c["text"] else c["text"]
+        text = pipeline.chunk_text(c)
+        if c["modality"] == "image" and c.get("title") and c["title"] != text:
+            text = f"{c['title']}: {text}" if text else c["title"]
         sources.append({"source_id": c["cid"], "fact_id": fact_id, "modality": c["modality"], "text": text})
         if c["modality"] == "image":
             image_paths[fact_id] = c["image"]

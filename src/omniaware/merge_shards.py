@@ -2,6 +2,7 @@
 
     python -m omniaware.merge_shards runs/<tag>/<dataset>                 # checks against <dataset>_config.json
     python -m omniaware.merge_shards runs/<tag>/<dataset> --expected N    # checks the count only, no configuration
+    python -m omniaware.merge_shards runs/<tag>/<dataset> --max-empty-rate 0.005   # also fail above that rate
 
 Shards are written by ``omniaware.run --num-shards N --shard-id i`` as
 ``<dataset>.shardII-of-NN.jsonl``. The merge checks that all N shards exist, that no question appears twice,
@@ -35,7 +36,8 @@ def shard_files(stem: Path) -> list[Path]:
     return expected
 
 
-def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha256: str | None = None) -> Path:
+def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha256: str | None = None,
+          max_empty_rate: float | None = None) -> Path:
     stem = Path(stem)
     files = shard_files(stem)
     if not files:
@@ -76,6 +78,9 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
         print(empty_report["empty_answer_warning"], flush=True)
     print(f"[merge] {len(rows)} answers from {len(files)} shards -> {out}; "
           f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}", flush=True)
+    if max_empty_rate is not None and empty_report["empty_answer_rate"] > max_empty_rate:
+        raise SystemExit(f"empty answer rate {empty_report['empty_answer_rate']:.6f} exceeds --max-empty-rate "
+                         f"{max_empty_rate}; the merged output and its completion marker were written")
     return out
 
 
@@ -84,15 +89,18 @@ def main(argv=None):
     ap.add_argument("stem", type=Path, help="runs/<tag>/<dataset> (without .jsonl)")
     ap.add_argument("--expected", type=int, default=None,
                     help="number of evaluation questions to check, instead of the count in <dataset>_config.json")
+    ap.add_argument("--max-empty-rate", type=float, default=None,
+                    help="exit non-zero when the empty-answer rate of the merged run exceeds this value")
     args = ap.parse_args(argv)
     if args.expected is not None:
-        merge(args.stem, args.expected)
+        merge(args.stem, args.expected, max_empty_rate=args.max_empty_rate)
         return
     config_path = runio.config_path_for(args.stem.parent, args.stem.name)
     if not config_path.exists():
         ap.error(f"{config_path.name} not found: pass --expected N to merge without the configuration check")
     config = json.loads(config_path.read_text(encoding="utf8"))
-    merge(args.stem, config.get("evaluation_questions"), config.get("evaluation_qids_sha256"))
+    merge(args.stem, config.get("evaluation_questions"), config.get("evaluation_qids_sha256"),
+          max_empty_rate=args.max_empty_rate)
 
 
 if __name__ == "__main__":
