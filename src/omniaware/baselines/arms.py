@@ -94,7 +94,9 @@ def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_n
     from .m2rag_official import build_official_summarizer
     from .m2rag_qwen import LocalQwenVLM
     from .m2rag_webqa import extractor_messages, official_query, prepare_sources
+    from .. import prompts
     query_images = list(e.get("query_images") or [])
+    instruction = prompts.instruction_text(e["dataset"]) if e.get("dataset") else None
     sources, image_paths = [], {}
     for j, c in enumerate(chunks):
         fact_id = str(900000 + j) if c["modality"] == "image" else c["cid"]
@@ -110,5 +112,5 @@ def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_n
     query = official_query(e["qid"], e["question"], prepared, query_images)
     document = summarizer.summarize(query_list=[query], dry_run=False)
     extractor = LocalQwenVLM(qwen.model, qwen.processor, max_new_tokens=max_new_tokens, image_size=size)
-    answer = extractor.chat(extractor_messages(e["question"], document, query_images))["response"].strip()
+    answer = extractor.chat(extractor_messages(e["question"], document, query_images, instruction))["response"].strip()
     return answer, {"calls": len(backend.calls) + len(extractor.calls), "query_images": len(query_images)}
