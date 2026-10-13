@@ -1,20 +1,64 @@
 # Omni-Aware
 
-Omni-Aware 是一个面向多模态 Web 问答的检索控制方法。它在证据 span 上做一次零偏置 prefill：已有输入证据时直接用，冷启动时先取一轮"探测"检索。由这一次 prefill 同时决定三件事：
+Omni-Aware v2 在多模态 Web 问答里做逐题检索仲裁。每道题在同一次运行中解码同一组动作，共用同一个提示词、预算和候选池：`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`。选择器有两个：零训练的 v2-Rule，以及只有 7 个参数（截距加 6 个特征）的逻辑回归 v2-Cal。阈值用固定序列的 Learn-then-Test 筛选。主比较的分母是校准集上得分最高的单一动作。
 
-- 是否检索：由不确定性 U_omni 决定；
-- 去哪个模态检索：由 M_m·H_m 决定；
-- 如何使用证据：在所有预测答案 token 的注意力行上，按相关度给证据加偏置，即 Evidence Attention Bias（EAB）。
+v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论文的机制分析里：注意力可以被推向支持证据，答案几乎不变。
 
-本仓库是它唯一的实现与实验代码；论文 LaTeX 源码（V3.21）在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
+本仓库是实现与实验代码；论文 LaTeX 在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
-> **当前状态：** 本仓库**还没有任何正式结果**。旧仓库和论文 V3.20 中的数字都不能当作结果；论文 V3.21 中的数字目前全部是占位符 `\ph`。所有结果都必须按 [docs/PROTOCOL.md](docs/PROTOCOL.md) 与 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 重新产生。
+> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文由另一处写入 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)；测试命令只读冻结的 `docs/dev_decisions.json`。
 
-快速导航：[0 一键全流程](#0-一键全流程) · [1 环境](#1-环境) · [2 资产目录](#2-资产目录与环境变量) · [3 模型](#3-下载模型) · [4 数据集与-benchmark](#4-数据集与-benchmark) · [5 实验](#5-实验多卡) · [6 评分与分析](#6-评分与分析) · [7 论文表格](#7-论文表格与代码的对应) · [8 测试](#8-测试)
+作废、不得进入论文主表的旧结果：
+
+- 相对**历史缓存基线**的提升。根因报告写明，汇总表里的 **+33%（WebQA）** 和 **+15%（OK-VQA）** 比的就是这种基线：缓存 static 17.9，同批 512 题 static 23.4，相差 5.5 分，提示、预算和检索打分都不相同。
+- 同一报告里经不起复核的其他正结果，包括训练式控制器的 **+8.43%**，以及 32 题开发集上选出的 **+14.4%**。
+- 把 EAB 写成“提升证据利用”或“提升位置鲁棒性”的主贡献。
+- 宽松口径的 WebQA 数字，以及把这种数字和官方 acc_approx 并列。
+- “校准来自 validation”，同时测试集又是全部 validation。
+- 贪心解码下的 seed 标准差。
+- 在测试集上选出的网格。
+
+`python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2` 的结果是**探索性**的，来自**旧管线**，含**已知 bug**，只用于检查代码和信号方向，**不是论文主表**。
+
+快速导航：[v2 实验](#v2-实验) · [0 一键全流程](#0-一键全流程) · [1 环境](#1-环境) · [2 资产目录](#2-资产目录与环境变量) · [3 模型](#3-下载模型) · [4 数据集与-benchmark](#4-数据集与-benchmark) · [5 实验](#5-实验多卡) · [6 评分与分析](#6-评分与分析) · [7 论文表格](#7-论文表格与代码的对应) · [8 测试](#8-测试)
+
+## v2 实验
+
+下面的命令是 v2 的接口。对应脚本由另一分支实现；此处只固定命令行。S1、S2、S4 都还没有作为论文结果跑过。
+
+```bash
+python scripts/v2_runs.py --stage s1 --dataset webqa_full --n 50
+python scripts/v2_runs.py --stage s1 --dataset okvqa --n 50
+python scripts/v2_runs.py --stage s2 --dataset webqa_full
+python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
+python scripts/v2_runs.py --stage s2 --dataset okvqa
+python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions docs/dev_decisions.json
+python scripts/v2_runs.py --stage s4 --dataset okvqa --decisions docs/dev_decisions.json
+python scripts/analysis/v2_gate.py --scores <dev-scores.json>
+python scripts/analysis/image_evidence_check.py --n 50
+python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2
+```
+
+- **S1**：每个数据集 50 题冒烟，检查空答案、各臂格式和图像诊断。
+- **S2**：按协议生成校准集和开发集，并保存信号。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
+- **S4**：读取冻结的 `docs/dev_decisions.json`，全量测试集只跑一次。
+- **v2_gate**：用 S2 产出的开发集分数做 go/no-go。判据是预注册门槛，不是已有结果。`<dev-scores.json>` 是该开发集分数文件的路径。
+- **image_evidence_check**：50 道图像题的证据管线诊断。
+- **offline_v2**：见上面的当前状态。探索性，旧管线，含已知 bug，不是主表。
+
+GPU 时间都是**估计值**，不是实测，也不要写成测量结果：
+
+| 阶段 | 估计值 |
+|---|---|
+| S1 | 约 0.5 天，1 张 GPU |
+| S2 | 约 4–8 小时，1 张 A100 |
+| S4 | 约 1–2 天，1–2 张 A100 |
 
 ## 0. 一键全流程
 
-`scripts/run_all.sh` 把从一台新服务器到论文全部表格的流程串成 12 步。每步结束时在 `runs/.pipeline/` 写一个完成标记；中途失败或中断后，修好问题再执行同一条命令，会从未完成的那一步继续（各脚本在步内部也能续跑）。
+> 本节是 v1 的 `scripts/run_all.sh`。它不产生 v2 主表。v2 命令见 [v2 实验](#v2-实验)。
+
+`scripts/run_all.sh` 把从一台新服务器到 v1 表格的流程串成 12 步。每步结束时在 `runs/.pipeline/` 写一个完成标记；中途失败或中断后，修好问题再执行同一条命令，会从未完成的那一步继续（各脚本在步内部也能续跑）。
 
 ### 0.1 准备（只做一次）
 
@@ -330,6 +374,8 @@ python -m scripts.setup.check_assets      # 所有必需资产都是 OK 才开�
 
 ## 5. 实验（多卡）
 
+> 本节是 **v1** 管线（EAB、`paper_runs.py`、历史运行标签）。它的命令和任何已有输出都**不是** v2 论文主表。v2 的命令、作废结果和估计用时见 [v2 实验](#v2-实验)。
+
 ### 5.1 单条命令
 
 一次运行在同一输入下为每道题生成全部对照臂：direct、static、各 EAB 变体、gated 系列，以及按选项加入的对照方法。
@@ -389,6 +435,8 @@ python -m scripts.paper_runs --model internvl3.5-8b --stage order --run --gpus a
 
 ## 6. 评分与分析
 
+v2 主表只使用官方指标：OK-VQA 为官方 VQA accuracy；WebQA 主指标为 acc_approx，同时报告归一化 BART 和 QA_approx，并分图像子集与文本子集。下面的命令和 `paper_analyses` 列表属于 v1 分析流程。
+
 ```bash
 python -m omniaware.eval.score_official runs/<tag>/<dataset>.jsonl --bart     # 官方指标 + 配对 bootstrap
 python -m omniaware.eval.citation.attribution runs/<tag>/<dataset>.jsonl --device cuda   # Faith / AP / Inv（需要 4.3 节 NLTK 步骤）
@@ -418,7 +466,7 @@ python -m scripts.analysis.routing_metrics runs/v321_route_*/webqa_open_full.jso
 
 ## 7. 论文表格与代码的对应
 
-论文 V3.21 每张表、每个单元格来自哪次运行的哪个对照臂，见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。规范见 [CONVENTIONS.md](CONVENTIONS.md)，实验协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，dev 决策规则见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)。
+v2 论文里每张表对应哪条命令，见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。实验协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)。规范见 [CONVENTIONS.md](CONVENTIONS.md)。dev 决策的原文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)；v2 测试命令读取的是 `docs/dev_decisions.json`。
 
 ## 8. 测试
 
