@@ -49,9 +49,6 @@ The operating point previously taken from a test-set grid (Table~20 in the audit
 
 \textit{Statistics.}
 Uncertainty is a paired bootstrap 95\% confidence interval over questions.
-Every table also reports a pre-registered secondary metric, semantic accuracy: an answer counts as correct when a fixed NLI checker (DeBERTa-v3-large trained on MNLI, FEVER, ANLI, LingNLI and WANLI) judges that ``Question: $q$ / Answer: prediction'' entails ``Question: $q$ / Answer: reference'' with probability at least 0.5, where the OK-VQA references are the answers given by at least three of the ten annotators.
-It is computed on the same choices as the official metric and reported whatever its direction; selection and every conclusion use the official metric.
-Its agreement with blind human labels on a stratified sample of development answers is reported in Appendix~\ref{app:semantic} (\ph{}).
 Multiple comparisons use Holm correction.
 Decoding is greedy, so a configuration is deterministic given its inputs.
 This draft does not report a seed standard deviation under greedy decoding.
@@ -67,7 +64,7 @@ The test split is not used to make those choices.
 \textit{Figures withdrawn by the root-cause report.}
 The following numbers are copied from the root-cause report of 13~October~2026.
 They come from the legacy pipeline, which has known prompt and format problems; they motivate the protocol and are not results of the method. They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
-Relative gains of +33\% on WebQA and +15\% on OK-VQA compared against historical cached baselines produced under different prompts, budgets, and retrieval scores. On one 512-question batch the cached static score was 17.9 where static retrieval decoded in the same run scored 23.4, a gap of 5.5 points from the protocol alone.
+Relative gains of +33\% on WebQA (official QA score 18.1 to 24.2 on the 4{,}966 validation questions) and +15\% on OK-VQA compared against historical cached baselines produced under different prompts, budgets, and retrieval scores. On one 512-question batch the cached static score was 17.9 where static retrieval decoded in the same run scored 23.4, a gap of 5.5 points from the protocol alone.
 The same report withdraws a trained controller's +8.43\% and a +14.4\% chosen on a 32-question development set.
 On a 256-question OK-VQA development slice, official VQA accuracy was 61.5 for direct answering, 36.3 for static retrieval, 48.1 for the gated static arm, and 36.3 for EAB.
 Direct answering won 82 questions and lost 10 against static retrieval.
@@ -210,15 +207,13 @@ The last row is not used to pick the test operating point.}
 Variant & WebQA & OK-VQA & Utility \\
 \midrule
 v2-Cal, six features & \ph{} & \ph{} & \ph{} \\
-Without direct confidence & \ph{} & \ph{} & \ph{} \\
-Without $a^{\star}$ confidence & \ph{} & \ph{} & \ph{} \\
-Without confidence gap & \ph{} & \ph{} & \ph{} \\
+Without direct margin & \ph{} & \ph{} & \ph{} \\
+Without $a^{\star}$ margin & \ph{} & \ph{} & \ph{} \\
+Without margin gap & \ph{} & \ph{} & \ph{} \\
 Without token F1 to $a^{\star}$ & \ph{} & \ph{} & \ph{} \\
 Without KL vs.\ direct & \ph{} & \ph{} & \ph{} \\
 Without retriever top-1 & \ph{} & \ph{} & \ph{} \\
 v2-Rule & \ph{} & \ph{} & \ph{} \\
-v2-Rule, margin instead of $\Uomni$ & \ph{} & \ph{} & \ph{} \\
-v2-Rule, entropy instead of $\Uomni$ & \ph{} & \ph{} & \ph{} \\
 Development $\delta=0.10$, $\epsilon=1.0$ & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
