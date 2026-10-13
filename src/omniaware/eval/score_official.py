@@ -42,6 +42,11 @@ def module(path, name):
     return value
 
 
+# Paired bootstrap: BOOTSTRAP_BATCHES x BOOTSTRAP_BATCH_SIZE resamples (5,000 in all), one fixed seed.
+BOOTSTRAP_SEED = 20261008
+BOOTSTRAP_BATCHES, BOOTSTRAP_BATCH_SIZE = 20, 250
+
+
 def paired(a, b, cluster_ids=None):
     """Paired comparison of b against a over the same questions.
 
@@ -52,7 +57,7 @@ def paired(a, b, cluster_ids=None):
     if a.shape != b.shape:
         raise ValueError(f"paired arrays differ in length: {a.shape} vs {b.shape}")
     delta = b - a
-    rng = np.random.default_rng(20261008)
+    rng = np.random.default_rng(BOOTSTRAP_SEED)
     boot = []
     if cluster_ids is not None:
         groups = {}
@@ -61,12 +66,12 @@ def paired(a, b, cluster_ids=None):
         grouped = list(groups.values())
         sums = np.array([delta[g].sum() for g in grouped])
         counts = np.array([len(g) for g in grouped])
-    for _ in range(20):
+    for _ in range(BOOTSTRAP_BATCHES):
         if cluster_ids is None:
-            ids = rng.integers(len(a), size=(250, len(a)))
+            ids = rng.integers(len(a), size=(BOOTSTRAP_BATCH_SIZE, len(a)))
             boot.extend(delta[ids].mean(axis=1).tolist())
         else:
-            ids = rng.integers(len(sums), size=(250, len(sums)))
+            ids = rng.integers(len(sums), size=(BOOTSTRAP_BATCH_SIZE, len(sums)))
             boot.extend((sums[ids].sum(axis=1) / counts[ids].sum(axis=1)).tolist())
     boot = np.asarray(boot)
     point = float(delta.mean())
@@ -83,9 +88,9 @@ def score_okvqa(preds, qids):
         original = {str(r['question_id']): r for r in json.loads(archive.read(name))['annotations']}
     official = module(paths.THIRD_PARTY / 'vqa_eval' / 'vqaEval_py3.py', 'official_vqa')
     scores = {}
-    for arm, answers in preds.items():
+    for arm, arm_answers in preds.items():
         truth = SimpleNamespace(qa=deepcopy({q: original[q] for q in qids}), getQuesIds=lambda: qids)
-        prediction = SimpleNamespace(qa={q: {'answer': answers[q]} for q in qids})
+        prediction = SimpleNamespace(qa={q: {'answer': arm_answers[q]} for q in qids})
         evaluator = official.VQAEval(truth, prediction, n=10)
         with redirect_stdout(StringIO()):
             evaluator.evaluate(qids)
@@ -110,11 +115,11 @@ def score_webqa(preds, qids, records, bart=False, device=None):
             raise ValueError(f"{q}: {len(records[q]['golds'])} reference answers; the WebQA train/val release has "
                              "exactly one per question, so multiple references are refused, not truncated")
     rows = []
-    for arm, answers in preds.items():
+    for arm, arm_answers in preds.items():
         for q in qids:
             r = records[q]
-            value, _ = score_references(answers[q], r['golds'], r['qcate'], metric)
-            rows.append({'qid': q, 'variant': arm, 'prediction': answers[q], 'references': r['golds'],
+            value, _ = score_references(arm_answers[q], r['golds'], r['qcate'], metric)
+            rows.append({'qid': q, 'variant': arm, 'prediction': arm_answers[q], 'references': r['golds'],
                          'category': r['qcate'], 'acc_approx': value})
     metrics = ['acc_approx']
     extra = {'acc_approx_provenance': provenance, 'primary_metric': 'acc_approx'}
@@ -227,38 +232,42 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
     raw = path.read_bytes()
     records = [json.loads(line) for line in raw.decode().splitlines() if line.strip()]
     qids = [r['qid'] for r in records]
-    assert len(qids) == len(set(qids)), 'duplicate question ids'
+    if len(qids) != len(set(qids)):
+        raise ValueError(f'{path.name}: duplicate question ids')
     by_qid = {r['qid']: r for r in records}
     families = {r['dataset'] for r in records}
-    assert len(families) == 1, f'mixed datasets: {families}'
+    if len(families) != 1:
+        raise ValueError(f'{path.name}: mixed datasets: {sorted(families)}')
     family = families.pop()
     arms = list(records[0]['preds'])
     for r in records:
-        assert set(r['preds']) == set(arms), f"{r['qid']}: arms differ from the first record"
+        if set(r['preds']) != set(arms):
+            raise ValueError(f"{r['qid']}: arms differ from the first record")
     question_check = check_question_set(path, qids, subset=subset)
-    empty_flags = []
     preds = {}
     for arm in arms:
         preds[arm] = {}
         for q in qids:
-            parsed = answers.parse_answer(by_qid[q]['preds'][arm] or '')
-            preds[arm][q] = parsed['answer']
-            empty_flags.append(parsed['answer_empty'])
-    for q in qids:       # the v2 actions of the run count in the empty-answer statistics too (unavailable ones do not)
-        empty_flags += [bool(a['answer_empty']) for a in (by_qid[q].get('actions') or {}).values()
-                        if a.get('available', True)]
+            preds[arm][q] = answers.parse_answer(by_qid[q]['preds'][arm] or '')['answer']
+    # Empty-answer statistics over every decoded string of the run, the same count the completion marker uses.
+    empty_flags = [flag for q in qids for flag in answers.question_empty_flags(by_qid[q])]
     if family == 'webqa':
         check_golds(by_qid, qids, webqa_references())
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart, device=device)
     elif family in ('hybridqa', 'videorag'):
         from .universalrag_metrics import score as universalrag_score
         check_golds(by_qid, qids, universalrag_references(family))
-        scores, metrics, extra = universalrag_score(family, preds, qids, by_qid, bertscore=False)
+        # BERTScore is computed once: with --bart on VideoRAG, and only without it when that fails.
+        bart_error = None
         if bart and family == 'videorag':
             try:
-                scores, metrics, _ = universalrag_score(family, preds, qids, by_qid, bertscore=True)
+                scores, metrics, extra = universalrag_score(family, preds, qids, by_qid, bertscore=True)
             except Exception as exc:
-                extra['bart_error'] = f'{type(exc).__name__}: {exc}'
+                bart_error = f'{type(exc).__name__}: {exc}'
+        if not (bart and family == 'videorag') or bart_error is not None:
+            scores, metrics, extra = universalrag_score(family, preds, qids, by_qid, bertscore=False)
+        if bart_error is not None:
+            extra = dict(extra or {}, bart_error=bart_error)
     else:
         scores, metrics, extra = SCORERS[family](preds, qids)
     extra = extra or {}

@@ -73,14 +73,14 @@
 | A-1 风险控制的损失定义 | 改为对平均效用的单侧配对检验（`arbitration._one_sided_p`）：H0 为 E[d] < −ε，t 统计量，正态上尾 p 值。δ 与 ε 分开，预注册 δ = 0.10、ε = 1.0。`α` 的概念已删除。 | 本次修复（选择器重写） |
 | A-2 固定序列起点 | 起点改为等价于 a\* 的策略：a\* 为 direct 时 tau 从 −∞ 递增；a\* 为证据动作时 tau 从 +∞ 递减。规则的默认动作改为 a\*，不再是 direct。 | 本次修复（选择器重写） |
 | A-3 v2-Cal 没有动作身份 | 每个证据动作一个岭回归，预测相对 a\* 的效用差。特征为 `[1, conf(direct), conf(a*), conf(b)−conf(a*), token F1, KL, retriever top-1]`。缺失的列丢弃并记录，部分缺失报错，不填 0。校准集对半，v2-Cal 经过同一套风险控制，`select_v2` 调用它。 | 本次修复（选择器重写） |
-| A-4 流水线没有接通 | `v2_runs.py` 的 S2 与 S4 生成 score、build、gate、select、apply 命令。`scripts/analysis/v2_table.py` 尚未合入本分支，所以这些命令目前不可执行。动作答案的官方评分也依赖 build 步骤，因此该条只是接线完成，未验证可运行。 | 未修（原因：`v2_table.py` 由另一子任务实现，本分支尚未包含） |
+| A-4 流水线没有接通 | `scripts/analysis/v2_table.py`（build / gate / select / apply）给每个动作官方评分并拼成逐题表；`v2_runs.py` 的 S2 与 S4 生成 score、build、gate、select、apply 命令。CPU 上用小模型和合成数据端到端走通过。 | 本次修复 |
 | A-5 `rerank_static` 被静默换成词面重叠 | 没有 cross-encoder 时报错，词面重叠代码已删除，`rerank_static_source` 配置项已删除。v2 使用 `--v2 --v2-reranker`，没有采用验收意见中建议的 `--selector ce`：`check_v2_args` 规定 `--v2` 时选择器必须保持 relevance，因此 static_mixed 保持联合相关度 top-k，只有 rerank_static 使用 cross-encoder 分数。 | 本次修复（命令形式与验收意见不同，原因见左） |
 | B-1 无效的契约参数 | `--save-signals`、`--empty-answer-accounting`、`--shared-prompt-registry`、`--v2-actions` 已从 `run.py` 删除（HEAD 中存在）。 | 本次修复 |
 | B-2 v2 动作解码对所有运行强制开启 | 由 `--v2` 显式开启。动作分组与解码抽成 `v2_action_chunks` 与 `decode_v2_actions`。调用点仍在 `main()` 的主循环中，没有完全抽成独立函数。 | 本次修复（部分：调用点仍在 `main()` 内） |
 | B-3 A2 的测试是同义反复 | `tests/test_v2_prompts.py` 通过 `run.main` 跑 tiny 模型，抓取各臂实际编码的 prompt，断言包含该次运行的指令。覆盖直答、路由、联合、v2 各动作、校准、FiTM、SeaKR，以及 M2-RAG 抽取器消息。 | 本次修复 |
 | B-4 `paper_runs.py` 主表探测与路由被关 | 已撤回：主方法运行保留探测轮与路由。`baseline_retrieval` 写死字符串已删除。`order` 实验的 `route=False` 是原有设计（固定 chunk 集合），与主表无关。 | 本次修复 |
 | B-5 空答案处理 | `preds` 保留原始输出，解析结果在 `rec["parsed"]`。多卡合并路径统计 `empty_answer_rate`，统计包括 available 的 v2 动作。模态候选池为空时该动作标记为 `available=false`，不复用 direct 的结果。 | 本次修复 |
-| B-6 `v2_runs.py` 的数据集与陈旧注释 | 数据集改为 `okvqa_gs`。过期注释已删除。S2 生成评分、build、gate、select 命令。`gate` 与 `select` 依赖的 `v2_table.py` 尚未合入。 | 本次修复（依赖未合入的 `v2_table.py`） |
+| B-6 `v2_runs.py` 的数据集与陈旧注释 | 数据集改为 `okvqa_gs`。过期注释已删除。S2 生成评分、build、gate、select 命令，S4 生成评分、build、apply 命令。 | 本次修复 |
 | B-7 WebQA 子集划分的回退 | 缺少 `gold_modalities` 时报错（`score_official.webqa_subset_name`），不再按 qcate 猜测。 | 本次修复 |
 | C 节 同一常量定义多次 | `V2_ACTIONS` 只在 `omniaware/actions.py` 定义。`v2_gate.py` 已删除。 | 本次修复 |
 | C 节 重复实现与离线脚本 | `token_f1` 做大小写与标点归一化。`ltt_select`、`split_half`、`_TAU1_GRID` 等已从选择器删除。`score_official` 的同值别名字段已去掉。`offline_v2.py` 重写为约 300 行，直接导入选择器，空答案判断复用 `answers.parse_answer`。 | 本次修复 |
@@ -94,8 +94,8 @@
 
 ## 3. 验收门槛的状态
 
-- 离线：未通过、未验证。`offline_v2.py` 尚未重写，因此没有可以引用的返工后结果。
-- 阶段接线：`v2_runs.py` 的命令已经生成，`v2_table.py` 尚未合入，端到端尚未验证。
+- 离线（WebQA，旧管线，探索性）：评测半上 v2-Rule 43.31，朴素单阈值基线 43.31，始终 static 41.32，通过。只保留两路答案都非空的题时，v2-Rule 为 48.34 对 47.02（+2.8%），即原先 +4.8% 中约一半来自识别旧管线的空答案。OK-VQA 上所有策略回退为直答，增益为 0，“收益为正”这一条在 OK-VQA 上没有满足。详见 `runs/offline_v2/REPORT.md`。
+- 阶段接线：build → gate → select → apply 已在 CPU 上用小模型和合成数据走通；真实模型与真实数据上的运行没有做。
 - 选择器：合成数据测试覆盖了 A-1、A-2、A-3 与 B-3 的要点（见 `tests/test_arbitration.py`），但这不等同于在真实数据上的结果。
 
 ## 4. 没做或做不到
@@ -150,10 +150,42 @@ a16ee0a Add the S2 dev-set oracle gap gate for task D.
 
 ## 6. pytest
 
-`python -m pytest -p no:warnings` 的汇总行（最终验收时运行）：`398 passed, 5 skipped, 8 subtests passed`。5 个跳过是原有的环境相关测试（缺少模型权重或 Punkt 资产）。
+`python -m pytest -p no:warnings` 的汇总行（第二轮修复后）：`449 passed, 5 skipped, 8 subtests passed`。5 个跳过是原有的环境相关测试（缺少 torchvision、spacy、NLTK 数据或资产目录）。
 
 ## 7. 论文编译
 
 在 `paper/` 中执行 `latexmk -pdf -interaction=nonstopmode main.tex`，退出码 0，输出 `main.pdf`，8 页，559597 字节。日志中没有 `!` 错误，没有未定义的引用或引文，只有一条 1.6pt 的 `Overfull \vbox` 版式警告。
 
 该 PDF 被 `.gitignore` 忽略，没有提交。
+
+
+## 8. 2026-10-13 第二轮审查与修复
+
+第二轮由 5 个只读审查（协议、端到端、文档与论文、代码质量、清单核对）加一组蒙特卡洛模拟组成，报告在 `C:\rc\_reports\audit2\`。确认并修复的问题：
+
+| 问题 | 处理 |
+|---|---|
+| 检索器信号取的是整个候选池的第一名，不是该动作实际使用的证据 | `signals.retriever_signals` 的顶层统计改为按选中的证据计算，候选池统计移到 `retriever["pool"]`。 |
+| 动作记录没有保存使用了哪些证据 | 每个动作记录新增 `chunks`。 |
+| 直答不可用时仍可能被规则选中；应用阶段不校验非有限置信度 | 已修，`arbitration.reference_action` 给出逐题参照动作。 |
+| 最强单一动作在某道测试题上不可用时 `apply` 报错 | 改用逐题参照动作。 |
+| 拼表不核对题集是否完整 | `v2_table build` 复用 `score_official` 的题集与 gold 校验。 |
+| v2 主表没有自适应检索对照 | 表里并入基线臂分数；校准集上为 U 门控与 NTE 各冻结一个单阈值；`apply` 输出 v2 相对每个基线的配对比较，最强基线在校准集上确定。S2 开发运行与 S4 运行带 `--fitm --m2rag --seakr-samples 20`。 |
+| GPU 脚本的评分命令不带 `--bart` | WebQA 的评分与 build 命令加上 `--bart`。 |
+| `rerank_static` 与 CE 基线的证据顺序不同 | 两者走同一个函数。 |
+| v1 分析脚本读取的 EAB 列在主表运行里不存在 | v1 管线（`paper_runs.py`）的运行恢复 EAB 臂；它只用于机制分析与基线，不是 v2 主表。 |
+| UniversalRAG 的 query 路由在 WebQA 上必然失败 | 运行在加载模型之前检查候选是否带 suite 分数；v1 的相关阶段不再包含 WebQA。 |
+| 旧主表脚本在测试集上选最强基线 | `column_table` 只在调用方显式给出时标注最强基线。 |
+| M2-RAG 的证据文本预算与其他臂不同 | 改为使用同一词数预算；其余协议差异列在 `baselines.arms.PROTOCOL_DIFFERENCES` 并写入运行配置。 |
+| 图像证据诊断不检查真实输入 | 重写为用与运行相同的函数构造输入段后检查。真实数据上的诊断仍未运行。 |
+| 空输出被记为最高置信度；整句拒答有漏网；同一运行标签并发写入无锁 | 已修；新增 `--max-empty-rate`，S1 冒烟使用 0.005。 |
+| 论文与文档的不实表述 | “preregistered”、“提示词在开发集上选定”、省钱版、“+33%”的来源、两处方法描述已改正。 |
+
+蒙特卡洛（36 种情形：二值与连续分数、独立与高度相关、校准集 100 / 500 / 2000 题、最强动作为直答、证据或并列，各 500 次）：选择器选出真实期望得分低于最强单一动作减 ε 的策略的频率为 0，保证的上限是 0.10。结果在 `C:\rc\_reports\audit2\work_stats\guarantee_log.txt`。统计设计未改。
+
+仍未解决：
+- 所有 GPU 运行（S1 / S2 / S4）与真实数据上的图像证据诊断。
+- OK-VQA 的校准集与开发集取自评测数据的保留部分（仓库里没有 OK-VQA 的 train 加载器），三者不交，但不是取自 train。
+- 校准运行不带 SeaKR / FiTM / M2-RAG 臂，所以“校准集上的最强基线”只在单一动作、U 门控与 NTE 之间确定；`apply` 仍会逐个报告 v2 相对 SeaKR / FiTM / M2-RAG 的比较。
+- 相关工作缺 CRAG、CAD、DoLa 与风险控制方面的引用；`\tbd{AI-use disclosure}` 未填。
+- 此前列出的三项：BM25 版 OK-VQA 语料、FiTM 温度、真实权重下的对话模板。

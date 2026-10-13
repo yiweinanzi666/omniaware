@@ -75,13 +75,21 @@ def token_f1(a: str, b: str) -> float:
 
 
 def _confidence(record: dict, kind: str) -> float:
-    """Higher is more confident. ``margin`` is the first-token top-1 minus top-2 margin; ``neg_entropy`` is -entropy."""
+    """Higher is more confident. ``margin`` is the first-token top-1 minus top-2 margin; ``neg_entropy`` is -entropy.
+
+    A non-finite value is refused: a NaN or infinite confidence would decide the policy silently.
+    """
     token = record["first_token"]
     if kind == "margin":
-        return float(token["margin"])
-    if kind == "neg_entropy":
-        return -float(token["entropy"])
-    raise ValueError(f"confidence must be one of {CONFIDENCE_KINDS}, not {kind!r}")
+        raw, sign = token["margin"], 1.0
+    elif kind == "neg_entropy":
+        raw, sign = token["entropy"], -1.0
+    else:
+        raise ValueError(f"confidence must be one of {CONFIDENCE_KINDS}, not {kind!r}")
+    value = math.nan if raw is None else sign * float(raw)      # a non-finite value is stored as null
+    if not math.isfinite(value):
+        raise ValueError(f"the {kind} confidence of an action is not finite; the decision cannot be applied")
+    return value
 
 
 def _available(actions: dict, name: str) -> bool:
@@ -139,7 +147,7 @@ def apply_decision(decision: dict, actions: dict) -> dict:
     elif kind == "cal":
         name = _cal_action(decision, actions)
     elif kind == "single":
-        name = _default_action(decision, actions)
+        name = reference_action(decision, actions)
     else:
         raise ValueError(f"unknown decision kind {kind!r}")
     return {"action": name, "answer": actions[name]["answer"]}
@@ -154,8 +162,12 @@ def policy_scores(decision: dict, rows: list[dict]) -> list[float]:
     return out
 
 
-def _default_action(decision: dict, actions: dict) -> str:
-    """a* when it is available, otherwise the best available action by calibration mean."""
+def reference_action(decision: dict, actions: dict) -> str:
+    """The reference action of one question: a* when it is available, otherwise the first available action of the
+    frozen ``action_ranking`` (highest calibration mean first). This is the action the fallback decision gives.
+
+    Raises ValueError when no action of the question is available.
+    """
     for name in decision["action_ranking"]:
         if _available(actions, name):
             return name
@@ -164,11 +176,11 @@ def _default_action(decision: dict, actions: dict) -> str:
 
 def _rule_action(decision: dict, actions: dict) -> str:
     kind = decision["confidence"]
-    if _confidence(actions[DIRECT], kind) >= decode_json_float(decision["tau"]):
+    if _available(actions, DIRECT) and _confidence(actions[DIRECT], kind) >= decode_json_float(decision["tau"]):
         return DIRECT
     evidence = [name for name in decision["evidence_ranking"] if _available(actions, name)]
     if not evidence:
-        return DIRECT
+        return reference_action(decision, actions)
     if decision["evidence_choice"] == "best":
         return evidence[0]
     chosen = evidence[0]
@@ -179,10 +191,26 @@ def _rule_action(decision: dict, actions: dict) -> str:
 
 
 def _cal_action(decision: dict, actions: dict) -> str:
-    best = _best_predicted_gain(decision["models"], actions, decision["best_single"], decision["confidence"])
+    """The predicted-gain policy. Its features are relative to a* and to direct, so when either is unavailable on
+    the question no gain can be predicted and the reference action is used."""
+    star = decision["best_single"]
+    if not (_available(actions, DIRECT) and _available(actions, star)):
+        return reference_action(decision, actions)
+    best = _best_predicted_gain(decision["models"], actions, star, decision["confidence"])
     if best is not None and best[1] > decode_json_float(decision["lam"]):
         return best[0]
-    return _default_action(decision, actions)
+    return reference_action(decision, actions)
+
+
+def decision_fields(decision: dict) -> dict:
+    """The fields that define a frozen decision, for reports. Cal models list their kept and dropped features."""
+    keys = ("kind", "fallback", "action", "best_single", "confidence", "delta", "epsilon", "n_calib",
+            "n_accepted", "calib_utility", "evidence_choice", "tau", "lam", "seed", "n_fit", "n_risk", "n_params")
+    out = {key: decision[key] for key in keys if key in decision}
+    if decision.get("models"):
+        out["models"] = {name: {"features": m["features"], "dropped": m["dropped"], "n_params": m["n_params"]}
+                         for name, m in decision["models"].items()}
+    return out
 
 
 # ---------------------------------------------------------------- v2-Rule
@@ -200,8 +228,11 @@ def select_rule(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0
 
     The candidates are ``evidence_choice`` in {"best", "confident"} crossed with thresholds tau on the direct
     confidence. Each family is a fixed sequence at level delta / 2, so the union of the two has level delta.
-    Thresholds are quantiles of direct confidence on the calibration rows (labels are not used). The sequence
-    starts at the policy equal to a* (tau = -inf if a* is direct, tau = +inf if a* is an evidence action).
+    Thresholds are quantiles of direct confidence on the calibration rows (labels are not used). Both families
+    start from the same end and move away from it: tau = -inf (always direct) when a* is direct, and tau = +inf
+    (always evidence) when a* is an evidence action. For "best" the starting policy equals a* exactly, because
+    e* = a* when a* is evidence. For "confident" the starting policy picks the most confident evidence action,
+    which is not a* in general; if that start does not pass the test, the whole family is rejected.
     The accepted candidates from both families are pooled, and the one with the largest mean gap wins;
     ties go to the earlier candidate, with "best" before "confident". If nothing is accepted or the best
     mean gap is <= 0, the decision is the fallback "always a*".

@@ -85,7 +85,7 @@ Multimodal Web question answering has to choose, for each question, whether to t
 \method{} v2 decodes five actions in one run under one frozen prompt: direct answering, static text, static image, static mixed evidence, and static evidence reranked by a cross-encoder.
 v2-Rule fits no weights: it thresholds the first-token margin of the direct answer and otherwise uses an evidence action.
 v2-Cal fits one ridge regression per evidence action that predicts its score gain over the strongest single action.
-Both selectors read only the direct margin, the agreement between answers (token F1), the KL divergence from the direct distribution, and the retriever's top-1 score; the other recorded signals are kept for analysis.
+The rule reads only first-token margins: the direct margin decides whether to retrieve, and one of its two variants also compares the margins of the evidence actions. The calibrated selector additionally reads the agreement between answers (token F1), the KL divergence from the direct distribution, and the top retriever score among the evidence an action uses; the other recorded signals are kept for analysis.
 Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action, with $\delta=0.10$ and a tolerance $\epsilon=1.0$ point.
 With probability at least $1-\delta$ over the calibration draw, the expected score of the chosen policy is at least the expected score of the strongest single action minus $\epsilon$.
 Utility, not accuracy, selects the threshold inside the accepted set.
@@ -175,7 +175,7 @@ The main prompt is shared by every action.
 It asks for the frozen answer format and does not instruct the model to emit a sources line in place of an answer.
 WebQA answers are one sentence aligned with the reference sentence style.
 OK-VQA answers are at most three words after official VQA normalization.
-That format is chosen on the development split and then frozen.
+That format is fixed before any model run and is the same for every arm.
 
 The action set is
 \begin{equation}
@@ -215,7 +215,7 @@ Only four quantities enter a decision: the first-token margin, the token F1 betw
 
 One direct prefill produces the direct first-token signals.
 Each evidence action then uses a short greedy decode.
-A cheaper variant, reported separately, decodes evidence actions only when the direct confidence is below a threshold.
+Decoding evidence actions only when the direct confidence falls below the threshold would lower this cost; that variant is not implemented or evaluated here.
 Its measured cost is \ph{}, because that variant has not been run.
 
 \subsection{v2-Rule}
@@ -226,7 +226,7 @@ If $c(\texttt{direct})\ge\tau$, the rule selects \texttt{direct}.
 Otherwise it selects an evidence action in one of two ways: the evidence action $e^{\star}$ with the highest calibration mean, which equals $a^{\star}$ whenever $a^{\star}$ is an evidence action, or the available evidence action with the largest margin on that question.
 Evidence actions with an empty candidate pool are unavailable and are skipped.
 The thresholds $\tau$ are the 0\%, 5\%, \dots, 100\% quantiles of the direct margin on the calibration split, together with $\pm\infty$.
-The sequence starts at the policy equal to $a^{\star}$, namely $\tau=-\infty$ when $a^{\star}$ is \texttt{direct} and $\tau=+\infty$ when it is an evidence action, and moves away from there.
+The sequence starts at $\tau=-\infty$ when $a^{\star}$ is \texttt{direct} and at $\tau=+\infty$ when it is an evidence action, and moves away from there. With the best-evidence rule this starting policy equals $a^{\star}$; with the most-confident rule it equals $a^{\star}$ only when $a^{\star}$ is \texttt{direct}, and otherwise the whole sequence is rejected if its first policy fails the test.
 Each evidence rule has its own sequence at level $\delta/2$.
 The threshold is chosen by utility (Section~\ref{sec:risk}), not by accuracy.
 

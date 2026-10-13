@@ -71,3 +71,46 @@ def test_preds_keep_the_raw_text_when_parsed_separately():
     raw = "Paris\n[E1] [E2]"
     assert question_empty_flags({"preds": {"static": raw}}) == [False]
     assert parse_answer(raw)["answer"] == "Paris"
+
+
+REFUSALS = [
+    "I'm sorry, I cannot answer this question.",
+    "I cannot determine the answer from the provided image.",
+    "Sorry, I can't answer that based on the given information.",
+    "I don't know the answer to this question.",
+    "There is not enough information to answer the question.",
+    "The provided evidence does not contain the answer.",
+    "I am unable to answer this question.",
+    "Insufficient information",
+]
+REAL_ANSWERS = [
+    "No",
+    "None",
+    "Yes",
+    "I cannot see any person.",
+    "I cannot determine the exact number, it is about five.",
+    "I can't tell which one, the image shows a red car.",
+    "The evidence shows Paris.",
+    "No information about the dog is visible.",
+]
+
+
+@pytest.mark.parametrize("text", REFUSALS)
+def test_whole_sentence_refusals_are_empty(text):
+    parsed = parse_answer(text)
+    assert parsed["answer_empty"] is True and parsed["answer"] == ""
+
+
+@pytest.mark.parametrize("text", REAL_ANSWERS)
+def test_real_short_answers_are_not_refusals(text):
+    parsed = parse_answer(text)
+    assert parsed["answer_empty"] is False and parsed["answer"] == text
+
+
+def test_refusal_followed_by_a_citation_line_is_still_a_refusal():
+    assert parse_answer("I'm sorry, I cannot answer this question.\nSources: [E1]")["answer_empty"] is True
+
+
+def test_refusal_clause_followed_by_an_answer_is_an_answer():
+    text = "I cannot determine the exact number from the image, it is about five."
+    assert parse_answer(text)["answer_empty"] is False

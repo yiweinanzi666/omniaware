@@ -11,13 +11,12 @@ EXTRACTOR_INSTRUCTION = (
 
 
 def prepare_sources(tokenizer, ordered_sources, image_paths, relevance_by_source):
-    """Apply the same 256-text-token limit before either generation interface."""
+    """Attach the image path and relevance of each source. The text is passed through unchanged: the caller
+    already cut it to the word budget every other arm uses (pipeline.chunk_text), so no arm sees more text."""
     result = []
     for source in ordered_sources:
-        tokens = tokenizer.encode(source['text'], add_special_tokens=False)
         source_id = source['source_id']
-        row = dict(source, text=tokenizer.decode(tokens[:256]),
-            full_text_tokens=len(tokens), kept_text_token_ids=tokens[:256],
+        row = dict(source, full_text_tokens=len(tokenizer.encode(source['text'], add_special_tokens=False)),
             r_j=relevance_by_source[source_id])
         if source['modality'] == 'image':
             row['image_path'] = image_paths[str(source['fact_id'])]

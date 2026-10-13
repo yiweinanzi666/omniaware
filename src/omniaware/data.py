@@ -24,7 +24,7 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
-from . import paths
+from. import paths
 
 
 class MissingDataError(RuntimeError):
@@ -69,7 +69,7 @@ def _missing_policy(what: str, missing: dict[str, dict[str, int]], allow_missing
 
 # ------------------------------------------------------------------ WebQA --
 def _gold_modalities(v: dict) -> list[str]:
-    """Modalities of the positive facts; a question with both kinds of positive fact records both (M-37)."""
+    """Modalities of the positive facts; a question with both kinds of positive fact records both."""
     return sorted(m for m, facts in (("image", v["img_posFacts"]), ("text", v["txt_posFacts"])) if facts)
 
 
@@ -278,7 +278,7 @@ def load_okvqa_gs(allow_missing: bool = False) -> Examples:
 
 def load_okvqa_gs_full(allow_missing: bool = False) -> Examples:
     """Appendix control only: the 168,306-sentence GS corpus, collected with the test questions as well
-    (okvqa_dense --corpus gs168k_full). It never takes part in the dev choice (D3)."""
+    (okvqa_dense --corpus gs168k_full). It never takes part in the dev choice."""
     return load_okvqa(paths.LOCAL_CACHE / "okvqa_gs168k_full" / "candidates_full.jsonl", allow_missing=allow_missing)
 
 
@@ -304,7 +304,7 @@ UNIVERSALRAG_TARGETS = {          # loader name -> (query file, dataset family, 
     "hybridqa": ("hybridqa", "hybridqa", ("table", "paragraph")),
     "videorag_synth": ("videorag_synth", "videorag", ("video", "clip")),
 }
-# Modality of each UniversalRAG candidate list.  clip and video are separate modalities (D6).
+# Modality of each UniversalRAG candidate list.  clip and video are separate modalities.
 _UR_MODALITY = {"paragraph": "text", "document": "text", "table": "table", "image": "image",
                 "video": "video", "clip": "clip"}
 _UR_PREFIX = {"paragraph": "p", "document": "d", "table": "t", "image": "i", "video": "v", "clip": "c"}
@@ -446,17 +446,17 @@ LOADERS = {
 }
 
 # Training-split pools (paper: calibration queries come from the training splits).  Only WebQA has one: its
-# calibration and dev questions are drawn from the training split (D2).  The other datasets calibrate on a
+# calibration and dev questions are drawn from the training split.  The other datasets calibrate on a
 # held-out reserve of their own universe (CALIB_RESERVE).
 TRAIN_LOADERS = {
     "webqa_full": lambda **kw: load_webqa("all", split="train", **kw),
     "webqa_open_full": lambda **kw: load_webqa_open("all", split="train", **kw),
 }
 # WebQA image subsets are cut from their full split: the partition is drawn over all questions and then restricted
-# to the image questions (D2).  The image dev questions are then the image part of the full dev split.
+# to the image questions.  The image dev questions are then the image part of the full dev split.
 IMAGE_SUBSET_OF = {"webqa_img": "webqa_full", "webqa_open_img": "webqa_open_full"}
 
-# ------------------------------------------------------ protocol sizes (D1, D2) --
+# ------------------------------------------------------ protocol sizes --
 # Held-out datasets: the universe is shuffled with the split seed.  Its first CALIB_RESERVE questions are the
 # calibration reserve (calib = the first n_calib of them), the next N_DEV are dev, and the rest is test.  The test
 # set therefore does not depend on n_calib.
@@ -531,17 +531,17 @@ def split_examples(examples: list[dict], n_calib: int, n_dev: int, seed: int = 2
 
 
 def is_image_question(e: dict) -> bool:
-    """WebQA image question: it has a positive image fact (recorded in gold_modalities, M-37)."""
+    """WebQA image question: it has a positive image fact (recorded in gold_modalities)."""
     return "image" in e["gold_modalities"]
 
 
 def image_subset(sp: dict[str, list[dict]]) -> dict[str, list[dict]]:
-    """Restrict every part of a full split to its image questions (WebQA-img, D2)."""
+    """Restrict every part of a full split to its image questions (WebQA-img)."""
     return {k: [e for e in v if is_image_question(e)] for k, v in sp.items()}
 
 
 def candidate_shortfall(examples: list[dict], k: int) -> dict:
-    """Count questions that cannot fill a top-k selection, or lack candidates of a modality the set has (M-21).
+    """Count questions that cannot fill a top-k selection, or lack candidates of a modality the set has.
 
     Reported at load time so that a short question is visible before the run reaches it; select_chunks would
     otherwise raise mid-run.  Fixed-evidence questions (all candidates are shown) are not counted as short.

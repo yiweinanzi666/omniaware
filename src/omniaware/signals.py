@@ -58,61 +58,74 @@ def kl_to(evidence_logits, direct_logits, vocab_size: int | None = None) -> floa
 
 def sequence_logprob(logits, tokens: list[int] | None, token_logprobs: list[float] | None,
                      vocab_size: int | None) -> float | None:
-    """Sum of greedy-token logprobs. A one-token decode can use the first-step distribution."""
+    """Sum of greedy-token logprobs. A one-token decode can use the first-step distribution.
+
+    An empty decode has no greedy token, so it has no sequence logprob (None), not a score of 0.
+    """
     tokens = list(tokens or [])
+    if not tokens:
+        return None
     if token_logprobs is not None:
         return float(sum(token_logprobs))
-    if not tokens:
-        return 0.0
     if len(tokens) != 1:
         return None
     logp = torch.log_softmax(_as_logits(logits, vocab_size), dim=-1)
     return float(logp[int(tokens[0])])
 
 
-def _rank_stats(pool: list[dict], scores: dict[str, float], selected_ids: set[str] | None) -> dict:
-    ranked = sorted(pool, key=lambda c: (-float(scores.get(c["cid"], float("-inf"))), str(c["cid"])))
-    if not ranked:
-        return {"top1_score": None, "top1_top2_margin": None, "gold_in_topk": None}
-    s1 = float(scores[ranked[0]["cid"]])
-    s2 = float(scores[ranked[1]["cid"]]) if len(ranked) > 1 else None
-    margin = None if s2 is None else s1 - s2
-    if selected_ids is None:
-        gold = None
-    else:
-        known = [c for c in pool if c.get("gold") is not None]
-        if not known:
-            gold = None
-        else:
-            gold = any(bool(c.get("gold")) and c["cid"] in selected_ids for c in pool)
-    return {"top1_score": s1, "top1_top2_margin": margin, "gold_in_topk": gold}
+def _top_stats(ids: list[str], scores: dict[str, float]) -> dict:
+    """Top-1 score and top1-top2 gap over the given candidate ids (None where undefined)."""
+    if not ids:
+        return {"top1_score": None, "top1_top2_margin": None}
+    ranked = sorted(ids, key=lambda cid: (-float(scores[cid]), str(cid)))
+    s1 = float(scores[ranked[0]])
+    margin = s1 - float(scores[ranked[1]]) if len(ranked) > 1 else None
+    return {"top1_score": s1, "top1_top2_margin": margin}
 
 
-def retriever_signals(candidates: list[dict], scores: dict[str, float], selected: list[dict] | None,
-                      modality: str | None = None) -> dict:
-    """Retriever top-1, top1-top2 gap, and gold-in-topk for the chunks this action sends.
+def _selected_stats(pool: list[dict], scores: dict[str, float], selected: list[dict] | None,
+                    modality: str | None = None) -> dict:
+    """Top-1 of the evidence the action sends (within ``modality`` when given), and gold_in_topk over it.
 
-    ``selected is None`` (the direct action) stores the pool's top-1 scores and leaves
-    ``gold_in_topk`` unset: no top-k was sent to the model. ``per_modality`` repeats the same
-    three keys per modality. ``gold_in_topk`` is not an input to any decision.
+    gold_in_topk is None when no evidence was sent (direct, or an unavailable action) or when no candidate of the
+    pool has a gold label.
     """
-    pool = [c for c in candidates if modality is None or c["modality"] == modality]
-    selected_ids = None if selected is None else {c["cid"] for c in selected}
-    if modality is not None:
-        if selected_ids is not None:
-            selected_ids = {c["cid"] for c in selected if c["modality"] == modality}
-        return _rank_stats(pool, scores, selected_ids)
-    top = _rank_stats(pool, scores, selected_ids)
+    if not selected:
+        return {"top1_score": None, "top1_top2_margin": None, "gold_in_topk": None}
+    chosen = [c for c in selected if modality is None or c["modality"] == modality]
+    top = _top_stats([c["cid"] for c in chosen], scores)
+    known = any(c.get("gold") is not None for c in pool)
+    if known:
+        chosen_ids = {c["cid"] for c in selected}
+        gold = any(bool(c.get("gold")) for c in pool if c["cid"] in chosen_ids and
+                   (modality is None or c["modality"] == modality))
+    else:
+        gold = None
+    return {**top, "gold_in_topk": gold}
+
+
+def retriever_signals(candidates: list[dict], scores: dict[str, float], selected: list[dict] | None) -> dict:
+    """Retriever statistics of one action.
+
+    The top-level ``top1_score`` / ``top1_top2_margin`` / ``gold_in_topk`` describe the chunks this action sends
+    (``selected``), scored by ``scores``. The direct action sends none (``selected is None``), so its values are
+    None. ``pool`` holds the same statistics over the whole candidate pool and per modality (``per_modality``, each
+    entry with the selected evidence of that modality). No selector reads ``gold_in_topk``.
+    """
+    sent = _selected_stats(candidates, scores, selected)
     per = {}
     for m in sorted({c["modality"] for c in candidates}):
-        per[m] = retriever_signals(candidates, scores, selected, modality=m)
-    top["per_modality"] = per
-    return top
+        pool_m = [c for c in candidates if c["modality"] == m]
+        per[m] = {**_top_stats([c["cid"] for c in pool_m], scores),
+                  "gold_in_topk": _selected_stats(candidates, scores, selected, modality=m)["gold_in_topk"]}
+    pool = {**_top_stats([c["cid"] for c in candidates], scores), "per_modality": per}
+    return {**sent, "pool": pool}
 
 
 def action_record(text: str, logits, tokens: list[int] | None, token_logprobs: list[float] | None,
-                  vocab_size: int | None, direct_logits, retriever: dict, k: int = 10) -> dict:
-    """One available v2 action. ``direct_logits is None`` marks the direct action (``kl_to_direct`` is None)."""
+                  vocab_size: int | None, direct_logits, retriever: dict, chunks: list[str], k: int = 10) -> dict:
+    """One available v2 action. ``direct_logits is None`` marks the direct action (``kl_to_direct`` is None).
+    ``chunks`` are the ids of the evidence chunks in the order the model read them ([] for direct)."""
     parsed = parse_answer(text)
     first = first_token_signals(logits, k=k, vocab_size=vocab_size)
     return {
@@ -125,12 +138,13 @@ def action_record(text: str, logits, tokens: list[int] | None, token_logprobs: l
         "first_token": first,
         "kl_to_direct": None if direct_logits is None else kl_to(logits, direct_logits, vocab_size),
         "retriever": retriever,
+        "chunks": list(chunks),
     }
 
 
 def unavailable_record(retriever: dict) -> dict:
     """A v2 action with no candidates (for example a modality pool that is empty). Nothing is decoded, so no
-    selector may choose it: ``available`` is False and the answer fields are empty."""
+    selector may choose it: ``available`` is False, the answer fields are empty and no chunk is listed."""
     return {
         "available": False,
         "answer": "",
@@ -141,4 +155,5 @@ def unavailable_record(retriever: dict) -> dict:
         "first_token": None,
         "kl_to_direct": None,
         "retriever": retriever,
+        "chunks": [],
     }

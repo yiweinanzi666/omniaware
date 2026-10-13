@@ -35,14 +35,15 @@ class M2RAGWebQATests(unittest.TestCase):
             if source['modality']=='image':
                 source['image_path']=f"/synthetic/{source['fact_id']}.jpg"
 
-    def test_common_truncation_preserves_source_identity_and_selected_pixels(self):
+    def test_prepare_sources_keeps_text_identity_and_selected_pixels(self):
         original=[dict(self.sources[1],text='An original caption. '*300)]
         prepared=prepare_sources(self.processor.tokenizer,original,
             {'30218009':self.sources[1]['image_path']},{'image:30218009':.7})
         self.assertEqual(prepared[0]['source_id'],original[0]['source_id'])
-        self.assertEqual(len(prepared[0]['kept_text_token_ids']),256)
+        # The caller cuts the text to the shared word budget; prepare_sources passes it through unchanged.
+        self.assertNotIn('kept_text_token_ids',prepared[0])
         self.assertGreater(prepared[0]['full_text_tokens'],256)
-        self.assertEqual(prepared[0]['text'],self.processor.tokenizer.decode(prepared[0]['kept_text_token_ids']))
+        self.assertEqual(prepared[0]['text'],original[0]['text'])
         self.assertEqual(original[0]['text'],'An original caption. '*300)
         query=official_query('synthetic','Synthetic question?',prepared)
         image=query['webpages'][0]['images'][0]

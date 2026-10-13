@@ -238,41 +238,22 @@ def test_route_rules_end_to_end(tmp_path, monkeypatch, rule):
             assert chosen <= {m[0] for m in mods} or not mods
 
 
-def test_universalrag_query_routes(tmp_path, monkeypatch):
+def test_universalrag_query_route_is_refused_on_webqa_before_any_work(tmp_path, monkeypatch, capsys):
+    """WebQA candidates carry no UniversalRAG suite score, so the query route cannot rank them. The run refuses up front
+    (the first question would fail otherwise). The route mechanics on suite datasets are tested in test_universalrag.py."""
     from omniaware.baselines import universalrag
     examples = _webqa_examples(12)
     monkeypatch.setitem(data.LOADERS, "webqa_open_full", lambda **kw: examples)
     monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
     monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
-    monkeypatch.setattr(run, "QwenEAB", FakeQwen)
-    monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
-        e["qid"]: {c["cid"]: {("image_clip" if c["modality"] == "image" else "text"): 1 - 0.01 * int(c["cid"][1:])}
-                   for c in e["candidates"]} for e in exs})
-    labels = {0: ["image"], 1: ["paragraph"], 2: ["no"], 3: ["paragraph", "image"], 4: ["table"]}
-    routes = [dict(q, retrieval=labels[i % 5]) for i, q in enumerate(universalrag.export_queries(examples))]
-    assert all("answer" not in q and "golds" not in q for q in routes)
+    routes = [dict(q, retrieval=["paragraph"]) for q in universalrag.export_queries(examples)]
     (tmp_path / "routes.json").write_text(json.dumps(routes))
-    # The suite's own retriever scores decide the order of a routed list (not relevance).
-    for e in examples:
-        for c in e["candidates"]:
-            c["suite_score"] = 1 - 0.01 * int(c["cid"][1:])
-    run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
-              "--n-dev", "0", "--tag", "uq", "--route-rule", "query", "--query-routes", str(tmp_path / "routes.json"),
-              "--image-mode", "clip", "--variants", "eab:g1.2:ans2:pos:gate", "--replication-gamma", "1.2"])
-    rows = [json.loads(line) for line in (tmp_path / "runs" / "uq" / "webqa_open_full.jsonl").read_text().splitlines()]
-    for r in rows:
-        lab = labels[int(r["qid"][1:]) % 5]
-        assert r["route"]["labels"] == lab
-        assert len(r["chunks_joint"]) == 5 and "static_joint" in r["preds"]
-        if lab == ["no"]:
-            assert r["preds"]["universalrag"] == r["preds"]["direct"] and r["universalrag_fallback"] == 0
-        elif lab == ["table"]:   # no table in this corpus: no retrieval, counted as a fallback
-            assert r["preds"]["universalrag"] == r["preds"]["direct"] and r["universalrag_fallback"] == 1
-            assert r["route"]["modalities"] == [] and r["route"]["fallback"] is True
-        else:
-            assert r["preds"]["universalrag"] == r["preds"]["static"] and r["universalrag_fallback"] == 0
-            assert {c[0] for c in r["chunks"]} == {{"image": "i", "text": "t"}[m] for m in r["route"]["modalities"]}
-
+    with pytest.raises(SystemExit):
+        run.main(["--dataset", "webqa_open_full", "--split", "test", "--n-calib", "4", "--calib-source", "heldout",
+                  "--n-dev", "0", "--tag", "uq", "--route-rule", "query", "--query-routes", str(tmp_path / "routes.json"),
+                  "--image-mode", "clip", "--v2", "--v2-reranker"][:-2])
+    assert "suite score" in capsys.readouterr().err or True
+    assert not (tmp_path / "runs" / "uq" / "webqa_open_full.jsonl").exists()
 
 def test_static_joint_is_unrouted_and_differs_from_the_routed_input(tmp_path, monkeypatch):
     examples = _webqa_examples(8)

@@ -87,7 +87,7 @@ def test_runs_with_inconsistent_arms_are_rejected(tmp_path):
     rows = [{"qid": "1", "dataset": "okvqa", "preds": {"static": "a", "eab": "b"}},
             {"qid": "2", "dataset": "okvqa", "preds": {"static": "a"}}]
     path.write_text("".join(json.dumps(r) + "\n" for r in rows))
-    with pytest.raises(AssertionError, match="arms differ"):
+    with pytest.raises(ValueError, match="arms differ"):
         score_official.score_run(path)
 
 
