@@ -1,5 +1,24 @@
-# Run outputs and caches never enter git; see CONVENTIONS.md §4.
-runs/
+# Caches and assets never enter git; see CONVENTIONS.md §4.
+# Run outputs are ignored except the v2 evidence below, which is committed so that a result can be traced:
+#   runs/offline_v2/           exploratory offline report (legacy-pipeline data)
+#   runs/v2_s1_*/              S1 smoke runs
+#   runs/v2_s2_*/              S2 calibration and development runs
+#   runs/v2_s4_*/              S4 frozen test runs
+#   runs/v2_decisions/         frozen selector decisions
+#   runs/image_evidence_check*.json
+# Inside those directories everything is kept (answers, config, environment, log, prompt samples, scores,
+# action tables) except lock files and per-shard answer files, which the merged <dataset>.jsonl repeats.
+# GitHub rejects files over 100 MB: gzip a larger <dataset>.jsonl before committing it (*.jsonl.gz is kept).
+runs/*
+!runs/offline_v2/
+!runs/v2_s1_*/
+!runs/v2_s2_*/
+!runs/v2_s4_*/
+!runs/v2_decisions/
+!runs/image_evidence_check*.json
+runs/**/*.lock
+runs/**/*.shard[0-9][0-9]-of-[0-9][0-9].jsonl
+runs/**/*.tmp
 cache/
 assets/
 
@@ -22,3 +41,7 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/main.pdf
+
+# Scratch directories of local review sessions
+_review_tmp/
+.claude/
