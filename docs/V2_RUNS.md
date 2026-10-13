@@ -71,7 +71,7 @@ python scripts/v2_runs.py --stage s1 --dataset webqa_open_img --n 50 --dry-run
 python scripts/v2_runs.py --stage s1 --dataset okvqa_gs --n 50 --dry-run
 ```
 
-每个数据集打印一条 `omniaware.run` 命令（`--split dev --n-eval 50 --max-empty-rate 0.005`，`--tag v2_s1_<数据集>`），再打印图像诊断命令 `python scripts/analysis/image_evidence_check.py --n 50`。`--max-empty-rate 0.005` 使空答案率超过 0.5% 的冒烟运行以非零退出码结束；空答案率只算空白与纯引用输出，拒答单独记为 `refusal_rate` 和按臂的 `empty_by_arm`，不计入这一门槛。诊断命令只打印，本脚本不执行它。
+每个数据集打印一条 `omniaware.run` 命令（`--split dev --n-eval 50 --max-empty-rate 0.005`，`--tag v2_s1_<数据集>`）和一条格式检查 `python scripts/analysis/answer_slot.py format --run runs/v2_s1_<数据集>/<数据集>.jsonl --min-answer-first 0.9`（WebQA 的先答案格式：任一动作遵守率低于 90% 时以 `answer-first format FAIL` 结束），再打印图像诊断命令 `python scripts/analysis/image_evidence_check.py --n 50`。`--max-empty-rate 0.005` 使空答案率超过 0.5% 的冒烟运行以非零退出码结束；空答案率只算空白与纯引用输出，拒答单独记为 `refusal_rate` 和按臂的 `empty_by_arm`，不计入这一门槛。诊断命令只打印，本脚本不执行它。
 
 ### S2 校准集与开发集（估计值：1 张 A100，约 4–8 小时）
 
@@ -86,7 +86,7 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_full --no-seakr --dry-run
 2. 解码开发集：`--split dev --tag v2_s2_<数据集>_dev --fitm --m2rag --seakr-samples 20`（`--no-seakr` 时去掉 `--seakr-samples 20`）
 3. 评分：`python -m omniaware.eval.score_official runs/<tag>/<数据集>.jsonl`（两个 tag 各一条；WebQA 带 `--bart`）
 4. 拼表：`python scripts/analysis/v2_table.py build --run runs/<tag>/<数据集>.jsonl`（两个 tag 各一条；WebQA 带 `--bart`），生成 `runs/<tag>/<数据集>.v2_actions.jsonl`
-5. 开发集判据：`python scripts/analysis/v2_table.py gate --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`
+5. 开发集判据：先运行 `python scripts/analysis/answer_slot.py position --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`（第一个生成 token 与答案 token 上直答置信度的 AUROC，写到同目录的 `*.answer_slot.json`）；加 `--position-ablation` 时（只限 WebQA），再用 `--answer-style sentence` 在同一批开发题上解码、评分、拼表并做同样的分析（tag `v2_s2_<数据集>_dev_sentence`）。然后 `python scripts/analysis/v2_table.py gate --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`
 6. 校准选择：`python scripts/analysis/v2_table.py select --table runs/v2_s2_<数据集>_calib/<数据集>.v2_actions.jsonl --out runs/v2_decisions/<数据集>.json`
 7. 开发集检查：`python scripts/analysis/v2_table.py devcheck --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl --decisions runs/v2_decisions/<数据集>.json --out runs/v2_decisions/<数据集>.dev_check.json`。把冻结决定应用到开发动作表（结果写到 `runs/v2_s2_<数据集>_dev/<数据集>.v2_dev_main.json`），主选择器相对最强单一动作 a\* 的相对提升至少 +5%，且配对 bootstrap 95% CI 下界大于 0，才输出 PASS。检查文件记录决定文件的 sha256。
 
