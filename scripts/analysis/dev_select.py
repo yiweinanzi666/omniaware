@@ -281,16 +281,17 @@ def _load_jsonl(path: Path) -> list[dict]:
     return rows
 
 
-def select_v2(calib_rows, delta=0.1, epsilon=1.0, seed=0):
+def select_v2(calib_rows, delta=0.1, epsilon=1.0, seed=0, confidence=arbitration.PRIMARY_CONFIDENCE):
     """Run the v2-Rule and v2-Cal selectors on calibration rows and freeze both. Rule is the primary.
 
     Each row is ``{"qid", "actions", "scores"}`` from the v2 action table. This function never sees evaluation
-    rows. The cal family splits the rows into halves by ``seed`` internally.
+    rows. The cal family splits the rows into halves by ``seed`` internally. ``confidence`` is the pre-registered
+    U_omni at the answer token; the other kinds are ablations.
     """
     if not calib_rows:
         raise DevDataError("v2 selection needs calibration rows")
-    rule = arbitration.select_rule(calib_rows, delta=delta, epsilon=epsilon)
-    cal = arbitration.select_cal(calib_rows, delta=delta, epsilon=epsilon, seed=seed)
+    rule = arbitration.select_rule(calib_rows, delta=delta, epsilon=epsilon, confidence=confidence)
+    cal = arbitration.select_cal(calib_rows, delta=delta, epsilon=epsilon, seed=seed, confidence=confidence)
     return {"v2": {"rule": rule, "cal": cal, "primary": "rule"}}
 
 

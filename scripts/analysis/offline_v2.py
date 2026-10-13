@@ -39,6 +39,7 @@ WEBQA_SCORES = Path(r"C:\rc\experiments\v318_missing_experiments_5h_root_2026100
 OKVQA_DIR = Path(r"C:\rc\experiments\omniaware_github_20261009\a100_20261012\results\reward_gate_v1"
                  r"\fast_math_v1\runs\tf32_ce_calibrated_k5_dev256")
 DELTA = 0.1
+LEGACY_CONFIDENCE = "margin"        # the legacy dumps hold only a margin proxy, no answer_token
 EPSILONS = (0.0, 1.0)
 AUDIT_EPSILON = 1.0                 # the v2-Rule setting whose direct choices the WebQA note audits
 GRID_STEPS = 20
@@ -175,7 +176,7 @@ def cal_seed_spread(calib: list[dict], evaluation: list[dict], seeds: range = ra
     result depends on that split; the main result keeps the run seed and is not picked from this range."""
     means = []
     for seed in seeds:
-        cal = arbitration.select_cal(calib, delta=DELTA, epsilon=1.0, seed=seed)
+        cal = arbitration.select_cal(calib, delta=DELTA, epsilon=1.0, seed=seed, confidence=LEGACY_CONFIDENCE)
         choices = [arbitration.apply_decision(cal, r["actions"])["action"] for r in evaluation]
         means.append(float(np.mean([r["scores"][c] for r, c in zip(evaluation, choices)])))
     return {"seeds": len(means), "min": min(means), "median": float(np.median(means)), "max": max(means)}
@@ -213,13 +214,13 @@ def evaluate_dataset(rows: list[dict], calib: list[dict], evaluation: list[dict]
     ]
     audit = None
     for eps in EPSILONS:
-        rule = arbitration.select_rule(calib, delta=DELTA, epsilon=eps)
+        rule = arbitration.select_rule(calib, delta=DELTA, epsilon=eps, confidence=LEGACY_CONFIDENCE)
         choices = [arbitration.apply_decision(rule, r["actions"])["action"] for r in evaluation]
         blocks.append(_policy_block(f"v2-Rule ε={eps:g}", evaluation, choices, best_scores, oracle, rule))
         if eps == AUDIT_EPSILON:
             audit = direct_audit(evaluation, choices)
     for eps in EPSILONS:
-        cal = arbitration.select_cal(calib, delta=DELTA, epsilon=eps, seed=seed)
+        cal = arbitration.select_cal(calib, delta=DELTA, epsilon=eps, seed=seed, confidence=LEGACY_CONFIDENCE)
         choices = [arbitration.apply_decision(cal, r["actions"])["action"] for r in evaluation]
         blocks.append(_policy_block(f"v2-Cal ε={eps:g}{CAL_NOTE}", evaluation, choices, best_scores, oracle, cal))
     empty = {}

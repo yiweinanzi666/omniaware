@@ -147,6 +147,7 @@ def _v2_rows(n, prefix):
     def rec(answer, margin):
         return {"answer": answer, "available": True, "seq_logprob": -0.5, "gen_len": 3,
                 "first_token": {"margin": margin, "entropy": 0.5, "entropy_norm": 0.5},
+                "answer_token": {"margin": margin, "entropy_norm": 0.5, "u_raw": -margin},
                 "kl_to_direct": 0.1, "retriever": {"top1_score": 0.3, "gold_in_topk": False}}
 
     rows = []

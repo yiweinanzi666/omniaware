@@ -161,6 +161,10 @@ class Result:
     # Logprob of each greedy token under the distribution that produced it. Empty when the decode
     # path did not record them (a one-token result can still be scored from first_logits).
     token_logprobs: list[float] | None = None
+    # Entropy (normalised by log|V|) and top-1 minus top-2 logit margin of the distribution that produced each greedy
+    # token, so that the signals can be read at the answer token and not only at the first generated token.
+    step_entropy: list[float] | None = None
+    step_margin: list[float] | None = None
 
 
 def tag_text_layers(model) -> list[int]:
@@ -324,10 +328,13 @@ class QwenEAB:
             torch.mps.synchronize()
 
     @torch.no_grad()
-    def _decode(self, cache, first_logits: torch.Tensor, max_new_tokens: int) -> tuple[list[int], list[float]]:
-        """Greedy decoding from the first answer token's logits, with each chosen token's logprob."""
-        tokens, logprobs = [], []
+    def _decode(self, cache, first_logits: torch.Tensor,
+                max_new_tokens: int) -> tuple[list[int], list[float], list[tuple[float, float]]]:
+        """Greedy decoding from the first answer token's logits. Returns the tokens, each chosen token's logprob,
+        and per step the normalised entropy and the top-1 minus top-2 margin over the tokenizer's vocabulary."""
+        tokens, logprobs, steps = [], [], []
         logits = first_logits
+        vocab = getattr(self, "vocab_size", None)
         for _ in range(max_new_tokens):
             logp = torch.log_softmax(logits.float(), dim=-1)
             nxt = int(torch.argmax(logits).item())
@@ -335,17 +342,22 @@ class QwenEAB:
                 break
             tokens.append(nxt)
             logprobs.append(float(logp[nxt]))
+            steps.append(step_signals(logits, vocab))
             if len(tokens) == max_new_tokens:
                 break
             logits = self._step(torch.tensor([[nxt]]), cache)
-        return tokens, logprobs
+        return tokens, logprobs, steps
 
     def _timed_decode(self, cache, first_logits, max_new_tokens):
         self._sync()
         t0 = time.perf_counter()
-        toks, logprobs = self._decode(cache, first_logits, max_new_tokens)
+        toks, logprobs, steps = self._decode(cache, first_logits, max_new_tokens)
         self._sync()
-        return toks, time.perf_counter() - t0, logprobs
+        return toks, time.perf_counter() - t0, logprobs, steps
+
+    def _result(self, toks, logits, sec, attention, logprobs, steps) -> Result:
+        return Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks, sec, attention,
+                      logprobs, [s[0] for s in steps], [s[1] for s in steps])
 
     @torch.no_grad()
     def run(self, enc: Encoded, make_variants, max_new_tokens: int, decode_static=True):
@@ -368,9 +380,8 @@ class QwenEAB:
         self.last_prefill_seconds = time.perf_counter() - t0
         results = {}
         if decode_static(grounding, base_logits) if callable(decode_static) else decode_static:
-            toks, sec, logprobs = self._timed_decode(cache, base_logits, max_new_tokens)
-            results["static"] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                       sec, grounding, logprobs)
+            toks, sec, logprobs, steps = self._timed_decode(cache, base_logits, max_new_tokens)
+            results["static"] = self._result(toks, base_logits, sec, grounding, logprobs, steps)
             _crop(cache, enc.length)
         variants = make_variants(grounding, base_logits) if make_variants else {}
         # variants that keep the prompt unbiased share the static suffix cache
@@ -382,11 +393,10 @@ class QwenEAB:
                 results[name] = unbiased
                 continue
             self._activate(enc, spec)
-            toks, sec, logprobs = self._timed_decode(cache, base_logits, max_new_tokens)
+            toks, sec, logprobs, steps = self._timed_decode(cache, base_logits, max_new_tokens)
             self._activate(enc, None)
             # Decode-only bias starts after the t_end row, so that row (and its attention) is unbiased.
-            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                   sec, grounding, logprobs)
+            results[name] = self._result(toks, base_logits, sec, grounding, logprobs, steps)
             if spec is None:
                 unbiased = results[name]
             _crop(cache, enc.length)
@@ -397,15 +407,25 @@ class QwenEAB:
             self._activate(enc, spec)
             logits = self._step(suffix, cache, capture=True)
             attention = STATE.captured
-            toks, sec, logprobs = self._timed_decode(cache, logits, max_new_tokens)
+            toks, _, logprobs, steps = self._timed_decode(cache, logits, max_new_tokens)
             self._activate(enc, None)
-            results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks,
-                                   time.perf_counter() - t0, attention, logprobs)
+            results[name] = self._result(toks, logits, time.perf_counter() - t0, attention, logprobs, steps)
         STATE.reset()
         return results, grounding, base_logits.cpu()
 
 
 # ------------------------------------------------------------- uncertainty --
+def step_signals(logits: torch.Tensor, vocab_size: int | None) -> tuple[float, float]:
+    """(entropy / log|V|, top-1 minus top-2 logit) of one decoding step, over the first ``vocab_size`` logits."""
+    flat = logits.float().flatten()
+    if vocab_size is not None and 1 < vocab_size <= flat.numel():
+        flat = flat[:vocab_size]
+    logp = torch.log_softmax(flat, dim=-1)
+    entropy = float((-(logp.exp() * logp).sum()).clamp_min(0)) / math.log(flat.numel())
+    top = torch.topk(flat, 2).values
+    return entropy, float((top[0] - top[1]).clamp_min(0))
+
+
 def predictive_entropy(logits: torch.Tensor, vocab_size: int) -> float:
     """Next-token entropy over the first ``vocab_size`` logits (the tokenizer's vocabulary), normalised by
     log|V|. Padding rows of the output layer are excluded from the distribution."""

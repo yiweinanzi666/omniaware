@@ -15,7 +15,8 @@ def test_citation_only_sources_line_is_empty():
 
 def test_citation_only_identifier_line_is_empty():
     parsed = parse_answer("[E1] [E2]\n[E3]")
-    assert parsed == {"answer": "", "answer_empty": True, "citation_only": True, "refusal": False}
+    assert parsed == {"answer": "", "short": "", "answer_empty": True, "citation_only": True, "refusal": False,
+                      "answer_first_ok": None}
 
 
 def test_empty_string_and_whitespace_are_empty_but_not_citation_only():

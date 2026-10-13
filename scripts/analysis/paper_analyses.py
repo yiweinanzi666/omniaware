@@ -67,7 +67,9 @@ def answer_of(row: dict, arm: str) -> str:
     """Parsed answer of one arm of a run record. rec["preds"] keeps the raw model output, so the answer is
     rec["parsed"][arm]["answer"]; a record without that field (written before the parse was stored) is parsed here."""
     parsed = (row.get("parsed") or {}).get(arm)
-    return parsed["answer"] if parsed is not None else answers.parse_answer(row["preds"][arm])["answer"]
+    if parsed is not None:
+        return parsed["answer"]
+    return answers.parse_answer(row["preds"][arm], row.get("answer_format") == "answer_first")["answer"]
 
 
 # ------------------------------------------------------------------ loading --
@@ -246,7 +248,7 @@ def intervention_table(path: Path) -> dict:
             for arm, raw in entry["preds"].items():
                 if (r.get("eab_active") or {}).get(arm) is False:
                     continue                        # this EAB arm was inactive on the question: not eligible for it
-                answer = answers.parse_answer(raw)["answer"]
+                answer = answers.parse_answer(raw, r.get("answer_format") == "answer_first")["answer"]
                 c = per_arm[arm]
                 c["n"] += 1
                 c["changed"] += interventions.normalize(answer) != interventions.normalize(answer_of(r, arm))

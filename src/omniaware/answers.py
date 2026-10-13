@@ -16,6 +16,12 @@ A refusal is recognised in two forms.
 Examples: "I'm sorry, I cannot answer this question." and "I cannot determine the answer from the provided image."
 are refusals. "I cannot see any person." (no naming word, the verb is not a refusal verb), "No", "None" and
 "I cannot determine the exact number, it is about five." are answers.
+
+An answer-first output (``answer_first=True``, the WebQA format of prompts.ANSWER_FIRST) has the short answer on its
+first line and one complete sentence after it. ``short`` is the first line (an "Answer:" label is dropped) and
+``answer``, the scored text, is the sentence: the WebQA references are sentences. When the sentence line is missing,
+``answer`` falls back to the short line and ``answer_first_ok`` is False. For a plain output ``short`` equals
+``answer`` and ``answer_first_ok`` is None.
 """
 from __future__ import annotations
 
@@ -56,11 +62,21 @@ def is_refusal(answer: str) -> bool:
     return bool(_REFUSAL_PHRASE.match(answer) or _REFUSAL_SENTENCE.match(answer))
 
 
-def parse_answer(text: str | None) -> dict:
-    """Return ``answer``, ``answer_empty``, ``citation_only`` and ``refusal`` for one decoded string."""
+_SHORT_LABEL = re.compile(r"(?i)^\s*(?:short\s+)?answer\s*:\s*")
+_SENTENCE_LABEL = re.compile(r"(?i)^\s*(?:(?:full|complete)\s+)?sentence\s*:\s*")
+
+
+def _empty(citation_only: bool = False, refusal: bool = False) -> dict:
+    return {"answer": "", "short": "", "answer_empty": True, "citation_only": citation_only, "refusal": refusal,
+            "answer_first_ok": None}
+
+
+def parse_answer(text: str | None, answer_first: bool = False) -> dict:
+    """Return ``answer`` (the scored text), ``short``, ``answer_empty``, ``citation_only``, ``refusal`` and
+    ``answer_first_ok`` for one decoded string."""
     raw = "" if text is None else str(text)
     if not raw.strip():
-        return {"answer": "", "answer_empty": True, "citation_only": False, "refusal": False}
+        return _empty()
     answer_lines, cite_lines = [], []
     for line in raw.splitlines():
         if not line.strip():
@@ -71,11 +87,22 @@ def parse_answer(text: str | None) -> dict:
             answer_lines.append(line.strip())
     if not answer_lines:
         # Only citation lines are left (a non-blank raw string always has a line in one of the two lists).
-        return {"answer": "", "answer_empty": True, "citation_only": True, "refusal": False}
+        return _empty(citation_only=True)
+    if answer_first:
+        short = _SHORT_LABEL.sub("", answer_lines[0]).strip()
+        sentence = " ".join(_SENTENCE_LABEL.sub("", line).strip() for line in answer_lines[1:]).strip()
+        answer, form_ok = (sentence or short), bool(sentence)
+        if not short:                                  # "Answer:" alone on the first line
+            short = answer
+        if is_refusal(answer) or is_refusal(short):
+            return _empty(refusal=True)
+        return {"answer": answer, "short": short, "answer_empty": False, "citation_only": False, "refusal": False,
+                "answer_first_ok": form_ok}
     answer = "\n".join(answer_lines).strip()
     if is_refusal(answer):
-        return {"answer": "", "answer_empty": True, "citation_only": False, "refusal": True}
-    return {"answer": answer, "answer_empty": False, "citation_only": False, "refusal": False}
+        return _empty(refusal=True)
+    return {"answer": answer, "short": answer, "answer_empty": False, "citation_only": False, "refusal": False,
+            "answer_first_ok": None}
 
 
 def empty_kind(parsed: dict) -> str | None:
@@ -97,7 +124,8 @@ def question_empty_kinds(record: dict) -> list[tuple[str, str | None]]:
     """``(arm, empty_kind)`` for every decoded string of one question: each arm of ``preds`` (parsed from the raw
     output) and each available v2 action, named ``action:<name>``. Unavailable actions decoded nothing and are not
     counted."""
-    kinds = [(arm, empty_kind(parse_answer(text))) for arm, text in (record.get("preds") or {}).items()]
+    answer_first = record.get("answer_format") == "answer_first"
+    kinds = [(arm, empty_kind(parse_answer(text, answer_first))) for arm, text in (record.get("preds") or {}).items()]
     kinds += [(f"action:{name}", empty_kind(action)) for name, action in (record.get("actions") or {}).items()
               if action.get("available", True)]
     return kinds

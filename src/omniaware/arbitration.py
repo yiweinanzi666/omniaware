@@ -5,7 +5,10 @@ calibration set. The output is a JSON-serialisable decision that maps one questi
 
 Two families are fitted on calibration data:
 
-- v2-Rule (no training): keep direct when its confidence clears a threshold, otherwise use an evidence action.
+- v2-Rule (no training): keep direct when its confidence clears a threshold, otherwise use an evidence action:
+  the best one on calibration ("best"), the most confident one ("confident"), or the modality the paper's
+  M_m H_m routing picks on the static_mixed evidence ("route", tested only when some question has two modalities).
+  The pre-registered confidence is U_omni at the answer token (``answer_token.u_raw``, lower is more confident).
 - v2-Cal: one ridge regression per non-reference action predicts its score gain over the strongest single
   action; the largest predicted gain is taken only when it exceeds a threshold.
 
@@ -25,7 +28,10 @@ import numpy as np
 
 from .actions import DIRECT, EVIDENCE_ACTIONS, V2_ACTIONS
 
-CONFIDENCE_KINDS = ("margin", "neg_entropy")
+CONFIDENCE_KINDS = ("u_omni", "margin", "neg_entropy")
+PRIMARY_CONFIDENCE = "u_omni"       # docs/DEV_DECISIONS.md, v2 pre-registration (revision of 2026-10-13)
+ROUTE_ACTIONS = {"text": "static_text", "image": "static_image"}
+MIXED = "static_mixed"
 QUANTILE_STEPS = 20                 # threshold grids are 0%, 5%, ..., 100% quantiles
 RIDGE_ALPHA = 1.0                   # on standardised features; the intercept is not penalised
 CAL_FEATURES = ("conf_direct", "conf_star", "conf_gap", "token_f1_to_star", "kl_to_direct", "retriever_top1")
@@ -75,15 +81,22 @@ def token_f1(a: str, b: str) -> float:
 
 
 def _confidence(record: dict, kind: str) -> float:
-    """Higher is more confident. ``margin`` is the first-token top-1 minus top-2 margin; ``neg_entropy`` is -entropy.
+    """Higher is more confident.
 
-    A non-finite value is refused: a NaN or infinite confidence would decide the policy silently.
+    ``u_omni`` is -(H_grd + beta * H_sem) at the answer token (``answer_token.u_raw``, signals.with_answer_token), the
+    paper's U_omni before its monotone normalisation. ``margin`` is the top-1 minus top-2 logit margin and
+    ``neg_entropy`` is -entropy, both read at the answer token when the record has one and at the first generated
+    token otherwise. A non-finite value is refused: a NaN or infinite confidence would decide the policy silently.
     """
-    token = record["first_token"]
-    if kind == "margin":
-        raw, sign = token["margin"], 1.0
+    slot = record.get("answer_token")
+    if kind == "u_omni":
+        if slot is None:
+            raise ValueError("the u_omni confidence needs answer_token (a run written by omniaware.run --v2)")
+        raw, sign = slot["u_raw"], -1.0
+    elif kind == "margin":
+        raw, sign = (slot or record["first_token"])["margin"], 1.0
     elif kind == "neg_entropy":
-        raw, sign = token["entropy"], -1.0
+        raw, sign = (slot["entropy_norm"] if slot else record["first_token"]["entropy"]), -1.0
     else:
         raise ValueError(f"confidence must be one of {CONFIDENCE_KINDS}, not {kind!r}")
     value = math.nan if raw is None else sign * float(raw)      # a non-finite value is stored as null
@@ -183,11 +196,31 @@ def _rule_action(decision: dict, actions: dict) -> str:
         return reference_action(decision, actions)
     if decision["evidence_choice"] == "best":
         return evidence[0]
+    if decision["evidence_choice"] == "route":
+        return _routed_action(actions, evidence)
     chosen = evidence[0]
     for name in evidence[1:]:
         if _confidence(actions[name], kind) > _confidence(actions[chosen], kind):
             chosen = name
     return chosen
+
+
+def _routed_action(actions: dict, evidence: list[str]) -> str:
+    """The paper's "where to retrieve" on the static_mixed evidence: one modality when M_m H_m picks one, both
+    (static_mixed) on a near tie or when no attention route exists. An unavailable pick falls back to static_mixed,
+    then to the best available evidence action."""
+    route = (actions.get(MIXED) or {}).get("route") or {}
+    picked = route.get("modalities") or []
+    name = ROUTE_ACTIONS.get(picked[0], MIXED) if route.get("mode") == "attention" and len(picked) == 1 else MIXED
+    if name in evidence:
+        return name
+    return MIXED if MIXED in evidence else evidence[0]
+
+
+def _routable(rows: list[dict]) -> bool:
+    """Whether the route family is tested: some calibration question has an attention route on static_mixed (two
+    modalities in its evidence). Label free; OK-VQA (text evidence only) has none."""
+    return any(((row["actions"].get(MIXED) or {}).get("route") or {}).get("mode") == "attention" for row in rows)
 
 
 def _cal_action(decision: dict, actions: dict) -> str:
@@ -205,7 +238,8 @@ def _cal_action(decision: dict, actions: dict) -> str:
 def decision_fields(decision: dict) -> dict:
     """The fields that define a frozen decision, for reports. Cal models list their kept and dropped features."""
     keys = ("kind", "fallback", "action", "best_single", "confidence", "delta", "epsilon", "n_calib",
-            "n_accepted", "calib_utility", "evidence_choice", "tau", "lam", "seed", "n_fit", "n_risk", "n_params")
+            "n_accepted", "calib_utility", "evidence_choice", "rule_families", "tau", "lam", "seed", "n_fit",
+            "n_risk", "n_params")
     out = {key: decision[key] for key in keys if key in decision}
     if decision.get("models"):
         out["models"] = {name: {"features": m["features"], "dropped": m["dropped"], "n_params": m["n_params"]}
@@ -223,11 +257,12 @@ def _rule_candidates(common: dict, choice: str, thresholds: list[float]) -> list
 
 
 def select_rule(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0,
-                confidence: str = "margin") -> dict:
+                confidence: str = PRIMARY_CONFIDENCE) -> dict:
     """Choose a v2-Rule policy by risk control on the calibration rows.
 
-    The candidates are ``evidence_choice`` in {"best", "confident"} crossed with thresholds tau on the direct
-    confidence. Each family is a fixed sequence at level delta / 2, so the union of the two has level delta.
+    The candidates are ``evidence_choice`` in {"best", "confident", "route"} crossed with thresholds tau on the direct
+    confidence; "route" is tested only when ``_routable``. Each family is a fixed sequence at level delta / F for F
+    families, so their union has level delta. "route" starts, like "confident", at a policy that need not equal a*.
     Thresholds are quantiles of direct confidence on the calibration rows (labels are not used). Both families
     start from the same end and move away from it: tau = -inf (always direct) when a* is direct, and tau = +inf
     (always evidence) when a* is an evidence action. For "best" the starting policy equals a* exactly, because
@@ -252,9 +287,11 @@ def select_rule(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0
     thresholds = _unique_in_order([-math.inf, *_quantile_grid(direct_conf), math.inf])
     if star != DIRECT:
         thresholds.reverse()
-    level = delta / 2.0
+    families = ["best", "confident"] + (["route"] if _routable(calib_rows) else [])
+    common["rule_families"] = families
+    level = delta / len(families)
     pool, trace = [], []
-    for choice in ("best", "confident"):
+    for choice in families:
         pool.extend(_accept_prefix(_rule_candidates(common, choice, thresholds), calib_rows, base, epsilon, level,
                                    trace, f"rule:{choice}"))
     return _finish(pool, common, len(calib_rows), trace)
@@ -270,7 +307,8 @@ def _cal_features(name: str, actions: dict, star: str, kind: str) -> dict[str, f
         "conf_direct": _confidence(actions[DIRECT], kind),
         "conf_star": _confidence(star_rec, kind),
         "conf_gap": _confidence(rec, kind) - _confidence(star_rec, kind),
-        "token_f1_to_star": token_f1(rec["answer"], star_rec["answer"]),
+        "token_f1_to_star": token_f1(rec.get("short") or rec["answer"],          # short answers when recorded
+                                     star_rec.get("short") or star_rec["answer"]),
         "kl_to_direct": _nan_if_none(rec.get("kl_to_direct")),
         "retriever_top1": _nan_if_none(retriever.get("top1_score")),
     }
@@ -363,7 +401,7 @@ def _split_halves(rows: list[dict], seed: int) -> tuple[list[dict], list[dict]]:
 
 
 def select_cal(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0, seed: int = 0,
-               confidence: str = "margin") -> dict:
+               confidence: str = PRIMARY_CONFIDENCE) -> dict:
     """Choose a v2-Cal policy: fit per-action gain models on one half, risk-control the threshold on the other.
 
     The policy takes the action with the largest predicted gain over a* when that gain exceeds lam, and a*
