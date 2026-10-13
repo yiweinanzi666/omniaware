@@ -253,10 +253,11 @@ def select_rule(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0
     if star != DIRECT:
         thresholds.reverse()
     level = delta / 2.0
-    pool = []
+    pool, trace = [], []
     for choice in ("best", "confident"):
-        pool.extend(_accept_prefix(_rule_candidates(common, choice, thresholds), calib_rows, base, epsilon, level))
-    return _finish(pool, common, len(calib_rows))
+        pool.extend(_accept_prefix(_rule_candidates(common, choice, thresholds), calib_rows, base, epsilon, level,
+                                   trace, f"rule:{choice}"))
+    return _finish(pool, common, len(calib_rows), trace)
 
 
 # ---------------------------------------------------------------- v2-Cal
@@ -383,7 +384,7 @@ def select_cal(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0,
         if best is not None:
             gains.append(best[1])
     if not gains:
-        return _fallback(common, len(calib_rows), 0)
+        return _fallback(common, len(calib_rows), 0, [], "no gain model could be fitted")
     lams = _unique_in_order([math.inf, *reversed(_quantile_grid(gains)), -math.inf])
     total_params = sum(model["n_params"] for model in models.values())
     candidates = [
@@ -391,8 +392,9 @@ def select_cal(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0,
          "models": models, "n_params": total_params}
         for lam in lams
     ]
-    pool = _accept_prefix(candidates, risk_rows, _base_scores(risk_rows, star), epsilon, delta)
-    return _finish(pool, common, len(calib_rows))
+    trace = []
+    pool = _accept_prefix(candidates, risk_rows, _base_scores(risk_rows, star), epsilon, delta, trace, "cal")
+    return _finish(pool, common, len(calib_rows), trace)
 
 
 # ---------------------------------------------------------------- risk control shared by both families
@@ -453,31 +455,45 @@ def _common_fields(ranking: list[str], delta: float, epsilon: float, kind: str) 
     }
 
 
-def _fallback(common: dict, n_calib: int, n_accepted: int) -> dict:
-    return {**common, "kind": "single", "fallback": True, "action": common["best_single"],
-            "calib_utility": None, "n_calib": n_calib, "n_accepted": n_accepted}
+def _fallback(common: dict, n_calib: int, n_accepted: int, trace: list[dict], reason: str) -> dict:
+    return {**common, "kind": "single", "fallback": True, "fallback_reason": reason,
+            "action": common["best_single"], "calib_utility": None, "n_calib": n_calib,
+            "n_accepted": n_accepted, "trace": trace}
 
 
-def _finish(pool: list[tuple[float, dict]], common: dict, n_calib: int) -> dict:
-    """Pick the largest mean gap in the pool. The pool is in fixed-sequence order, so ties keep the earlier one."""
+def _finish(pool: list[tuple[float, dict]], common: dict, n_calib: int, trace: list[dict]) -> dict:
+    """Pick the largest mean gap in the pool. The pool is in fixed-sequence order, so ties keep the earlier one.
+
+    ``trace`` lists every candidate that was tested, in order, with its p-value and mean gap; it is stored in
+    the decision so the choice (or the fallback) can be explained without recomputing it.
+    """
     if not pool:
-        return _fallback(common, n_calib, 0)
+        return _fallback(common, n_calib, 0, trace, "no candidate passed the test")
     best_u, best = pool[0]
     for utility, decision in pool[1:]:
         if utility > best_u:
             best_u, best = utility, decision
     if best_u <= 0.0:
-        return _fallback(common, n_calib, len(pool))
-    return {**best, "calib_utility": best_u, "n_calib": n_calib, "n_accepted": len(pool)}
+        return _fallback(common, n_calib, len(pool), trace, "no accepted candidate has a positive mean gap")
+    return {**best, "calib_utility": best_u, "n_calib": n_calib, "n_accepted": len(pool), "trace": trace}
 
 
 def _accept_prefix(candidates: list[dict], rows: list[dict], base: np.ndarray, epsilon: float,
-                   level: float) -> list[tuple[float, dict]]:
-    """Walk the fixed sequence and stop at the first candidate whose test fails. Returns (mean gap, candidate)."""
+                   level: float, trace: list[dict], family: str) -> list[tuple[float, dict]]:
+    """Walk the fixed sequence and stop at the first candidate whose test fails. Returns (mean gap, candidate).
+
+    Every tested candidate, including the one that stops the sequence, is appended to ``trace``. Candidates
+    after the stop are never tested and do not appear.
+    """
     accepted = []
-    for candidate in candidates:
+    for step, candidate in enumerate(candidates):
         gaps = np.asarray(policy_scores(candidate, rows), dtype=float) - base
-        if _one_sided_p(gaps, epsilon) > level:
+        p_value = _one_sided_p(gaps, epsilon)
+        passed = p_value <= level
+        trace.append({"family": family, "step": step, "threshold": candidate.get("tau", candidate.get("lam")),
+                      "p_value": float(p_value), "level": float(level), "mean_gap": float(gaps.mean()),
+                      "changed_questions": int(np.count_nonzero(gaps)), "n": int(gaps.size), "accepted": passed})
+        if not passed:
             break
         accepted.append((float(gaps.mean()), candidate))
     return accepted

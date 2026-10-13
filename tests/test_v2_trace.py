@@ -1,0 +1,166 @@
+"""What a v2 run leaves behind for tracing a result back through every stage: the environment of each launch,
+the log, the candidate ranking, each action's input and decode, sampled prompts, and the selector's test trace."""
+import json
+from dataclasses import dataclass
+
+import pytest
+import torch
+
+from omniaware import arbitration, run, runio, signals
+from omniaware.actions import DIRECT, V2_ACTIONS
+from tests.test_v2_prompts import fake_run  # noqa: F401  (fixture)
+
+pytestmark = pytest.mark.usefixtures("tiny_reserves")
+
+IMAGE, START, END = 7, 5, 6
+
+
+@dataclass
+class _Enc:
+    length: int
+    input_ids: torch.Tensor | None
+
+
+def test_input_trace_counts_the_visual_tokens_of_each_image_in_order():
+    ids = [1, START] + [IMAGE] * 4 + [END, 2, 3, START] + [IMAGE] * 9 + [END, 4]
+    trace = signals.input_trace(_Enc(len(ids), torch.tensor([ids])), IMAGE)
+    assert trace["prompt_tokens"] == len(ids)
+    assert trace["n_images"] == 2 and trace["image_tokens"] == [4, 9]
+    other = signals.input_trace(_Enc(len(ids), torch.tensor([ids[:-1] + [9]])), IMAGE)
+    assert other["prompt_sha256"] != trace["prompt_sha256"]          # the hash follows the token ids
+
+
+def test_input_trace_reports_unknown_fields_as_null_not_as_zero():
+    assert signals.input_trace(_Enc(5, torch.tensor([[1, 2, 3, 4, 5]])), None)["n_images"] is None
+    blank = signals.input_trace(_Enc(5, None), IMAGE)
+    assert blank["prompt_sha256"] is None and blank["image_tokens"] is None and blank["prompt_tokens"] == 5
+
+
+def _v2_run(tmp_path, tag="trace", extra=()):
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "4", "--image-mode", "clip",
+              "--tag", tag, "--v2", "--v2-reranker", *extra])
+    out = tmp_path / "runs" / tag
+    return out, [json.loads(line) for line in (out / "okvqa.jsonl").read_text(encoding="utf8").splitlines()]
+
+
+def test_every_available_action_records_its_input_and_its_decode(fake_run):  # noqa: F811
+    _, rows = _v2_run(fake_run)
+    assert rows
+    for row in rows:
+        for name in V2_ACTIONS:
+            action = row["actions"][name]
+            if not action["available"]:
+                assert "decode" not in action
+                continue
+            assert action["input"]["prompt_tokens"] > 0 and len(action["input"]["prompt_sha256"]) == 64
+            decode = action["decode"]
+            assert len(decode["tokens"]) == action["gen_len"] == len(decode["token_logprobs"])
+            assert decode["hit_token_cap"] is False and decode["seconds"] is not None
+            assert sum(decode["token_logprobs"]) == pytest.approx(action["seq_logprob"], abs=1e-3)
+        # A different prompt has a different hash; the direct prompt holds no evidence.
+        assert row["actions"][DIRECT]["input"]["prompt_sha256"] != row["actions"]["static_mixed"]["input"]["prompt_sha256"]
+
+
+def test_the_candidate_ranking_is_stored_whole_and_explains_each_selection(fake_run):  # noqa: F811
+    _, rows = _v2_run(fake_run)
+    for row in rows:
+        ranked = row["candidate_scores"]
+        assert len(ranked) == 7                                       # every candidate, not only the selected five
+        assert [c["relevance"] for c in ranked] == sorted((c["relevance"] for c in ranked), reverse=True)
+        assert all(c["ce_logit"] is not None for c in ranked)
+        cut = ranked[4]["relevance"]                                  # ties at the cut may fall either way
+        mixed = set(row["actions"]["static_mixed"]["chunks"])
+        assert {c["cid"] for c in ranked if c["relevance"] > cut} <= mixed <= {c["cid"] for c in ranked
+                                                                              if c["relevance"] >= cut}
+        by_ce = sorted(ranked, key=lambda c: -c["ce_logit"])[:5]
+        assert set(row["actions"]["rerank_static"]["chunks"]) == {c["cid"] for c in by_ce}
+
+
+def test_prompt_samples_hold_the_text_the_model_read_for_the_first_questions_only(fake_run):  # noqa: F811
+    out, rows = _v2_run(fake_run, extra=("--trace-prompts", "2"))
+    samples = [json.loads(line) for line in (out / "okvqa.prompts.ndjson").read_text(encoding="utf8").splitlines()]
+    assert len(samples) == 2 and len(rows) > 2
+    for sample in samples:
+        assert sample["question"] in sample["actions"][DIRECT]["prompt"]
+        mixed = sample["actions"]["static_mixed"]["prompt"]
+        assert "passage 1" in mixed and "passage 1" not in sample["actions"][DIRECT]["prompt"]
+        assert "<image:img1.jpg>" in sample["actions"]["static_image"]["prompt"]
+        assert sample["actions"]["static_image"]["images"] == ["img1.jpg", "img2.jpg"]
+
+
+def test_prompt_sampling_can_be_switched_off(fake_run):  # noqa: F811
+    out, _ = _v2_run(fake_run, extra=("--trace-prompts", "0"))
+    assert not (out / "okvqa.prompts.ndjson").exists()
+
+
+def test_each_launch_appends_its_environment_and_the_log_survives_a_rerun(fake_run):  # noqa: F811
+    out, _ = _v2_run(fake_run)
+    env = [json.loads(line) for line in (out / "okvqa.env.ndjson").read_text(encoding="utf8").splitlines()]
+    assert len(env) == 1
+    for key in ("git_commit", "git_dirty", "torch", "transformers", "python", "platform", "gpus", "argv", "model"):
+        assert key in env[0]
+    assert env[0]["torch"] == torch.__version__
+    log = (out / "okvqa.log").read_text(encoding="utf8")
+    assert "[env] commit" in log and "[done] okvqa" in log
+    run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "4", "--image-mode", "clip",
+              "--tag", "trace", "--v2", "--v2-reranker"])                                   # resumes: nothing to decode
+    assert len((out / "okvqa.env.ndjson").read_text(encoding="utf8").splitlines()) == 2
+    assert (out / "okvqa.log").read_text(encoding="utf8").startswith(log[:200])            # appended, not replaced
+
+
+def test_the_log_keeps_the_traceback_of_a_failed_run(tmp_path):
+    path = tmp_path / "x.log"
+    with pytest.raises(ValueError):
+        with runio.tee_output(path, "header line"):
+            print("before the failure")
+            raise ValueError("decode exploded")
+    text = path.read_text(encoding="utf8")
+    assert "header line" in text and "before the failure" in text
+    assert "[failed] ValueError: decode exploded" in text and "Traceback" in text
+
+
+def test_trace_files_are_not_taken_for_shard_outputs(fake_run):  # noqa: F811
+    base = ["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "4",
+            "--image-mode", "clip", "--tag", "sh", "--v2", "--v2-reranker"]
+    run.main([*base, "--calibrate-only"])
+    for shard in range(2):
+        run.main([*base, "--num-shards", "2", "--shard-id", str(shard)])
+    out = fake_run / "runs" / "sh"
+    assert (out / "okvqa.shard00-of-02.env.ndjson").exists() and (out / "okvqa.shard01-of-02.log").exists()
+    from omniaware import merge_shards
+    merge_shards.main([str(out / "okvqa")])
+    assert (out / "okvqa.jsonl").exists()
+
+
+def _row(i, direct_right):
+    scores = {DIRECT: 100.0 if direct_right else 0.0, "static_mixed": 0.0 if direct_right else 100.0}
+    actions = {name: {"answer": f"{name}{i}", "available": True, "kl_to_direct": 0.1,
+                      "first_token": {"margin": (5.0 if direct_right else 0.1) if name == DIRECT else 1.0,
+                                      "entropy": 0.5, "entropy_norm": 0.5},
+                      "retriever": {"top1_score": 0.3}} for name in scores}
+    return {"qid": f"q{i}", "actions": actions, "scores": scores}
+
+
+def test_the_decision_stores_every_tested_candidate_with_its_p_value():
+    decision = arbitration.select_rule([_row(i, i % 2 == 0) for i in range(200)], delta=0.1, epsilon=1.0)
+    trace = decision["trace"]
+    assert not decision["fallback"] and trace
+    assert {t["family"] for t in trace} <= {"rule:best", "rule:confident"}
+    for family in {t["family"] for t in trace}:
+        steps = [t for t in trace if t["family"] == family]
+        assert [t["step"] for t in steps] == list(range(len(steps)))
+        assert all(t["accepted"] for t in steps[:-1])                # only the last tested one may fail
+    assert sum(t["accepted"] for t in trace) == decision["n_accepted"]
+    chosen = [t for t in trace if t["accepted"] and t["mean_gap"] == pytest.approx(decision["calib_utility"])]
+    assert chosen and all(0.0 <= t["p_value"] <= 1.0 and t["n"] == 200 for t in trace)
+    json.dumps(decision)                                             # strict JSON, thresholds included
+
+
+def test_a_fallback_says_why_and_still_carries_the_trace():
+    rows = [_row(i, True) for i in range(100)]
+    for row in rows:                                                 # the signal carries no information
+        row["actions"][DIRECT]["first_token"]["margin"] = 1.0
+    decision = arbitration.select_rule(rows, delta=0.1, epsilon=1.0)
+    assert decision["fallback"] and decision["fallback_reason"]
+    assert isinstance(decision["trace"], list)
+

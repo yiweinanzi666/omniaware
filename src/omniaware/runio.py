@@ -248,3 +248,116 @@ def verify_completion(out_dir, dataset: str) -> bool:
                          f"{expected}, or the files changed after the marker was written; remove the marker and "
                          f"the output, or use a new tag")
     return True
+
+
+# ---------------------------------------------------------------- run log and environment record
+
+class _Tee:
+    """Write to the original stream and to the log file."""
+
+    def __init__(self, stream, log):
+        self.stream, self.log = stream, log
+
+    def write(self, text):
+        self.log.write(text)
+        self.log.flush()
+        return self.stream.write(text)
+
+    def flush(self):
+        self.log.flush()
+        self.stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
+
+
+def log_path_for(output) -> Path:
+    """Log file of an output file: <dataset>.log, or <dataset>.shardXX-of-NN.log for a shard."""
+    return Path(output).with_suffix(".log")
+
+
+@contextlib.contextmanager
+def tee_output(path, header: str):
+    """Copy stdout and stderr (prints, warnings, tracebacks) to ``path`` for the duration of a run.
+
+    The file is appended to, so a resumed run keeps the log of the interrupted one. An exception that ends the
+    run is written with its traceback before it propagates.
+    """
+    import sys
+    import traceback
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf8") as log:
+        log.write(f"\n===== {datetime.now(timezone.utc).isoformat()} pid {os.getpid()} =====\n{header}\n")
+        out, err = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = _Tee(out, log), _Tee(err, log)
+        try:
+            yield path
+        except BaseException as exc:
+            if not isinstance(exc, SystemExit) or exc.code not in (0, None):
+                log.write(f"[failed] {type(exc).__name__}: {exc}\n{traceback.format_exc()}")
+            raise
+        finally:
+            sys.stdout, sys.stderr = out, err
+
+
+def _git(*args) -> str | None:
+    import subprocess
+    try:
+        done = subprocess.run(["git", *args], cwd=Path(__file__).resolve().parent, capture_output=True, text=True,
+                              timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def environment_snapshot(argv: list[str], qwen=None) -> dict:
+    """What produced a run: code version, library versions, hardware, and how the model was loaded.
+
+    Every field is read, never assumed; a value that cannot be read is null.
+    """
+    import platform
+    import sys
+    import numpy
+    import torch
+    try:
+        import transformers
+        transformers_version = transformers.__version__
+    except ImportError:
+        transformers_version = None
+    dirty = _git("status", "--porcelain", "--untracked-files=no")
+    cuda = torch.cuda.is_available()
+    model = getattr(qwen, "model", None)
+    text_config = getattr(getattr(model, "config", None), "text_config", None)
+    return {
+        "written_utc": datetime.now(timezone.utc).isoformat(),
+        "argv": list(argv),
+        "git_commit": _git("rev-parse", "HEAD"),
+        "git_branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+        "git_dirty": None if dirty is None else bool(dirty),
+        "git_dirty_files": None if dirty is None else [line.split(maxsplit=1)[-1] for line in dirty.splitlines()][:50],
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "torch": torch.__version__,
+        "transformers": transformers_version,
+        "numpy": numpy.__version__,
+        "cuda_available": cuda,
+        "cuda_version": torch.version.cuda,
+        "gpus": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())] if cuda else [],
+        "cudnn_benchmark": torch.backends.cudnn.benchmark,
+        "matmul_precision": torch.get_float32_matmul_precision(),
+        "model": {
+            "kind": getattr(qwen, "kind", None),
+            "device": None if qwen is None else str(getattr(qwen, "device", None)),
+            "dtype": None if model is None else str(getattr(model, "dtype", None)),
+            "attn_implementation": getattr(text_config, "_attn_implementation", None),
+            "n_layers": getattr(qwen, "n_layers", None),
+            "vocab_size": getattr(qwen, "vocab_size", None),
+            "image_size": getattr(qwen, "size", None),
+        },
+    }
+
+
+def append_jsonl(path, record: dict) -> None:
+    with open(path, "a", encoding="utf8") as fh:
+        fh.write(dumps_strict(record, ensure_ascii=False) + "\n")

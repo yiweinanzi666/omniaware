@@ -47,6 +47,12 @@ S2 开发集与 S4 运行带 `--fitm --m2rag --seakr-samples 20`。除 v2 动作
 
 `rec["preds"]` 保存模型原始输出，解析结果（`answer`、`answer_empty`、`citation_only`）在 `rec["parsed"]`。空答案率在 `<dataset>.merged.json` 里覆盖 preds 与可用动作，多卡合并路径同样写出。
 
+## 溯源记录
+
+每次运行在输出目录里自动写出：`<dataset>.env.ndjson`（每次启动一行：git 提交号、库版本、GPU、注意力实现、dtype、命令行）、`<dataset>.log`（全部屏幕输出与异常堆栈，续跑时追加）、`<dataset>.prompts.ndjson`（`--v2` 下前 N 道题每个动作的完整 prompt，N 由 `--trace-prompts` 控制，默认 20，0 关闭）。分片运行时这三个文件名带 `shardXX-of-NN`。
+
+`--v2` 下逐题记录另含 `candidate_scores`（全部候选的相关度、重排分数、gold 标记），每个动作记录另含 `input`（prompt 的 token 数与哈希、图片张数、每张图的视觉 token 数）与 `decode`（token id、逐 token 对数概率、耗时、是否到达长度上限）。决定文件的 `trace` 字段记录选择器检验过的每个候选。选择器不读取这些字段。各字段的含义见 [HANDOFF_v2.md](HANDOFF_v2.md) 的“每次运行会留下什么”。
+
 ## 运行锁
 
 同一输出目录（tag）内，每个数据集（或每个分片）在运行时持有一个锁文件 `<dataset>.lock`（分片为 `<dataset>.shardXX-of-NN.lock`）。锁文件记录进程号。另一个仍在运行的进程占用同一锁时，新进程拒绝启动并给出原因。进程崩溃后残留的锁会被识别为失效并自动接管。
