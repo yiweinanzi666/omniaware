@@ -467,6 +467,9 @@ CALIB_RESERVE = {"okvqa": 500, "hybridqa": 500, "videorag_synth": 100}
 N_CALIB_TRAIN = {"webqa": 500}
 TRAIN_RESERVE = {"webqa": 1000}
 N_DEV = {"okvqa": 256, "webqa": 256, "hybridqa": 256, "videorag_synth": 50}
+# Full WebQA validation release. A loader that actually holds this many val questions must keep all of
+# them in test (calibration and dev come from train). Smaller files are fixtures and are not required to.
+WEBQA_VAL_SIZE = 4966
 
 
 def protocol_family(dataset: str) -> str:

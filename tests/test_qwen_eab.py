@@ -274,7 +274,7 @@ def test_decode_only_eab_cannot_change_first_token_but_eab_p_can(qwen):
     enc = encode(qwen)
     res, _, _ = qwen.run(enc, lambda a, lg: {"ans2": spec(enc, "ans2", 8.0), "ans1": spec(enc, "ans1", 8.0)},
                          4, decode_static=True)
-    # Decode-only EAB (paper default): first-token logits are the unbiased prefill's.
+    # ans2 is a decode-only variant: first-token logits are the unbiased prefill's.
     assert torch.equal(res["ans2"].first_logits, res["static"].first_logits)
     assert res["ans2"].tokens[:1] == res["static"].tokens[:1]
     # EAB-P biases the last prompt row, so the first-token distribution moves.

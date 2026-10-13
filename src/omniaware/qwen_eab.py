@@ -158,6 +158,9 @@ class Result:
     # Head-averaged last-layer attention of the t_end row (the prefill row that predicts the first answer
     # token), computed under this arm's own bias; equal to the static arm's for decode-only variants.
     attention: torch.Tensor | None = field(default=None, repr=False)
+    # Logprob of each greedy token under the distribution that produced it. Empty when the decode
+    # path did not record them (a one-token result can still be scored from first_logits).
+    token_logprobs: list[float] | None = None
 
 
 def tag_text_layers(model) -> list[int]:
@@ -321,26 +324,28 @@ class QwenEAB:
             torch.mps.synchronize()
 
     @torch.no_grad()
-    def _decode(self, cache, first_logits: torch.Tensor, max_new_tokens: int) -> list[int]:
-        """Greedy decoding from the first answer token's logits."""
-        tokens = []
+    def _decode(self, cache, first_logits: torch.Tensor, max_new_tokens: int) -> tuple[list[int], list[float]]:
+        """Greedy decoding from the first answer token's logits, with each chosen token's logprob."""
+        tokens, logprobs = [], []
         logits = first_logits
         for _ in range(max_new_tokens):
+            logp = torch.log_softmax(logits.float(), dim=-1)
             nxt = int(torch.argmax(logits).item())
             if nxt in self.eos:
                 break
             tokens.append(nxt)
+            logprobs.append(float(logp[nxt]))
             if len(tokens) == max_new_tokens:
                 break
             logits = self._step(torch.tensor([[nxt]]), cache)
-        return tokens
+        return tokens, logprobs
 
     def _timed_decode(self, cache, first_logits, max_new_tokens):
         self._sync()
         t0 = time.perf_counter()
-        toks = self._decode(cache, first_logits, max_new_tokens)
+        toks, logprobs = self._decode(cache, first_logits, max_new_tokens)
         self._sync()
-        return toks, time.perf_counter() - t0
+        return toks, time.perf_counter() - t0, logprobs
 
     @torch.no_grad()
     def run(self, enc: Encoded, make_variants, max_new_tokens: int, decode_static=True):
@@ -363,9 +368,9 @@ class QwenEAB:
         self.last_prefill_seconds = time.perf_counter() - t0
         results = {}
         if decode_static(grounding, base_logits) if callable(decode_static) else decode_static:
-            toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
+            toks, sec, logprobs = self._timed_decode(cache, base_logits, max_new_tokens)
             results["static"] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                       sec, grounding)
+                                       sec, grounding, logprobs)
             _crop(cache, enc.length)
         variants = make_variants(grounding, base_logits) if make_variants else {}
         # variants that keep the prompt unbiased share the static suffix cache
@@ -377,11 +382,11 @@ class QwenEAB:
                 results[name] = unbiased
                 continue
             self._activate(enc, spec)
-            toks, sec = self._timed_decode(cache, base_logits, max_new_tokens)
+            toks, sec, logprobs = self._timed_decode(cache, base_logits, max_new_tokens)
             self._activate(enc, None)
             # Decode-only bias starts after the t_end row, so that row (and its attention) is unbiased.
             results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), base_logits.cpu(), toks,
-                                   sec, grounding)
+                                   sec, grounding, logprobs)
             if spec is None:
                 unbiased = results[name]
             _crop(cache, enc.length)
@@ -392,10 +397,10 @@ class QwenEAB:
             self._activate(enc, spec)
             logits = self._step(suffix, cache, capture=True)
             attention = STATE.captured
-            toks, sec = self._timed_decode(cache, logits, max_new_tokens)
+            toks, sec, logprobs = self._timed_decode(cache, logits, max_new_tokens)
             self._activate(enc, None)
             results[name] = Result(self.tok.decode(toks, skip_special_tokens=True).strip(), logits.cpu(), toks,
-                                   time.perf_counter() - t0, attention)
+                                   time.perf_counter() - t0, attention, logprobs)
         STATE.reset()
         return results, grounding, base_logits.cpu()
 

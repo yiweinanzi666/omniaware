@@ -32,7 +32,7 @@ import zipfile
 
 import numpy as np
 
-from .. import data, paths, runio
+from .. import answers, data, paths, runio
 
 
 def module(path, name):
@@ -117,7 +117,7 @@ def score_webqa(preds, qids, records, bart=False, device=None):
             rows.append({'qid': q, 'variant': arm, 'prediction': answers[q], 'references': r['golds'],
                          'category': r['qcate'], 'acc_approx': value})
     metrics = ['acc_approx']
-    extra = {'acc_approx_provenance': provenance}
+    extra = {'acc_approx_provenance': provenance, 'primary_metric': 'acc_approx'}
     if bart:
         # A BARTScore failure is recorded and the acc scores already computed are still written.
         try:
@@ -128,11 +128,65 @@ def score_webqa(preds, qids, records, bart=False, device=None):
             extra['bart_error'] = f'{type(exc).__name__}: {exc}'
         else:
             rows = fluent_rows
-            metrics.append('acc_approx_x_normalized_bart')
+            for row in rows:
+                row['normalized_bart'] = row['normalized_bart_score']
+                row['QA_approx'] = row['acc_approx_x_normalized_bart']
+            metrics.extend(['normalized_bart', 'QA_approx'])
     scores = {arm: {} for arm in preds}
     for row in rows:
-        scores[row['variant']][row['qid']] = {m: 100 * row[m] for m in metrics}
+        cell = {m: 100 * row[m] for m in metrics if m in row}
+        for m in metrics:
+            cell.setdefault(m, None)
+        scores[row['variant']][row['qid']] = cell
+    extra['subsets'] = _webqa_subsets(scores, qids, records, metrics)
+    extra['normalized_bart'] = _arm_means(scores, qids, 'normalized_bart') if 'normalized_bart' in metrics else None
+    extra['QA_approx'] = _arm_means(scores, qids, 'QA_approx') if 'QA_approx' in metrics else None
     return scores, metrics, extra
+
+
+def webqa_subset_name(record: dict) -> str:
+    """Image question vs text question. Gold modalities win; qcate is only a fallback."""
+    mods = record.get('gold_modalities')
+    if isinstance(mods, (list, tuple, set)):
+        return 'image_question' if 'image' in mods else 'text_question'
+    if str(record.get('qcate') or '').lower() in {'image', 'img'}:
+        return 'image_question'
+    return 'text_question'
+
+
+def _mean_defined(values):
+    vals = [v for v in values if v is not None]
+    return float(np.mean(vals)) if vals else None
+
+
+def _arm_means(scores, qids, metric):
+    if not qids:
+        return {arm: None for arm in scores}
+    out = {}
+    for arm in scores:
+        vals = [scores[arm][q].get(metric) for q in qids]
+        vals = [v for v in vals if v is not None]
+        out[arm] = float(np.mean(vals)) if vals else None
+    return out
+
+
+def _webqa_subsets(scores, qids, records, metrics):
+    groups = {'image_question': [], 'text_question': []}
+    for q in qids:
+        groups[webqa_subset_name(records[q])].append(q)
+    return {name: {'n': len(qs), **{m: _arm_means(scores, qs, m) for m in metrics}}
+            for name, qs in groups.items()}
+
+
+def diagnostic_substring_accuracy(prediction: str, reference: str) -> float:
+    """Diagnostic only: 1 if the reference is a substring of the prediction. Not an official score.
+
+    Paper-table scripts must not call this. OK-VQA uses ``score_okvqa``; WebQA uses acc_approx.
+    """
+    pred, ref = (prediction or '').lower().strip(), (reference or '').lower().strip()
+    if not ref:
+        return 0.0
+    return 1.0 if ref in pred else 0.0
 
 
 def webqa_references():
@@ -201,7 +255,14 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
     for r in records:
         assert set(r['preds']) == set(arms), f"{r['qid']}: arms differ from the first record"
     question_check = check_question_set(path, qids, subset=subset)
-    preds = {arm: {q: by_qid[q]['preds'][arm] or '' for q in qids} for arm in arms}
+    empty_flags = []
+    preds = {}
+    for arm in arms:
+        preds[arm] = {}
+        for q in qids:
+            parsed = answers.parse_answer(by_qid[q]['preds'][arm] or '')
+            preds[arm][q] = parsed['answer']
+            empty_flags.append(parsed['answer_empty'])
     if family == 'webqa':
         check_golds(by_qid, qids, webqa_references())
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart, device=device)
@@ -222,9 +283,9 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
                'predictions_sha256': hashlib.sha256(raw).hexdigest(), 'dataset': family, 'n': len(qids),
                'question_check': question_check, 'subset': question_check['mode'] == 'subset',
                'metrics': metrics,
-               'means': {arm: {m: float(np.mean([scores[arm][q][m] for q in qids])) for m in metrics}
+               'means': {arm: {m: _mean_defined([scores[arm][q][m] for q in qids]) for m in metrics}
                          for arm in arms},
-               'comparisons': {}}
+               'comparisons': {}, **answers.summarize_empty(empty_flags)}
     if 'bart_error' in extra:
         summary['bart_error'] = extra['bart_error']
     for ref in references:
@@ -234,6 +295,10 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
                       for m in metrics} for arm in arms if arm != ref}
     if 'acc_approx_provenance' in extra:
         summary['webqa_metric_provenance'] = extra['acc_approx_provenance']
+        summary['primary_metric'] = 'acc_approx'
+        summary['normalized_bart'] = extra.get('normalized_bart')
+        summary['QA_approx'] = extra.get('QA_approx')
+        summary['subsets'] = extra.get('subsets')
     if 'bertscore' in extra:          # fixed model and reference rule of the BERTScore column
         summary['bertscore'] = extra['bertscore']
     details = [{'qid': q, 'scores': {arm: scores[arm][q] for arm in arms}} for q in qids]
@@ -261,6 +326,8 @@ def main():
     Path(f'{stem}.official_summary.json').write_text(
         runio.dumps_strict(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     print(json.dumps(summary['means'], indent=2))
+    if summary.get('empty_answer_warning'):
+        print(summary['empty_answer_warning'], flush=True)
     if 'bart_error' in summary:
         print(f"[warning] BARTScore failed, acc scores written without it: {summary['bart_error']}", flush=True)
 
