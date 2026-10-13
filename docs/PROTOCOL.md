@@ -95,7 +95,7 @@ v2-Rule 的阈值同样按这个效用来选，不按准确率最大值选。v2-
 
 每次运行保存：首 token 熵，以及熵除以 \(\log|V|\)；top-1 与 top-2 的 logit 差；贪心序列的 log-prob 和生成长度；每个证据动作相对 `direct` 的首 token 分布 KL；检索器 top-1 分数，以及 top-1 与 top-2 的分差。
 
-v2-Cal 的 6 个系数对应：归一化首 token 熵（熵 \(/\log|V|\)）、logit margin、贪心序列 log-prob、生成长度、上述 KL、检索器 top-1 与 top-2 的分差。未归一化的熵和检索器 top-1 分数一并写入记录，不再各占一个系数。`gold-in-top-k` 不进入这 6 个特征。
+v2-Cal 的 6 个系数对应：logit margin、归一化首 token 熵（熵 \(/\log|V|\)）、贪心序列 log-prob 除以生成长度、上述 KL、该动作答案与 direct 答案的 token F1、检索器 top-1 分数。未归一化的熵、单独的生成长度，以及检索器 top-1 与 top-2 的分差一并写入记录，不再各占一个系数。`gold-in-top-k` 不进入这 6 个特征。
 
 ## 8. 作废的旧声明
 
