@@ -7,6 +7,11 @@
 --dry-run prints the command lines and runs nothing. Without it the commands run in order: the omniaware.run
 decodes, then scoring and the v2_table steps. A step that exits non-zero stops the stage and its reason is printed;
 in S2 a failed gate stops the stage before the selection. The S1 image-evidence check is only printed.
+S2 ends with the development check of docs/PROTOCOL.md section 5 (v2_table.py devcheck): the frozen selector must
+beat the strongest single action on the development table by at least +5% with a CI lower bound above 0. Its
+result, <decisions>.dev_check.json next to the decisions file, is read by S4, which refuses to run without a
+passing check for the same decisions file. --allow-failed-dev-check lets S4 run on a recorded failed check, for the
+case the protocol allows: the frozen test is still run once and reported whatever its result.
 Commands use this interpreter (sys.executable) and the repository's run and cache directories (omniaware.paths),
 so the stage does not depend on the working directory. This module does not download models or data.
 Durations and the cost of the baseline arms are in docs/V2_RUNS.md.
@@ -14,6 +19,7 @@ Durations and the cost of the baseline arms are in docs/V2_RUNS.md.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -37,7 +43,7 @@ MODEL = "8b"
 SPLIT_SEED = "2027"
 SEAKR_SAMPLES = "20"          # sampled continuations per input for the SeaKR eigen score (upstream value)
 S1_MAX_EMPTY_RATE = "0.005"   # smoke gate: more empty answers than this means the prompt or the decode is broken
-GATE_EXIT_FAIL = 1            # v2_table.py exit codes: 0 PASS, 1 gate FAIL, 2 bad input
+GATE_EXIT_FAIL = 1            # v2_table.py exit codes: 0 PASS, 1 gate or devcheck FAIL, 2 bad input
 DECISIONS_DIR = paths.RUNS / "v2_decisions"
 
 
@@ -56,6 +62,12 @@ def decisions_path(dataset: str) -> str:
     """Where S2's selection writes the frozen decisions of one dataset. One file per dataset, so that the
     datasets cannot overwrite each other's choices."""
     return str(DECISIONS_DIR / f"{dataset}.json")
+
+
+def dev_check_path(decisions: str) -> str:
+    """Where the development check of one decisions file is written: <decisions stem>.dev_check.json beside it."""
+    path = Path(decisions)
+    return str(path.with_name(f"{path.stem}.dev_check.json"))
 
 
 def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None,
@@ -121,6 +133,12 @@ def apply_command(tag: str, dataset: str, decisions: str) -> list[str]:
             "--out", run_file(tag, f"{dataset}.v2_main.json")]
 
 
+def dev_check_command(tag: str, dataset: str, decisions: str) -> list[str]:
+    return [sys.executable, str(ROOT / "scripts" / "analysis" / "v2_table.py"), "devcheck",
+            "--table", run_file(tag, f"{dataset}.v2_actions.jsonl"), "--decisions", decisions,
+            "--out", dev_check_path(decisions)]
+
+
 def image_evidence_command(n: int) -> list[str]:
     return [sys.executable, str(ROOT / "scripts" / "analysis" / "image_evidence_check.py"), "--n", str(n)]
 
@@ -133,8 +151,36 @@ def check_decisions(path_str: str) -> None:
         raise SystemExit(f"S4 refuses to run: {exc}") from exc
 
 
-def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None,
-         seakr: bool = True) -> tuple[list[list[str]], list[list[str]], list[str]]:
+def check_dev_check(decisions: str, allow_failed: bool) -> list[str]:
+    """Fail closed: S4 needs the development check of these exact decisions. Returns notes to print.
+
+    The check file must exist and name the sha256 of the decisions file. A failed check stops S4 unless
+    ``allow_failed`` is set; the failure is then printed as a note before the commands."""
+    path = Path(dev_check_path(decisions))
+    rerun = "run scripts/v2_runs.py --stage s2, or v2_table.py devcheck on the S2 development table"
+    if not path.is_file():
+        raise SystemExit(f"S4 refuses to run: no development check {path} for {decisions} ({rerun}).")
+    try:
+        check = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"S4 refuses to run: the development check {path} is not readable JSON ({exc}).") from exc
+    if not isinstance(check, dict) or "passed" not in check:
+        raise SystemExit(f"S4 refuses to run: {path} is not a development check written by v2_table.py devcheck.")
+    if (check.get("decisions") or {}).get("sha256") != runio.sha256_file(decisions):
+        raise SystemExit(f"S4 refuses to run: {path} checked a different decisions file than {decisions} ({rerun}).")
+    if check["passed"]:
+        return []
+    detail = (f"relative_gain={check.get('relative_gain')} ci95_pp={check.get('ci95_pp')} "
+              f"threshold={check.get('threshold')} fallback={check.get('fallback')}")
+    if not allow_failed:
+        raise SystemExit(f"S4 refuses to run: the development check failed ({detail}); see {path}. To run the "
+                         "frozen test anyway and report it as is, pass --allow-failed-dev-check.")
+    return [f"NOTE: --allow-failed-dev-check: the development check failed ({detail}). The frozen test runs once "
+            "and is reported as is; the selector is not a passed result."]
+
+
+def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seakr: bool = True,
+         allow_failed_dev_check: bool = False) -> tuple[list[list[str]], list[list[str]], list[str]]:
     """Return (commands run in order, lines that are printed but never executed, notes printed before the commands)."""
     if stage == "s1":
         smoke = 50 if n is None else n
@@ -157,13 +203,15 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None,
                 run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr)]
         runs += [score_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [build_command(tag, dataset) for tag in (calib_tag, dev_tag)]
-        runs += [gate_command(dev_tag, dataset), select_command(calib_tag, dataset)]
+        runs += [gate_command(dev_tag, dataset), select_command(calib_tag, dataset),
+                 dev_check_command(dev_tag, dataset, decisions_path(dataset))]
         return runs, [], notes
     if stage == "s4":
         if not decisions:
             raise SystemExit("S4 refuses to run: pass --decisions PATH to the frozen decisions file. "
                              "No default hyperparameters were substituted.")
         check_decisions(decisions)
+        notes += check_dev_check(decisions, allow_failed_dev_check)
         tag = f"v2_s4_{dataset}"
         return [run_command(stage, dataset, decisions=decisions, tag=tag, baselines=True, seakr=seakr),
                 score_command(tag, dataset), build_command(tag, dataset), apply_command(tag, dataset, decisions)], \
@@ -182,6 +230,11 @@ def execute(commands: list[list[str]]) -> None:
             raise SystemExit("gate FAIL (go/no-go): the development oracle does not beat the strongest single action by "
                              "the required margin, so the calibration selection and S4 are not run. Command: "
                              + format_argv(cmd))
+        if len(cmd) > 2 and cmd[2] == "devcheck" and rc == GATE_EXIT_FAIL:
+            raise SystemExit("development check FAIL: the frozen selector does not beat the strongest single action on "
+                             "the development set by +5% with a CI lower bound above 0. The decisions and the check "
+                             "are written; S4 refuses to run on them unless --allow-failed-dev-check is passed. "
+                             "Command: " + format_argv(cmd))
         raise SystemExit(f"step failed with exit code {rc}; the remaining steps were not run. Command: "
                          + format_argv(cmd))
 
@@ -197,14 +250,19 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--no-seakr", action="store_true",
                     help="S2 dev and S4: leave out the SeaKR baseline (its cost is about 20 extra sampled decodes per "
                          "question, see docs/V2_RUNS.md). The main table then has no SeaKR row.")
+    ap.add_argument("--allow-failed-dev-check", action="store_true",
+                    help="S4: run on decisions whose development check is recorded as failed (it must still exist "
+                         "and match the decisions file); the failure is printed as a note")
     ap.add_argument("--dry-run", action="store_true", help="print the command lines and run nothing")
     args = ap.parse_args(argv)
     if args.stage != "s4" and args.decisions:
         raise SystemExit("--decisions is only for --stage s4")
     if args.stage == "s1" and args.no_seakr:
         raise SystemExit("--no-seakr applies to S2 and S4 only; S1 runs no baseline arms")
+    if args.stage != "s4" and args.allow_failed_dev_check:
+        raise SystemExit("--allow-failed-dev-check is only for --stage s4")
     commands, printed_only, notes = plan(args.stage, args.dataset, n=args.n, decisions=args.decisions,
-                                         seakr=not args.no_seakr)
+                                         seakr=not args.no_seakr, allow_failed_dev_check=args.allow_failed_dev_check)
     for note in notes:
         print(note)
     for cmd in commands + printed_only:

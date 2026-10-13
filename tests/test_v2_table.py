@@ -532,3 +532,66 @@ def test_apply_refuses_a_decisions_file_without_a_v2_entry(okvqa_flow, tmp_path,
                     "--out", str(tmp_path / "out.json")]) == 2
     assert "frozen decisions" in capsys.readouterr().err
     assert not (tmp_path / "out.json").exists()
+
+
+# ---------------------------------------------------------------- devcheck
+
+def test_devcheck_passes_when_the_frozen_rule_beats_a_star_on_the_development_table(okvqa_flow, tmp_path, capsys):
+    decisions = _select(okvqa_flow, tmp_path)
+    dev_run = okvqa_flow["test_run"]           # stands in for the S2 development run
+    vt.build(dev_run)
+    table = dev_run.with_name("okvqa_gs_test.v2_actions.jsonl")
+    out = tmp_path / "decisions.dev_check.json"
+    assert vt.main(["devcheck", "--table", str(table), "--decisions", str(decisions), "--out", str(out)]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0] == "PASS" and "primary=rule" in lines[1]
+    check = json.loads(out.read_text(encoding="utf-8"))
+    # Same numbers as apply: the rule scores 97.5 against a* = direct at 50.
+    assert check["passed"] is True and check["primary"] == "rule" and check["best_single"] == "direct"
+    assert check["reference_mean"] == pytest.approx(50.0) and check["policy_mean"] == pytest.approx(97.5)
+    assert check["relative_gain"] == pytest.approx(0.95) and check["ci95_pp"][0] > 0
+    assert check["decisions"]["sha256"] == runio.sha256_file(decisions)
+    assert check["table"]["sha256"] == runio.sha256_file(table)
+    dev_main = table.with_name("okvqa_gs_test.v2_dev_main.json")
+    assert check["dev_main"] == {"path": str(dev_main), "sha256": runio.sha256_file(dev_main)}
+
+
+def test_devcheck_fails_when_the_selector_gains_nothing_on_the_development_table(okvqa_flow, tmp_path, capsys):
+    decisions = _select(okvqa_flow, tmp_path)
+    dev_run = okvqa_flow["test_run"]
+    vt.build(dev_run)
+    rows = _table_rows(dev_run.with_name("okvqa_gs_test.v2_actions.jsonl"))
+    for row in rows:                           # every action scores the same: no selector can beat a*
+        row["scores"] = {name: 40.0 for name in row["scores"]}
+    flat = _jsonl(tmp_path / "flat.v2_actions.jsonl", rows)
+    out = tmp_path / "decisions.dev_check.json"
+    assert vt.main(["devcheck", "--table", str(flat), "--decisions", str(decisions), "--out", str(out)]) == 1
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[0] == "FAIL" and "不要直接跑 S4" in lines[-1]
+    check = json.loads(out.read_text(encoding="utf-8"))
+    assert check["passed"] is False and check["delta_pp"] == 0.0 and check["relative_gain"] == 0.0
+
+
+def test_devcheck_needs_the_gain_and_a_positive_ci_lower_bound(monkeypatch, tmp_path):
+    def fake_apply(table, decisions, out):
+        out.write_text("{}", encoding="utf-8")
+        return {"frozen_primary": "rule", "best_single": "direct", "metric": "vqa_accuracy", "questions": 10,
+                "strongest_baseline": {}, "table": {}, "decisions": {},
+                "policies": {"rule": {"decision": {"fallback": False}, "vs_reference": paired}}}
+
+    monkeypatch.setattr(vt, "apply", fake_apply)
+    table = tmp_path / "d.v2_actions.jsonl"
+    base = {"baseline": 50.0, "wins": 1, "losses": 0, "ties": 9}
+    paired = {**base, "ours": 53.0, "delta_pp": 3.0, "paired_ci95_pp": [0.5, 5.0]}      # +6%, CI above 0
+    assert vt.dev_check(table, tmp_path / "x.json", tmp_path / "c.json")[0] is True
+    paired = {**base, "ours": 53.0, "delta_pp": 3.0, "paired_ci95_pp": [-0.5, 6.0]}     # +6%, CI crosses 0
+    assert vt.dev_check(table, tmp_path / "x.json", tmp_path / "c.json")[0] is False
+    paired = {**base, "ours": 52.0, "delta_pp": 2.0, "paired_ci95_pp": [0.5, 3.5]}      # +4%, CI above 0
+    assert vt.dev_check(table, tmp_path / "x.json", tmp_path / "c.json")[0] is False
+
+
+def test_devcheck_refuses_a_table_that_is_not_an_action_table(okvqa_flow, tmp_path, capsys):
+    decisions = _select(okvqa_flow, tmp_path)
+    assert vt.main(["devcheck", "--table", str(tmp_path / "dev.jsonl"), "--decisions", str(decisions),
+                    "--out", str(tmp_path / "c.json")]) == 2
+    assert "v2_actions.jsonl" in capsys.readouterr().err
