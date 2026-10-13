@@ -17,7 +17,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from . import analysis, data, interventions, order as order_mod, paths, pipeline, relevance, rerank, routing, runio
+from . import (analysis, answers, data, interventions, order as order_mod, paths, pipeline, prompts, relevance,
+               rerank, routing, runio, signals)
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
@@ -122,6 +123,24 @@ def select_chunks(e: dict, rel: dict[str, float], k: int, order: str, seed: int,
 PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
 # How a run is executed, not what it computes: excluded from the saved configuration and its checks.
 EXECUTION_ARGS = {"num_shards", "shard_id", "calibrate_only"}
+# Mechanism-section arm only. The default --variants list does not include it.
+ANALYSIS_EAB = "eab:g1.2:ans1:pos:gate"
+
+
+def apply_analysis_eab(args) -> None:
+    """Append the ans1 mechanism arm when --analysis-eab is set. Default runs stay without an eab: variant."""
+    if not getattr(args, "analysis_eab", False):
+        return
+    parts = [v for v in (args.variants or "").split(",") if v]
+    if ANALYSIS_EAB not in parts:
+        parts.append(ANALYSIS_EAB)
+    args.variants = ",".join(parts)
+
+
+def modality_pool(example: dict, modality: str) -> dict:
+    """Same question, restricted to one modality, so top-k is not the routed mix."""
+    return {**example, "candidates": [c for c in example["candidates"] if c["modality"] == modality],
+            "fixed_evidence": False}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -197,8 +216,12 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--answer-style", default="default", choices=["default", "short", "cite"],
                     help="short: one word/phrase; cite: statements with [E<j>] citations for the citation metrics "
                          "(raise --max-new-tokens). Applies to every arm.")
-    ap.add_argument("--variants", default="eab:g1.2:ans1:pos:gate",
-                    help="comma-separated EAB variants (pipeline.parse_variant); paper default eab:g1.2:ans1:pos:gate")
+    ap.add_argument("--variants", default="",
+                    help="comma-separated EAB variants (pipeline.parse_variant). Empty by default: the main "
+                         "method does not decode an eab: arm")
+    ap.add_argument("--analysis-eab", action="store_true",
+                    help="mechanism section only: also decode ans1 EAB "
+                         f"({ANALYSIS_EAB}). Not part of the main method")
     ap.add_argument("--probe-uncertainty", action="store_true",
                     help="cold start (no supplied context): a probe round packs the joint top-k by calibrated "
                          "relevance; U and, with --first-round-routing, the M_m*H_m route come from its prefill")
@@ -231,6 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None):
     ap = build_parser()
     args = ap.parse_args(argv)
+    apply_analysis_eab(args)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
         ap.error(f"unknown --order {args.order}")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
@@ -321,9 +345,15 @@ def main(argv=None):
     retrieved_okvqa = args.dataset in ("okvqa_dense", "okvqa_gs", "okvqa_gs_full")
     split_source = data.load_okvqa(candidates_path=False) if retrieved_okvqa else examples
     sp = data.split_examples(split_source, args.n_calib, args.n_dev, args.split_seed, calib_pool, reserve=reserve)
+    if (family == "webqa" and args.calib_source == "train" and args.dataset not in data.IMAGE_SUBSET_OF
+            and len(split_source) == data.WEBQA_VAL_SIZE and len(sp["test"]) != data.WEBQA_VAL_SIZE):
+        raise ValueError(f"WebQA test split must be all {data.WEBQA_VAL_SIZE} validation questions, "
+                         f"got {len(sp['test'])}")
     if args.dataset in data.IMAGE_SUBSET_OF:
         sp = data.image_subset(sp)
-    data.check_disjoint(sp)                       # runtime check of docs/PROTOCOL.md: calib, dev, test disjoint
+    data.check_disjoint(sp)                       # runtime check: calib, dev, test pairwise disjoint
+    if not sp["test"]:
+        raise ValueError(f"{args.dataset}: the test split is empty")
     calib = sp["calib"]
     end = None if args.n_eval is None else args.offset + args.n_eval
     evals = sp[args.split][args.offset:end]
@@ -690,6 +720,13 @@ def main(argv=None):
         "dropped_for_missing_assets": dropped,
         "candidate_shortfall": shortfall,
         "evaluation_qids_sha256": runio.qid_set_sha256([e["qid"] for e in evals]),
+        "split_qids_sha256": {part: runio.qid_set_sha256(e["qid"] for e in sp[part])
+                              for part in ("calib", "dev", "test")},
+        **prompts.instruction_for_style(family, args.answer_style,
+                                        cite_instruction=pipeline.CITATION_INSTRUCTION,
+                                        short_instruction=pipeline.SHORT_INSTRUCTION),
+        "baseline_retrieval": "joint_topk_no_probe_no_route",
+        "rerank_static_source": "cross_encoder" if args.selector != "relevance" else "lexical_overlap",
         "cache_fingerprints": cache_fingerprints,
     }, indent=1)
     if config_path.exists() and (has_outputs or args.num_shards > 1):
@@ -910,18 +947,71 @@ def main(argv=None):
                                   for c in chunks}
             if args.intervention:
                 rec["interventions"] = intervene(e, rec, chunks, eab_rel, enc, info)
+            # v2 actions share this run's instruction, max_new, and candidate pool. gold_in_topk is stored
+            # on the action and is not read when the chunks above were chosen.
+            # Modality arms are retriever top-k inside that modality. A fixed permutation applies to the
+            # joint list of length k, not to an empty or shorter modality pool.
+            text_chunks = select_chunks(modality_pool(e, "text"), rel, args.k, "rank", args.seed)
+            image_chunks = select_chunks(modality_pool(e, "image"), rel, args.k, "rank", args.seed)
+            if ce_of is not None:
+                rerank_rel = {c["cid"]: ce_of(e)["logits"][c["cid"]] for c in e["candidates"]}
+            else:
+                rerank_rel = signals.lexical_overlap_scores(e["question"], e["candidates"])
+            rerank_chunks = select_chunks(e, rerank_rel, args.k, "rank", args.seed)
+            decoded = {tuple(): res_d["static"], tuple(c["cid"] for c in joint): res_j["static"]}
+
+            def decode_chunks(chosen):
+                key = tuple(c["cid"] for c in chosen)
+                if key in decoded:
+                    return decoded[key]
+                enc_a = qwen.encode(*evidence_segments(e, chosen or None, rel))
+                got, _, _ = qwen.run(enc_a, None, max_new, decode_static=True)
+                decoded[key] = got["static"]
+                return decoded[key]
+
+            action_chunks = {
+                "direct": None,
+                "static_text": text_chunks,
+                "static_image": image_chunks,
+                "static_mixed": joint,
+                "rerank_static": rerank_chunks,
+            }
+            direct_logits = res_d["static"].first_logits
+            rec["actions"] = {}
+            for name in signals.V2_ACTIONS:
+                chosen = action_chunks[name]
+                result = res_d["static"] if chosen is None else decode_chunks(chosen)
+                selected = None if chosen is None else chosen
+                rec["actions"][name] = signals.action_record(
+                    result.text, result.first_logits, result.tokens, getattr(result, "token_logprobs", None),
+                    qwen.vocab_size, None if name == "direct" else direct_logits,
+                    signals.retriever_signals(e["candidates"], rel, selected))
+            flags_empty, flags_cite = {}, {}
+            for name, text in list(rec["preds"].items()):
+                parsed = answers.parse_answer(text)
+                rec["preds"][name] = parsed["answer"]
+                flags_empty[name] = parsed["answer_empty"]
+                flags_cite[name] = parsed["citation_only"]
+            rec["answer_empty"] = flags_empty
+            rec["citation_only"] = flags_cite
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(runio.dumps_strict(rec, ensure_ascii=False) + "\n")
             fh.flush()
             print(f"[{i + 1}/{len(evals)}] {e['qid'][:12]} {rec['seconds']}s P={enc.length} "
                   f"U_pre={rec['u_pre']:.2f} retrieve={rec['retrieve']}", flush=True)
+    notes = []
     if args.num_shards == 1:
         # A single process owns every question: mark the file complete only if all of them are in it.
         answered = [r["qid"] for r in runio.load_partial_jsonl(out_path)]
         if sorted(answered) != sorted(e["qid"] for e in evals):
             raise SystemExit(f"{out_path} holds {len(answered)} answers for {len(evals)} evaluation questions")
-        runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path)
-    notes = []
+        written = runio.load_partial_jsonl(out_path)
+        flags = [bool(v) for row in written for v in (row.get("answer_empty") or {}).values()]
+        empty_report = answers.summarize_empty(flags)
+        if empty_report.get("empty_answer_warning"):
+            print(empty_report["empty_answer_warning"], flush=True)
+        runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path, extra=empty_report)
+        notes.append(f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}")
     if args.route_rule == "query":
         notes.append(f"universalrag_fallback {tallies['universalrag_fallback']}")
     if args.seakr_samples:
