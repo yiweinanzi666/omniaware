@@ -20,8 +20,9 @@ are refusals. "I cannot see any person." (no naming word, the verb is not a refu
 An answer-first output (``answer_first=True``, the WebQA format of prompts.ANSWER_FIRST) has the short answer on its
 first line and one complete sentence after it. ``short`` is the first line (an "Answer:" label is dropped) and
 ``answer``, the scored text, is the sentence: the WebQA references are sentences. When the sentence line is missing,
-``answer`` falls back to the short line and ``answer_first_ok`` is False. For a plain output ``short`` equals
-``answer`` and ``answer_first_ok`` is None.
+``answer`` falls back to the short line and ``answer_first_ok`` is False. A first line with more words than the
+sentence (the order reversed) is also not answer-first: the first generated token is then a template word again.
+For a plain output ``short`` equals ``answer`` and ``answer_first_ok`` is None.
 """
 from __future__ import annotations
 
@@ -91,7 +92,8 @@ def parse_answer(text: str | None, answer_first: bool = False) -> dict:
     if answer_first:
         short = _SHORT_LABEL.sub("", answer_lines[0]).strip()
         sentence = " ".join(_SENTENCE_LABEL.sub("", line).strip() for line in answer_lines[1:]).strip()
-        answer, form_ok = (sentence or short), bool(sentence)
+        answer = sentence or short
+        form_ok = bool(sentence) and len(short.split()) <= len(sentence.split())
         if not short:                                  # "Answer:" alone on the first line
             short = answer
         if is_refusal(answer) or is_refusal(short):

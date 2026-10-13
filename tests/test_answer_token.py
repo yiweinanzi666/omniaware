@@ -43,6 +43,11 @@ def test_a_missing_sentence_line_falls_back_to_the_short_answer_and_is_flagged()
     assert parsed["answer"] == "Red" and parsed["short"] == "Red" and parsed["answer_first_ok"] is False
 
 
+def test_a_reversed_order_is_not_answer_first():
+    parsed = answers.parse_answer("The car in the picture is red.\nRed", answer_first=True)
+    assert parsed["answer_first_ok"] is False
+
+
 def test_a_refusal_on_either_line_is_a_refusal():
     for text in ("I don't know.\nThe car is red.", "Red\nI cannot determine the answer from the provided image."):
         parsed = answers.parse_answer(text, answer_first=True)
