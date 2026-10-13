@@ -116,7 +116,8 @@ def test_tiny_qwen_generation_populates_action_fields():
         assert len(rec["first_token"]["topk"]) >= 10
         assert rec["gen_len"] == len(result.tokens)
         assert rec["seq_logprob"] == pytest.approx(sum(result.token_logprobs))
-        assert set(rec) == {"available", "answer", "answer_empty", "citation_only", "refusal", "seq_logprob", "gen_len",
+        assert set(rec) == {"available", "answer", "short", "answer_first_ok", "answer_empty", "citation_only",
+                            "refusal", "seq_logprob", "gen_len",
                             "first_token", "kl_to_direct", "retriever", "chunks"}
         assert rec["available"] is True
     assert direct["kl_to_direct"] is None and direct["chunks"] == []

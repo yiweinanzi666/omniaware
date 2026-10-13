@@ -28,6 +28,17 @@ from omniaware.arbitration import (
 EVIDENCE = list(EVIDENCE_ACTIONS)
 
 
+def _answer_token(margin):
+    """answer_token with u_raw = -margin, so that the u_omni confidence orders questions as the margin does."""
+    return {"index": 0, "text": None, "steps_recorded": False, "entropy_norm": 0.5, "margin": margin, "h_grd": 0.0,
+            "beta": 0.3, "u_raw": None if margin is None else -margin}
+
+
+def _set_margin(record, value):
+    record["first_token"]["margin"] = value
+    record["answer_token"] = _answer_token(value)
+
+
 def _record(answer, margin=0.5, available=True, kl=0.1, top1=0.3):
     return {
         "answer": answer,
@@ -35,6 +46,7 @@ def _record(answer, margin=0.5, available=True, kl=0.1, top1=0.3):
         "seq_logprob": -1.0,
         "gen_len": 3,
         "first_token": {"margin": margin, "entropy": 0.5, "entropy_norm": 0.5},
+        "answer_token": _answer_token(margin),
         "kl_to_direct": kl,
         "retriever": {"top1_score": top1, "top1_top2_margin": 0.05, "gold_in_topk": False},
     }
@@ -423,11 +435,11 @@ def test_reference_action_is_the_action_of_the_fallback_decision():
 def test_a_non_finite_confidence_is_refused_with_a_message_that_names_no_question():
     decision = _rule_decision(tau=encode_json_float(0.0))
     actions = _question(available={DIRECT, *EVIDENCE})
-    actions[DIRECT]["first_token"]["margin"] = None          # a NaN margin reaches apply as null
+    _set_margin(actions[DIRECT], None)                       # a NaN margin reaches apply as null
     with pytest.raises(ValueError, match="not finite") as info:
         apply_decision(decision, actions)
     assert "question" not in str(info.value) and "qid" not in str(info.value)
-    actions[DIRECT]["first_token"]["margin"] = math.inf
+    _set_margin(actions[DIRECT], math.inf)
     with pytest.raises(ValueError, match="not finite"):
         apply_decision(decision, actions)
 
@@ -436,7 +448,7 @@ def test_a_non_finite_confidence_of_an_evidence_action_is_refused_when_it_is_com
     """The "confident" choice compares the confidence of every available evidence action. The "best" choice takes
     e* without reading any confidence, so it is not affected."""
     actions = _question(available={DIRECT, *EVIDENCE})
-    actions["static_text"]["first_token"]["margin"] = None
+    _set_margin(actions["static_text"], None)
     confident = _rule_decision(evidence_choice="confident", tau=encode_json_float(math.inf))
     with pytest.raises(ValueError, match="not finite"):
         apply_decision(confident, actions)
@@ -447,6 +459,10 @@ def test_a_non_finite_confidence_of_an_evidence_action_is_refused_when_it_is_com
 def test_a_non_finite_neg_entropy_is_refused():
     decision = _rule_decision(confidence="neg_entropy")
     actions = _question(available={DIRECT, *EVIDENCE})
+    actions[DIRECT]["answer_token"]["entropy_norm"] = math.inf     # neg_entropy reads the answer token
+    with pytest.raises(ValueError, match="not finite"):
+        apply_decision(decision, actions)
+    del actions[DIRECT]["answer_token"]                              # without one, the first generated token
     actions[DIRECT]["first_token"]["entropy"] = math.inf
     with pytest.raises(ValueError, match="not finite"):
         apply_decision(decision, actions)

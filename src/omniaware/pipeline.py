@@ -80,6 +80,8 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
         instruction = CITATION_INSTRUCTION
     elif answer_style == "short":
         instruction = SHORT_INSTRUCTION
+    elif answer_style == "sentence":
+        instruction = prompts.SENTENCE_INSTRUCTION
     else:
         instruction = prompts.instruction_text(e["dataset"])
     q += instruction + "<|im_end|>\n<|im_start|>assistant\n"

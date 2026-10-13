@@ -134,10 +134,13 @@ def test_trace_files_are_not_taken_for_shard_outputs(fake_run):  # noqa: F811
 
 def _row(i, direct_right):
     scores = {DIRECT: 100.0 if direct_right else 0.0, "static_mixed": 0.0 if direct_right else 100.0}
-    actions = {name: {"answer": f"{name}{i}", "available": True, "kl_to_direct": 0.1,
-                      "first_token": {"margin": (5.0 if direct_right else 0.1) if name == DIRECT else 1.0,
-                                      "entropy": 0.5, "entropy_norm": 0.5},
-                      "retriever": {"top1_score": 0.3}} for name in scores}
+    actions = {}
+    for name in scores:
+        margin = (5.0 if direct_right else 0.1) if name == DIRECT else 1.0
+        actions[name] = {"answer": f"{name}{i}", "available": True, "kl_to_direct": 0.1,
+                         "first_token": {"margin": margin, "entropy": 0.5, "entropy_norm": 0.5},
+                         "answer_token": {"margin": margin, "entropy_norm": 0.5, "u_raw": -margin},
+                         "retriever": {"top1_score": 0.3}}
     return {"qid": f"q{i}", "actions": actions, "scores": scores}
 
 
@@ -160,6 +163,7 @@ def test_a_fallback_says_why_and_still_carries_the_trace():
     rows = [_row(i, True) for i in range(100)]
     for row in rows:                                                 # the signal carries no information
         row["actions"][DIRECT]["first_token"]["margin"] = 1.0
+        row["actions"][DIRECT]["answer_token"].update(margin=1.0, u_raw=-1.0)
     decision = arbitration.select_rule(rows, delta=0.1, epsilon=1.0)
     assert decision["fallback"] and decision["fallback_reason"]
     assert isinstance(decision["trace"], list)

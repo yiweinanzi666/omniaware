@@ -329,3 +329,14 @@ def test_capture_layer_switch(qwen):
     finally:
         qwen.capture_at = -1
     assert last.shape == first.shape and not torch.allclose(last, first)
+
+
+@torch.no_grad()
+def test_every_decoded_token_carries_the_entropy_and_margin_of_its_step(qwen):
+    """The answer-token signals read these lists; step 0 is the first-token distribution itself."""
+    enc = encode(qwen)
+    res, _, first_logits = qwen.run(enc, None, 5, decode_static=True)
+    static = res["static"]
+    assert len(static.step_entropy) == len(static.step_margin) == len(static.tokens) > 0
+    assert all(0.0 <= h <= 1.0 for h in static.step_entropy) and all(m >= 0.0 for m in static.step_margin)
+    assert static.step_entropy[0] == pytest.approx(qwen_eab.predictive_entropy(first_logits, qwen.vocab_size), abs=1e-6)

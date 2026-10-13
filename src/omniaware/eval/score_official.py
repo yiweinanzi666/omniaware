@@ -248,7 +248,8 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
     for arm in arms:
         preds[arm] = {}
         for q in qids:
-            preds[arm][q] = answers.parse_answer(by_qid[q]['preds'][arm] or '')['answer']
+            answer_first = by_qid[q].get('answer_format') == 'answer_first'    # WebQA: the sentence line is scored
+            preds[arm][q] = answers.parse_answer(by_qid[q]['preds'][arm] or '', answer_first)['answer']
     # Empty-answer statistics over every decoded string of the run, the same count the completion marker uses.
     empty_kinds = [kind for q in qids for kind in answers.question_empty_kinds(by_qid[q])]
     if family == 'webqa':

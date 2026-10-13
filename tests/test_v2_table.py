@@ -21,6 +21,7 @@ def _action(answer, margin, *, available=True, kl=None):
                 "retriever": {"top1_score": None}}
     return {"available": True, "answer": answer, "answer_empty": False, "citation_only": False,
             "seq_logprob": None, "gen_len": 1, "first_token": {"margin": margin, "entropy": 1.0, "entropy_norm": 0.5},
+            "answer_token": {"margin": margin, "entropy_norm": 0.5, "u_raw": -margin},
             "kl_to_direct": kl, "retriever": {"top1_score": 0.5}}
 
 
@@ -458,7 +459,7 @@ def test_apply_names_the_question_when_a_confidence_is_not_finite(okvqa_flow, tm
     vt.build(test_run)
     table = test_run.with_name("okvqa_gs_test.v2_actions.jsonl")
     rows = _table_rows(table)
-    rows[4]["actions"]["direct"]["first_token"]["margin"] = None          # a NaN margin is stored as null
+    rows[4]["actions"]["direct"]["answer_token"]["u_raw"] = None          # a NaN value is stored as null
     broken = _jsonl(tmp_path / "broken.jsonl", rows)
     with pytest.raises(vt.TableError, match=f"question {rows[4]['qid']!r}"):
         vt.apply(broken, decisions, tmp_path / "broken_main.json")

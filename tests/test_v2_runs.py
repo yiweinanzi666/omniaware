@@ -40,8 +40,10 @@ def test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate(data
     assert result.returncode == 0, result.stderr
     assert result.stderr == ""
     lines = result.stdout.splitlines()
-    assert len(lines) == 2
-    assert lines[1] == _fmt(sys.executable, str(IMAGE_CHECK), "--n", "50")
+    assert len(lines) == 3
+    assert lines[1] == _fmt(sys.executable, str(ROOT / "scripts" / "analysis" / "answer_slot.py"), "format", "--run",
+                            str(paths.RUNS / f"v2_s1_{dataset}" / f"{dataset}.jsonl"), "--min-answer-first", "0.9")
+    assert lines[2] == _fmt(sys.executable, str(IMAGE_CHECK), "--n", "50")
     cmd = lines[0]
     assert cmd.startswith(_fmt(sys.executable, "-m", "omniaware.run") + " ")
     assert f"--dataset {dataset}" in cmd
@@ -75,6 +77,8 @@ def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_f
         _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(dev_tag), "--bart"),
         _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(calib_tag), "--bart"),
         _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(dev_tag), "--bart"),
+        _fmt(sys.executable, str(ROOT / "scripts" / "analysis" / "answer_slot.py"), "position", "--table",
+             str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
         _fmt(sys.executable, str(V2_TABLE), "gate", "--table",
              str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
         _fmt(sys.executable, str(V2_TABLE), "select", "--table",
@@ -86,6 +90,19 @@ def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_f
              str(paths.RUNS / "v2_decisions" / "webqa_full.dev_check.json")),
     ]
     assert "image_evidence_check.py" not in result.stdout
+
+
+def test_position_ablation_decodes_the_dev_set_again_in_the_sentence_format():
+    result = _cli("--stage", "s2", "--dataset", "webqa_full", "--position-ablation", "--dry-run")
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.splitlines()
+    sentence = [line for line in lines if "--tag v2_s2_webqa_full_dev_sentence" in line]
+    assert len(sentence) == 1 and sentence[0].endswith("--answer-style sentence") and "--fitm" not in sentence[0]
+    table = str(paths.RUNS / "v2_s2_webqa_full_dev_sentence" / "webqa_full.v2_actions.jsonl")
+    assert any(line.endswith(_fmt("position", "--table", table)) for line in lines)
+    assert lines[-3].split()[2] == "gate"                # the ablation runs before the gate, select and devcheck
+    refused = _cli("--stage", "s2", "--dataset", "okvqa_gs", "--position-ablation", "--dry-run")
+    assert refused.returncode != 0 and "WebQA" in refused.stderr
 
 
 def test_s2_okvqa_has_no_bart_flags_and_uses_heldout_calibration():
@@ -240,6 +257,16 @@ def test_dev_check_failure_ends_the_stage_and_names_the_s4_rule(monkeypatch):
     with pytest.raises(SystemExit) as info:
         v2.execute(commands)
     assert "development check FAIL" in str(info.value) and "--allow-failed-dev-check" in str(info.value)
+
+
+def test_format_failure_stops_s1_and_names_the_report(monkeypatch):
+    fake = _Exit([0, 1])
+    monkeypatch.setattr(v2.subprocess, "run", fake)
+    commands = [[sys.executable, "-m", "omniaware.run", "--tag", "v2_s1_webqa_full"],
+                [sys.executable, "answer_slot.py", "format", "--run", "webqa_full.jsonl"]]
+    with pytest.raises(SystemExit) as info:
+        v2.execute(commands)
+    assert "answer-first format FAIL" in str(info.value) and "answer_format.json" in str(info.value)
 
 
 def test_a_failing_step_stops_the_stage_with_its_command(monkeypatch):

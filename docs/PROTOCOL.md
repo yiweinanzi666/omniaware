@@ -30,7 +30,7 @@
 - **WebQA**：主指标是 **acc_approx**。同时报告归一化 BART 和 **QA_approx**。图像子集和文本子集都要报告，子集由 `gold_modalities` 决定，缺少该字段时报错，不按 qcate 猜测。主结果注明是 distractor（`webqa_full`）还是开放检索（`webqa_open_*`）。不把宽松词面分和 acc_approx 并列。
 - 主实验的提示词不要求输出引用行，也不把 `Sources: none` 当作答案。引用评估如果要做，单独运行，不混进主表。
 
-同一运行里所有动作共用**同一个**提示词、解码预算和候选池。答案格式在开发集上选定后冻结：WebQA 输出一句与参考句式一致的完整句；OK-VQA 输出不超过 3 个词，并做 VQA 规范化。格式差异带来的分数变化不算作选择器的贡献。
+同一运行里所有动作共用**同一个**提示词、解码预算和候选池。答案格式在任何 v2 GPU 运行之前冻结：WebQA 先在第一行写短答案，再在第二行写一句与参考句式一致的完整句，官方评分只读整句那一行；OK-VQA 输出不超过 3 个词，并做 VQA 规范化。先答案的格式让第一个生成 token 落在答案上，那里正是论文定义 H_sem、H_grd 与 EAB 起点的位置（第 7 节）。格式差异带来的分数变化不算作选择器的贡献。
 
 ## 3. 动作、基线与强基线
 
@@ -105,12 +105,14 @@ v2-Rule 的阈值与 v2-Cal 的 lam 都按同一效用选择，不按准确率�
 
 ## 7. 信号（推理时）
 
-每个可用动作记录：首 token 的 top-1 与 top-2 logit margin；首 token 熵及熵除以 \(\log|V|\)；贪心序列的 log-prob 与生成长度；与 `direct` 的首 token KL（direct 自身为空）；检索器 top-1 分数，以及 top-1 与 top-2 的分差。`gold-in-top-k` 只用于离线分析。
+每个可用动作记录：首 token 的 top-1 与 top-2 logit margin；首 token 熵及熵除以 \(\log|V|\)；**答案 token**（第一个承载答案的生成 token，`signals.answer_slot`）上的归一化熵 H_sem、margin、t_end 行上对本动作证据的 H_grd，以及 `u_raw = H_grd + β·H_sem`（论文 U_omni 的未归一化形式）；每一步解码的归一化熵与 margin；贪心序列的 log-prob 与生成长度；与 `direct` 的首 token KL（direct 自身为空）；检索器 top-1 分数，以及 top-1 与 top-2 的分差；证据动作的模态路由 M_m·H_m。`gold-in-top-k` 只用于离线分析。
+
+不确定性在答案 token 上测：WebQA 采用先答案后整句的格式（第 2 节），答案 token 一般就是第一个生成 token。旧管线 4966 题上，第一个生成 token 是句式词时，首 token 信号判断直答对错的 AUROC 为 0.519，是答案时为 0.623（`docs/DEV_DECISIONS.md` v2 预注册的 2026-10-13 修订）。
 
 决策只读取下面四类量：
 
-- margin（直答与证据动作的置信度）；
-- 动作答案与 a\* 答案的 token F1（归一化后按词计）；
+- 置信度：预注册为答案 token 上的 U_omni（−u_raw），`margin` 与 `neg_entropy` 只作消融；`route` 族另读 static_mixed 的模态路由；
+- 动作短答案与 a\* 短答案的 token F1（归一化后按词计）；
 - 证据动作与 `direct` 的首 token KL；
 - 证据动作所用候选的检索器 top-1 分数。
 

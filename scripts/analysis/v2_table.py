@@ -415,7 +415,8 @@ def calibrate_baselines(rows: list[dict], arms: list[str]) -> dict:
 
 # ---------------------------------------------------------------- select
 
-def select(table: Path, out: Path, delta: float, epsilon: float, seed: int) -> dict:
+def select(table: Path, out: Path, delta: float, epsilon: float, seed: int,
+           confidence: str = arbitration.PRIMARY_CONFIDENCE) -> dict:
     rows, metric = load_table(table)
     require_actions(rows, table)
     arms = require_baselines(rows, table)
@@ -423,12 +424,12 @@ def select(table: Path, out: Path, delta: float, epsilon: float, seed: int) -> d
     if DIRECT not in full:
         raise TableError(f"{table}: direct must be scored on every calibration question")
     selector_rows = [{"qid": r["qid"], "actions": r["actions"], "scores": r["scores"]} for r in rows]
-    result = dev_select.select_v2(selector_rows, delta=delta, epsilon=epsilon, seed=seed)
+    result = dev_select.select_v2(selector_rows, delta=delta, epsilon=epsilon, seed=seed, confidence=confidence)
     decisions = {
         **result,
         "baselines": calibrate_baselines(rows, arms),
         "calibration": {"table": str(table), "table_sha256": runio.sha256_file(table), "questions": len(rows),
-                        "metric": metric, "delta": delta, "epsilon": epsilon, "seed": seed,
+                        "metric": metric, "delta": delta, "epsilon": epsilon, "seed": seed, "confidence": confidence,
                         "scored_on_every_question": full, "partially_available": partial_actions(rows)},
     }
     runio.atomic_write_text(out, runio.dumps_strict(decisions, indent=2) + "\n")
@@ -676,6 +677,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--delta", type=float, default=0.1)
     p.add_argument("--epsilon", type=float, default=1.0, help="tolerance in score points (0-100 scale)")
     p.add_argument("--seed", type=int, default=0, help="split of the calibration rows for v2-Cal")
+    p.add_argument("--confidence", default=arbitration.PRIMARY_CONFIDENCE, choices=arbitration.CONFIDENCE_KINDS,
+                   help="confidence the selectors read; u_omni (U at the answer token) is pre-registered, the others "
+                        "are ablations")
 
     p = sub.add_parser("apply", help="apply frozen decisions to a test table; searches nothing")
     p.add_argument("--table", type=Path, required=True)
@@ -702,7 +706,7 @@ def main(argv: list[str] | None = None) -> int:
             print("\n".join(format_gate(passed, summary)))
             return 0 if passed else 1
         if args.command == "select":
-            decisions = select(args.table, args.out, args.delta, args.epsilon, args.seed)
+            decisions = select(args.table, args.out, args.delta, args.epsilon, args.seed, args.confidence)
             print(json.dumps({
                 **{k: v["kind"] + (" (fallback)" if v["fallback"] else "")
                    for k, v in decisions["v2"].items() if isinstance(v, dict)},

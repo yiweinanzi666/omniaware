@@ -70,6 +70,25 @@ dev 网格：
 
 写定日期：2026-10-13（返工改写）。这些规则与实现它们的代码在同一批提交里写定，早于修复后管线的任何 GPU 运行；它们没有先于代码单独提交，所以严格说是“在看到新数据之前冻结”，不是独立的预注册。旧管线的离线探索结果（`runs/offline_v2`）在写定时已经可见，规则的形式参考了它。
 
+### 修订：在答案 token 上测不确定性（2026-10-13，任何 v2 GPU 运行之前）
+
+修订时仓库里没有任何 v2 的 GPU 运行，也没有修复后管线的任何数据；依据只来自旧管线的 WebQA 全量 4966 题（seed17 官方评分文件，`u_initial` 是直答 prompt 上第一个生成 token 的预测熵经 Norm 后的值）：
+
+| 直答的第一个生成 token | 题数 | 直答正确的 AUROC [95% CI] | static 更好的 AUROC（两路得分不同的题）[95% CI] |
+|---|---|---|---|
+| 答案本身（Yes / No / 数字 / 实词） | 3345 | 0.623 [0.605, 0.642] | 0.618 [0.589, 0.647] |
+| 句式词（The / A / There / Both …） | 1202 | 0.519 [0.486, 0.551] | 0.472 [0.433, 0.512] |
+
+首 token 信号在第一个 token 承载答案时有效，落在句式词上时接近随机。原 WebQA 指令要求整句复述，会让多数非 YesNo 题以句式词开头。修订内容：
+
+1. **WebQA 答案格式改为先答案后整句**（`prompts.ANSWER_FIRST`）：第一行只写短答案，第二行写复述关键对象的完整句。官方评分只读整句那一行（参考答案是句子）；短答案行用于信号与 token F1。整句行缺失时评分退回短答案行，记 `answer_first_ok=false`。OK-VQA 的指令（不超过 3 个词）不变。
+2. **信号读在答案 token 上**。解码时记录每一步的归一化熵与 margin；答案 token 是第一个承载答案的生成 token（`signals.answer_slot`：先答案格式下是第一行里第一个非功能词；普通输出下还跳过复述问题的词）。每个可用动作记录 `answer_token`：位置、归一化熵 H_sem、margin、t_end 行上对本动作证据的 H_grd（直答为对所带上下文，如 OK-VQA 问题图；无上下文为 0）、β（运行的 `--beta`，0.30）与 `u_raw = H_grd + β·H_sem`，即论文 U_omni 的未归一化形式（Norm 单调，不改变阈值策略与同一阶段内的排序）。
+3. **预注册的置信度由 `margin` 改为 `u_omni`**（`arbitration.PRIMARY_CONFIDENCE`，置信度为 −u_raw）。`margin` 与 `neg_entropy` 保留为消融，同样读答案 token。v2-Cal 的 conf 特征随之使用 u_omni；token F1 特征改为比较短答案。
+4. **v2-Rule 增加 `route` 族**：直答不够确定时，按论文的模态路由 M_m·H_m（static_mixed 的 t_end 行，margin 0.08）选择 static_text 或 static_image，近似并列或没有注意力路由时选 static_mixed。只有当某道校准题的 static_mixed 证据含两种模态时才检验该族（与标签无关；OK-VQA 只有文本证据，不检验）。F 个族各用 δ/F，合起来水平仍为 δ。
+5. **S1 增加格式关卡**：`scripts/analysis/answer_slot.py format`，先答案格式下任一可用动作的 `answer_first_ok` 低于 90% 即失败。S2 对开发表运行 `answer_slot.py position`，比较第一个生成 token 与答案 token 上的置信度；`--position-ablation` 另在 WebQA 开发集上用整句指令（`--answer-style sentence`）解码一次，作为测量位置的对照。
+
+下文各节中与本修订冲突的旧条文以本修订为准。
+
 上文的 EAB / β / τ 规则不变。v2 是单独的决定，由 `scripts/analysis/v2_table.py select` 机械执行（`scripts/v2_runs.py --stage s2` 生成该命令），调用 `omniaware.arbitration` 的 `select_rule` 与 `select_cal`，结果写入 `runs/v2_decisions/<dataset>.json`。`scripts/analysis/dev_select.py` 的 `select_v2` 调用同样两个函数，是另一个入口，正式流程以 `v2_runs.py` 生成的命令为准。测试阶段（`v2_runs.py --stage s4`）只读取这个冻结文件，不搜索网格。
 
 ### 动作集合
@@ -96,7 +115,7 @@ dev 网格：
 
 熵、归一化熵、序列 log-prob、生成长度、检索器的 top-1 与 top-2 之差、`gold_in_topk` 只存储，不进入任何决策。`gold_in_topk` 只用于离线分析。
 
-预注册的置信度为 `margin`（`confidence="margin"`）。`neg_entropy` 在代码中已实现，但不在本次预注册的网格中使用。
+预注册的置信度为答案 token 上的 `u_omni`（`confidence="u_omni"`，见上方修订）。`margin` 与 `neg_entropy` 只作消融。
 
 ### 1. v2-Rule（零训练）
 
@@ -117,7 +136,7 @@ dev 网格：
 - a\* 是证据动作：tau 从 +∞ 递减（越来越多的题改用直答）。此时 `evidence_choice="best"` 的起点策略恰好等于 a\*，因为证据动作为 a\* 时 e\* 就是 a\*。
 - `evidence_choice="confident"` 族的起点不一定等于 a\*。它照样从同一端开始检验；起点不通过则整族被否决。
 
-两个族各做一次固定序列检验，各用 δ/2（Bonferroni），两族合起来的水平为 δ。
+每个族各做一次固定序列检验。族为 `best`、`confident`，以及满足条件时的 `route`（见上方修订），F 个族各用 δ/F（Bonferroni），合起来的水平为 δ。
 
 ### 2. v2-Cal（轻量校准，预测效用差）
 
