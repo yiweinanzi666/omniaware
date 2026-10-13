@@ -14,9 +14,9 @@ S1 还会多打印一行图像诊断命令。那一行只打印，不执行。
 | S2 | WebQA distractor、`webqa_open_img`、OK-VQA 的校准集与开发集 | 1 张 A100，约 4–8 小时（估计值，8B 模型短答案） |
 | S4 | 全量测试集，每个数据集只跑一次 | 1–2 张 A100，约 1–2 天（估计值） |
 
-## 切分（只用当前 `run.py` 已有的旗标）
+## 切分
 
-`python -m omniaware.run --help` 里 `--split` 只有 `dev` 和 `test`。校准集不是第三个 split，而是：
+当前这份工作树里的 `run.py` 只接受 `--split dev|test`。v2 契约再加 `--split calib`，用来解码校准题并保存 B2 信号。题量仍然由这些旗标决定：
 
 - `--n-calib 500`（WebQA 要求不少于 500，协议默认就是 500）
 - `--n-dev 256`
@@ -26,7 +26,7 @@ S1 还会多打印一行图像诊断命令。那一行只打印，不执行。
 
 `webqa_open_img` 的划分先在 `webqa_open_full` 上取 500 / 256，再切到图像题（`data.IMAGE_SUBSET_OF`）。命令仍传协议尺寸 500 和 256，不把图像子集的题数回写成另一个 `--n-calib`。
 
-S1、S2 传 `--split dev`。S1 再用 `--n-eval 50` 取开发集前 50 题，不改 `--n-dev`，因此不挪动测试集。S2 不传 `--n-eval`，也不传 `--split test`：写出的评测 JSONL 是开发集；校准集由 `--n-calib` 和 `--calib-source` 在同一次运行里确定。S4 传 `--split test`，不传 `--n-eval`。脚本不发明 `--split calib`。
+S1 传 `--split dev`，再用 `--n-eval 50` 取开发集前 50 题，不改 `--n-dev`，因此不挪动测试集。S2 对同一划分各跑一遍 `--split calib` 和 `--split dev`，两份输出用不同的 `--tag`，不传 `--n-eval`，也不传 `--split test`。`--n-calib` 只决定校准题的 id；`run.py` 只为 `--split` 指定的那一份写逐题记录，所以校准集必须单独解码，选择器才有 B2 信号。`--split calib` 是 v2 契约，当前这份工作树里的 `run.py` 还只接受 `dev|test`，协议分支需要把它加进去。S4 传 `--split test`，不传 `--n-eval`。
 
 ## v2 契约旗标（协议分支正在加）
 
@@ -37,8 +37,9 @@ S1、S2 传 `--split dev`。S1 再用 `--n-eval 50` 取开发集前 50 题，不
 - `--empty-answer-accounting`：空答案单独记账，并在运行汇总里给出空答案率
 - `--shared-prompt-registry`：同一次运行的所有动作共用提示词注册表
 - `--decisions PATH`：只在 S4 出现。脚本把冻结文件原样交给 runner，不把文件展开成网格，文件缺失或不是 JSON 对象时直接非零退出，不用默认超参顶上
+- `--split calib`：只在 S2 的第一条命令里出现，解码校准集。协议分支需要让 `run.py` 接受这个取值。
 
-模型是 `--model 8b`，与上面 S2 的 8B 短答案估计一致。`--tag` 为 `v2_<阶段>_<数据集>`。
+模型是 `--model 8b`，与上面 S2 的 8B 短答案估计一致。S1 / S4 的 `--tag` 为 `v2_<阶段>_<数据集>`。S2 的两条分别是 `v2_s2_<数据集>_calib` 和 `v2_s2_<数据集>_dev`。
 
 ## 命令
 
@@ -76,12 +77,15 @@ python scripts/v2_runs.py --stage s2 --dataset okvqa --dry-run
 实际打印：
 
 ```
-python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s2_webqa_full --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
-python -m omniaware.run --dataset webqa_open_img --split dev --model 8b --tag v2_s2_webqa_open_img --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
-python -m omniaware.run --dataset okvqa --split dev --model 8b --tag v2_s2_okvqa --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset webqa_full --split calib --model 8b --tag v2_s2_webqa_full_calib --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s2_webqa_full_dev --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset webqa_open_img --split calib --model 8b --tag v2_s2_webqa_open_img_calib --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset webqa_open_img --split dev --model 8b --tag v2_s2_webqa_open_img_dev --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset okvqa --split calib --model 8b --tag v2_s2_okvqa_calib --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
+python -m omniaware.run --dataset okvqa --split dev --model 8b --tag v2_s2_okvqa_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2-actions direct,static_text,static_image,static_mixed,rerank_static --save-signals --empty-answer-accounting --shared-prompt-registry
 ```
 
-每条命令生成开发集（`--split dev`，256 题），并用 `--n-calib 500` 与 `--calib-source` 固定校准集。不生成测试集。`--save-signals` 要求保存 B2 信号；协议分支实现时，应对这次运行装入的校准集和开发集都落盘。
+每个数据集两条命令：`--split calib` 解码校准集，`--split dev` 解码开发集，都带 `--save-signals`。不生成测试集。
 
 S2 结束后用开发集上各动作的官方分数做 go/no-go（见下）。相对最强单一动作不到 +8% 就不要进 S4。
 

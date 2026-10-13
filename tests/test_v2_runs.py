@@ -52,17 +52,20 @@ def test_s2_dry_run_generates_calib_and_dev_not_test(dataset, source):
     result = _cli("--stage", "s2", "--dataset", dataset, "--dry-run")
     assert result.returncode == 0, result.stderr
     lines = result.stdout.splitlines()
-    assert len(lines) == 1
-    cmd = lines[0]
-    assert f"--dataset {dataset}" in cmd
-    assert "--split dev" in cmd
-    assert "--split test" not in cmd
-    assert "--n-eval" not in cmd
-    assert f"--calib-source {source}" in cmd
-    assert "--n-calib 500" in cmd
-    assert "--n-dev 256" in cmd
-    assert ACTIONS in cmd
-    assert "--save-signals" in cmd
+    assert len(lines) == 2
+    calib, dev = lines
+    assert f"--dataset {dataset}" in calib and f"--dataset {dataset}" in dev
+    assert "--split calib" in calib
+    assert "--split dev" in dev
+    assert "--split test" not in result.stdout
+    assert "--n-eval" not in result.stdout
+    assert f"--calib-source {source}" in calib and f"--calib-source {source}" in dev
+    assert "--n-calib 500" in calib and "--n-calib 500" in dev
+    assert "--n-dev 256" in calib and "--n-dev 256" in dev
+    assert ACTIONS in calib and ACTIONS in dev
+    assert "--save-signals" in calib and "--save-signals" in dev
+    assert f"--tag v2_s2_{dataset}_calib" in calib
+    assert f"--tag v2_s2_{dataset}_dev" in dev
     assert "image_evidence_check.py" not in result.stdout
 
 
