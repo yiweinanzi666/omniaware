@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_runtime_20261013/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "cwd": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013",
+  "start": "2026-10-13T01:15:21.034349-07:00",
+  "end": "2026-10-13T01:15:57.748580-07:00",
+  "exit_code": 1
+}

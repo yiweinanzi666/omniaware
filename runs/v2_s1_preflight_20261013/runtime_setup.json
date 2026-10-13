@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-10-13T01:12:24.485340-07:00",
+  "python": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_runtime_20261013/bin/python",
+  "reused_site_packages": "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/cache/runtime/lib/python3.12/site-packages",
+  "source_commit": "162115ecea8cdd9b2d1503f2d304e3066f4adb8c",
+  "note": "Isolated environment; local installs override reused packages, original runtime is unchanged."
+}

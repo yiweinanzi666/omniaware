@@ -1,0 +1,13 @@
+{
+  "pyproject.toml": "3fcfb2f232ddd155b0d2c9f80af34c9a632ccffd50cdc362cc91c772cf549f5b",
+  "docs/HANDOFF_v2.md": "0f6a9a0198e88538648f24c83525e29c8841a58c60ac73706e3463271c18a034",
+  "docs/V2_RUNS.md": "c2f1ef3832151a282818b57c6ba6ea66f7eff42f27aecdb1dba6e823c643dec6",
+  "docs/DEV_DECISIONS.md": "0f445e6d1f6bb1adee0a0b4632fb279e9de36816efadcd5d6bc15b0360e72abe",
+  "docs/PROTOCOL.md": "c4d53fe4f4afd84e119aad0602c10127eb0f2cc5d03682c5ae7912d2910b7be4",
+  "scripts/v2_runs.py": "9fa6bdb19f028acbfc9d191ebd58a71aea28a5c79a932e9c6e5b272f4862768c",
+  "scripts/analysis/image_evidence_check.py": "44aed5b43576f650eb9c6d129cc119968608e4b58174f2a9c905cc30cf0d0ba8",
+  "src/omniaware/run.py": "9ad2fe4bdc1dcff08494114143231623d89f5dc604d9d9344bab6c6aaa0efeec",
+  "src/omniaware/interventions.py": "ab609c517b86211f3053df70a0bd635aa4cbca4afd235d0476a201eb65aa9236",
+  "tests/test_run_smoke.py": "b21381aa7ce40c7e9a5024efee0e2c9477abf50188cf25df70480d5bbb93dcb3",
+  "tests/test_m2rag_qwen.py": "bbcc98efe4f6b012d2b0bd7b28a72ab90993bf6800b48ae8ee9399db0ce9cf3f"
+}
