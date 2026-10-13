@@ -5,7 +5,7 @@
 ## 0. 先知道这几件事
 
 - **方向变了。** 主方法不再是 EAB（注意力偏置）。现在的方法是：每道题同时解码五个动作（`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`），再由选择器逐题选一个。EAB 只留在论文的机制分析里。
-- **旧结果全部作废。** 相对历史缓存基线的 +33% / +15%、训练式控制器的 +8.43%、32 题上的 +14.4%，都不能再引用。原因见仓库外的《根因溯源报告》。
+- **旧结果全部作废。** 相对历史缓存基线的 +33% / +15%、训练式控制器的 +8.43%、32 题上的 +14.4%，都不能再引用。原因见 [reports/Omni-Aware_根因溯源报告_20261013.md](reports/Omni-Aware_根因溯源报告_20261013.md)；新方向的依据见 [reports/Omni-Aware_方向与改造方案_20261013.md](reports/Omni-Aware_方向与改造方案_20261013.md)。
 - **目前没有任何 v2 的正式结果。** `runs/offline_v2/REPORT.md` 是在旧数据上做的探索，只说明代码能用、方向没错：去掉旧管线的空答案后，零训练规则相对“始终检索”是 +2.8%，逐题选对的上限是 +25%。能不能到 5%，要看这次 GPU 跑出来的新信号。
 - **有两个地方必须停下来等判断**（第 3 步和第 5 步），不要一口气跑到底。
 - **不要改任何规则和阈值。** 提示词、δ、ε、阈值网格、数据切分都已冻结。发现问题先反馈，不要自己调。
@@ -13,9 +13,8 @@
 ## 1. 取代码、装环境、自检（不需要 GPU，约 10 分钟）
 
 ```bash
-git fetch origin
-git checkout v2/arbitration
-git pull
+git checkout main
+git pull origin main
 pip install -e ".[all]"
 python -m pytest -p no:warnings
 ```
@@ -55,7 +54,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
    - `<数据集>.prompts.ndjson` 有 20 行，打开看几条，确认 prompt 的样子符合预期；
    - `<数据集>.log` 存在，里面有 `[env]` 和 `[done]` 两行。
 
-**回传：** 两个 `runs/v2_s1_*` 目录**整个打包**（冒烟只有 50 题，文件很小），以及 `runs/image_evidence_check.json`。
+**回传：** 两个 `runs/v2_s1_*` 目录整个提交，以及 `runs/image_evidence_check.json`。提交方法见第 9 节。
 
 ## 3. 第一个停顿点：S1 的结果要先看过
 
@@ -81,7 +80,7 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 - 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。**
 - 可以多卡分片，方法和以前一样（README 第 5 节）；同一个输出目录有运行锁，重复启动会被拒绝。
 
-**回传：** 每个 `runs/v2_s2_*` 目录**整个打包**，加上 `runs/v2_decisions/*.json`。每个目录里各文件的用途见下面的“每次运行会留下什么”。
+**回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
 ## 5. 第二个停顿点：go/no-go（最关键的一步）
 
@@ -156,6 +155,25 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - **真实权重下的对话模板**只用小模型测过，S1 时请留意生成的回答是否正常。
 - **UniversalRAG 基线在 WebQA 上不可用**（WebQA 的候选没有它需要的 suite 分数），主表里这一格是空的。
 
-## 9. 遇到问题时
+## 9. 结果怎么提交回来
+
+`.gitignore` 已经放行了 v2 的运行目录，直接用 git 提交即可，不需要另外打包：
+
+```bash
+git checkout -b results/v2-s1-<日期>          # 每个阶段一个分支，不要直接推 main
+git add runs/v2_s1_* runs/image_evidence_check*.json
+git commit -m "S1 smoke runs and image evidence check"
+git push -u origin results/v2-s1-<日期>
+```
+
+S2 阶段把 `runs/v2_s2_*` 和 `runs/v2_decisions/` 加进去，S4 阶段加 `runs/v2_s4_*`。
+
+- 会被提交的：这些目录里的答案、配置、环境记录、日志、prompt 样本、官方分数、动作表、决定文件。
+- 自动被忽略的：锁文件，以及分片答案文件（`*.shardXX-of-NN.jsonl`，合并后的 `<数据集>.jsonl` 已经包含它们）。分片的日志、环境记录和 prompt 样本会保留。
+- **单个文件不能超过 100 MB**，否则 GitHub 会拒收。全量测试的 `<数据集>.jsonl` 如果超了，先 `gzip` 再提交（`*.jsonl.gz` 不会被忽略），原文件留在服务器上不要删。
+- 如果设置了 `OMNIAWARE_RUNS` 把输出放到了仓库外面，提交前把对应目录复制到仓库的 `runs/` 下，目录名保持不变。
+- 提交前确认工作区里没有改过代码（`git status` 里只有 `runs/` 下的新文件）。如果为了跑通改了代码，把改动单独提交并说明原因。
+
+## 10. 遇到问题时
 
 反馈时请带上：执行的完整命令、报错的最后 30 行、对应 `runs/<tag>/` 下的 `*_config.json`。不要手动删除 `runs/<tag>/` 里的部分文件再续跑；要重来就删掉整个 tag 目录。
