@@ -44,7 +44,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 **S1 要确认四件事：**
 
 1. **空答案率不超过 0.5%。** 这里的空答案指空白输出和只有引用行的输出（如 `Sources: none`）。命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。拒答（如 “I cannot determine the answer from the provided information.”）评分时同样按空答案计，但单独统计，不触发这个退出码：`<数据集>.merged.json` 里的 `refusal_rate` 是总的拒答率，`empty_by_arm` 按臂和动作（`action:<动作>`）列出空白、纯引用、拒答各多少。WebQA 的 `direct` 不带图片，图像题上有一定拒答属于正常；**如果某个证据动作（尤其 `action:static_image`）的拒答明显多于 `direct`，说明图片可能没进模型，停下来反馈。**
-2. **各个动作的回答格式一致。** 打开 `runs/v2_s1_<数据集>/<数据集>.jsonl`，抽 20 题看 `actions` 里五个动作的 `answer`：WebQA 应当都是一个完整的句子，OK-VQA 应当都不超过 3 个词。旧管线的问题是带检索的臂答得很短、不带检索的臂答得很长，导致比较失真。**如果某个动作的回答明显更长或更短，停下来反馈。**
+2. **各个动作的回答格式一致，而且答案在最前面。** WebQA 的指令要求第一行只写短答案、第二行写一句完整的话。S1 命令会自动运行 `scripts/analysis/answer_slot.py format`，结果写到 `runs/v2_s1_<数据集>/<数据集>.answer_format.json`：任一动作遵守两行格式（`answer_first_ok`）的比例低于 90% 时，命令以 `answer-first format FAIL` 结束。同一文件里还有每个动作的 `template_start`（第一个生成 token 是 The / A 这类句式词的比例）和 `answer_token_is_first`。再打开 `<数据集>.jsonl` 抽 20 题人工看：WebQA 每个动作的 `short` 是短答案、`answer` 是完整句；OK-VQA 都不超过 3 个词。**格式关卡失败，或某个动作的 `template_start` 明显高于其他动作，停下来反馈。** 这一条决定首 token 信号能不能用：第一个 token 落在句式词上时，信号接近随机（旧管线实测 AUROC 0.52，落在答案上时 0.62）。
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 
 4. **溯源记录写出来了，而且内容合理。** 这一条在本机只用假模型测过，真实模型和真实图片上要在冒烟时确认：
@@ -61,7 +61,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 以下任何一条出现，都先停下来：
 
 - 空答案率超过 0.5%；
-- 各动作的回答格式不一致；
+- 先答案格式的关卡失败，或各动作的回答格式不一致；
 - 图像诊断显示图片没进输入、gold 图片经常不在选中的证据里，或像素预算明显过低（默认 `--max-pixels` 是 256×32×32）。
 
 这三条都会让后面的全部结果失真，必须先修。
@@ -69,10 +69,12 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 ## 4. S2 校准集与开发集（1 张 A100，估计 4–8 小时，不含 SeaKR）
 
 ```bash
-python scripts/v2_runs.py --stage s2 --dataset webqa_full
+python scripts/v2_runs.py --stage s2 --dataset webqa_full --position-ablation
 python scripts/v2_runs.py --stage s2 --dataset okvqa_gs
 python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 ```
+
+`--position-ablation`（只用于 webqa_full）会在同一批开发题上再用整句指令解码一次，并比较第一个生成 token 和答案 token 上的置信度（`runs/v2_s2_webqa_full_dev_sentence/webqa_full.v2_actions.answer_slot.json`）。这是论文"在答案 token 上测不确定性"一节的数据来源，约多 1 次开发集解码的时间。
 
 每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json` → 把冻结决定应用到开发集，检查选择器相对最强单一动作是否至少 +5% 且 CI 下界大于 0，结果写到 `runs/v2_decisions/<数据集>.dev_check.json`。
 

@@ -175,7 +175,7 @@ def token_text_of(qwen):
 
 
 def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, direct: tuple, decoded: dict,
-                      max_new: int, answer_style: str) -> dict:
+                      max_new: int, answer_style: str, beta: float) -> dict:
     """One record per v2 action (signals.action_record), in V2_ACTIONS order.
 
     ``direct`` is the (result, encoding) of the direct decode; its first-token logits give KL_to_direct.
@@ -183,9 +183,17 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
     decodes are added to it. An evidence action with no candidates is recorded as unavailable: it is neither
     decoded nor replaced by another action's result. Each available record carries the trace of its own input
     (prompt length and hash, visual tokens per image) and decode (token ids, logprobs, time, length-limit flag).
+
+    Each available record also carries ``answer_token`` (signals.with_answer_token): the answer slot of the decode
+    and U_omni there, H_grd of the t_end row over the action's evidence (the supplied context for direct) plus
+    beta * H_sem of the answer token. Evidence actions carry ``route``, the paper's M_m H_m routing over their
+    evidence spans on the same row (routing.route_modalities, margin 0.08); the v2-Rule "route" family reads it
+    from static_mixed.
     """
     direct_logits = direct[0].first_logits
     image_token_id = getattr(qwen, "image_token_id", None)
+    answer_first = prompts.answer_format(e["dataset"], answer_style) == "answer_first"
+    decode_text = token_text_of(qwen)
     records = {}
     for name in V2_ACTIONS:
         chosen = chunks_by_action[name]
@@ -206,9 +214,18 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
             result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
             None if name == DIRECT else direct_logits,
             signals.retriever_signals(e["candidates"], rel, chosen),
-            [] if name == DIRECT else [c["cid"] for c in chosen])
+            [] if name == DIRECT else [c["cid"] for c in chosen], answer_first=answer_first)
+        evidence_ids = pipeline.context_ids(e) if name == DIRECT else [c["cid"] for c in chosen]
+        h_grd = pipeline.raw_uncertainty(result.attention, enc, evidence_ids, result.first_logits, beta,
+                                         qwen.vocab_size)["h_grd"]
+        route = None if name == DIRECT else routing.route_modalities(
+            result.attention, enc.spans, {c["cid"]: c["modality"] for c in chosen})
+        texts = None if decode_text is None else [decode_text(t) for t in result.tokens]
+        record = signals.with_answer_token(record, getattr(result, "step_entropy", None),
+                                           getattr(result, "step_margin", None), texts, e["question"], answer_first,
+                                           h_grd, beta, route)
         records[name] = signals.with_trace(record, signals.input_trace(enc, image_token_id),
-                                           signals.decode_trace(result, max_new, token_text_of(qwen)))
+                                           signals.decode_trace(result, max_new, decode_text))
     return records
 
 
@@ -311,9 +328,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--tau-bias", type=float, default=0.40)
     ap.add_argument("--eab-uncertainty", choices=["pre", "post"], default="pre",
                     help="pre (paper): reuse the retrieval-gate U for EAB; post: recompute U on the packed input")
-    ap.add_argument("--answer-style", default="default", choices=["default", "short", "cite"],
+    ap.add_argument("--answer-style", default="default", choices=["default", "short", "cite", "sentence"],
                     help="short: one word/phrase; cite: statements with [E<j>] citations for the citation metrics "
-                         "(raise --max-new-tokens). Applies to every arm.")
+                         "(raise --max-new-tokens); sentence: the sentence-only WebQA instruction, for the "
+                         "measurement-position ablation (the default WebQA instruction is answer-first). Applies to "
+                         "every arm.")
     ap.add_argument("--variants", default="",
                     help="comma-separated EAB variants (pipeline.parse_variant). Empty by default: the main "
                          "method does not decode an eab: arm")
@@ -927,7 +946,7 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
                 rel = interventions.relevance_noise(rel, args.relevance_noise,
                                                     f"noise:{args.relevance_noise}:{args.noise_draw}:{e['qid']}")
             rec = {"qid": e["qid"], "dataset": e["dataset"], "qcate": e["qcate"], "question": e["question"],
-                   "golds": e["golds"],
+                   "golds": e["golds"], "answer_format": run_instruction["answer_format"],
                    "preds": {}}
             # Pre-retrieval uncertainty (paper Eq. 4): prefill without retrieved evidence.
             # Every compared arm is decoded here from the same prompt; no cached baselines.
@@ -1123,12 +1142,13 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
                 chunks_by_action = v2_action_chunks(e, rel, joint, ce_table[e["qid"]], args.k, args.seed)
                 rec["actions"] = decode_v2_actions(qwen, e, rel, chunks_by_action, (res_d["static"], enc_d),
                                                    {tuple(rec["chunks_joint"]): (res_j["static"], enc_j)}, max_new,
-                                                   args.answer_style)
+                                                   args.answer_style, args.beta)
                 rec["candidate_scores"] = candidate_scores(e, rel, ce_table[e["qid"]])
                 if i < args.trace_prompts:
                     runio.append_jsonl(prompts_path, prompt_sample(e, chunks_by_action, args.answer_style))
             # preds keep the model's raw output; the parse (answer, answer_empty, citation_only) is stored beside it
-            rec["parsed"] = {name: answers.parse_answer(text) for name, text in rec["preds"].items()}
+            answer_first = rec["answer_format"] == "answer_first"
+            rec["parsed"] = {name: answers.parse_answer(text, answer_first) for name, text in rec["preds"].items()}
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(runio.dumps_strict(rec, ensure_ascii=False) + "\n")
             fh.flush()

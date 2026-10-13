@@ -6,7 +6,9 @@
 
 --dry-run prints the command lines and runs nothing. Without it the commands run in order: the omniaware.run
 decodes, then scoring and the v2_table steps. A step that exits non-zero stops the stage and its reason is printed;
-in S2 a failed gate stops the stage before the selection. The S1 image-evidence check is only printed.
+in S2 a failed gate stops the stage before the selection. S1 ends with the answer-first format check
+(scripts/analysis/answer_slot.py format), which fails when an action of an answer-first run keeps the format on fewer
+than 90% of its questions. The S1 image-evidence check is only printed.
 S2 ends with the development check of docs/PROTOCOL.md section 5 (v2_table.py devcheck): the frozen selector must
 beat the strongest single action on the development table by at least +5% with a CI lower bound above 0. Its
 result, <decisions>.dev_check.json next to the decisions file, is read by S4, which refuses to run without a
@@ -43,6 +45,7 @@ MODEL = "8b"
 SPLIT_SEED = "2027"
 SEAKR_SAMPLES = "20"          # sampled continuations per input for the SeaKR eigen score (upstream value)
 S1_MAX_EMPTY_RATE = "0.005"   # smoke gate: more empty answers than this means the prompt or the decode is broken
+S1_MIN_ANSWER_FIRST = "0.9"   # smoke gate: below this the selector's signals sit on template words (answer_slot.py)
 GATE_EXIT_FAIL = 1            # v2_table.py exit codes: 0 PASS, 1 gate or devcheck FAIL, 2 bad input
 DECISIONS_DIR = paths.RUNS / "v2_decisions"
 
@@ -139,6 +142,16 @@ def dev_check_command(tag: str, dataset: str, decisions: str) -> list[str]:
             "--out", dev_check_path(decisions)]
 
 
+def position_command(tag: str, dataset: str) -> list[str]:
+    return [sys.executable, str(ROOT / "scripts" / "analysis" / "answer_slot.py"), "position",
+            "--table", run_file(tag, f"{dataset}.v2_actions.jsonl")]
+
+
+def format_command(tag: str, dataset: str) -> list[str]:
+    return [sys.executable, str(ROOT / "scripts" / "analysis" / "answer_slot.py"), "format",
+            "--run", run_file(tag, f"{dataset}.jsonl"), "--min-answer-first", S1_MIN_ANSWER_FIRST]
+
+
 def image_evidence_command(n: int) -> list[str]:
     return [sys.executable, str(ROOT / "scripts" / "analysis" / "image_evidence_check.py"), "--n", str(n)]
 
@@ -180,7 +193,8 @@ def check_dev_check(decisions: str, allow_failed: bool) -> list[str]:
 
 
 def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seakr: bool = True,
-         allow_failed_dev_check: bool = False) -> tuple[list[list[str]], list[list[str]], list[str]]:
+         allow_failed_dev_check: bool = False,
+         position_ablation: bool = False) -> tuple[list[list[str]], list[list[str]], list[str]]:
     """Return (commands run in order, lines that are printed but never executed, notes printed before the commands)."""
     if stage == "s1":
         smoke = 50 if n is None else n
@@ -188,7 +202,7 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
             raise SystemExit("S1 --n must be a positive number of questions")
         cmd = run_command(stage, dataset, n_eval=smoke)
         cmd += ["--max-empty-rate", S1_MAX_EMPTY_RATE]
-        return [cmd], [image_evidence_command(smoke)], []
+        return [cmd, format_command(f"v2_{stage}_{dataset}", dataset)], [image_evidence_command(smoke)], []
     if n is not None:
         raise SystemExit("--n is only for --stage s1")
     notes = []
@@ -203,6 +217,14 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
                 run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr)]
         runs += [score_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [build_command(tag, dataset) for tag in (calib_tag, dev_tag)]
+        runs += [position_command(dev_tag, dataset)]
+        if position_ablation:
+            # The same development questions under the sentence-only instruction: there the first generated token
+            # is often a template word, so the analysis can compare it with the answer token inside one decode.
+            sentence_tag = f"{dev_tag}_sentence"
+            runs += [run_command(stage, dataset, split="dev", tag=sentence_tag) + ["--answer-style", "sentence"],
+                     score_command(sentence_tag, dataset), build_command(sentence_tag, dataset),
+                     position_command(sentence_tag, dataset)]
         runs += [gate_command(dev_tag, dataset), select_command(calib_tag, dataset),
                  dev_check_command(dev_tag, dataset, decisions_path(dataset))]
         return runs, [], notes
@@ -230,6 +252,10 @@ def execute(commands: list[list[str]]) -> None:
             raise SystemExit("gate FAIL (go/no-go): the development oracle does not beat the strongest single action by "
                              "the required margin, so the calibration selection and S4 are not run. Command: "
                              + format_argv(cmd))
+        if len(cmd) > 2 and cmd[2] == "format" and rc == GATE_EXIT_FAIL:
+            raise SystemExit("answer-first format FAIL: some action drops the short-answer-first line, so its "
+                             "first-token signals sit on template words. Stop and report the "
+                             "<dataset>.answer_format.json of this run. Command: " + format_argv(cmd))
         if len(cmd) > 2 and cmd[2] == "devcheck" and rc == GATE_EXIT_FAIL:
             raise SystemExit("development check FAIL: the frozen selector does not beat the strongest single action on "
                              "the development set by +5% with a CI lower bound above 0. The decisions and the check "
@@ -253,6 +279,9 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--allow-failed-dev-check", action="store_true",
                     help="S4: run on decisions whose development check is recorded as failed (it must still exist "
                          "and match the decisions file); the failure is printed as a note")
+    ap.add_argument("--position-ablation", action="store_true",
+                    help="S2, WebQA: also decode the development set under the sentence-only instruction and compare "
+                         "the first generated token with the answer token (scripts/analysis/answer_slot.py position)")
     ap.add_argument("--dry-run", action="store_true", help="print the command lines and run nothing")
     args = ap.parse_args(argv)
     if args.stage != "s4" and args.decisions:
@@ -261,8 +290,11 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("--no-seakr applies to S2 and S4 only; S1 runs no baseline arms")
     if args.stage != "s4" and args.allow_failed_dev_check:
         raise SystemExit("--allow-failed-dev-check is only for --stage s4")
+    if args.position_ablation and (args.stage != "s2" or args.dataset not in WEBQA_DATASETS):
+        raise SystemExit("--position-ablation is for --stage s2 on a WebQA dataset (an answer-first format)")
     commands, printed_only, notes = plan(args.stage, args.dataset, n=args.n, decisions=args.decisions,
-                                         seakr=not args.no_seakr, allow_failed_dev_check=args.allow_failed_dev_check)
+                                         seakr=not args.no_seakr, allow_failed_dev_check=args.allow_failed_dev_check,
+                                         position_ablation=args.position_ablation)
     for note in notes:
         print(note)
     for cmd in commands + printed_only:

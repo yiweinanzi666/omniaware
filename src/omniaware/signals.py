@@ -1,4 +1,11 @@
-"""First-token and retriever signals for one decoded action. Pure tensor math; no model weights.
+"""First-token, answer-token and retriever signals for one decoded action. Pure tensor math; no model weights.
+
+``first_token`` describes the first generated token. ``answer_token`` describes the first token of the answer: the
+position where the paper's uncertainty is defined (H_sem over the first answer token, H_grd on the row that predicts
+it). In the answer-first format (prompts.ANSWER_FIRST) the two coincide unless the short answer opens with a function
+word ("The Eiffel Tower"); in a plain output the answer token is located after template words and restated question
+words (``answer_slot``). ``answer_token.u_raw`` = H_grd + beta * H_sem at that position is the confidence the
+pre-registered selector reads (arbitration, confidence "u_omni").
 
 ``gold_in_topk`` is written for offline analysis. Nothing in this module, and no routing decision,
 reads it back to choose an action.
@@ -6,6 +13,7 @@ reads it back to choose an action.
 from __future__ import annotations
 
 import math
+import re
 
 import torch
 
@@ -123,14 +131,18 @@ def retriever_signals(candidates: list[dict], scores: dict[str, float], selected
 
 
 def action_record(text: str, logits, tokens: list[int] | None, token_logprobs: list[float] | None,
-                  vocab_size: int | None, direct_logits, retriever: dict, chunks: list[str], k: int = 10) -> dict:
+                  vocab_size: int | None, direct_logits, retriever: dict, chunks: list[str], k: int = 10,
+                  answer_first: bool = False) -> dict:
     """One available v2 action. ``direct_logits is None`` marks the direct action (``kl_to_direct`` is None).
-    ``chunks`` are the ids of the evidence chunks in the order the model read them ([] for direct)."""
-    parsed = parse_answer(text)
+    ``chunks`` are the ids of the evidence chunks in the order the model read them ([] for direct).
+    ``answer`` is the scored text and ``short`` the short answer (parse_answer)."""
+    parsed = parse_answer(text, answer_first)
     first = first_token_signals(logits, k=k, vocab_size=vocab_size)
     return {
         "available": True,
         "answer": parsed["answer"],
+        "short": parsed["short"],
+        "answer_first_ok": parsed["answer_first_ok"],
         "answer_empty": parsed["answer_empty"],
         "citation_only": parsed["citation_only"],
         "refusal": parsed["refusal"],
@@ -149,6 +161,8 @@ def unavailable_record(retriever: dict) -> dict:
     return {
         "available": False,
         "answer": "",
+        "short": "",
+        "answer_first_ok": None,
         "answer_empty": True,
         "citation_only": False,
         "refusal": False,
@@ -159,6 +173,73 @@ def unavailable_record(retriever: dict) -> dict:
         "retriever": retriever,
         "chunks": [],
     }
+
+
+# Words that never carry the answer: articles, pronouns, auxiliaries, prepositions, conjunctions and sentence openers.
+FUNCTION_WORDS = frozenset("""
+a an the this that these those there here it its it's they them their he she his her we our you your i my me
+is are was were be been being am do does did has have had will would can could should may might must shall
+of in on at to for from by with about as into onto over under between among through during before after above below
+and or but nor so yet if then than because while although though whether either neither both each every all any some
+not according based answer short sentence image picture photo shown depicted
+""".split())
+_WORD = re.compile(r"[^\W_]+(?:'[^\W_]+)?", re.UNICODE)
+_LABEL = re.compile(r"(?i)^\s*(?:short\s+)?answer\s*:\s*")
+
+
+def answer_slot(token_texts: list[str], question: str, answer_first: bool) -> int:
+    """Index of the first generated token of the first answer-bearing word; 0 when there is none.
+
+    The decoded text is rebuilt from the token strings. In the answer-first format only the first line is
+    searched (an "Answer:" label is skipped) and the first word outside FUNCTION_WORDS starts the answer; question
+    words are allowed, because a choice answer repeats one. In a plain output the restated question words are
+    skipped as well, since a sentence answer opens by restating the question.
+    """
+    if not token_texts:
+        return 0
+    text, owner = "", []
+    for index, piece in enumerate(token_texts):
+        text += piece
+        owner += [index] * len(piece)
+    start, end = 0, len(text)
+    if answer_first:
+        lead = len(text) - len(text.lstrip())
+        newline = text.find("\n", lead)
+        end = newline if newline >= 0 else len(text)
+        label = _LABEL.match(text[:end])
+        start = label.end() if label else 0
+    skip = set(FUNCTION_WORDS)
+    if not answer_first:
+        skip |= {w.lower() for w in _WORD.findall(question)}
+    for match in _WORD.finditer(text, start, end):
+        if match.group().lower() not in skip:
+            return owner[match.start()]
+    return 0
+
+
+def with_answer_token(record: dict, step_entropy: list[float] | None, step_margin: list[float] | None,
+                      token_texts: list[str] | None, question: str, answer_first: bool, h_grd: float,
+                      beta: float, route: dict | None = None) -> dict:
+    """Add ``answer_token`` (and the evidence ``route`` when given) to an available action record.
+
+    ``answer_token`` holds the slot index and its token, the normalised entropy and the margin of the distribution
+    that produced it, H_grd of the t_end row over this action's evidence (0 without evidence), beta, and
+    ``u_raw`` = h_grd + beta * entropy_norm. Without per-step signals (or an empty decode) the slot is the first
+    generated position and its values come from ``first_token``.
+    """
+    first = record["first_token"]
+    have_steps = bool(step_entropy) and bool(step_margin) and token_texts is not None
+    index = answer_slot(token_texts, question, answer_first) if have_steps else 0
+    if have_steps:
+        entropy, margin, text = float(step_entropy[index]), float(step_margin[index]), token_texts[index]
+    else:
+        entropy, margin, text = float(first["entropy_norm"]), float(first["margin"]), None
+    out = {**record, "answer_token": {"index": index, "text": text, "steps_recorded": have_steps,
+                                      "entropy_norm": entropy, "margin": margin, "h_grd": float(h_grd),
+                                      "beta": float(beta), "u_raw": float(h_grd) + float(beta) * entropy}}
+    if route is not None:
+        out["route"] = route
+    return out
 
 
 def input_trace(enc, image_token_id: int | None) -> dict:
