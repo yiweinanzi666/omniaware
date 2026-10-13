@@ -164,7 +164,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -e ".[all]"                         # transformers==5.5.3（已测试版本）及全部可选依赖，含 nltk、faiss-cpu
 python -m spacy download en_core_web_sm
 python scripts/fetch_external.py                # 官方仓库（固定 commit）-> external/：SeaKR、M2RAG、UniversalRAG、BARTScore、WebQA、VQA ...
-python -m pytest                                # CPU 上约 20 秒（2026-10-13 实测：449 通过、5 跳过）
+python -m pytest                                # CPU 上约 20 秒（2026-10-13 实测：460 通过、5 跳过）
 ```
 
 需要 **7z**（p7zip）解压 WebQA 的图片分卷（4.1 节）：

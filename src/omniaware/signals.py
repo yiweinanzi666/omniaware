@@ -157,3 +157,51 @@ def unavailable_record(retriever: dict) -> dict:
         "retriever": retriever,
         "chunks": [],
     }
+
+
+def input_trace(enc, image_token_id: int | None) -> dict:
+    """What one action's prompt contained, read from its encoding: length, a hash of the token ids, and the
+    number of visual tokens of each image in prompt order.
+
+    The image counts come from the runs of the image placeholder token in ``input_ids``, so they describe the
+    input the model received, not what the packing code intended. ``image_token_id`` is None for a model whose
+    placeholder is unknown; the image fields are then null.
+    """
+    import hashlib
+    ids = getattr(enc, "input_ids", None)
+    if ids is None:
+        return {"prompt_tokens": int(enc.length), "prompt_sha256": None, "n_images": None, "image_tokens": None}
+    flat = torch.as_tensor(ids).flatten().tolist()
+    trace = {"prompt_tokens": int(enc.length),
+             "prompt_sha256": hashlib.sha256(",".join(map(str, flat)).encode()).hexdigest()}
+    if image_token_id is None:
+        return {**trace, "n_images": None, "image_tokens": None}
+    runs, current = [], 0
+    for token in flat:
+        if token == image_token_id:
+            current += 1
+        elif current:
+            runs.append(current)
+            current = 0
+    if current:
+        runs.append(current)
+    return {**trace, "n_images": len(runs), "image_tokens": runs}
+
+
+def decode_trace(result, max_new_tokens: int, token_text=None) -> dict:
+    """The greedy decode of one action: token ids, their logprobs, wall time, and whether it stopped at the
+    length limit. ``token_text`` maps a token id to its string for the first-token candidates."""
+    tokens = [int(t) for t in (result.tokens or [])]
+    logprobs = None if result.token_logprobs is None else [round(float(v), 5) for v in result.token_logprobs]
+    return {"tokens": tokens, "token_logprobs": logprobs, "hit_token_cap": len(tokens) >= int(max_new_tokens),
+            "seconds": None if getattr(result, "seconds", None) is None else round(float(result.seconds), 4),
+            "token_text": token_text}
+
+
+def with_trace(record: dict, input_info: dict, decode_info: dict) -> dict:
+    """Attach the input and decode trace to an action record. The selector reads none of these fields."""
+    token_text = decode_info.pop("token_text")
+    if token_text is not None and record.get("first_token"):
+        for candidate in record["first_token"]["topk"]:
+            candidate["text"] = token_text(candidate["id"])
+    return {**record, "input": input_info, "decode": decode_info}

@@ -20,7 +20,7 @@ pip install -e ".[all]"
 python -m pytest -p no:warnings
 ```
 
-预期：`449 passed, 5 skipped`（跳过的是缺少 torchvision / spacy / NLTK 数据或资产目录的测试，数量可能因环境略有不同）。**有失败就停下来反馈，不要继续。**
+预期：`460 passed, 5 skipped`（跳过的是缺少 torchvision / spacy / NLTK 数据或资产目录的测试，数量可能因环境略有不同）。**有失败就停下来反馈，不要继续。**
 
 数据和模型的准备方式没有变，见 README 的第 1–4 节。v2 用到三个数据集：
 
@@ -42,13 +42,20 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 
 想先看会执行什么，加 `--dry-run`。
 
-**S1 要确认三件事：**
+**S1 要确认四件事：**
 
 1. **空答案率不超过 0.5%。** 命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。
 2. **各个动作的回答格式一致。** 打开 `runs/v2_s1_<数据集>/<数据集>.jsonl`，抽 20 题看 `actions` 里五个动作的 `answer`：WebQA 应当都是一个完整的句子，OK-VQA 应当都不超过 3 个词。旧管线的问题是带检索的臂答得很短、不带检索的臂答得很长，导致比较失真。**如果某个动作的回答明显更长或更短，停下来反馈。**
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 
-**回传：** 两个 `runs/v2_s1_*` 目录下的 `*_config.json`、`*.merged.json`、`*.jsonl`，以及 `runs/image_evidence_check.json`。
+4. **溯源记录写出来了，而且内容合理。** 这一条在本机只用假模型测过，真实模型和真实图片上要在冒烟时确认：
+   - `runs/v2_s1_<数据集>/<数据集>.env.ndjson` 里 `git_commit` 不为空，`git_dirty` 是 `false`（有未提交的改动就先提交或还原再跑），`model.attn_implementation` 是 `sdpa`，`model.dtype` 和 `gpus` 符合预期；
+   - `<数据集>.jsonl` 里 WebQA 图像题的 `actions.static_image.input.n_images` 大于 0，`image_tokens` 里每个数都大于 0；`actions.direct.input.n_images` 是 0（OK-VQA 的直答带问题图片，应为 1）；
+   - `actions.<动作>.first_token.topk` 里每个候选都有 `text`；
+   - `<数据集>.prompts.ndjson` 有 20 行，打开看几条，确认 prompt 的样子符合预期；
+   - `<数据集>.log` 存在，里面有 `[env]` 和 `[done]` 两行。
+
+**回传：** 两个 `runs/v2_s1_*` 目录**整个打包**（冒烟只有 50 题，文件很小），以及 `runs/image_evidence_check.json`。
 
 ## 3. 第一个停顿点：S1 的结果要先看过
 
@@ -74,7 +81,7 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 - 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。**
 - 可以多卡分片，方法和以前一样（README 第 5 节）；同一个输出目录有运行锁，重复启动会被拒绝。
 
-**回传：** 每个 `runs/v2_s2_*` 目录下的 `*_config.json`、`*.merged.json`、`*.official_summary.json`、`*.v2_build_summary.json`、`*.v2_actions.jsonl`，go/no-go 的终端输出，以及 `runs/v2_decisions/*.json`。
+**回传：** 每个 `runs/v2_s2_*` 目录**整个打包**，加上 `runs/v2_decisions/*.json`。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
 ## 5. 第二个停顿点：go/no-go（最关键的一步）
 
@@ -102,7 +109,36 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - v2-Rule 相对每个基线的配对差、95% 置信区间、胜 / 负 / 平；
 - WebQA 另外按图像题和文本题各报一遍。
 
-**回传：** `runs/v2_s4_*` 整个目录（`*.jsonl` 如果太大就先传其余文件）。
+**回传：** `runs/v2_s4_*` 整个目录。如果 `<数据集>.jsonl` 太大，先传其余文件，这个文件单独压缩后再传；**不要删掉它**，逐题的输入、解码和候选排序都在里面。
+
+## 6.5 每次运行会留下什么（溯源用，全部要回传）
+
+每个 `runs/<tag>/` 目录里，除了答案之外，还有下面这些记录。它们的作用是：结果出现反常时，能从最终分数一路追回到模型实际读到的输入，不需要重跑。**它们都是自动写的，不需要额外操作，但请不要删、不要改、不要只挑一部分回传。**
+
+| 文件 | 内容 | 用来回答什么 |
+|---|---|---|
+| `<数据集>.env.ndjson` | 每次启动一行：代码的 git 提交号、是否有未提交的改动、python / torch / transformers 版本、GPU 型号、注意力实现、dtype、完整命令行 | 这次结果是哪版代码、哪个环境跑出来的 |
+| `<数据集>.log` | 屏幕上的全部输出，包括警告和异常堆栈；续跑时追加，不覆盖 | 运行中途发生了什么，为什么失败 |
+| `<数据集>_config.json` | 全部参数、三份题目列表的 sha256、缓存指纹、提示词及其哈希 | 用的是什么设置、哪些题 |
+| `<数据集>.jsonl` | 逐题记录，见下 | 每道题每一步发生了什么 |
+| `<数据集>.prompts.ndjson` | 前 20 道题、每个动作的完整 prompt 文本（图片位置标为 `<image:路径>`） | 人工检查模型到底读到了什么 |
+| `<数据集>.merged.json` | 完成标记：题数、输出与配置的 sha256、空答案率 | 这次运行是否完整 |
+| `<数据集>.official_scores.jsonl` / `.official_summary.json` | 逐题逐臂的官方分数、汇总 | 评分 |
+| `<数据集>.v2_actions.jsonl` / `.v2_build_summary.json` | 逐题动作表、各动作均分与逐题上限 | 选择器的输入 |
+
+逐题记录（`<数据集>.jsonl`）里与溯源有关的字段：
+
+- `candidate_scores`：**全部**候选的相关度、重排分数、模态、是否为 gold，按相关度排序。可以看 gold 证据排第几、离入选差多少。
+- `actions.<动作>.chunks`：这个动作实际送进模型的证据。
+- `actions.<动作>.input`：prompt 的 token 数、token 序列的哈希、图片张数、**每张图实际占的视觉 token 数**（从送进模型的 token 序列里数出来的，不是按预期算的）。
+- `actions.<动作>.decode`：生成的 token id、逐 token 的对数概率、耗时、是否撞到生成长度上限。
+- `actions.<动作>.first_token`：首个答案 token 的前 10 个候选（id、文字、概率）、熵、领先幅度。
+- `actions.<动作>.retriever`：该动作所用证据上的检索分数统计，以及整个候选池的统计。
+- `preds` 与 `parsed`：各臂的原始输出，以及解析后的答案和空答案标记。
+
+决定文件 `runs/v2_decisions/<数据集>.json` 里的 `trace` 字段记录了选择器检验过的**每一个**候选阈值：p 值、平均收益、改变了多少题、是否通过，以及在哪一步停下。如果选择器退回了单一动作，`fallback_reason` 会写明原因。
+
+多卡分片运行时，每个分片有自己的 `.env.ndjson`、`.log` 和 `.prompts.ndjson`（文件名里带 `shardXX-of-NN`），合并答案时不会动它们，请一并回传。
 
 ## 7. 不要做的事
 

@@ -10,6 +10,7 @@ import argparse
 import gc
 import json
 import random
+import sys
 import time
 from pathlib import Path
 
@@ -131,7 +132,7 @@ def rerank_chunks(e: dict, rel: dict[str, float], logits: dict[str, float]) -> l
 
 PERMUTATIONS = {o["order_id"]: o["permutation"] for o in order_mod.permutation_schedule()}
 # How a run is executed, not what it computes: excluded from the saved configuration and its checks.
-EXECUTION_ARGS = {"num_shards", "shard_id", "calibrate_only"}
+EXECUTION_ARGS = {"num_shards", "shard_id", "calibrate_only", "trace_prompts", "max_empty_rate"}
 # Mechanism-section arm only. The default --variants list does not include it.
 ANALYSIS_EAB = "eab:g1.2:ans1:pos:gate"
 
@@ -167,15 +168,24 @@ def v2_action_chunks(e: dict, rel: dict[str, float], joint: list[dict], ce_logit
             "rerank_static": rerank_chunks(e, rel, ce_logits)}
 
 
-def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, direct, decoded: dict,
+def token_text_of(qwen):
+    """Token id -> string for the first-token candidates, or None when the model exposes no tokenizer decode."""
+    decode = getattr(getattr(qwen, "tok", None), "decode", None)
+    return None if decode is None else (lambda token_id: decode([int(token_id)]))
+
+
+def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, direct: tuple, decoded: dict,
                       max_new: int, answer_style: str) -> dict:
     """One record per v2 action (signals.action_record), in V2_ACTIONS order.
 
-    ``direct`` is the direct decode, whose first-token logits give KL_to_direct. ``decoded`` maps a tuple of chunk
-    ids to a result already decoded from the same prompt; new decodes are added to it. An evidence action with no
-    candidates is recorded as unavailable: it is neither decoded nor replaced by another action's result.
+    ``direct`` is the (result, encoding) of the direct decode; its first-token logits give KL_to_direct.
+    ``decoded`` maps a tuple of chunk ids to the (result, encoding) already decoded from the same prompt; new
+    decodes are added to it. An evidence action with no candidates is recorded as unavailable: it is neither
+    decoded nor replaced by another action's result. Each available record carries the trace of its own input
+    (prompt length and hash, visual tokens per image) and decode (token ids, logprobs, time, length-limit flag).
     """
-    direct_logits = direct.first_logits
+    direct_logits = direct[0].first_logits
+    image_token_id = getattr(qwen, "image_token_id", None)
     records = {}
     for name in V2_ACTIONS:
         chosen = chunks_by_action[name]
@@ -183,21 +193,51 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
             records[name] = signals.unavailable_record(signals.retriever_signals(e["candidates"], rel, chosen))
             continue
         if name == DIRECT:
-            result = direct
+            result, enc = direct
         else:
             key = tuple(c["cid"] for c in chosen)
             if key not in decoded:
                 enc = qwen.encode(*pipeline.build_segments(e, chosen, answer_style))
-                decoded[key] = qwen.run(enc, None, max_new, decode_static=True)[0]["static"]
-            result = decoded[key]
+                decoded[key] = (qwen.run(enc, None, max_new, decode_static=True)[0]["static"], enc)
+            result, enc = decoded[key]
         if result.token_logprobs is None:
             raise RuntimeError(f"{e['qid']}: the {name} decode recorded no token logprobs")
-        records[name] = signals.action_record(
+        record = signals.action_record(
             result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
             None if name == DIRECT else direct_logits,
             signals.retriever_signals(e["candidates"], rel, chosen),
             [] if name == DIRECT else [c["cid"] for c in chosen])
+        records[name] = signals.with_trace(record, signals.input_trace(enc, image_token_id),
+                                           signals.decode_trace(result, max_new, token_text_of(qwen)))
     return records
+
+
+def candidate_scores(e: dict, rel: dict[str, float], ce_logits: dict[str, float] | None) -> list[dict]:
+    """Every candidate of the question with its scores, best calibrated relevance first.
+
+    Written for analysis after the run (where the gold evidence ranked, how close it was to the cut). ``gold`` is
+    copied from the data and is not read by any selection in this module.
+    """
+    rows = [{"cid": c["cid"], "modality": c["modality"], "relevance": round(float(rel[c["cid"]]), 5),
+             "ce_logit": None if ce_logits is None else round(float(ce_logits[c["cid"]]), 5),
+             "gold": c.get("gold")} for c in e["candidates"]]
+    return sorted(rows, key=lambda row: (-row["relevance"], str(row["cid"])))
+
+
+def prompt_sample(e: dict, chunks_by_action: dict, answer_style: str) -> dict:
+    """The full prompt of every available v2 action of one question, for reading by a person.
+
+    Text segments are joined as the model receives them; an image is shown as ``<image:path>`` at its position.
+    """
+    actions = {}
+    for name in V2_ACTIONS:
+        chosen = chunks_by_action[name]
+        if name != DIRECT and not chosen:
+            continue
+        segments, _ = pipeline.build_segments(e, chosen, answer_style)
+        actions[name] = {"prompt": "".join(s.text if s.image is None else f"<image:{s.image}>" for s in segments),
+                         "images": [s.image for s in segments if s.image is not None]}
+    return {"qid": e["qid"], "question": e["question"], "actions": actions}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -314,7 +354,10 @@ def build_parser() -> argparse.ArgumentParser:
                          "arm keep relevance. Requires --v2")
     ap.add_argument("--decisions", default=None,
                     help="frozen decisions JSON. Checked and hashed into the config; this process does not search a grid")
-    ap.add_argument("--max-empty-rate", type=float, default=None,
+    ap.add_argument("--trace-prompts", type=int, default=20,
+                    help="with --v2: write the full prompt of every action for the first N questions of this "
+                         "process to <output>.prompts.ndjson (0 disables)")
+    ap.add_argument("--max-empty-rate",type=float, default=None,
                     help="single-process runs: after the outputs and completion marker are written, exit non-zero when "
                          "the empty-answer rate exceeds this value (default: only warn above 0.5%%)")
     return ap
@@ -387,7 +430,9 @@ def main(argv=None):
     # One writer per output file: a second process on the same tag (or shard) is refused while the first runs.
     lock_name = (f"{args.dataset}.lock" if args.num_shards == 1
                  else f"{args.dataset}.shard{args.shard_id:02d}-of-{args.num_shards:02d}.lock")
-    with runio.run_lock(out_dir / lock_name):
+    log_name = lock_name.removesuffix(".lock") + ".log"
+    with runio.run_lock(out_dir / lock_name), runio.tee_output(out_dir / log_name, " ".join(sys.argv if argv is None
+                                                                                       else ["omniaware.run", *argv])):
         evaluate(ap, args, out_dir, norm_source)
 
 
@@ -527,6 +572,13 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     qwen = QwenEAB(model_path, max_pixels=args.max_pixels, max_patches=args.max_patches)
     qwen.capture_at = qwen.n_layers // 2 if args.attn_layer == "mid" else -1
     print(f"[model] {args.model} loaded on {qwen.device} in {time.time() - t0:.1f}s, {qwen.n_layers} layers", flush=True)
+    # One line per launch (a resumed or sharded run appends): code version, libraries, hardware, model loading.
+    environment = runio.environment_snapshot(sys.argv, qwen)
+    runio.append_jsonl(out_path.with_suffix(".env.ndjson"), environment)
+    print(f"[env] commit {environment['git_commit']} dirty={environment['git_dirty']} torch {environment['torch']} "
+          f"transformers {environment['transformers']} attn {environment['model']['attn_implementation']} "
+          f"dtype {environment['model']['dtype']} gpus {environment['gpus']}", flush=True)
+    prompts_path = out_path.with_suffix(".prompts.ndjson")
 
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
     style = data_tag + ("" if args.answer_style == "default" else f"_{args.answer_style}")
@@ -1068,9 +1120,12 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
             if args.v2:
                 # static_mixed reuses the joint decode above; rerank_static ranks by cross-encoder logit (--v2-reranker)
                 chunks_by_action = v2_action_chunks(e, rel, joint, ce_table[e["qid"]], args.k, args.seed)
-                rec["actions"] = decode_v2_actions(qwen, e, rel, chunks_by_action, res_d["static"],
-                                                   {tuple(rec["chunks_joint"]): res_j["static"]}, max_new,
+                rec["actions"] = decode_v2_actions(qwen, e, rel, chunks_by_action, (res_d["static"], enc_d),
+                                                   {tuple(rec["chunks_joint"]): (res_j["static"], enc_j)}, max_new,
                                                    args.answer_style)
+                rec["candidate_scores"] = candidate_scores(e, rel, ce_table[e["qid"]])
+                if i < args.trace_prompts:
+                    runio.append_jsonl(prompts_path, prompt_sample(e, chunks_by_action, args.answer_style))
             # preds keep the model's raw output; the parse (answer, answer_empty, citation_only) is stored beside it
             rec["parsed"] = {name: answers.parse_answer(text) for name, text in rec["preds"].items()}
             rec["seconds"] = round(time.time() - t0, 2)
@@ -1099,6 +1154,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
         notes.append(f"universalrag_fallback {tallies['universalrag_fallback']}")
     if args.seakr_samples:
         notes.append(f"seakr_missing {tallies['seakr_missing']}")
+    if torch.cuda.is_available():
+        notes.append(f"peak_gpu_memory_gib {torch.cuda.max_memory_allocated() / 2 ** 30:.2f}")
     print(f"[done] {args.dataset} {len(evals)} in {time.time() - t_start:.1f}s -> {out_path}"
           + "".join(f"; {note}" for note in notes), flush=True)
 
