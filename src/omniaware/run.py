@@ -17,8 +17,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from. import (analysis, answers, data, interventions, order as order_mod, paths, pipeline, prompts, relevance,
-               rerank, routing, runio, signals)
+from . import (analysis, answers, arbitration, data, interventions, order as order_mod, paths, pipeline, prompts,
+               relevance, rerank, routing, runio, signals)
 from .actions import DIRECT, V2_ACTIONS
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
@@ -255,6 +255,38 @@ def prompt_sample(e: dict, chunks_by_action: dict, answer_style: str) -> dict:
         actions[name] = {"prompt": "".join(s.text if s.image is None else f"<image:{s.image}>" for s in segments),
                          "images": [s.image for s in segments if s.image is not None]}
     return {"qid": e["qid"], "question": e["question"], "actions": actions}
+
+
+def deploy_v2(qwen, e: dict, chunks_by_action: dict, decision: dict, max_new: int, answer_style: str) -> dict:
+    """Apply a frozen v2-Rule decision the way a deployment would: prefill only the actions whose first-token
+    signal the decision reads, then decode the one chosen action.
+
+    The prefill of an action is one forward pass over its prompt with no generation. Nothing here reads a score
+    or a gold field. The returned record counts the passes and the wall time of this path alone.
+    """
+    t0 = time.perf_counter()
+    actions = {name: {"available": name == DIRECT or bool(chunks_by_action[name]), "answer": None}
+               for name in V2_ACTIONS}
+    encodings, prefills = {}, []
+
+    def encoding(name):
+        if name not in encodings:
+            encodings[name] = qwen.encode(*pipeline.build_segments(e, chunks_by_action[name], answer_style))
+        return encodings[name]
+
+    while True:
+        needed = arbitration.signals_needed(decision, actions)
+        if not needed:
+            break
+        for name in needed:
+            logits = qwen.run(encoding(name), None, max_new, decode_static=False)[2]
+            actions[name]["first_token"] = signals.first_token_signals(logits, vocab_size=qwen.vocab_size)
+            prefills.append(name)
+    chosen = arbitration.apply_decision(decision, actions)["action"]
+    result = qwen.run(encoding(chosen), None, max_new, decode_static=True)[0]["static"]
+    return {"action": chosen, "answer": answers.parse_answer(result.text)["answer"], "raw": result.text,
+            "prefilled": prefills, "prefill_calls": len(prefills), "decode_calls": 1,
+            "seconds": round(time.perf_counter() - t0, 4)}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -599,6 +631,12 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
           f"transformers {environment['transformers']} attn {environment['model']['attn_implementation']} "
           f"dtype {environment['model']['dtype']} gpus {environment['gpus']}", flush=True)
     prompts_path = out_path.with_suffix(".prompts.ndjson")
+    # With --v2 and a frozen decisions file, the frozen v2-Rule is also run as a deployment would run it.
+    deploy_decision = None
+    if args.v2 and args.decisions:
+        deploy_decision = json.loads(Path(args.decisions).read_text(encoding="utf8")).get("v2", {}).get("rule")
+        if deploy_decision is None:
+            ap.error(f"--decisions {args.decisions} holds no v2 rule decision (v2.rule)")
 
     # ---- U calibration (frozen on the calibration split, cached per dataset/model/k/order)
     style = data_tag + ("" if args.answer_style == "default" else f"_{args.answer_style}")
@@ -1146,6 +1184,14 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
                 rec["candidate_scores"] = candidate_scores(e, rel, ce_table[e["qid"]])
                 if i < args.trace_prompts:
                     runio.append_jsonl(prompts_path, prompt_sample(e, chunks_by_action, args.answer_style))
+                if deploy_decision is not None:
+                    # The deployment path of the frozen rule: prefill what it reads, decode what it chooses. The
+                    # full decode of every action above stays the reference; the two must agree.
+                    deployed = deploy_v2(qwen, e, chunks_by_action, deploy_decision, max_new, args.answer_style)
+                    full = arbitration.apply_decision(deploy_decision, rec["actions"])
+                    deployed["matches_full_decode"] = (deployed["action"] == full["action"]
+                                                       and deployed["answer"] == full["answer"])
+                    rec["v2_deploy"] = deployed
             # preds keep the model's raw output; the parse (answer, answer_empty, citation_only) is stored beside it
             answer_first = rec["answer_format"] == "answer_first"
             rec["parsed"] = {name: answers.parse_answer(text, answer_first) for name, text in rec["preds"].items()}

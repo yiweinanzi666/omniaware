@@ -75,27 +75,25 @@
 \begin{document}
 
 
-\title[Risk-Controlled Retrieval Arbitration]{Omni-Aware: Risk-Controlled Retrieval Arbitration across Modalities}
+\title[Omni-Aware: Latent-Space Evidence Control]{Omni-Aware: Latent-Space Evidence Control for Multimodal Web Answering}
 
 \author{Anonymous Author(s)}
 \affiliation{\institution{Anonymous Institution}\country{}}
 
 \begin{abstract}
-Multimodal Web question answering has to choose, for each question, whether to trust parametric knowledge or evidence from text, from images, or from both.
-\method{} v2 decodes five actions in one run under one frozen prompt: direct answering, static text, static image, static mixed evidence, and static evidence reranked by a cross-encoder.
-v2-Rule fits no weights: it thresholds the first-token margin of the direct answer and otherwise uses an evidence action.
-v2-Cal fits one ridge regression per evidence action that predicts its score gain over the strongest single action.
-The rule reads only first-token margins: the direct margin decides whether to retrieve, and one of its two variants also compares the margins of the evidence actions. The calibrated selector additionally reads the agreement between answers (token F1), the KL divergence from the direct distribution, and the top retriever score among the evidence an action uses; the other recorded signals are kept for analysis.
-Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action, with $\delta=0.10$ and a tolerance $\epsilon=1.0$ point.
-With probability at least $1-\delta$ over the calibration draw, the expected score of the chosen policy is at least the expected score of the strongest single action minus $\epsilon$.
-Utility, not accuracy, selects the threshold inside the accepted set.
+Web retrieval-augmented generation answers questions from evidence that may lie in text passages or in images.
+For each question a system makes three decisions: whether to retrieve, which modality to retrieve from, and how the retrieved evidence is used.
+Existing multimodal systems make them with separate, format-specific signals, trained routers, or sampled generations.
+We study \method{}, a controller that makes all three from one family of latent-space signals: the first-token distributions that a frozen generator produces when it prefills a prompt without evidence and with each kind of evidence.
+We first examine the soft form of such control, Evidence Attention Bias, which adds a relevance-scaled bias to the attention over evidence spans.
+On the previous pipeline it moved attention onto supporting evidence and left the answers almost unchanged, because the first-token margin exceeded the logit displacement that the bias produced.
+\method{} therefore controls evidence in hard form: it decides which evidence set the generator reads.
+Its rule, v2-Rule, fits no weights. It keeps the direct answer when the direct first-token margin clears a threshold and otherwise hands the generator text, image, mixed, or reranked evidence; applying it needs prefills and one decode.
+A calibrated variant, v2-Cal, fits one small ridge regression per evidence action.
+Thresholds are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action, with $\delta=0.10$ and a tolerance $\epsilon=1.0$ point: with probability at least $1-\delta$ over the calibration draw, the expected score of the chosen policy is at least that of the strongest single action minus $\epsilon$.
 The strongest single action is chosen on the same calibration sample, which is slightly optimistic.
-The primary relative gain uses that action as the denominator.
-Gain versus static mixed evidence, and a per-question oracle, are reported as well.
-OK-VQA uses official VQA accuracy only.
-WebQA's primary metric is acc$_{\mathrm{approx}}$, together with normalized BART and QA$_{\mathrm{approx}}$ on image and text subsets.
-Evidence Attention Bias is not a main-method action.
-The v2 evaluation has not been run; every new experimental number in this draft is a placeholder.
+All actions share one frozen answer prompt; OK-VQA is scored with official VQA accuracy, and WebQA primarily with acc$_{\mathrm{approx}}$, with normalized BART and QA$_{\mathrm{approx}}$ on image and text subsets.
+The evaluation of the repaired pipeline has not been run; every new experimental number in this draft is a placeholder.
 \end{abstract}
 
 \begin{CCSXML}
@@ -107,7 +105,7 @@ The v2 evaluation has not been run; every new experimental number in this draft 
 \ccsdesc[500]{Information systems~Retrieval models and ranking}
 \ccsdesc[300]{Computing methodologies~Natural language generation}
 
-\keywords{Web retrieval-augmented generation, multimodal question answering, retrieval arbitration, risk control}
+\keywords{Web retrieval-augmented generation, multimodal question answering, latent-space control, adaptive retrieval, evidence use, risk control}
 
 \maketitle
 
@@ -116,12 +114,26 @@ The v2 evaluation has not been run; every new experimental number in this draft 
 \label{sec:intro}
 
 Web retrieval-augmented generation answers a question by retrieving evidence and conditioning a generator on it~\cite{guu2020realm,lewis2020rag}.
-On the Web, the supporting facts may sit in a text passage, an image, or both, and the same question can be helped by one source and hurt by another.
-The decision studied here is which action to take: answer from the model alone, from text evidence, from image evidence, from mixed evidence, or from a top-$k$ list reranked by a cross-encoder.
-Attention-level steering is a poor substitute for that decision.
-A bias can move attention onto a supporting span while the first answer token, and therefore the answer, stays where it was.
-Section~\ref{sec:steer} quotes that measurement from the project root-cause report dated 13~October~2026.
-It is an analysis of the previous pipeline, not a result of the v2 runs, which have not been executed.
+On the Web the supporting facts may sit in a text passage, an image, or both, so a multimodal system makes three decisions for every question: whether to retrieve at all, which modality to retrieve from, and how the retrieved evidence is used by the generator.
+Current systems make these decisions with different machinery.
+Whether to retrieve is decided from generated text, sampled generations, or a trained classifier; where to retrieve is decided by a router trained on the query; and how evidence is used is left to the generator's attention, which is sensitive to position and to the amount of evidence.
+The three are therefore hard to coordinate, and each new format brings its own rule.
+
+We take a latent-space view of the same decisions.
+Evidence reaches a decoder-only generator as token spans in its input, and one forward pass over a prompt, a prefill with no generation, already yields the distribution of the first answer token.
+Comparing that distribution without evidence and with each kind of evidence shows how confident the generator is on its own and what each evidence set would change.
+\method{} makes all three decisions from this one family of signals, on a frozen generator, with the retrievers and encoders of each format left as they are.
+
+The most direct way to act on such signals is soft control: bias the attention toward the evidence that the retriever scores highest.
+We built this as Evidence Attention Bias and measured it on the previous pipeline.
+The bias did move attention onto supporting evidence, and the answers barely changed: the margin of the first answer token was larger than the logit displacement that the bias produced, and among the evidence already selected the relevance scores were too close for the bias to separate them.
+Section~\ref{sec:steer} reports that analysis, which comes from the project root-cause report dated 13~October~2026 and is not a result of the new runs.
+Reweighting evidence that the generator already reads does not change what it concludes.
+
+\method{} therefore controls evidence in hard form: it decides which evidence set the generator reads.
+The action set contains a direct answer and four evidence sets, text only, image only, mixed, and reranked, and it spans the three decisions: direct against the rest is whether to retrieve, text against image is where, and mixed against reranked is how the evidence is selected.
+A rule with no fitted weights keeps the direct answer when its first-token margin clears a threshold and otherwise selects an evidence action; it is applied with prefills and a single decode.
+Its thresholds are screened by a paired test on the calibration split, which bounds the expected loss against the strongest single action (Section~\ref{sec:risk}).
 
 Format and metric choices can move scores by more than the gap between systems.
 The evaluation therefore freezes one answer prompt for every action, scores OK-VQA with official VQA accuracy only, and scores WebQA primarily with acc$_{\mathrm{approx}}$, reporting normalized BART and QA$_{\mathrm{approx}}$ on image and text subsets beside it.
@@ -130,15 +142,14 @@ Historical cached baselines are not used.
 
 Our contributions are as follows:
 \begin{itemize}
-  \item A measurement, under that protocol, of when retrieval helps or hurts on WebQA and OK-VQA, including image and text subsets and the gap between the best single action and the per-question oracle.
+  \item A latent-space formulation of evidence control for multimodal Web answering, in which whether to retrieve, where to retrieve, and how evidence is used are decided from the first-token distributions of prefills with and without evidence, on a frozen generator.
+  \item An analysis of soft control (Section~\ref{sec:steer}): a relevance-scaled attention bias moves attention onto supporting evidence and does not move answers, with the first-token margin as the explanation.
+  Every number in that subsection is copied from the 13~October~2026 root-cause report and is attributed there.
+  \item Hard control: v2-Rule, which fits no weights and is applied with prefills and one decode, and v2-Cal, one ridge regression per evidence action.
+  Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action (Section~\ref{sec:risk}), at $\delta=0.10$ and $\epsilon=1.0$; the guarantee concerns expected score, under the assumptions stated there.
+  \item A measurement, under one frozen answer format and official metrics, of when retrieval helps or hurts on WebQA and OK-VQA, including image and text subsets and the gap between the best single action and the per-question oracle.
   The new measurement has not been run.
   Its cells, including that gap, are \ph{}.
-  \item v2-Rule, which fits no weights, and v2-Cal, one ridge regression per evidence action, which choose among the five actions using the signals in Section~\ref{sec:signals}.
-  Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action (Section~\ref{sec:risk}), at $\delta=0.10$ and $\epsilon=1.0$.
-  Utility, not accuracy, selects the threshold inside the accepted set.
-  The guarantee concerns expected score, under the assumptions stated in Section~\ref{sec:risk}.
-  \item A mechanism analysis, titled as the subsection in Section~\ref{sec:steer}, that attention steering moves attention and does not move answers.
-  Every number in that subsection is copied from the 13~October~2026 root-cause report and is attributed there.
 \end{itemize}
 
 %% ===============================================================
@@ -150,20 +161,20 @@ Web answer engines retrieve and cite pages at query time~\cite{nakano2021webgpt,
 Multimodal RAG systems~\cite{abootorabi2025survey} retrieve images, knowledge memories, or visual documents~\cite{adjali2024multilevel,chen2022murag,hu2023reveal,wang2025vidorag,yu2025visrag}, generate multimodal answers~\cite{ma2025m2rag,wu2025visualrag}, or refine selection by reranking, reflection, or adaptive visual selection~\cite{chen2025ragvl,zhai2025samrag,zhang2024mr2ag}.
 They improve which chunks are retrieved and how each format is encoded.
 We keep those format-specific retrievers and encoders.
-The controller in this paper chooses among the five actions in Section~\ref{sec:problem}.
+The controller in this paper decides which of their evidence sets the generator reads (Section~\ref{sec:problem}).
 
 \textit{Adaptive evidence acquisition.}
 Adaptive retrieval decides from the generation state whether external knowledge is needed: Self-RAG learns reflection signals~\cite{asai2024selfrag}, FLARE retrieves when upcoming tokens have low probability~\cite{jiang2023flare}, DRAGIN combines token entropy with attention to decide when and what to retrieve~\cite{su2024dragin}, Adaptive-RAG classifies question complexity~\cite{jeong2024adaptiverag}, and SeaKR measures the consistency of sampled hidden states~\cite{yao2025seakr}; their cost--quality tradeoffs have been compared~\cite{moskvoretskii2025adaptive}.
 For multimodal inputs, MMA-RAG classifies hidden states of the input and the retrieved visual context~\cite{du2026mmarag}, and UniversalRAG routes the query alone to modality- and granularity-specific corpora~\cite{yeo2026universalrag}; retriever signals do not reliably improve such query-only routers~\cite{li2026beyond}.
 These methods read generated text, the query, retriever scores, or pooled hidden states, and most train a router or classifier or sample many generations.
-v2 reads first-token and retriever signals from one shared decoding of a fixed action set, fits one small ridge regression per evidence action (Section~\ref{sec:cal}), and screens thresholds with the procedure in Section~\ref{sec:risk}.
+\method{} reads the first-token distributions of prefills with and without each evidence set: the signal is taken inside the generator, before any text is produced, and the same signal serves the whether, where, and how decisions. Its rule fits no weights and samples no generations (Section~\ref{sec:rule}), and its thresholds are screened with the procedure in Section~\ref{sec:risk}.
 
 \textit{Knowledge conflict and inference-time evidence control.}
 Retrieved context can agree or conflict with parametric knowledge, which is why the action set contains a direct arm and separate text, image, and mixed arms.
 Position sensitivity~\cite{liu2024lost} has motivated multi-scale positional encoding~\cite{zhang2024mspoe} and positional attention calibration~\cite{hsieh2024found}; text-only RAG readers are less affected than long-context models~\cite{cuconasu2025positional}, and multimodal readers can prefer early passages, while reranking does not by itself remove that preference~\cite{liu2026lostend}.
 OpenDecoder multiplies attention scores by retrieval features and fine-tunes the decoder~\cite{mo2026opendecoder}; PASTA emphasizes user-specified spans on profiled heads~\cite{zhang2024pasta}, which at one attention row equals a constant span bias; PAI amplifies attention to image tokens~\cite{liu2024pai}; and MAD-RAG restores attention to question-relevant image regions that retrieved text draws away~\cite{zhao2026madrag}.
 Section~\ref{sec:steer} quotes a measurement in which an attention bias moves attention onto supporting evidence while the answer stays put.
-Evidence Attention Bias is confined to that analysis and is not a main-method action.
+These methods are soft control in our terms: they reweight evidence that the generator already reads. Evidence Attention Bias belongs to the same family, and that analysis is why \method{} selects the evidence set instead.
 
 %% ===============================================================
 \section{Problem Definition}
@@ -188,7 +199,8 @@ The action set is
 \texttt{direct} uses no retrieved evidence.
 The three static actions pack text, image, or mixed evidence.
 \texttt{rerank\_static} packs the top-$k$ of the whole candidate pool, ranked by a cross-encoder reranker.
-Evidence Attention Bias is not a member of $\mathcal{A}$.
+The set spans the three decisions: \texttt{direct} against the others is whether to retrieve; \texttt{static\_text} against \texttt{static\_image} is where; and \texttt{static\_mixed} against \texttt{rerank\_static} is how the evidence is selected.
+Evidence Attention Bias is soft control and is not a member of $\mathcal{A}$.
 All five actions are decoded in the same run, on the same candidates, with the same prompt and the same decoding budget.
 
 The selector returns one action $a\in\mathcal{A}$.
@@ -203,6 +215,16 @@ Its claim is a bound on the expected score of the chosen policy relative to $a^{
 \section{Method}
 \label{sec:method}
 
+\subsection{Soft and Hard Evidence Control}
+\label{sec:softhard}
+Evidence enters the generator as token spans, and a prefill over a prompt gives the distribution of the first answer token without generating anything.
+A controller can act on that information in two ways.
+Soft control leaves the input as it is and changes how strongly the generator attends to each evidence span; Evidence Attention Bias adds $\gamma U r_j$ to the attention logits of the columns of evidence chunk $j$, with $r_j$ its calibrated relevance and $U$ an uncertainty score.
+Hard control changes the input: it chooses which evidence set is packed into the prompt.
+Section~\ref{sec:steer} shows why soft control is not the main method here.
+On the previous pipeline the bias shifted attention mass toward supporting chunks, and the first answer token rarely changed, because its margin over the runner-up was larger than the displacement the bias caused, and because the chunks already selected had relevance scores too close to be told apart.
+The rest of this section is hard control over the action set $\mathcal{A}$.
+
 \subsection{Signals}
 \label{sec:signals}
 Each action stores the entropy of its first-token distribution and the same entropy divided by $\log|V|$, the gap between the top-1 and top-2 logits, the log-probability of the greedy answer and the number of generated tokens, and, for an evidence action, the KL divergence between that action's first-token distribution and the direct action's first-token distribution.
@@ -213,10 +235,9 @@ It is not an inference-time feature and it is not an input to v2-Cal.
 
 Only four quantities enter a decision: the first-token margin, the token F1 between an action's answer and the answer of $a^{\star}$, the KL divergence from \texttt{direct}, and the retriever top-1 score of the candidates an action uses. Entropy, the sequence log-probability, the generated length, and the retriever top-1--top-2 gap are stored for analysis.
 
-One direct prefill produces the direct first-token signals.
-Each evidence action then uses a short greedy decode.
-Decoding evidence actions only when the direct confidence falls below the threshold would lower this cost; that variant is not implemented or evaluated here.
-Its measured cost is \ph{}, because that variant has not been run.
+The first-token signals of an action need only a prefill of its prompt.
+The decoded answer, and therefore the token F1, needs a decode.
+v2-Rule reads first-token margins only, so it can be applied before anything is generated (Section~\ref{sec:cost}); v2-Cal also reads token F1 and needs the decoded answers.
 
 \subsection{v2-Rule}
 \label{sec:rule}
@@ -272,8 +293,15 @@ v2-Cal is tested at level $\delta$ as its own decision, and the main text report
 
 \subsection{Cost}
 \label{sec:cost}
-In the worst case each question uses one direct prefill and one short decode per action in $\mathcal{A}$.
-The evaluation reports the mean number of generator calls, the number of input tokens, and the latency, next to always decoding \texttt{static\_mixed} and next to SeaKR~\cite{yao2025seakr}.
+Calibration and evaluation decode every action of every question, because the score of each action is needed to choose thresholds and to report the oracle.
+Applying the frozen v2-Rule needs less.
+It prefills the direct prompt, one forward pass with no generation.
+If the direct margin clears $\tau$, it decodes the direct answer.
+Otherwise the best-evidence rule decodes $e^{\star}$ with no further prefill, and the most-confident rule first prefills each available evidence action.
+A question therefore costs at most $|\mathcal{A}|$ prefills and exactly one decode.
+v2-Cal reads decoded answers and has no such form.
+The test runs execute this path beside the full decode and record, per question, the prefills, the decode, the wall time, and whether the path chose the action that the full decode chooses.
+The evaluation reports those counts, the number of input tokens, and the latency, next to always decoding \texttt{static\_mixed} and next to SeaKR~\cite{yao2025seakr}.
 Those measurements are \ph{}.
 The GPU-time figures in the repository README are planning estimates, not measurements, and they are not copied into the tables.
 

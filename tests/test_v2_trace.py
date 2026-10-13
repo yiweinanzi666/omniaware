@@ -168,3 +168,59 @@ def test_a_fallback_says_why_and_still_carries_the_trace():
     assert decision["fallback"] and decision["fallback_reason"]
     assert isinstance(decision["trace"], list)
 
+
+
+def _rule(tau, choice):
+    ranking = [DIRECT, "static_mixed", "rerank_static", "static_text", "static_image"]
+    return {"kind": "rule", "fallback": False, "confidence": "margin", "tau": tau, "evidence_choice": choice,
+            "best_single": DIRECT, "action_ranking": ranking, "evidence_ranking": ranking[1:], "delta": 0.1,
+            "epsilon": 1.0}
+
+
+def _state(margins, unavailable=()):
+    return {name: {"available": name not in unavailable, "answer": None,
+                   **({"first_token": {"margin": margins[name], "entropy": 0.1}} if name in margins else {})}
+            for name in V2_ACTIONS}
+
+
+def test_signals_needed_asks_only_for_what_the_decision_reads():
+    assert arbitration.signals_needed({"kind": "single"}, _state({})) == []
+    assert arbitration.signals_needed(_rule(1.0, "best"), _state({})) == [DIRECT]
+    assert arbitration.signals_needed(_rule(1.0, "best"), _state({DIRECT: 5.0})) == []      # direct is kept
+    assert arbitration.signals_needed(_rule(1.0, "best"), _state({DIRECT: 0.1})) == []      # best needs no signal
+    need = arbitration.signals_needed(_rule(1.0, "confident"), _state({DIRECT: 0.1}, unavailable=("static_image",)))
+    assert need == ["static_mixed", "rerank_static", "static_text"]
+    assert arbitration.signals_needed(_rule(1.0, "confident"), _state({DIRECT: 5.0})) == []
+    with pytest.raises(ValueError):
+        arbitration.signals_needed({"kind": "cal"}, _state({}))
+
+
+@pytest.mark.parametrize("choice", ["best", "confident"])
+@pytest.mark.parametrize("tau", [-1e9, 1.0, 1e9])
+def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(fake_run, monkeypatch, choice, tau):  # noqa: F811
+    # A real model gives the same logits for the same prompt; the stand-in draws them at random, so seed by prompt.
+    original = run.QwenEAB.run
+
+    def same_prompt_same_logits(self, enc, make_variants, max_new_tokens, decode_static=True):
+        torch.manual_seed(enc.length)
+        return original(self, enc, make_variants, max_new_tokens, decode_static)
+
+    monkeypatch.setattr(run.QwenEAB, "run", same_prompt_same_logits)
+    decisions = fake_run / "decisions.json"
+    rule = _rule(tau, choice)
+    decisions.write_text(json.dumps({"v2": {"rule": rule, "cal": {**rule, "kind": "single", "fallback": True,
+                                                                  "action": DIRECT}, "primary": "rule"}}))
+    out, rows = _v2_run(fake_run, tag=f"deploy_{choice}_{tau}", extra=("--decisions", str(decisions)))
+    assert rows
+    for row in rows:
+        deployed = row["v2_deploy"]
+        assert deployed["matches_full_decode"] is True and deployed["decode_calls"] == 1
+        assert deployed["action"] == arbitration.apply_decision(rule, row["actions"])["action"]
+        available = [name for name in V2_ACTIONS if row["actions"][name]["available"]]
+        if deployed["action"] == DIRECT:
+            assert deployed["prefilled"] == [DIRECT]                 # kept on its own signal: one prefill
+        elif choice == "best":
+            assert deployed["prefilled"] == [DIRECT]                 # the best evidence action needs no signal
+        else:
+            assert set(deployed["prefilled"]) == set(available)
+        assert deployed["prefill_calls"] <= len(available)

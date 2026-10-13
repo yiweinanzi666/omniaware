@@ -281,7 +281,8 @@ def build(run: Path, bart: bool = False, device: str | None = None) -> dict:
         subset = score_official.webqa_subset_name(record) if family == "webqa" else None
         table.append({"qid": qid, "subset": subset, "actions": record["actions"], "scores": scores,
                       "metric": metric, "baseline_signals": _run_signals(record),
-                      "baseline_scores": {arm: baseline_cells[arm][qid] for arm in arms}})
+                      "baseline_scores": {arm: baseline_cells[arm][qid] for arm in arms},
+                      **({"deploy": record["v2_deploy"]} if "v2_deploy" in record else {})})
 
     full = full_actions(table)
     if not full:
@@ -560,6 +561,20 @@ def _block(rows: list[dict], frozen: dict, baselines: dict, strongest: dict, tes
     }
 
 
+def deployment_summary(deployed: list[dict], questions: int) -> dict:
+    """Cost of the frozen v2-Rule run as a deployment (omniaware.run --v2 --decisions): forward passes without
+    generation, decodes, and wall time per question, and whether it chose what the full decode chose."""
+    n = len(deployed)
+    return {
+        "questions": n, "all_questions": questions,
+        "prefill_calls_mean": _mean(d["prefill_calls"] for d in deployed),
+        "decode_calls_mean": _mean(d["decode_calls"] for d in deployed),
+        "seconds_mean": _mean(d["seconds"] for d in deployed),
+        "chosen": dict(Counter(d["action"] for d in deployed)),
+        "matches_full_decode": sum(bool(d["matches_full_decode"]) for d in deployed),
+    }
+
+
 def apply(table: Path, decisions_path: Path, out: Path) -> dict:
     decisions_sha = runio.read_frozen_decisions(decisions_path)
     doc = json.loads(decisions_path.read_text(encoding="utf-8"))
@@ -586,6 +601,9 @@ def apply(table: Path, decisions_path: Path, out: Path) -> dict:
         "scored_on_every_question": full, "partially_available": partial_actions(rows),
         **_block(rows, frozen, baselines, strongest, test_arms),
     }
+    deployed = [r["deploy"] for r in rows if "deploy" in r]
+    if deployed:
+        result["deployment"] = deployment_summary(deployed, len(rows))
     subsets = sorted({r["subset"] for r in rows if r.get("subset")})
     if subsets:
         result["subsets"] = {s: _block([r for r in rows if r.get("subset") == s], frozen, baselines, strongest,

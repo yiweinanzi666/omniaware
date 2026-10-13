@@ -249,7 +249,8 @@ Action & acc$_{\mathrm{approx}}$ & norm.\ BART & QA$_{\mathrm{approx}}$ \\
 
 \begin{table}[t]
 \caption{Cost placeholders on the stage-s4 runs.
-Calls, input tokens, and latency are \ph{}.}
+Calls, input tokens, and latency are \ph{}. The deployment row prefills only what the frozen rule reads and decodes the chosen action (Section~
+ef{sec:cost}).}
 \label{tab:cost}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -259,13 +260,15 @@ System & Calls & Input tokens & Latency \\
 \texttt{direct} only & \ph{} & \ph{} & \ph{} \\
 Always \texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
 SeaKR & \ph{} & \ph{} & \ph{} \\
-v2, all actions & \ph{} & \ph{} & \ph{} \\
+v2, all actions decoded & \ph{} & \ph{} & \ph{} \\
+v2-Rule, deployment path & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Attention steering moves attention, not answers}
+\subsection{Soft control: attention steering moves attention, not answers}
 \label{sec:steer}
+This subsection is the evidence for choosing hard control (Section~\ref{sec:softhard}).
 Every number in this subsection is copied from the root-cause report dated 13~October~2026.
 The measurements come from the legacy pipeline, which has known prompt and format problems; they motivate the analysis and are not results of the method.
 They are not v2 results, and they are not taken from \texttt{offline\_v2}.
