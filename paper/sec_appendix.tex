@@ -165,3 +165,7 @@ The direct action is kept in the action set so that retrieval is not mandatory.
 Datasets used here are public.
 Deployments on private content need access controls.
 \tbd{[[AI-use disclosure]]}
+
+\section{Semantic Accuracy and Its Human Audit}
+\label{app:semantic}
+Development answers are sampled in four strata, by whether the official metric and semantic accuracy count them correct, with at most 25 items per stratum and a fixed seed. A person who does not see the action or either score labels whether each prediction answers the question as the reference does. We report, for each metric, the agreement with these labels per stratum, the population agreement with strata weighted by their sizes, and Cohen's $\kappa$ on the sample: \ph{}.

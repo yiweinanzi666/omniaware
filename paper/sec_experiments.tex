@@ -49,6 +49,9 @@ The operating point previously taken from a test-set grid (Table~20 in the audit
 
 \textit{Statistics.}
 Uncertainty is a paired bootstrap 95\% confidence interval over questions.
+Every table also reports a pre-registered secondary metric, semantic accuracy: an answer counts as correct when a fixed NLI checker (DeBERTa-v3-large trained on MNLI, FEVER, ANLI, LingNLI and WANLI) judges that ``Question: $q$ / Answer: prediction'' entails ``Question: $q$ / Answer: reference'' with probability at least 0.5, where the OK-VQA references are the answers given by at least three of the ten annotators.
+It is computed on the same choices as the official metric and reported whatever its direction; selection and every conclusion use the official metric.
+Its agreement with blind human labels on a stratified sample of development answers is reported in Appendix~\ref{app:semantic} (\ph{}).
 Multiple comparisons use Holm correction.
 Decoding is greedy, so a configuration is deterministic given its inputs.
 This draft does not report a seed standard deviation under greedy decoding.
