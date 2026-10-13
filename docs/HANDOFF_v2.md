@@ -19,7 +19,7 @@ pip install -e ".[all]"
 python -m pytest -p no:warnings
 ```
 
-预期：`460 passed, 5 skipped`（跳过的是缺少 torchvision / spacy / NLTK 数据或资产目录的测试，数量可能因环境略有不同）。**有失败就停下来反馈，不要继续。**
+预期：汇总行里没有 `failed` 和 `error`。passed 与 skipped 的数量随环境变化：缺少 torchvision / spacy / NLTK 数据或资产目录的测试会跳过；这一步在下载模型之前做，`tests/test_m2rag_qwen.py` 读取本地 Qwen3-VL-8B 的处理器文件，模型没下载时整个文件跳过，下载后再跑一次它会参与运行。**有 failed 或 error 就停下来反馈，不要继续。**
 
 数据和模型的准备方式没有变，见 README 的第 1–4 节。v2 用到三个数据集：
 

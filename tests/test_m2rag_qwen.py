@@ -20,6 +20,12 @@ from omniaware.baselines.m2rag_qwen import LocalQwenVLM
 from tiny_qwen import tiny_model
 from omniaware import paths
 
+# The processor files (tokenizer and image processor) come from the local Qwen3-VL-8B directory. A fresh server runs
+# the self-check before download_models, so the module is skipped until those files exist.
+PROCESSOR_FILES = ("preprocessor_config.json", "tokenizer_config.json")
+if not all((paths.QWEN_8B / name).is_file() for name in PROCESSOR_FILES):
+    pytest.skip(f'Qwen3-VL-8B processor files not under {paths.QWEN_8B} (scripts/setup/download_models.py)',
+                allow_module_level=True)
 
 class LocalQwenTests(unittest.TestCase):
     @classmethod
