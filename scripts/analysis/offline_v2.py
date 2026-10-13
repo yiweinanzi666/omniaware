@@ -570,48 +570,28 @@ def _import_arbitration():
     )
 
 
-def _construct(cls, fields: dict):
-    sig = inspect.signature(cls)
-    params = sig.parameters
-    if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values()):
-        return cls(**fields)
-    kwargs = {k: v for k, v in fields.items() if k in params}
-    missing = [
-        name for name, p in params.items()
-        if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
-        and p.default is inspect.Parameter.empty and name not in kwargs and name != "self"
-    ]
-    if missing:
-        raise TypeError(f"{getattr(cls, '__name__', cls)} requires {missing}")
-    return cls(**kwargs)
-
-
 def make_action(mod, name: str, answer: str, signal: dict):
-    """Duck-typed ActionRecord. Uses arbitration.ActionRecord when that class exists."""
-    ft_fields = {
-        "margin": signal["margin"],
-        "entropy_norm": signal["entropy_norm"],
-        "entropy": signal["entropy_norm"],
-    }
-    ft_cls = getattr(mod, "FirstToken", None)
-    first = _construct(ft_cls, ft_fields) if ft_cls else SimpleNamespace(**ft_fields)
-    fields = {
-        "name": name,
-        "action": name,
+    """Dict record. The selector indexes ``answer`` and ``first_token``; it does not read attributes.
+
+    These dumps have no sequence log-prob. Missing ``seq_logprob`` / ``gen_len`` / ``entropy_norm``
+    become 0 / 1 / 0 so v2-Cal can run. That fill carries no information from the file.
+    """
+    del mod
+    entropy = signal["entropy_norm"]
+    seq = signal["seq_logprob"]
+    gen = signal["gen_len"]
+    return {
         "answer": answer,
-        "margin": signal["margin"],
-        "entropy_norm": signal["entropy_norm"],
-        "seq_logprob": signal["seq_logprob"],
-        "gen_len": signal["gen_len"],
+        "seq_logprob": 0.0 if seq is None else float(seq),
+        "gen_len": 1 if not gen else int(gen),
         "kl_to_direct": signal["kl_to_direct"],
-        "retriever_top1": signal["retriever_top1"],
-        "first_token": first,
-        "retriever": SimpleNamespace(top1=signal["retriever_top1"]),
+        "first_token": {
+            "margin": float(signal["margin"]),
+            "entropy": 0.0 if entropy is None else float(entropy),
+            "entropy_norm": 0.0 if entropy is None else float(entropy),
+        },
+        "retriever": {"top1_score": signal["retriever_top1"]},
     }
-    cls = getattr(mod, "ActionRecord", None)
-    if cls is None:
-        return SimpleNamespace(**fields)
-    return _construct(cls, fields)
 
 
 def question_actions(mod, question: dict) -> dict:
@@ -734,7 +714,7 @@ def evaluate_dataset(mod, bundle: dict, seed: int, delta: float, objective: str)
         scores, _, _ = _selected_scores(mod, calib, cand)
         scores_by_candidate[cand["name"]] = scores
     decision = mod.ltt_select(
-        grid, scores_by_candidate, scores_by_action[best_name], delta=delta,
+        grid, scores_by_candidate, scores_by_action[best_name], delta=delta, best_action=best_name,
     )
     if not isinstance(decision, dict) or "name" not in decision or "fallback" not in decision:
         raise TypeError(f"ltt_select returned {decision!r}")
@@ -928,8 +908,10 @@ def render_report(state: dict) -> str:
         "This is not a first-token logit margin. `static_mixed` uses that same proxy margin "
         "because the dump has no separate evidence confidence. `static_text`, `static_image`, "
         "and `rerank_static` are omitted. WebQA `entropy_norm`, sequence log-prob, and retriever "
-        "top-1 are missing and are passed as missing, not filled in. Direct `kl_to_direct` is 0 "
-        "because that action is the reference; the evidence arm's KL is missing.",
+        "top-1 are absent from the file. The selector requires numbers, so those missing features "
+        "are passed as 0 (generation length 1). They add no information. Direct `kl_to_direct` is 0 "
+        "because that action is the reference; the evidence arm's KL is missing and is also passed as "
+        "absent (`None`, which the selector treats as 0).",
         "",
         f"WebQA `u_initial` on paired questions: {state['webqa_u']}. "
         f"Proxy margin from u_initial: {state['webqa_margin']}. "
@@ -944,7 +926,7 @@ def render_report(state: dict) -> str:
         "from `raw_post`. `entropy_norm` is `h_sem` clipped to [0, 1]. Retriever top-1 for the "
         "evidence arm is `max(rel)` when `rel` is present. `h_grd` is in the file and is not a "
         "calibration feature. `gold_in_topk` is not passed to the selector. Sequence log-prob "
-        "is absent, so the `seq_logprob / gen_len` feature is left missing.",
+        "is absent, so the `seq_logprob / gen_len` feature is 0.",
         "",
         f"OK-VQA h_sem pre {state['okvqa_h_pre']}; h_sem post {state['okvqa_h_post']}; "
         f"direct proxy margin {state['okvqa_margin_pre']}; evidence proxy margin "
