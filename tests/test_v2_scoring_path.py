@@ -124,3 +124,4 @@ def test_shard_merge_writes_the_empty_answer_rate_over_preds_and_available_actio
     assert marker["n_answers"] == 5 and marker["n_empty"] == 2
     assert marker["empty_answer_rate"] == pytest.approx(0.4)
     assert "EMPTY ANSWER RATE" in marker["empty_answer_warning"]
+    assert marker["n_refusal"] == 0 and marker["empty_by_arm"]["static"]["citation_only"] == 1

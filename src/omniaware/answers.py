@@ -2,7 +2,8 @@
 
 A blank answer, a citation-only dump (``Sources:`` / ``[E<j>]`` lines and nothing else), or a refusal is
 ``answer_empty``. A real answer followed by a citation line keeps the answer text. The only rewrite is stripping
-those citation lines. Nothing else is truncated or rewritten.
+those citation lines. Nothing else is truncated or rewritten. ``refusal`` marks the third kind, so that the run
+summaries can keep refusals apart from blank and citation-only output (``summarize_empty``).
 
 A refusal is recognised in two forms.
 
@@ -56,10 +57,10 @@ def is_refusal(answer: str) -> bool:
 
 
 def parse_answer(text: str | None) -> dict:
-    """Return ``answer``, ``answer_empty``, ``citation_only`` for one decoded string."""
+    """Return ``answer``, ``answer_empty``, ``citation_only`` and ``refusal`` for one decoded string."""
     raw = "" if text is None else str(text)
     if not raw.strip():
-        return {"answer": "", "answer_empty": True, "citation_only": False}
+        return {"answer": "", "answer_empty": True, "citation_only": False, "refusal": False}
     answer_lines, cite_lines = [], []
     for line in raw.splitlines():
         if not line.strip():
@@ -70,26 +71,61 @@ def parse_answer(text: str | None) -> dict:
             answer_lines.append(line.strip())
     if not answer_lines:
         # Only citation lines are left (a non-blank raw string always has a line in one of the two lists).
-        return {"answer": "", "answer_empty": True, "citation_only": True}
+        return {"answer": "", "answer_empty": True, "citation_only": True, "refusal": False}
     answer = "\n".join(answer_lines).strip()
     if is_refusal(answer):
-        return {"answer": "", "answer_empty": True, "citation_only": False}
-    return {"answer": answer, "answer_empty": False, "citation_only": False}
+        return {"answer": "", "answer_empty": True, "citation_only": False, "refusal": True}
+    return {"answer": answer, "answer_empty": False, "citation_only": False, "refusal": False}
 
 
-def question_empty_flags(record: dict) -> list[bool]:
-    """``answer_empty`` of every decoded arm of one question (parsed from ``preds``, which keeps the raw model
-    output) and of every available v2 action. Unavailable actions decoded nothing and are not counted."""
-    flags = [parse_answer(text)["answer_empty"] for text in (record.get("preds") or {}).values()]
-    flags += [bool(a["answer_empty"]) for a in (record.get("actions") or {}).values() if a.get("available", True)]
-    return flags
+def empty_kind(parsed: dict) -> str | None:
+    """Why a parsed answer or a v2 action record is empty: "blank", "citation_only" or "refusal"; None for an answer.
+
+    A v2 action record written before the ``refusal`` field existed has no way to tell a refusal from a blank
+    decode, so it counts as blank.
+    """
+    if not parsed.get("answer_empty"):
+        return None
+    if parsed.get("citation_only"):
+        return "citation_only"
+    if parsed.get("refusal"):
+        return "refusal"
+    return "blank"
 
 
-def summarize_empty(flags: list[bool]) -> dict:
-    """Empty-answer rate over decoded strings. Above 0.5% the summary carries a warning line."""
-    n = len(flags)
-    rate = (sum(bool(f) for f in flags) / n) if n else 0.0
-    out = {"empty_answer_rate": rate, "n_answers": n, "n_empty": int(sum(bool(f) for f in flags))}
+def question_empty_kinds(record: dict) -> list[tuple[str, str | None]]:
+    """``(arm, empty_kind)`` for every decoded string of one question: each arm of ``preds`` (parsed from the raw
+    output) and each available v2 action, named ``action:<name>``. Unavailable actions decoded nothing and are not
+    counted."""
+    kinds = [(arm, empty_kind(parse_answer(text))) for arm, text in (record.get("preds") or {}).items()]
+    kinds += [(f"action:{name}", empty_kind(action)) for name, action in (record.get("actions") or {}).items()
+              if action.get("available", True)]
+    return kinds
+
+
+def summarize_empty(kinds: list[tuple[str, str | None]]) -> dict:
+    """Empty-answer statistics over decoded strings, from the ``(arm, kind)`` pairs of ``question_empty_kinds``.
+
+    ``empty_answer_rate`` counts blank and citation-only strings. Those mean the prompt or the decode is broken, and
+    this is the rate ``--max-empty-rate`` checks; above 0.5% the summary carries a warning line. A refusal is the
+    model declining to answer. It is scored like any empty answer, but it is reported apart (``refusal_rate``, and
+    per arm in ``empty_by_arm``) so that it neither stops a run nor hides: a high refusal rate on one arm, for
+    example image evidence the model says it cannot see, is a finding to inspect in S1.
+    """
+    n = len(kinds)
+    by_arm: dict[str, dict[str, int]] = {}
+    totals = {"blank": 0, "citation_only": 0, "refusal": 0}
+    for arm, kind in kinds:
+        entry = by_arm.setdefault(arm, {"n": 0, "blank": 0, "citation_only": 0, "refusal": 0})
+        entry["n"] += 1
+        if kind is not None:
+            entry[kind] += 1
+            totals[kind] += 1
+    n_empty = totals["blank"] + totals["citation_only"]
+    rate = (n_empty / n) if n else 0.0
+    out = {"empty_answer_rate": rate, "refusal_rate": (totals["refusal"] / n) if n else 0.0, "n_answers": n,
+           "n_empty": n_empty, "n_blank": totals["blank"], "n_citation_only": totals["citation_only"],
+           "n_refusal": totals["refusal"], "empty_by_arm": by_arm}
     if rate > 0.005:
         out["empty_answer_warning"] = f"EMPTY ANSWER RATE {rate:.6f}"
     return out

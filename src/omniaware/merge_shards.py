@@ -42,7 +42,7 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
     files = shard_files(stem)
     if not files:
         raise SystemExit(f"no shard files for {stem}")
-    rows, qids, seen, flags = [], [], set(), []
+    rows, qids, seen, kinds = [], [], set(), []
     for f in files:
         for line in f.read_text(encoding="utf8").splitlines():
             if not line.strip():
@@ -56,7 +56,7 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
                 raise SystemExit(f"question {qid} answered twice")
             seen.add(qid)
             qids.append(qid)
-            flags += answers.question_empty_flags(record)
+            kinds += answers.question_empty_kinds(record)
             rows.append(line)
     if expected_questions is not None and len(rows) != expected_questions:
         raise SystemExit(f"{len(rows)} answers, expected {expected_questions}: resume the unfinished shards first")
@@ -71,13 +71,14 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
     archive.mkdir(exist_ok=True)
     for f in files:
         f.replace(archive / f.name)
-    empty_report = answers.summarize_empty(flags)
+    empty_report = answers.summarize_empty(kinds)
     runio.write_completion_marker(stem.parent, stem.name, len(rows), out, runio.config_path_for(stem.parent, stem.name),
                                   extra=empty_report)
     if empty_report.get("empty_answer_warning"):
         print(empty_report["empty_answer_warning"], flush=True)
     print(f"[merge] {len(rows)} answers from {len(files)} shards -> {out}; "
-          f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}", flush=True)
+          f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}; "
+          f"refusal_rate {empty_report['refusal_rate']:.6f}", flush=True)
     if max_empty_rate is not None and empty_report["empty_answer_rate"] > max_empty_rate:
         raise SystemExit(f"empty answer rate {empty_report['empty_answer_rate']:.6f} exceeds --max-empty-rate "
                          f"{max_empty_rate}; the merged output and its completion marker were written")
@@ -90,7 +91,8 @@ def main(argv=None):
     ap.add_argument("--expected", type=int, default=None,
                     help="number of evaluation questions to check, instead of the count in <dataset>_config.json")
     ap.add_argument("--max-empty-rate", type=float, default=None,
-                    help="exit non-zero when the empty-answer rate of the merged run exceeds this value")
+                    help="exit non-zero when the rate of blank or citation-only answers in the merged run exceeds "
+                         "this value; refusals are reported apart and do not count toward it")
     args = ap.parse_args(argv)
     if args.expected is not None:
         merge(args.stem, args.expected, max_empty_rate=args.max_empty_rate)

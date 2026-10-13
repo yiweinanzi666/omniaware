@@ -43,7 +43,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 
 **S1 要确认四件事：**
 
-1. **空答案率不超过 0.5%。** 命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。
+1. **空答案率不超过 0.5%。** 这里的空答案指空白输出和只有引用行的输出（如 `Sources: none`）。命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。拒答（如 “I cannot determine the answer from the provided information.”）评分时同样按空答案计，但单独统计，不触发这个退出码：`<数据集>.merged.json` 里的 `refusal_rate` 是总的拒答率，`empty_by_arm` 按臂和动作（`action:<动作>`）列出空白、纯引用、拒答各多少。WebQA 的 `direct` 不带图片，图像题上有一定拒答属于正常；**如果某个证据动作（尤其 `action:static_image`）的拒答明显多于 `direct`，说明图片可能没进模型，停下来反馈。**
 2. **各个动作的回答格式一致。** 打开 `runs/v2_s1_<数据集>/<数据集>.jsonl`，抽 20 题看 `actions` 里五个动作的 `answer`：WebQA 应当都是一个完整的句子，OK-VQA 应当都不超过 3 个词。旧管线的问题是带检索的臂答得很短、不带检索的臂答得很长，导致比较失真。**如果某个动作的回答明显更长或更短，停下来反馈。**
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 

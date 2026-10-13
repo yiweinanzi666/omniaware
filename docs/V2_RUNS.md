@@ -71,7 +71,7 @@ python scripts/v2_runs.py --stage s1 --dataset webqa_open_img --n 50 --dry-run
 python scripts/v2_runs.py --stage s1 --dataset okvqa_gs --n 50 --dry-run
 ```
 
-每个数据集打印一条 `omniaware.run` 命令（`--split dev --n-eval 50 --max-empty-rate 0.005`，`--tag v2_s1_<数据集>`），再打印图像诊断命令 `python scripts/analysis/image_evidence_check.py --n 50`。`--max-empty-rate 0.005` 使空答案率超过 0.5% 的冒烟运行以非零退出码结束。诊断命令只打印，本脚本不执行它。
+每个数据集打印一条 `omniaware.run` 命令（`--split dev --n-eval 50 --max-empty-rate 0.005`，`--tag v2_s1_<数据集>`），再打印图像诊断命令 `python scripts/analysis/image_evidence_check.py --n 50`。`--max-empty-rate 0.005` 使空答案率超过 0.5% 的冒烟运行以非零退出码结束；空答案率只算空白与纯引用输出，拒答单独记为 `refusal_rate` 和按臂的 `empty_by_arm`，不计入这一门槛。诊断命令只打印，本脚本不执行它。
 
 ### S2 校准集与开发集（估计值：1 张 A100，约 4–8 小时）
 

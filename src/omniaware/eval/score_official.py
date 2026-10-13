@@ -250,7 +250,7 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
         for q in qids:
             preds[arm][q] = answers.parse_answer(by_qid[q]['preds'][arm] or '')['answer']
     # Empty-answer statistics over every decoded string of the run, the same count the completion marker uses.
-    empty_flags = [flag for q in qids for flag in answers.question_empty_flags(by_qid[q])]
+    empty_kinds = [kind for q in qids for kind in answers.question_empty_kinds(by_qid[q])]
     if family == 'webqa':
         check_golds(by_qid, qids, webqa_references())
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart, device=device)
@@ -277,7 +277,7 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
                'question_check': question_check, 'subset': question_check['mode'] == 'subset',
                'metrics': metrics,
                'means': {arm: {m: _arm_means(scores, qids, m)[arm] for m in metrics} for arm in arms},
-               'comparisons': {}, **answers.summarize_empty(empty_flags)}
+               'comparisons': {}, **answers.summarize_empty(empty_kinds)}
     if 'bart_error' in extra:
         summary['bart_error'] = extra['bart_error']
     for ref in references:
