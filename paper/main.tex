@@ -88,11 +88,11 @@ We study \method{}, a controller that makes all three from one family of latent-
 We first examine the soft form of such control, Evidence Attention Bias, which adds a relevance-scaled bias to the attention over evidence spans.
 On the previous pipeline it moved attention onto supporting evidence and left the answers almost unchanged, because the first-token margin exceeded the logit displacement that the bias produced.
 \method{} therefore controls evidence in hard form: it decides which evidence set the generator reads.
-Its rule, v2-Rule, fits no weights. It keeps the direct answer when the uncertainty $\Uomni$ of the direct prompt's first answer token is below a threshold, and otherwise hands the generator text, image, mixed, or reranked evidence, choosing between text and image by attention routing; applying it needs, for each prompt it reads, a prefill and the few greedy tokens up to the first answer token, then one decode.
+Its rule, v2-Rule, fits no weights. It keeps the direct answer when the direct first-token margin clears a threshold and otherwise hands the generator text, image, mixed, or reranked evidence; applying it needs prefills and one decode.
 A calibrated variant, v2-Cal, fits one small ridge regression per evidence action.
 Thresholds are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action, with $\delta=0.10$ and a tolerance $\epsilon=1.0$ point: with probability at least $1-\delta$ over the calibration draw, the expected score of the chosen policy is at least that of the strongest single action minus $\epsilon$.
 The strongest single action is chosen on the same calibration sample, which is slightly optimistic.
-All actions share one frozen answer prompt, which on WebQA puts the short answer on the first line so that the first generated token is the answer token; OK-VQA is scored with official VQA accuracy, and WebQA primarily with acc$_{\mathrm{approx}}$, with normalized BART and QA$_{\mathrm{approx}}$ on image and text subsets.
+All actions share one frozen answer prompt; OK-VQA is scored with official VQA accuracy, and WebQA primarily with acc$_{\mathrm{approx}}$, with normalized BART and QA$_{\mathrm{approx}}$ on image and text subsets.
 The evaluation of the repaired pipeline has not been run; every new experimental number in this draft is a placeholder.
 \end{abstract}
 
@@ -132,8 +132,7 @@ Reweighting evidence that the generator already reads does not change what it co
 
 \method{} therefore controls evidence in hard form: it decides which evidence set the generator reads.
 The action set contains a direct answer and four evidence sets, text only, image only, mixed, and reranked, and it spans the three decisions: direct against the rest is whether to retrieve, text against image is where, and mixed against reranked is how the evidence is selected.
-A rule with no fitted weights keeps the direct answer when the uncertainty $\Uomni$ of its first answer token is below a threshold and otherwise selects an evidence action, with attention routing choosing between text and image; it reads prefills and the few greedy tokens up to the first answer token, and decodes one action.
-The signals are read at the first answer token, where $\Uomni$ is defined: a sentence-first WebQA answer opens with a template word such as ``The'', whose distribution says little about the answer, so the WebQA answer prompt asks for the short answer before the sentence.
+A rule with no fitted weights keeps the direct answer when its first-token margin clears a threshold and otherwise selects an evidence action; it is applied with prefills and a single decode.
 Its thresholds are screened by a paired test on the calibration split, which bounds the expected loss against the strongest single action (Section~\ref{sec:risk}).
 
 Format and metric choices can move scores by more than the gap between systems.
@@ -146,7 +145,7 @@ Our contributions are as follows:
   \item A latent-space formulation of evidence control for multimodal Web answering, in which whether to retrieve, where to retrieve, and how evidence is used are decided from the first-token distributions of prefills with and without evidence, on a frozen generator.
   \item An analysis of soft control (Section~\ref{sec:steer}): a relevance-scaled attention bias moves attention onto supporting evidence and does not move answers, with the first-token margin as the explanation.
   Every number in that subsection is copied from the 13~October~2026 root-cause report and is attributed there.
-  \item Hard control: v2-Rule, which fits no weights, reads $\Uomni$ at the first answer token and the attention route, and is applied with prefills, a few greedy tokens, and one decode; and v2-Cal, one ridge regression per evidence action.
+  \item Hard control: v2-Rule, which fits no weights and is applied with prefills and one decode, and v2-Cal, one ridge regression per evidence action.
   Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action (Section~\ref{sec:risk}), at $\delta=0.10$ and $\epsilon=1.0$; the guarantee concerns expected score, under the assumptions stated there.
   \item A measurement, under one frozen answer format and official metrics, of when retrieval helps or hurts on WebQA and OK-VQA, including image and text subsets and the gap between the best single action and the per-question oracle.
   The new measurement has not been run.
@@ -228,37 +227,35 @@ The rest of this section is hard control over the action set $\mathcal{A}$.
 
 \subsection{Signals}
 \label{sec:signals}
-Each action stores, at the first generated token, the entropy of its distribution, the same entropy divided by $\log|V|$, and the gap between the top-1 and top-2 logits; the same quantities at the first answer token, the first generated token that carries the answer; $\hgrd$, the entropy of the final-layer attention from the last prompt position over the action's evidence tokens, divided by the log of their number (for \texttt{direct}, over the supplied context, and zero without context); the log-probability of the greedy answer and the number of generated tokens; and, for an evidence action, the KL divergence between that action's first-token distribution and the direct action's, and the attention route of its evidence, the score $M_mH_m$ of each modality's tokens on the last prompt row.
-On WebQA the frozen answer prompt asks for the short answer alone on the first line and one complete sentence on the second; the sentence is scored, since the references are sentences, and the first answer token is the first generated token unless the short answer opens with a function word.
+Each action stores the entropy of its first-token distribution and the same entropy divided by $\log|V|$, the gap between the top-1 and top-2 logits, the log-probability of the greedy answer and the number of generated tokens, and, for an evidence action, the KL divergence between that action's first-token distribution and the direct action's first-token distribution.
 The run also stores the retriever's top-1 score and the gap between retriever top-1 and top-2, per modality.
 \texttt{direct} has no KL term; its retriever fields describe the pool's top-1 score, not a selected list.
 \texttt{gold-in-top-$k$} is computed only for offline analysis.
 It is not an inference-time feature and it is not an input to v2-Cal.
 
-Only four quantities enter a decision: the confidence $c(a)=-\Uomni(a)$, with $\Uomni(a)=\hgrd(a)+\beta\hpred(a)$ at the first answer token of action $a$ and $\beta=0.3$ (the normalization $\mathrm{Norm}$ of the earlier controller is monotone and changes no threshold policy, so it is omitted); the token F1 between the short answers of an action and of $a^{\star}$; the KL divergence from \texttt{direct}; and the retriever top-1 score of the candidates an action uses. The routing rule also reads the attention route of \texttt{static\_mixed}. The margin and the entropy alone are ablations of $c$. The sequence log-probability, the generated length, and the retriever top-1--top-2 gap are stored for analysis.
+Only four quantities enter a decision: the first-token margin, the token F1 between an action's answer and the answer of $a^{\star}$, the KL divergence from \texttt{direct}, and the retriever top-1 score of the candidates an action uses. Entropy, the sequence log-probability, the generated length, and the retriever top-1--top-2 gap are stored for analysis.
 
-The signals of an action need a prefill of its prompt and the greedy tokens up to its first answer token, at most eight in our runs.
-The full decoded answer, and therefore the token F1, needs a decode.
-v2-Rule reads only these signals, so it can be applied before any full decode (Section~\ref{sec:cost}); v2-Cal also reads token F1 and needs the decoded answers.
+The first-token signals of an action need only a prefill of its prompt.
+The decoded answer, and therefore the token F1, needs a decode.
+v2-Rule reads first-token margins only, so it can be applied before anything is generated (Section~\ref{sec:cost}); v2-Cal also reads token F1 and needs the decoded answers.
 
 \subsection{v2-Rule}
 \label{sec:rule}
 v2-Rule fits no weights.
-Let $c(\cdot)=-\Uomni(\cdot)$ be the confidence at the first answer token (Section~\ref{sec:signals}).
+Let $c(\cdot)$ be the first-token margin, the gap between the top-1 and top-2 logits.
 If $c(\texttt{direct})\ge\tau$, the rule selects \texttt{direct}.
-Otherwise it selects an evidence action in one of three ways: the evidence action $e^{\star}$ with the highest calibration mean, which equals $a^{\star}$ whenever $a^{\star}$ is an evidence action; the available evidence action with the largest confidence on that question; or the modality chosen by attention routing on \texttt{static\_mixed}, where the larger $M_mH_m$ selects \texttt{static\_text} or \texttt{static\_image} and a near tie (within 0.08) selects \texttt{static\_mixed}.
-The routing rule is tested only when some calibration question has evidence of two modalities; OK-VQA, whose evidence is text, has none.
+Otherwise it selects an evidence action in one of two ways: the evidence action $e^{\star}$ with the highest calibration mean, which equals $a^{\star}$ whenever $a^{\star}$ is an evidence action, or the available evidence action with the largest margin on that question.
 Evidence actions with an empty candidate pool are unavailable and are skipped.
-The thresholds $\tau$ are the 0\%, 5\%, \dots, 100\% quantiles of the direct confidence on the calibration split, together with $\pm\infty$.
-The sequence starts at $\tau=-\infty$ when $a^{\star}$ is \texttt{direct} and at $\tau=+\infty$ when it is an evidence action, and moves away from there. With the best-evidence rule this starting policy equals $a^{\star}$; with the most-confident and routing rules it equals $a^{\star}$ only when $a^{\star}$ is \texttt{direct}, and otherwise the whole sequence is rejected if its first policy fails the test.
-Each evidence rule has its own sequence at level $\delta/F$, where $F$ is the number of evidence rules tested, two or three.
+The thresholds $\tau$ are the 0\%, 5\%, \dots, 100\% quantiles of the direct margin on the calibration split, together with $\pm\infty$.
+The sequence starts at $\tau=-\infty$ when $a^{\star}$ is \texttt{direct} and at $\tau=+\infty$ when it is an evidence action, and moves away from there. With the best-evidence rule this starting policy equals $a^{\star}$; with the most-confident rule it equals $a^{\star}$ only when $a^{\star}$ is \texttt{direct}, and otherwise the whole sequence is rejected if its first policy fails the test.
+Each evidence rule has its own sequence at level $\delta/2$.
 The threshold is chosen by utility (Section~\ref{sec:risk}), not by accuracy.
 
 \subsection{v2-Cal}
 \label{sec:cal}
 v2-Cal fits one ridge regression for each evidence action $b\neq a^{\star}$.
 Its target is the score gap $s(b)-s(a^{\star})$ on the fitting half of the calibration split.
-Each regression has an intercept and six features: the direct confidence, the confidence of $a^{\star}$, the confidence gap $c(b)-c(a^{\star})$, the token F1 between the short answers of $b$ and $a^{\star}$, the KL divergence of $b$ from \texttt{direct}, and the retriever top-1 score of $b$.
+Each regression has an intercept and six features: the direct margin, the margin of $a^{\star}$, the margin gap $c(b)-c(a^{\star})$, the token F1 between the answers of $b$ and $a^{\star}$, the KL divergence of $b$ from \texttt{direct}, and the retriever top-1 score of $b$.
 The intercept is not penalized, and the standardized features receive a ridge penalty of 1.0; the coefficients are returned in raw units.
 A feature missing on every fitting question, or constant on all of them, is dropped and recorded in the model.
 A feature missing on only some questions is an error.
@@ -281,7 +278,7 @@ t=\frac{\bar d+\epsilon}{\hat\sigma_d/\sqrt{n}},
 \end{equation}
 whose $p$-value is taken from the standard normal upper tail at every sample size.
 A constant gap has zero variance: its $p$-value is 0 when its mean is at least $-\epsilon$, and 1 otherwise.
-The candidates are walked in their fixed order, and a candidate is accepted while its $p$-value is at most its family's level: $\delta/F$ for each of the $F$ evidence rules, and $\delta$ for v2-Cal.
+The candidates are walked in their fixed order, and a candidate is accepted while its $p$-value is at most its family's level: $\delta/2$ for each evidence rule, and $\delta$ for v2-Cal.
 Among the accepted candidates, the one with the largest mean gap $\bar d$ is chosen.
 If none is accepted, or the largest mean gap is not positive, the selector returns $a^{\star}$.
 The two parameters have separate roles: $\delta=0.10$ is the failure probability, and $\epsilon=1.0$ point is the tolerated loss in expected score.
@@ -298,12 +295,12 @@ v2-Cal is tested at level $\delta$ as its own decision, and the main text report
 \label{sec:cost}
 Calibration and evaluation decode every action of every question, because the score of each action is needed to choose thresholds and to report the oracle.
 Applying the frozen v2-Rule needs less.
-It reads the direct signal: a prefill of the direct prompt and the greedy tokens up to its first answer token, at most eight.
-If the direct confidence clears $\tau$, it decodes the direct answer.
-Otherwise the best-evidence rule decodes $e^{\star}$ with no further signal, the routing rule first reads \texttt{static\_mixed}, and the most-confident rule first reads each available evidence action.
-A question therefore costs at most $|\mathcal{A}|$ signal reads and exactly one full decode.
+It prefills the direct prompt, one forward pass with no generation.
+If the direct margin clears $\tau$, it decodes the direct answer.
+Otherwise the best-evidence rule decodes $e^{\star}$ with no further prefill, and the most-confident rule first prefills each available evidence action.
+A question therefore costs at most $|\mathcal{A}|$ prefills and exactly one decode.
 v2-Cal reads decoded answers and has no such form.
-The test runs execute this path beside the full decode and record, per question, the signal reads and their greedy tokens, the decode, the wall time, and whether the path chose the action and the answer that the full decode chooses.
+The test runs execute this path beside the full decode and record, per question, the prefills, the decode, the wall time, and whether the path chose the action that the full decode chooses.
 The evaluation reports those counts, the number of input tokens, and the latency, next to always decoding \texttt{static\_mixed} and next to SeaKR~\cite{yao2025seakr}.
 Those measurements are \ph{}.
 The GPU-time figures in the repository README are planning estimates, not measurements, and they are not copied into the tables.

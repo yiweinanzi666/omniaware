@@ -17,6 +17,8 @@ than one reference answer are refused.
 Metrics: OK-VQA VQA accuracy (VQAEval, 10 annotators); WebQA acc_approx (published validation
 approximation), optionally x normalized ParaBank BARTScore (--bart); HybridQA EM / F1 and
 VideoRAG-Synth ROUGE-L, optionally BERTScore (--bart), as in UniversalRAG (eval/universalrag_metrics.py).
+With --semantic (WebQA and OK-VQA), the pre-registered secondary metric semantic_acc (eval/semantic.py) is added for
+every arm after the official ones; the official metric stays first and primary.
 """
 import argparse
 from contextlib import redirect_stdout
@@ -82,10 +84,15 @@ def paired(a, b, cluster_ids=None):
             'wins': int((delta > 0).sum()), 'losses': int((delta < 0).sum()), 'ties': int((delta == 0).sum())}
 
 
-def score_okvqa(preds, qids):
+def okvqa_annotations():
+    """The OK-VQA annotation records by question id (10 annotator answers each)."""
     with zipfile.ZipFile(paths.OKVQA_ANNOTATIONS) as archive:
         name = next(n for n in archive.namelist() if n.endswith('.json'))
-        original = {str(r['question_id']): r for r in json.loads(archive.read(name))['annotations']}
+        return {str(r['question_id']): r for r in json.loads(archive.read(name))['annotations']}
+
+
+def score_okvqa(preds, qids):
+    original = okvqa_annotations()
     official = module(paths.THIRD_PARTY / 'vqa_eval' / 'vqaEval_py3.py', 'official_vqa')
     scores = {}
     for arm, arm_answers in preds.items():
@@ -227,7 +234,33 @@ def check_question_set(path, qids, subset=False):
 SCORERS = {'okvqa': score_okvqa}
 
 
-def score_run(path, references=('static', 'direct'), bart=False, device=None, subset=False):
+def semantic_inputs(family, qids, by_qid):
+    """Questions and references of semantic_acc: WebQA the reference sentence, OK-VQA semantic.okvqa_references."""
+    from . import semantic
+    questions = {q: by_qid[q]['question'] for q in qids}
+    if family == 'webqa':
+        refs = {q: list(by_qid[q]['golds']) for q in qids}
+    elif family == 'okvqa':
+        annotations = okvqa_annotations()
+        refs = {q: semantic.okvqa_references(annotations[q]) for q in qids}
+    else:
+        raise ValueError(f'{semantic.NAME} is pre-registered for WebQA and OK-VQA only, not {family}')
+    return questions, refs
+
+
+def add_semantic(family, scores, metrics, preds, qids, by_qid, device=None):
+    """Add the secondary metric semantic_acc to every arm's cells, after the official metrics. Returns its identity."""
+    from . import semantic
+    questions, refs = semantic_inputs(family, qids, by_qid)
+    values = semantic.score_semantic(family, preds, qids, questions, refs, semantic.load_checker(device))
+    for arm, cells in values.items():
+        for q, value in cells.items():
+            scores[arm][q][semantic.NAME] = value
+    metrics.append(semantic.NAME)
+    return {'name': semantic.NAME, **semantic.checker_identity()}
+
+
+def score_run(path, references=('static', 'direct'), bart=False, device=None, subset=False, semantic=False):
     path = Path(path)
     raw = path.read_bytes()
     records = [json.loads(line) for line in raw.decode().splitlines() if line.strip()]
@@ -272,6 +305,7 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
     else:
         scores, metrics, extra = SCORERS[family](preds, qids)
     extra = extra or {}
+    secondary = add_semantic(family, scores, metrics, preds, qids, by_qid, device) if semantic else None
     clusters = extra.get('clusters')
     summary = {'scored_utc': datetime.now(timezone.utc).isoformat(), 'predictions': str(path),
                'predictions_sha256': hashlib.sha256(raw).hexdigest(), 'dataset': family, 'n': len(qids),
@@ -281,6 +315,8 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
                'comparisons': {}, **answers.summarize_empty(empty_kinds)}
     if 'bart_error' in extra:
         summary['bart_error'] = extra['bart_error']
+    if secondary is not None:
+        summary['secondary_metric'] = secondary
     for ref in references:
         if ref in arms:
             summary['comparisons'][ref] = {
@@ -305,12 +341,14 @@ def main():
                         help='WebQA: add the ParaBank BARTScore composite; VideoRAG: add BERTScore F1')
     parser.add_argument('--device', default=None,
                         help='device of the WebQA BARTScore model (default: cuda if available, else cpu)')
+    parser.add_argument('--semantic', action='store_true',
+                        help='WebQA, OK-VQA: add the pre-registered secondary metric semantic_acc (NLI checker)')
     parser.add_argument('--subset', action='store_true',
                         help='score part of the evaluation set: skip the check against the run configuration '
                              '(the summary is marked subset)')
     args = parser.parse_args()
     summary, details = score_run(args.predictions, tuple(args.reference or ('static', 'direct')), bart=args.bart,
-                                 device=args.device, subset=args.subset)
+                                 device=args.device, subset=args.subset, semantic=args.semantic)
     stem = args.predictions.with_suffix('')
     Path(f'{stem}.official_scores.jsonl').write_text(
         ''.join(runio.dumps_strict(d, ensure_ascii=False) + '\n' for d in details), encoding='utf8')

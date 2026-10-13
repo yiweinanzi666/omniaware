@@ -57,6 +57,7 @@ from omniaware.eval import score_official  # noqa: E402
 from scripts.analysis import dev_select  # noqa: E402
 
 GATE_THRESHOLD = 0.08
+SECONDARY_METRIC = "semantic_acc"   # eval/semantic.py; reported beside the official metric, read by no choice
 DEV_CHECK_THRESHOLD = 0.05      # protocol section 5: selector over a* on the development set, relative
 FAMILY_METRIC = {"webqa": "acc_approx", "okvqa": "vqa_accuracy"}
 REFERENCE = "static_mixed"
@@ -241,8 +242,23 @@ def _run_signals(record: dict) -> dict[str, float]:
             "h_sem_pre": _finite(raw_pre.get("h_sem"), qid, "raw_pre.h_sem")}
 
 
-def build(run: Path, bart: bool = False, device: str | None = None) -> dict:
-    """Write the action table and its summary next to the run. Returns the summary."""
+def _semantic_cells(family: str, cells_answers: dict[str, dict[str, str]], by_qid: dict[str, dict],
+                    device: str | None) -> dict[str, dict[str, float]]:
+    """semantic_acc of each action on the questions it answered (eval/semantic.py), {action: {qid: 0 or 100}}."""
+    from omniaware.eval import semantic
+    qids = sorted({q for answers in cells_answers.values() for q in answers})
+    questions, refs = score_official.semantic_inputs(family, qids, by_qid)
+    checker = semantic.load_checker(device)
+    return {name: semantic.score_semantic(family, {name: answers}, list(answers), questions, refs, checker)[name]
+            for name, answers in cells_answers.items()}
+
+
+def build(run: Path, bart: bool = False, device: str | None = None, semantic: bool = False) -> dict:
+    """Write the action table and its summary next to the run. Returns the summary.
+
+    With ``semantic`` each row also carries ``secondary_scores`` (semantic_acc of each available action) and
+    ``baseline_secondary`` (semantic_acc of each baseline arm, from score_official --semantic). The secondary metric
+    is reported only; no choice reads it."""
     records = read_jsonl(run)
     missing = sum("actions" not in r for r in records)
     if missing:
@@ -264,15 +280,18 @@ def build(run: Path, bart: bool = False, device: str | None = None) -> dict:
     question_check = _check_run_questions(run, by_qid, family)
     baseline_cells, baseline_source = _official_baseline_scores(run, list(by_qid), metric)
     arms = [arm for arm in BASELINE_ARMS if arm in baseline_cells]
+    baseline_semantic = _official_baseline_scores(run, list(by_qid), SECONDARY_METRIC)[0] if semantic else {}
 
     names = [name for name in V2_ACTIONS if any(name in r["actions"] for r in records)]
-    cells, extras = {}, {}
+    cells, extras, action_answers = {}, {}, {}
     for name in names:
         answers = {r["qid"]: r["actions"][name]["answer"] for r in records
                    if _action_available(r["actions"], name)}
         if answers:
             cells[name], extras[name] = _score_action(family, name, answers, by_qid, bart, device)
+            action_answers[name] = answers
     bart_errors = {name: extra["bart_error"] for name, extra in extras.items() if "bart_error" in extra}
+    semantic_cells = _semantic_cells(family, action_answers, by_qid, device) if semantic else {}
 
     table = []
     for record in records:
@@ -282,6 +301,10 @@ def build(run: Path, bart: bool = False, device: str | None = None) -> dict:
         table.append({"qid": qid, "subset": subset, "actions": record["actions"], "scores": scores,
                       "metric": metric, "baseline_signals": _run_signals(record),
                       "baseline_scores": {arm: baseline_cells[arm][qid] for arm in arms},
+                      **({"secondary_scores": {name: semantic_cells[name][qid] for name in semantic_cells
+                                               if qid in semantic_cells[name]},
+                          "baseline_secondary": {arm: baseline_semantic[arm][qid] for arm in arms}}
+                         if semantic else {}),
                       **({"deploy": record["v2_deploy"]} if "v2_deploy" in record else {})})
 
     full = full_actions(table)
@@ -298,6 +321,11 @@ def build(run: Path, bart: bool = False, device: str | None = None) -> dict:
         "baseline_arms": arms, "baseline_source": baseline_source,
     }
     summary["best_single_mean"] = summary["actions"][summary["best_single"]]["mean"]
+    if semantic:
+        from omniaware.eval import semantic as semantic_metric
+        summary["secondary_metric"] = {"name": SECONDARY_METRIC, **semantic_metric.checker_identity(),
+                                       "action_means": {name: _mean(values.values())
+                                                        for name, values in semantic_cells.items()}}
     if bart_errors:
         summary["bart_errors"] = bart_errors
 
@@ -551,7 +579,7 @@ def _block(rows: list[dict], frozen: dict, baselines: dict, strongest: dict, tes
         entries[arm] = _entry(scores, rule_scores, "arm", calibration_mean=means["arms"].get(arm))
 
     best = strongest["name"]
-    return {
+    out = {
         "questions": len(rows), "reference_mean": float(reference_scores.mean()),
         "reference_counts": dict(Counter(references)), "oracle_mean": float(oracle.mean()),
         "policies": policies,
@@ -559,6 +587,46 @@ def _block(rows: list[dict], frozen: dict, baselines: dict, strongest: dict, tes
         "strongest_baseline": {"name": best, "calibration_mean": strongest["calibration_mean"],
                                "mean": entries[best]["mean"], "vs_rule": entries[best]["vs_rule"]},
     }
+    if rows and all("secondary_scores" in r for r in rows):
+        out["secondary"] = _secondary_block(rows, frozen, baselines, references, test_arms)
+    return out
+
+
+def _secondary_block(rows: list[dict], frozen: dict, baselines: dict, references: list[str],
+                     test_arms: list[str]) -> dict:
+    """The pre-registered secondary metric (semantic_acc) of the very choices the primary metric made: the
+    reference, both policies, the single actions, the adaptive gates and the arms, each paired with v2-Rule as in the
+    primary block. Nothing here chooses an action."""
+    def value(row, name):
+        if name not in row["secondary_scores"]:
+            raise TableError(f"question {row['qid']!r}: {name} has no {SECONDARY_METRIC}; rebuild with --semantic")
+        return float(row["secondary_scores"][name])
+
+    def column(chosen):
+        return np.asarray([value(r, n) for r, n in zip(rows, chosen)], dtype=float)
+
+    reference = column(references)
+    chosen = {family: _chosen_scores(frozen[family], rows)[0] for family in POLICY_FAMILIES}
+    rule = column(chosen["rule"])
+    has_static = all(REFERENCE in r["secondary_scores"] for r in rows)
+    static = column([REFERENCE] * len(rows)) if has_static else None
+    out = {"metric": SECONDARY_METRIC, "reference_mean": float(reference.mean()),
+           "oracle_mean": float(np.mean([max(r["secondary_scores"].values()) for r in rows])),
+           "policies": {}, "baselines": {}}
+    for family, names in chosen.items():
+        policy = column(names)
+        out["policies"][family] = {"mean": float(policy.mean()),
+                                   "vs_reference": score_official.paired(reference, policy),
+                                   "vs_static_mixed": score_official.paired(static, policy) if has_static else None}
+    for name in V2_ACTIONS:
+        if all(name in r["secondary_scores"] for r in rows):
+            out["baselines"][name] = _entry(column([name] * len(rows)), rule, "single")
+    for name, picks in _baseline_choices(rows, baselines, references).items():
+        out["baselines"][name] = _entry(column(picks), rule, "adaptive")
+    for arm in test_arms:
+        scores = np.asarray([r["baseline_secondary"][arm] for r in rows], dtype=float)
+        out["baselines"][arm] = _entry(scores, rule, "arm")
+    return out
 
 
 def deployment_summary(deployed: list[dict], questions: int) -> dict:
@@ -686,7 +754,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("build", help="score each action of a --v2 run and write its action table")
     p.add_argument("--run", type=Path, required=True, help="<run_dir>/<dataset>.jsonl written by omniaware.run --v2")
     p.add_argument("--bart", action="store_true", help="WebQA: also record the normalized_bart and QA_approx means")
-    p.add_argument("--device", default=None, help="device of the WebQA BARTScore model")
+    p.add_argument("--device", default=None, help="device of the WebQA BARTScore model and the NLI checker")
+    p.add_argument("--semantic", action="store_true",
+                   help="also record the pre-registered secondary metric semantic_acc of every action and baseline "
+                        "arm (the run must have been scored with score_official --semantic)")
 
     p = sub.add_parser("gate", help="PASS when the oracle beats the strongest single action by at least 8%")
     p.add_argument("--table", type=Path, required=True)
@@ -716,7 +787,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "build":
-            summary = build(args.run, bart=args.bart, device=args.device)
+            summary = build(args.run, bart=args.bart, device=args.device, semantic=args.semantic)
             print(json.dumps({"best_single": summary["best_single"], "oracle_mean": summary["oracle_mean"],
                               "actions": {k: v["mean"] for k, v in summary["actions"].items()},
                               "baseline_arms": summary["baseline_arms"], "table": summary["table"]["path"]}, indent=2))
