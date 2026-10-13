@@ -562,12 +562,14 @@ def _block(rows: list[dict], frozen: dict, baselines: dict, strongest: dict, tes
 
 
 def deployment_summary(deployed: list[dict], questions: int) -> dict:
-    """Cost of the frozen v2-Rule run as a deployment (omniaware.run --v2 --decisions): forward passes without
-    generation, decodes, and wall time per question, and whether it chose what the full decode chose."""
+    """Cost of the frozen v2-Rule run as a deployment (omniaware.run --v2 --decisions): signal passes (a prefill and
+    at most run.DEPLOY_SIGNAL_TOKENS greedy tokens each), their decoded tokens, full decodes, and wall time per
+    question, and whether it chose what the full decode chose."""
     n = len(deployed)
     return {
         "questions": n, "all_questions": questions,
         "prefill_calls_mean": _mean(d["prefill_calls"] for d in deployed),
+        "signal_tokens_mean": _mean(d.get("signal_tokens", 0) for d in deployed),
         "decode_calls_mean": _mean(d["decode_calls"] for d in deployed),
         "seconds_mean": _mean(d["seconds"] for d in deployed),
         "chosen": dict(Counter(d["action"] for d in deployed)),

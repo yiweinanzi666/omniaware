@@ -105,11 +105,11 @@ dev 网格：
 
 ### 信号
 
-每个可用动作记录首 token 的 margin（top-1 与 top-2 logit 之差）、熵与归一化熵、贪心序列 log-prob、生成长度、与 direct 的首 token KL（direct 自身为空）、检索器 top-1 分数，以及 top-1 与 top-2 的分差。
+每个可用动作记录首 token 的 margin（top-1 与 top-2 logit 之差）、熵与归一化熵；答案 token 上的同样各量、H_grd 与 `u_raw = H_grd + β·H_sem`（`answer_token`，见上方修订）；贪心序列 log-prob、生成长度、与 direct 的首 token KL（direct 自身为空）、检索器 top-1 分数，以及 top-1 与 top-2 的分差；证据动作另记模态路由 M_m·H_m。
 
 **决策只读取下面四类量**：
-- 置信度 `margin`（直答的，以及每个证据动作的）；
-- 动作答案与 a* 答案的 token F1（按归一化后的词多重集计算，空对空为 1，空对非空为 0）；
+- 置信度：答案 token 上的 `u_omni`（−u_raw，直答的，以及每个证据动作的）；`route` 族另读 static_mixed 的模态路由；
+- 动作短答案与 a* 短答案的 token F1（按归一化后的词多重集计算，空对空为 1，空对非空为 0）；
 - 证据动作与 direct 的首 token KL；
 - 证据动作所用候选的检索器 top-1 分数。
 

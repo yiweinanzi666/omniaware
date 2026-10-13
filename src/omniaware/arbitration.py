@@ -187,33 +187,47 @@ def reference_action(decision: dict, actions: dict) -> str:
     raise ValueError("no available action on this question")
 
 
-def signals_needed(decision: dict, actions: dict) -> list[str]:
-    """Actions whose first-token signals must still be computed before ``decision`` can be applied.
+def _has_signal(record: dict, kind: str) -> bool:
+    """Whether the signal record holds what ``_confidence`` reads for ``kind``: the answer token for u_omni (the
+    pre-registered confidence), the answer token or the first token for margin and neg_entropy."""
+    if kind == "u_omni":
+        return "answer_token" in record
+    return "answer_token" in record or "first_token" in record
 
-    ``actions`` holds, for every action, at least ``available``; an action whose prefill has been run also holds
-    ``first_token``. An empty list means ``apply_decision`` can run. This lets a deployment prefill only what
-    the decision reads and decode only the chosen action:
+
+def signals_needed(decision: dict, actions: dict) -> list[str]:
+    """Actions whose signals must still be computed before ``decision`` can be applied.
+
+    ``actions`` holds, for every action, at least ``available``; an action whose signal has been read also holds
+    its signal record (run.action_signal_record: ``first_token``, ``answer_token`` and, for evidence actions,
+    ``route``). An empty list means ``apply_decision`` can run. This lets a deployment read only what the decision
+    reads and decode only the chosen action:
 
     - a fallback decision reads no signal;
     - v2-Rule reads the direct signal first; when direct is kept, or when the evidence rule is "best", nothing
-      else is read; the "confident" rule also reads the signal of every available evidence action.
+      else is read; the "route" rule reads static_mixed (its M_m H_m route); the "confident" rule reads every
+      available evidence action.
 
-    v2-Cal reads the decoded answers (token F1), so it cannot be applied from prefills; ValueError is raised.
+    v2-Cal reads the decoded answers (token F1), so it cannot be applied from these signals; ValueError is raised.
     """
     kind = decision["kind"]
     if kind == "single":
         return []
     if kind != "rule":
         raise ValueError(f"a {kind!r} decision reads decoded answers and cannot be applied from prefills alone")
+    confidence = decision["confidence"]
     if _available(actions, DIRECT):
-        if "first_token" not in actions[DIRECT]:
+        if not _has_signal(actions[DIRECT], confidence):
             return [DIRECT]
-        if _confidence(actions[DIRECT], decision["confidence"]) >= decode_json_float(decision["tau"]):
+        if _confidence(actions[DIRECT], confidence) >= decode_json_float(decision["tau"]):
             return []
-    if decision["evidence_choice"] == "best":
+    choice = decision["evidence_choice"]
+    if choice == "best":
         return []
+    if choice == "route":
+        return [MIXED] if _available(actions, MIXED) and "route" not in actions[MIXED] else []
     return [name for name in decision["evidence_ranking"]
-            if _available(actions, name) and "first_token" not in actions[name]]
+            if _available(actions, name) and not _has_signal(actions[name], confidence)]
 
 
 def _rule_action(decision: dict, actions: dict) -> str:
