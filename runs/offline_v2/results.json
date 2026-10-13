@@ -1,0 +1,749 @@
+{
+  "label": "探索性、旧管线、含已知 bug 的数据",
+  "datasets": {
+    "webqa": {
+      "label": "探索性、旧管线、含已知 bug 的数据",
+      "objective": "acc_approx",
+      "seed": 20261013,
+      "n_questions": 4966,
+      "n_calib": 2483,
+      "n_eval": 2483,
+      "best_single_action_on_calib": "static_mixed",
+      "declared_actions": [
+        "direct",
+        "static_text",
+        "static_image",
+        "static_mixed",
+        "rerank_static"
+      ],
+      "actions_in_dump": [
+        "direct",
+        "static_mixed"
+      ],
+      "grid": [
+        {
+          "name": "margin_tau-1e9_theta1",
+          "tau1": -1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau-1e9_theta0.5",
+          "tau1": -1000000000.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau-1e9_theta0",
+          "tau1": -1000000000.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta1",
+          "tau1": 0.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta0.5",
+          "tau1": 0.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta0",
+          "tau1": 0.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta1",
+          "tau1": 0.25,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta0.5",
+          "tau1": 0.25,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta0",
+          "tau1": 0.25,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta1",
+          "tau1": 0.5,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta0.5",
+          "tau1": 0.5,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta0",
+          "tau1": 0.5,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta1",
+          "tau1": 1.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta0.5",
+          "tau1": 1.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta0",
+          "tau1": 1.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta1",
+          "tau1": 2.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta0.5",
+          "tau1": 2.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta0",
+          "tau1": 2.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta1",
+          "tau1": 4.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta0.5",
+          "tau1": 4.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta0",
+          "tau1": 4.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta1",
+          "tau1": 1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta0.5",
+          "tau1": 1000000000.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta0",
+          "tau1": 1000000000.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        }
+      ],
+      "v2_rule": {
+        "decision": {
+          "name": "best_single",
+          "action": "static_mixed",
+          "fallback": true
+        },
+        "candidate": null,
+        "delta": 0.1,
+        "eval": {
+          "policy_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41320049364653727,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41320049364653727,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "direct_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41275192151931644,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "static_mixed_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41320049364653727,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "oracle_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.5452611949586895,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "utility": 0.0,
+          "paired": {
+            "baseline": 0.4132004936465373,
+            "ours": 0.4132004936465373,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 2483
+          },
+          "oracle_gap": {
+            "numerator_sum_policy_minus_best": 0.0,
+            "denominator_sum_oracle_minus_best": 327.9067213580742,
+            "fraction": 0.0,
+            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "action_counts": {
+            "static_mixed": 2483
+          },
+          "bart_policy_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.17428410337418798,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "bart_direct_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.17424697023677568,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "bart_static_mixed_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.17428410337418798,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "label": "探索性、旧管线、含已知 bug 的数据"
+      },
+      "v2_cal": {
+        "status": "ok",
+        "fit_on": "calib_half_only",
+        "model": {
+          "n_params": 7,
+          "n_weights": 7,
+          "weights": [
+            -0.7614946651864644,
+            0.7912718177205086,
+            0.0,
+            0.0,
+            0.0,
+            0.09957804011188741,
+            0.0
+          ],
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "eval": {
+          "policy_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41275192151931644,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.41320049364653727,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "utility": -0.0004485721272208135,
+          "paired": {
+            "baseline": 0.4132004936465373,
+            "ours": 0.41275192151931644,
+            "delta_pp": -0.0004485721272208135,
+            "relative_percent": -0.10856040448115582,
+            "paired_ci95_pp": [
+              -0.0184402702861263,
+              0.017099027685546546
+            ],
+            "p_two_sided": 0.9582083583283343,
+            "wins": 591,
+            "losses": 550,
+            "ties": 1342
+          },
+          "oracle_gap": {
+            "numerator_sum_policy_minus_best": -1.1138045918892812,
+            "denominator_sum_oracle_minus_best": 327.9067213580742,
+            "fraction": -0.003396711684579976,
+            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "action_counts": {
+            "direct": 2483
+          },
+          "bart_policy_mean": {
+            "n": 2483,
+            "n_missing": 0,
+            "mean": 0.17424697023677568,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "label": "探索性、旧管线、含已知 bug 的数据"
+      },
+      "eval_by_subset": {
+        "text": {
+          "direct": {
+            "n": 1195,
+            "n_missing": 0,
+            "mean": 0.4220906020988302,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "static_mixed": {
+            "n": 1195,
+            "n_missing": 0,
+            "mean": 0.5278283224828569,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "v2_rule": {
+            "n": 1195,
+            "n_missing": 0,
+            "mean": 0.5278283224828569,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "oracle": {
+            "n": 1195,
+            "n_missing": 0,
+            "mean": 0.6150559869335577,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single": {
+            "n": 1195,
+            "n_missing": 0,
+            "mean": 0.5278283224828569,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          }
+        },
+        "img": {
+          "direct": {
+            "n": 1288,
+            "n_missing": 0,
+            "mean": 0.4040875400810255,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "static_mixed": {
+            "n": 1288,
+            "n_missing": 0,
+            "mean": 0.3068493636314734,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "v2_rule": {
+            "n": 1288,
+            "n_missing": 0,
+            "mean": 0.3068493636314734,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "oracle": {
+            "n": 1288,
+            "n_missing": 0,
+            "mean": 0.4805059337708267,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single": {
+            "n": 1288,
+            "n_missing": 0,
+            "mean": 0.3068493636314734,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          }
+        }
+      }
+    },
+    "okvqa": {
+      "label": "探索性、旧管线、含已知 bug 的数据",
+      "objective": "vqa_accuracy",
+      "seed": 20261013,
+      "n_questions": 256,
+      "n_calib": 128,
+      "n_eval": 128,
+      "best_single_action_on_calib": "direct",
+      "declared_actions": [
+        "direct",
+        "static_text",
+        "static_image",
+        "static_mixed",
+        "rerank_static"
+      ],
+      "actions_in_dump": [
+        "direct",
+        "static_mixed"
+      ],
+      "grid": [
+        {
+          "name": "margin_tau-1e9_theta1",
+          "tau1": -1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau-1e9_theta0.5",
+          "tau1": -1000000000.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau-1e9_theta0",
+          "tau1": -1000000000.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta1",
+          "tau1": 0.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta0.5",
+          "tau1": 0.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0_theta0",
+          "tau1": 0.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta1",
+          "tau1": 0.25,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta0.5",
+          "tau1": 0.25,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.25_theta0",
+          "tau1": 0.25,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta1",
+          "tau1": 0.5,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta0.5",
+          "tau1": 0.5,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau0.5_theta0",
+          "tau1": 0.5,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta1",
+          "tau1": 1.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta0.5",
+          "tau1": 1.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1_theta0",
+          "tau1": 1.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta1",
+          "tau1": 2.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta0.5",
+          "tau1": 2.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau2_theta0",
+          "tau1": 2.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta1",
+          "tau1": 4.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta0.5",
+          "tau1": 4.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau4_theta0",
+          "tau1": 4.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta1",
+          "tau1": 1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta0.5",
+          "tau1": 1000000000.0,
+          "theta": 0.5,
+          "confidence": "margin"
+        },
+        {
+          "name": "margin_tau1e9_theta0",
+          "tau1": 1000000000.0,
+          "theta": 0.0,
+          "confidence": "margin"
+        }
+      ],
+      "v2_rule": {
+        "decision": {
+          "name": "margin_tau-1e9_theta1",
+          "tau1": -1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin",
+          "fallback": false,
+          "utility": 0.0
+        },
+        "candidate": {
+          "name": "margin_tau-1e9_theta1",
+          "tau1": -1000000000.0,
+          "theta": 1.0,
+          "confidence": "margin"
+        },
+        "delta": 0.1,
+        "eval": {
+          "policy_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "direct_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "static_mixed_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 32.03125,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "oracle_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 60.625,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "utility": 0.0,
+          "paired": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "oracle_gap": {
+            "numerator_sum_policy_minus_best": 0.0,
+            "denominator_sum_oracle_minus_best": 260.0,
+            "fraction": 0.0,
+            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "action_counts": {
+            "direct": 128,
+            "__used_evidence__": 0
+          },
+          "bart_policy_mean": {
+            "n": 0,
+            "n_missing": 128,
+            "mean": null,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "bart_direct_mean": {
+            "n": 0,
+            "n_missing": 128,
+            "mean": null,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "bart_static_mixed_mean": {
+            "n": 0,
+            "n_missing": 128,
+            "mean": null,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "label": "探索性、旧管线、含已知 bug 的数据"
+      },
+      "v2_cal": {
+        "status": "ok",
+        "fit_on": "calib_half_only",
+        "model": {
+          "n_params": 7,
+          "n_weights": 7,
+          "weights": [
+            -1.4287061042664069,
+            10.194224198817684,
+            -10.194224198817682,
+            0.0,
+            0.0,
+            2.964859184255918,
+            0.08256264996676989
+          ],
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "eval": {
+          "policy_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.125,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single_mean": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "utility": -0.46875,
+          "paired": {
+            "baseline": 58.59375,
+            "ours": 58.125,
+            "delta_pp": -0.46875,
+            "relative_percent": -0.8,
+            "paired_ci95_pp": [
+              -1.40625,
+              0.0
+            ],
+            "p_two_sided": 0.6186762647470506,
+            "wins": 0,
+            "losses": 1,
+            "ties": 127
+          },
+          "oracle_gap": {
+            "numerator_sum_policy_minus_best": -60.0,
+            "denominator_sum_oracle_minus_best": 260.0,
+            "fraction": -0.23076923076923078,
+            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "action_counts": {
+            "direct": 98,
+            "static_mixed": 30
+          },
+          "bart_policy_mean": {
+            "n": 0,
+            "n_missing": 128,
+            "mean": null,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "label": "探索性、旧管线、含已知 bug 的数据"
+        },
+        "label": "探索性、旧管线、含已知 bug 的数据"
+      },
+      "eval_by_subset": {
+        "all": {
+          "direct": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "static_mixed": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 32.03125,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "v2_rule": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "oracle": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 60.625,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          },
+          "best_single": {
+            "n": 128,
+            "n_missing": 0,
+            "mean": 58.59375,
+            "label": "探索性、旧管线、含已知 bug 的数据"
+          }
+        }
+      }
+    }
+  }
+}
