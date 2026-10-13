@@ -148,8 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
     ap.add_argument("--model", default="2b", choices=["2b", "8b", "internvl3.5-8b"])
     ap.add_argument("--max-patches", type=int, default=1, help="InternVL: 448px tiles per image (256 tokens each)")
-    ap.add_argument("--split", required=True, choices=["dev", "test"],
-                    help="dev: tune here; test: run once with frozen settings (see docs/PROTOCOL.md)")
+    ap.add_argument("--split", required=True, choices=["calib", "dev", "test"],
+                    help="calib: decode the calibration questions; dev: tune here; test: run once with frozen settings")
     ap.add_argument("--n-calib", type=int, default=None,
                     help="calibration questions (default: the dataset's protocol size, data.CALIB_RESERVE / N_CALIB_TRAIN)")
     ap.add_argument("--calib-source", choices=["train", "heldout"], default="train",
@@ -248,13 +248,46 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--calibrate-only", action="store_true",
                     help="fill every cache (relevance, CE, U calibration, SeaKR) and write the config, then stop")
     ap.add_argument("--tag", required=True)
+    ap.add_argument("--v2-actions", default=",".join(signals.V2_ACTIONS),
+                    help="v2 actions decoded for every question; must be the full set, in this order")
+    ap.add_argument("--save-signals", action="store_true",
+                    help="v2 contract flag: first-token signals are always written on each action")
+    ap.add_argument("--empty-answer-accounting", action="store_true",
+                    help="v2 contract flag: empty_answer_rate is always written on the run summary")
+    ap.add_argument("--shared-prompt-registry", action="store_true",
+                    help="v2 contract flag: every arm already uses the prompt registry")
+    ap.add_argument("--decisions", default=None,
+                    help="frozen decisions JSON. Checked and hashed into the config; this process does not search a grid")
     return ap
+
+
+def check_v2_flags(ap, args) -> None:
+    """Accept the flags scripts/v2_runs.py emits. Decoding all five actions is not optional."""
+    wanted = tuple(part.strip() for part in args.v2_actions.split(",") if part.strip())
+    if wanted != signals.V2_ACTIONS:
+        ap.error("--v2-actions must be " + ",".join(signals.V2_ACTIONS))
+    if not args.decisions:
+        args.decisions_sha256 = None
+        return
+    path = Path(args.decisions)
+    if not path.is_file():
+        ap.error(f"--decisions file not found: {args.decisions}. No default hyperparameters were substituted.")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        ap.error(f"--decisions is not valid JSON: {args.decisions} ({exc}). "
+                 "No default hyperparameters were substituted.")
+    if not isinstance(payload, dict):
+        ap.error(f"--decisions must be a JSON object: {args.decisions}. "
+                 "No default hyperparameters were substituted.")
+    args.decisions_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def main(argv=None):
     ap = build_parser()
     args = ap.parse_args(argv)
     apply_analysis_eab(args)
+    check_v2_flags(ap, args)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
         ap.error(f"unknown --order {args.order}")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
