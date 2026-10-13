@@ -14,7 +14,7 @@ OK-VQA uses 500 calibration questions, 256 development questions, and the remain
 The three OK-VQA sets are pairwise disjoint.
 An empty test set is an error.
 For a validation split of 5{,}046 questions the remainder is 4{,}290.
-Question-id lists are hashed, and the test command checks the hash of \texttt{docs/dev\_decisions.json}.
+Question-id lists are hashed, and the test command checks the hash of the frozen decision file \texttt{runs/v2\_decisions/}.
 
 \textit{Actions.}
 The main-method actions are \texttt{direct}, \texttt{static\_text}, \texttt{static\_image}, \texttt{static\_mixed}, and \texttt{rerank\_static}.
@@ -41,7 +41,7 @@ Adaptive comparators (NTE trigger, SeaKR, the v1 $\Uomni$ gate, UniversalRAG) ar
 \textit{Statistics and selection.}
 Intervals are paired bootstrap 95\% confidence intervals over questions, with Holm correction for multiple comparisons.
 Greedy decoding does not contribute a seed standard deviation.
-The degradation rate is the fraction of questions on which the chosen action scores below the strong baseline.
+The risk-control claim uses the mean paired gap to the strong baseline (Section~\ref{sec:risk}).
 Thresholds and grids are chosen on the calibration or development split.
 The test split is scored once.
 A grid is not selected on the test split.
@@ -109,7 +109,7 @@ Equal pooled weights and equal values give the same attention output at the row.
 %% ===============================================================
 \section{Supplementary Placeholders}
 \label{app:supp}
-Open-retrieval scores, cost, and the degradation rate are the placeholder tables in Section~\ref{sec:extra} and Table~\ref{tab:main}.
+Open-retrieval scores, cost, and the paired-gap intervals are the placeholder tables in Section~\ref{sec:extra} and Table~\ref{tab:main}.
 No seed-wise standard deviation is attached to a greedy run.
 Sensitivity to $\delta$ is the development-split row of Table~\ref{tab:ablation}.
 That row is not a test-set search.
@@ -150,10 +150,9 @@ The attention-bias cases discussed in Section~\ref{sec:steer} are the root-cause
 \label{app:limitations}
 \textit{Limitations.}
 v2 decodes several actions per question.
-Thresholds and the seven regression coefficients depend on the calibration split.
+Thresholds and the ridge coefficients of v2-Cal depend on the calibration split.
 The strongest single action is chosen on that same sample, which makes the risk claim slightly anti-conservative.
-The claim in Section~\ref{sec:risk} bounds the degradation rate of accepted thresholds at $\delta=0.10$.
-It does not say that a deployed selector is never worse than the strongest single action.
+The guarantee in Section~\ref{sec:risk} bounds the expected score of the chosen policy, under i.i.d. questions and an asymptotically valid test, at $\delta=0.10$ and a tolerance of $\epsilon=1.0$ point.
 The image-evidence pipeline is a separate 50-question diagnostic whose outcome is \ph{}.
 \texttt{gold-in-top-$k$} is not available as an inference-time feature.
 MMQA and video are outside the current command interface.

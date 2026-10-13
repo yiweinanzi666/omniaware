@@ -1,37 +1,67 @@
-"""Offline Omni-Aware v2 selector.
+"""Action selector for Omni-Aware v2.
 
-Reads per-action records (answers and signals). Does not decode, prompt, or build those records.
-``retriever.gold_in_topk`` is never read. Thresholds are chosen by utility under a fixed-sequence
-binomial test, not by maximum accuracy.
+The input is per-question action records (answers and first-token signals) plus official scores on a
+calibration set. The output is a JSON-serialisable decision that maps one question's actions to one action.
+
+Two families are fitted on calibration data:
+
+- v2-Rule (no training): keep direct when its confidence clears a threshold, otherwise use an evidence action.
+- v2-Cal: one ridge regression per non-reference action predicts its score gain over the strongest single
+  action; the largest predicted gain is taken only when it exceeds a threshold.
+
+Both families pass through the same risk control: a one-sided paired t test on the mean score gap to the
+strongest single action a*, walked along a fixed sequence that starts at the policy equal to a*.
+Only numpy and the standard library are used; this module reads no files.
 """
 from __future__ import annotations
 
 import math
+import string
+import unicodedata
 from collections import Counter
+from collections.abc import Sequence
 
 import numpy as np
 
-V2_ACTIONS = ("direct", "static_text", "static_image", "static_mixed", "rerank_static")
+from .actions import DIRECT, EVIDENCE_ACTIONS, V2_ACTIONS
 
-# weights[0] is the intercept. action_features() returns the other six, in this order.
-FEATURE_NAMES = (
-    "intercept",
-    "margin",
-    "entropy_norm",
-    "seq_logprob_per_token",
-    "kl_to_direct",
-    "token_f1_to_direct",
-    "retriever_top1_score",
-)
-N_PARAMS = 7
+CONFIDENCE_KINDS = ("margin", "neg_entropy")
+QUANTILE_STEPS = 20                 # threshold grids are 0%, 5%, ..., 100% quantiles
+RIDGE_ALPHA = 1.0                   # on standardised features; the intercept is not penalised
+CAL_FEATURES = ("conf_direct", "conf_star", "conf_gap", "token_f1_to_star", "kl_to_direct", "retriever_top1")
 
-_TAU1_GRID = (-1e9, 0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 1e9)
-_THETA_GRID = (1.0, 0.5, 0.0)
+
+# ---------------------------------------------------------------- JSON and text helpers
+
+def encode_json_float(value: float) -> float | str:
+    """Write +inf and -inf as the strings "inf" and "-inf" so decisions are strict JSON."""
+    value = float(value)
+    if math.isinf(value):
+        return "inf" if value > 0 else "-inf"
+    return value
+
+
+def decode_json_float(value: float | str) -> float:
+    """Read back a value written by ``encode_json_float``."""
+    if isinstance(value, str):
+        if value not in ("inf", "-inf"):
+            raise ValueError(f"not an encoded float: {value!r}")
+        return float(value)
+    return float(value)
+
+
+def normalize_answer(text: str) -> list[str]:
+    """Lower-case, drop punctuation, and split on whitespace."""
+    kept = "".join(
+        ch for ch in text.lower()
+        if ch not in string.punctuation and not unicodedata.category(ch).startswith("P")
+    )
+    return kept.split()
 
 
 def token_f1(a: str, b: str) -> float:
-    """Whitespace-token multiset F1 in [0, 1]. Empty/empty is 1. Empty vs non-empty is 0."""
-    left, right = a.split(), b.split()
+    """Multiset token F1 over ``normalize_answer`` tokens. Two empty answers agree (1.0); one empty gives 0.0."""
+    left, right = normalize_answer(a), normalize_answer(b)
     if not left and not right:
         return 1.0
     if not left or not right:
@@ -44,358 +74,418 @@ def token_f1(a: str, b: str) -> float:
     return 2.0 * precision * recall / (precision + recall)
 
 
-def _direct_is_confident(direct: dict, tau1: float, confidence: str) -> bool:
-    if confidence == "margin":
-        return float(direct["first_token"]["margin"]) >= float(tau1)
-    if confidence == "entropy":
-        return float(direct["first_token"]["entropy_norm"]) <= float(tau1)
-    raise ValueError(f"confidence must be 'margin' or 'entropy', not {confidence!r}")
+def _confidence(record: dict, kind: str) -> float:
+    """Higher is more confident. ``margin`` is the first-token top-1 minus top-2 margin; ``neg_entropy`` is -entropy."""
+    token = record["first_token"]
+    if kind == "margin":
+        return float(token["margin"])
+    if kind == "neg_entropy":
+        return -float(token["entropy"])
+    raise ValueError(f"confidence must be one of {CONFIDENCE_KINDS}, not {kind!r}")
 
 
-def _agrees(name: str, actions: dict, theta: float) -> bool:
-    """True when this answer has token F1 >= theta with a different action, including direct."""
-    answer = actions[name]["answer"]
-    for other in V2_ACTIONS:
-        if other == name or other not in actions:
-            continue
-        if token_f1(answer, actions[other]["answer"]) >= float(theta):
-            return True
-    return False
+def _available(actions: dict, name: str) -> bool:
+    return name in actions and bool(actions[name].get("available", True))
 
 
-def _evidence_rank(name: str, actions: dict, confidence: str) -> tuple:
-    """Lower is better. Margin: higher margin first. Entropy: lower entropy_norm first. Ties: V2_ACTIONS order."""
-    order = V2_ACTIONS.index(name)
-    if confidence == "margin":
-        return (-float(actions[name]["first_token"]["margin"]), order)
-    return (float(actions[name]["first_token"]["entropy_norm"]), order)
+def _nan_if_none(value) -> float:
+    return math.nan if value is None else float(value)
 
 
-def select_v2_rule(actions: dict, tau1: float, theta: float, confidence: str = "margin") -> dict:
-    """v2-Rule. Confident direct is kept. Otherwise the agreeing evidence action with the best confidence.
+# ---------------------------------------------------------------- strongest actions
 
-    ``confidence='margin'``: direct is confident when ``first_token.margin >= tau1``. Evidence actions are
-    ranked by higher margin. ``confidence='entropy'``: direct is confident when ``entropy_norm <= tau1``
-    (lower entropy is more confident). Evidence actions are ranked by lower ``entropy_norm``.
+def _mean_scores(scores_by_action: dict[str, Sequence[float]]) -> dict[str, float]:
+    means, lengths = {}, set()
+    for name, values in scores_by_action.items():
+        if name not in V2_ACTIONS:
+            raise ValueError(f"unknown action {name!r}")
+        arr = np.asarray(values, dtype=float)
+        lengths.add(arr.size)
+        means[name] = float(arr.mean()) if arr.size else math.nan
+    if not means or len(lengths) != 1 or 0 in lengths:
+        raise ValueError("scores_by_action needs one non-empty score sequence per action, all of one length")
+    return means
 
-    An evidence action is kept only when its answer has token F1 >= theta with at least one different
-    action (any action, including direct). If none qualify, the choice is direct. ``used_evidence`` is
-    true only when the returned action is not direct. ``gold_in_topk`` is not read.
+
+def _ranked(means: dict[str, float]) -> list[str]:
+    """Highest mean first. Ties follow V2_ACTIONS order."""
+    return sorted(means, key=lambda name: (-means[name], V2_ACTIONS.index(name)))
+
+
+def best_single_action(scores_by_action: dict[str, Sequence[float]]) -> str:
+    """The action with the highest mean score (a*). Ties follow V2_ACTIONS order."""
+    return _ranked(_mean_scores(scores_by_action))[0]
+
+
+def best_evidence_action(scores_by_action: dict[str, Sequence[float]]) -> str:
+    """The evidence action with the highest mean score (e*). Ties follow V2_ACTIONS order."""
+    means = {name: m for name, m in _mean_scores(scores_by_action).items() if name in EVIDENCE_ACTIONS}
+    if not means:
+        raise ValueError("best_evidence_action needs at least one evidence action")
+    return _ranked(means)[0]
+
+
+# ---------------------------------------------------------------- applying a decision
+
+def apply_decision(decision: dict, actions: dict) -> dict:
+    """Return ``{"action": name, "answer": text}`` for one question.
+
+    Reads only the decision and the question's ``actions``. Scores and ``gold_in_topk`` are never read,
+    and an unavailable action is never returned.
     """
-    direct = actions["direct"]
-    if _direct_is_confident(direct, tau1, confidence):
-        return {"action": "direct", "answer": direct["answer"], "used_evidence": False}
-    keepers = [name for name in V2_ACTIONS if name != "direct" and name in actions and _agrees(name, actions, theta)]
-    if not keepers:
-        return {"action": "direct", "answer": direct["answer"], "used_evidence": False}
-    best = min(keepers, key=lambda name: _evidence_rank(name, actions, confidence))
-    return {"action": best, "answer": actions[best]["answer"], "used_evidence": True}
-
-
-def action_features(name: str, rec: dict) -> np.ndarray:
-    """Length-6 feature vector. The caller adds the intercept.
-
-    For a non-direct action, ``rec['direct_answer']`` must hold the direct answer (the caller copies it
-    in; this function does not look at other actions). Feature 5 is 1 for direct.
-    """
-    first = rec["first_token"]
-    gen_len = rec.get("gen_len", 1)
-    kl = rec.get("kl_to_direct")
-    retriever = rec.get("retriever") or {}
-    top1 = retriever.get("top1_score")
-    if name == "direct":
-        agree = 1.0
+    kind = decision["kind"]
+    if kind == "rule":
+        name = _rule_action(decision, actions)
+    elif kind == "cal":
+        name = _cal_action(decision, actions)
+    elif kind == "single":
+        name = _default_action(decision, actions)
     else:
-        if "direct_answer" not in rec:
-            raise ValueError("action_features needs rec['direct_answer'] for a non-direct action")
-        agree = token_f1(rec["answer"], rec["direct_answer"])
-    return np.asarray([
-        float(first["margin"]),
-        float(first["entropy_norm"]),
-        float(rec["seq_logprob"]) / max(float(gen_len), 1.0),
-        0.0 if kl is None else float(kl),
-        float(agree),
-        0.0 if top1 is None else float(top1),
-    ], dtype=float)
+        raise ValueError(f"unknown decision kind {kind!r}")
+    return {"action": name, "answer": actions[name]["answer"]}
 
 
-def _with_direct_answer(name: str, actions: dict) -> dict:
-    rec = actions[name]
-    if name == "direct":
-        return rec
-    return {**rec, "direct_answer": actions["direct"]["answer"]}
-
-
-def _sigmoid(logits: np.ndarray) -> np.ndarray:
-    clipped = np.clip(logits, -30.0, 30.0)
-    return 1.0 / (1.0 + np.exp(-clipped))
-
-
-def _fit_logistic(features: np.ndarray, labels: np.ndarray, l2: float = 1e-2, max_iter: int = 40) -> np.ndarray:
-    """IRLS / Newton logistic regression. Returns 7 weights in the original feature space, intercept first.
-
-    Features are standardised only inside the solver. The returned weights already undo that, so prediction
-    is ``sigmoid(w[0] + w[1:] · features)``. A fixed L2 penalty keeps separable and tiny samples finite; it
-    is not an extra learned parameter.
-    """
-    raw = np.asarray(features, dtype=float)
-    y = np.asarray(labels, dtype=float)
-    if raw.ndim != 2 or raw.shape[1] != N_PARAMS - 1:
-        raise ValueError(f"expected (n, {N_PARAMS - 1}) features, got {raw.shape}")
-    if raw.shape[0] != y.shape[0] or raw.shape[0] == 0:
-        raise ValueError("features and labels must be non-empty and the same length")
-    center = raw.mean(axis=0)
-    scale = raw.std(axis=0)
-    varying = scale >= 1e-8
-    scale = np.where(varying, scale, 1.0)
-    standard = (raw - center) / scale
-    standard[:, ~varying] = 0.0
-    design = np.column_stack([np.ones(len(standard)), standard])
-    weights = np.zeros(N_PARAMS, dtype=float)
-    penalty = np.eye(N_PARAMS, dtype=float) * l2
-    for _ in range(max_iter):
-        prob = np.clip(_sigmoid(design @ weights), 1e-6, 1.0 - 1e-6)
-        grad = design.T @ (prob - y) + l2 * weights
-        hess = design.T @ (design * (prob * (1.0 - prob))[:, None]) + penalty
-        step = np.linalg.solve(hess, grad)
-        updated = weights - step
-        if not np.isfinite(updated).all():
-            break
-        weights = updated
-        if float(np.linalg.norm(step)) <= 1e-8:
-            break
-    slope = np.zeros(N_PARAMS - 1, dtype=float)
-    slope[varying] = weights[1:][varying] / scale[varying]
-    intercept = float(weights[0] - np.sum(weights[1:][varying] * center[varying] / scale[varying]))
-    mapped = np.concatenate([[intercept], slope])
-    if not np.isfinite(mapped).all():
-        return np.zeros(N_PARAMS, dtype=float)
-    return mapped
-
-
-def fit_v2_cal(rows: list[dict]) -> dict:
-    """One shared logistic regression P(correct | features) on calibration rows.
-
-    Each row is ``{"actions": {name: record}, "correct": {name: 0 or 1}}``. Returns seven parameters
-    (intercept plus six shared weights). ``weights[0]`` is the intercept.
-    """
-    xs, ys = [], []
+def policy_scores(decision: dict, rows: list[dict]) -> list[float]:
+    """Official score of the action each calibration or evaluation row receives under ``decision``."""
+    out = []
     for row in rows:
-        actions, correct = row["actions"], row["correct"]
-        for name in V2_ACTIONS:
-            if name not in actions or name not in correct:
-                continue
-            xs.append(action_features(name, _with_direct_answer(name, actions)))
-            ys.append(float(correct[name]))
-    if not xs:
-        raise ValueError("fit_v2_cal received no labelled actions")
-    weights = _fit_logistic(np.vstack(xs), np.asarray(ys, dtype=float))
-    if len(weights) != N_PARAMS or N_PARAMS >= 10:
-        raise RuntimeError(f"v2-Cal parameter count must be 7 and < 10, got {len(weights)}")
-    return {
-        "weights": [float(w) for w in weights],
-        "n_params": N_PARAMS,
-        "feature_names": list(FEATURE_NAMES),
-        "intercept_index": 0,
-    }
-
-
-def _proba(weights: list[float], feats: np.ndarray) -> float:
-    logit = float(weights[0] + np.dot(np.asarray(weights[1:], dtype=float), feats))
-    logit = min(30.0, max(-30.0, logit))
-    return float(1.0 / (1.0 + math.exp(-logit)))
-
-
-def select_v2_cal(model: dict, actions: dict) -> dict:
-    """Pick the action with the highest predicted P(correct). Ties keep the earlier V2_ACTIONS entry."""
-    weights = model["weights"]
-    if len(weights) != N_PARAMS or model.get("n_params", N_PARAMS) >= 10:
-        raise ValueError(f"v2-Cal model must have {N_PARAMS} parameters")
-    probs = {}
-    best_name, best_p = None, None
-    for name in V2_ACTIONS:
-        if name not in actions:
-            continue
-        prob = _proba(weights, action_features(name, _with_direct_answer(name, actions)))
-        probs[name] = prob
-        if best_name is None or prob > best_p:
-            best_name, best_p = name, prob
-    if best_name is None:
-        raise ValueError("select_v2_cal received no actions")
-    return {"action": best_name, "answer": actions[best_name]["answer"], "probs": probs}
-
-
-def utility(policy_scores, best_single_scores) -> float:
-    """Mean score gap versus the strongest single action. This is what thresholds optimise."""
-    policy = np.asarray(policy_scores, dtype=float)
-    baseline = np.asarray(best_single_scores, dtype=float)
-    if policy.shape != baseline.shape:
-        raise ValueError(f"utility arrays differ in length: {policy.shape} vs {baseline.shape}")
-    if policy.size == 0:
-        raise ValueError("utility is undefined on an empty sample")
-    return float((policy - baseline).mean())
-
-
-def best_single_action(scores_by_action: dict[str, np.ndarray]) -> str:
-    """Highest mean score. Ties are broken by ``V2_ACTIONS`` order, then by name."""
-    if not scores_by_action:
-        raise ValueError("best_single_action received no actions")
-    lengths = {len(np.asarray(v)) for v in scores_by_action.values()}
-    if len(lengths) != 1:
-        raise ValueError("best_single_action arrays differ in length")
-
-    def sort_key(name: str):
-        mean = float(np.mean(np.asarray(scores_by_action[name], dtype=float)))
-        order = V2_ACTIONS.index(name) if name in V2_ACTIONS else len(V2_ACTIONS)
-        return (-mean, order, name)
-
-    return min(scores_by_action, key=sort_key)
-
-
-def _binom_cdf(k: int, n: int, p: float) -> float:
-    """P(X <= k) for X ~ Binomial(n, p). Pure Python; no scipy."""
-    if n < 0:
-        raise ValueError("n must be non-negative")
-    k, n, p = int(k), int(n), float(p)
-    if k >= n:
-        return 1.0
-    if k < 0:
-        return 0.0
-    if p <= 0.0:
-        return 1.0
-    if p >= 1.0:
-        return 0.0
-    logs = []
-    for i in range(k + 1):
-        log_coef = math.lgamma(n + 1) - math.lgamma(i + 1) - math.lgamma(n - i + 1)
-        logs.append(log_coef + i * math.log(p) + (n - i) * math.log(1.0 - p))
-    pivot = max(logs)
-    total = math.exp(pivot) * sum(math.exp(term - pivot) for term in logs)
-    return float(min(1.0, max(0.0, total)))
-
-
-def _fallback(best_action: str | None) -> dict:
-    if not best_action:
-        raise ValueError("ltt_select fallback needs the best single action's name")
-    return {"name": "best_single", "action": best_action, "fallback": True}
-
-
-def ltt_select(candidates, scores_by_candidate, best_single_scores, delta: float = 0.1, best_action: str | None = None) -> dict:
-    """Fixed-sequence Learn-then-Test. Candidates are already ordered conservative -> aggressive.
-
-    定义（与 docs/DEV_DECISIONS.md「v2 预注册」一致，如实陈述，不加强结论）：
-
-    - 损失 L_i = 1，当策略在第 i 题的得分 < 最强单一动作的得分；否则为 0。
-    - 原假设 H0：真实退化率 E[L] > alpha，其中 alpha = delta。
-    - p 值 = P(X <= 观测到的退化次数)，X ~ Binomial(n, alpha)。用纯 Python 计算，不用 scipy。
-      当 p 值 <= delta 时拒绝 H0，该候选被接受为安全。
-    - 固定序列：候选已经按保守到激进排好，本函数不重新排序。按该顺序走，只要检验拒绝 H0 就接受；
-      遇到第一个不能拒绝 H0 的候选就停止，其后的候选都不再接受。被接受的前缀在固定序列规则下、
-      水平 delta 上是同时有效的。
-    - 只在被接受的前缀里，选择效用最高的候选。效用是 mean(得分_策略 - 得分_最强单一动作)，
-      不是准确率。效用并列时取更早（更保守）的候选。
-    - 若前缀为空，或前缀里的最高效用 < 0，返回
-      {"name": "best_single", "action": <best_single_action 的名字>, "fallback": True}。
-
-    假设：最强单一动作是在同一份校准样本上选出的，因此这个有限样本声明略偏反保守
-    （anti-conservative）。题目按 i.i.d. 处理。这里实现的总体声明是：在校准抽样上，以至少
-    1 - delta 的概率，每一个被接受的候选都满足真实的
-    P(score_policy < score_best_single) <= delta。这弱于「永远不差于最强单一动作」。
-    不声称退化率为 0。
-    """
-    baseline = np.asarray(best_single_scores, dtype=float)
-    accepted = []
-    for candidate in candidates:
-        scores = np.asarray(scores_by_candidate[candidate["name"]], dtype=float)
-        if scores.shape != baseline.shape:
-            raise ValueError(f"{candidate['name']}: score length {scores.shape} != {baseline.shape}")
-        degradations = int(np.sum(scores < baseline))
-        p_value = _binom_cdf(degradations, scores.size, delta)  # alpha = delta
-        if p_value <= float(delta):
-            accepted.append((candidate, scores))
-        else:
-            break
-    if not accepted:
-        return _fallback(best_action)
-    chosen, chosen_u = None, None
-    for candidate, scores in accepted:
-        gap = utility(scores, baseline)
-        if chosen is None or gap > chosen_u:
-            chosen, chosen_u = candidate, gap
-    if chosen_u < 0:
-        return _fallback(best_action)
-    out = dict(chosen)
-    out["fallback"] = False
-    out["utility"] = float(chosen_u)
+        name = apply_decision(decision, row["actions"])["action"]
+        out.append(float(row["scores"][name]))
     return out
 
 
-def _format_threshold(value: float) -> str:
-    if value == -1e9:
-        return "-1e9"
-    if value == 1e9:
-        return "1e9"
-    return format(value, "g")
+def _default_action(decision: dict, actions: dict) -> str:
+    """a* when it is available, otherwise the best available action by calibration mean."""
+    for name in decision["action_ranking"]:
+        if _available(actions, name):
+            return name
+    raise ValueError("no available action on this question")
 
 
-def preregistered_grid() -> list[dict]:
-    """Margin rule, conservative to aggressive.
+def _rule_action(decision: dict, actions: dict) -> str:
+    kind = decision["confidence"]
+    if _confidence(actions[DIRECT], kind) >= decode_json_float(decision["tau"]):
+        return DIRECT
+    evidence = [name for name in decision["evidence_ranking"] if _available(actions, name)]
+    if not evidence:
+        return DIRECT
+    if decision["evidence_choice"] == "best":
+        return evidence[0]
+    chosen = evidence[0]
+    for name in evidence[1:]:
+        if _confidence(actions[name], kind) > _confidence(actions[chosen], kind):
+            chosen = name
+    return chosen
 
-    tau1 ascends (-1e9 always keeps direct on ordinary margins; 1e9 always considers evidence).
-    Within each tau1, theta descends (1 is the stricter agreement).
+
+def _cal_action(decision: dict, actions: dict) -> str:
+    best = _best_predicted_gain(decision["models"], actions, decision["best_single"], decision["confidence"])
+    if best is not None and best[1] > decode_json_float(decision["lam"]):
+        return best[0]
+    return _default_action(decision, actions)
+
+
+# ---------------------------------------------------------------- v2-Rule
+
+def _rule_candidates(common: dict, choice: str, thresholds: list[float]) -> list[dict]:
+    return [
+        {**common, "kind": "rule", "fallback": False, "evidence_choice": choice, "tau": encode_json_float(tau)}
+        for tau in thresholds
+    ]
+
+
+def select_rule(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0,
+                confidence: str = "margin") -> dict:
+    """Choose a v2-Rule policy by risk control on the calibration rows.
+
+    The candidates are ``evidence_choice`` in {"best", "confident"} crossed with thresholds tau on the direct
+    confidence. Each family is a fixed sequence at level delta / 2, so the union of the two has level delta.
+    Thresholds are quantiles of direct confidence on the calibration rows (labels are not used). The sequence
+    starts at the policy equal to a* (tau = -inf if a* is direct, tau = +inf if a* is an evidence action).
+    The accepted candidates from both families are pooled, and the one with the largest mean gap wins;
+    ties go to the earlier candidate, with "best" before "confident". If nothing is accepted or the best
+    mean gap is <= 0, the decision is the fallback "always a*".
+
+    Guarantee, stated as it holds: if questions are i.i.d. and the one-sided paired t test is asymptotically
+    valid, then with probability at least 1 - delta the chosen policy satisfies
+    E[score_policy] >= E[score_a*] - epsilon. a* is picked on the same calibration rows, which adds mild
+    optimism. The t statistic uses a normal approximation for every n; for n < 30 this is less conservative
+    than the t distribution would be.
     """
-    grid = []
-    for tau1 in _TAU1_GRID:
-        for theta in _THETA_GRID:
-            grid.append({
-                "name": f"margin_tau{_format_threshold(tau1)}_theta{_format_threshold(theta)}",
-                "tau1": float(tau1),
-                "theta": float(theta),
-                "confidence": "margin",
-            })
-    return grid
+    _check_settings(delta, epsilon, confidence)
+    _, _, ranking = _calibration_setup(calib_rows)
+    star = ranking[0]
+    common = _common_fields(ranking, delta, epsilon, confidence)
+    base = _base_scores(calib_rows, star)
+    direct_conf = [_confidence(row["actions"][DIRECT], confidence) for row in calib_rows]
+    thresholds = _unique_in_order([-math.inf, *_quantile_grid(direct_conf), math.inf])
+    if star != DIRECT:
+        thresholds.reverse()
+    level = delta / 2.0
+    pool = []
+    for choice in ("best", "confident"):
+        pool.extend(_accept_prefix(_rule_candidates(common, choice, thresholds), calib_rows, base, epsilon, level))
+    return _finish(pool, common, len(calib_rows))
 
 
-def apply_candidate(candidate, actions) -> dict:
-    """Dispatch one grid candidate to ``select_v2_rule``."""
-    return select_v2_rule(
-        actions,
-        tau1=float(candidate["tau1"]),
-        theta=float(candidate["theta"]),
-        confidence=candidate.get("confidence", "margin"),
-    )
+# ---------------------------------------------------------------- v2-Cal
+
+def _cal_features(name: str, actions: dict, star: str, kind: str) -> dict[str, float]:
+    """Features for one action on one question. Missing values are NaN and are never filled."""
+    rec, star_rec = actions[name], actions[star]
+    retriever = rec.get("retriever") or {}
+    return {
+        "conf_direct": _confidence(actions[DIRECT], kind),
+        "conf_star": _confidence(star_rec, kind),
+        "conf_gap": _confidence(rec, kind) - _confidence(star_rec, kind),
+        "token_f1_to_star": token_f1(rec["answer"], star_rec["answer"]),
+        "kl_to_direct": _nan_if_none(rec.get("kl_to_direct")),
+        "retriever_top1": _nan_if_none(retriever.get("top1_score")),
+    }
 
 
-def summarize_policy(policy_scores, baseline_scores, cluster_ids=None) -> dict:
-    """Paired comparison of the policy against a baseline. Reuses ``score_official.paired``."""
-    from omniaware.eval.score_official import paired
-    return paired(baseline_scores, policy_scores, cluster_ids=cluster_ids)
+def _fit_model(name: str, feats: list[dict[str, float]], targets: np.ndarray) -> dict:
+    """Ridge regression on standardised features. Returns weights with the intercept first, in raw feature units.
 
-
-def assert_disjoint_qids(calib, eval_ids) -> None:
-    """Raise if the calibration and evaluation qids overlap or repeat."""
-    calib, eval_ids = list(calib), list(eval_ids)
-    if len(set(calib)) != len(calib) or len(set(eval_ids)) != len(eval_ids):
-        raise ValueError("qid list contains duplicates")
-    overlap = set(calib) & set(eval_ids)
-    if overlap:
-        shown = ", ".join(str(q) for q in sorted(overlap)[:5])
-        raise ValueError(f"calib and eval qids overlap: {shown}")
-
-
-def split_half(qids, seed) -> tuple[list, list]:
-    """Shuffle qids with ``seed`` and split into disjoint calibration and evaluation halves.
-
-    The calibration half is the first floor(n/2) of the permutation. The checker runs before return.
+    A feature missing on every row, or constant on every row, is dropped and recorded. A feature missing on
+    some rows but not others is an error.
     """
-    ids = [str(q) for q in qids]
-    if len(ids) != len(set(ids)):
-        raise ValueError("qid list contains duplicates")
-    if len(ids) < 2:
-        raise ValueError("need at least two qids to split")
-    order = np.random.default_rng(seed).permutation(len(ids))
-    shuffled = [ids[i] for i in order]
-    mid = len(shuffled) // 2
-    calib, eval_ids = shuffled[:mid], shuffled[mid:]
-    assert_disjoint_qids(calib, eval_ids)
-    return calib, eval_ids
+    x = np.array([[f[c] for c in CAL_FEATURES] for f in feats], dtype=float)
+    kept, dropped = [], []
+    for j, feature in enumerate(CAL_FEATURES):
+        column = x[:, j]
+        missing = np.isnan(column)
+        if missing.all():
+            dropped.append(feature)
+        elif missing.any():
+            raise ValueError(f"{name}: feature {feature!r} is missing on some calibration questions but not others; "
+                             "refusing to impute it")
+        elif np.ptp(column) == 0.0:
+            dropped.append(feature)
+        else:
+            kept.append(j)
+    if not kept:
+        return {"features": [], "weights": [float(targets.mean())], "dropped": dropped, "n_params": 1}
+    xk = x[:, kept]
+    mu, sd = xk.mean(axis=0), xk.std(axis=0)
+    z = (xk - mu) / sd
+    y_centred = targets - targets.mean()
+    coef_std = np.linalg.solve(z.T @ z + RIDGE_ALPHA * np.eye(len(kept)), z.T @ y_centred)
+    coef = coef_std / sd
+    intercept = float(targets.mean() - mu @ coef)
+    return {
+        "features": [CAL_FEATURES[j] for j in kept],
+        "weights": [intercept] + [float(c) for c in coef],
+        "dropped": dropped,
+        "n_params": 1 + len(kept),
+    }
+
+
+def _fit_cal_models(fit_rows: list[dict], star: str, names: list[str], kind: str) -> dict[str, dict]:
+    """One model per non-reference action, fitted on the fit half. Rows where that action is unavailable are skipped."""
+    models = {}
+    for name in names:
+        if name == star:
+            continue
+        feats, targets = [], []
+        for row in fit_rows:
+            if not _available(row["actions"], name):
+                continue
+            feats.append(_cal_features(name, row["actions"], star, kind))
+            targets.append(float(row["scores"][name]) - float(row["scores"][star]))
+        if feats:
+            models[name] = _fit_model(name, feats, np.asarray(targets, dtype=float))
+    return models
+
+
+def _predict_gain(model: dict, feats: dict[str, float]) -> float:
+    values = []
+    for feature in model["features"]:
+        value = feats[feature]
+        if math.isnan(value):
+            raise ValueError(f"feature {feature!r} is missing on this question; the fitted model cannot skip it")
+        values.append(value)
+    weights = model["weights"]
+    return float(weights[0] + np.dot(np.asarray(weights[1:], dtype=float), np.asarray(values, dtype=float)))
+
+
+def _best_predicted_gain(models: dict[str, dict], actions: dict, star: str, kind: str) -> tuple[str, float] | None:
+    """The available action with the largest predicted gain over a*. Ties follow the insertion order of ``models``."""
+    best = None
+    for name, model in models.items():
+        if not _available(actions, name):
+            continue
+        gain = _predict_gain(model, _cal_features(name, actions, star, kind))
+        if best is None or gain > best[1]:
+            best = (name, gain)
+    return best
+
+
+def _split_halves(rows: list[dict], seed: int) -> tuple[list[dict], list[dict]]:
+    """Seeded split of calibration rows into a fit half and a disjoint risk-control half."""
+    if len(rows) < 4:
+        raise ValueError("v2-Cal needs at least 4 calibration questions to split into two halves")
+    order = np.random.default_rng(seed).permutation(len(rows))
+    half = len(rows) // 2
+    return [rows[i] for i in order[:half]], [rows[i] for i in order[half:]]
+
+
+def select_cal(calib_rows: list[dict], delta: float = 0.1, epsilon: float = 1.0, seed: int = 0,
+               confidence: str = "margin") -> dict:
+    """Choose a v2-Cal policy: fit per-action gain models on one half, risk-control the threshold on the other.
+
+    The policy takes the action with the largest predicted gain over a* when that gain exceeds lam, and a*
+    otherwise. The fixed sequence over lam runs from +inf (always a*) downwards, at level delta. Acceptance,
+    selection, and fallback follow ``select_rule``. The guarantee and its caveats are the same, and the
+    risk-control half is disjoint from the fit half.
+    """
+    _check_settings(delta, epsilon, confidence)
+    names, _, ranking = _calibration_setup(calib_rows)
+    star = ranking[0]
+    fit_rows, risk_rows = _split_halves(calib_rows, seed)
+    common = {**_common_fields(ranking, delta, epsilon, confidence),
+              "seed": int(seed), "n_fit": len(fit_rows), "n_risk": len(risk_rows)}
+    models = _fit_cal_models(fit_rows, star, names, confidence)
+    gains = []
+    for row in fit_rows:
+        best = _best_predicted_gain(models, row["actions"], star, confidence) if models else None
+        if best is not None:
+            gains.append(best[1])
+    if not gains:
+        return _fallback(common, len(calib_rows), 0)
+    lams = _unique_in_order([math.inf, *reversed(_quantile_grid(gains)), -math.inf])
+    total_params = sum(model["n_params"] for model in models.values())
+    candidates = [
+        {**common, "kind": "cal", "fallback": False, "lam": encode_json_float(lam),
+         "models": models, "n_params": total_params}
+        for lam in lams
+    ]
+    pool = _accept_prefix(candidates, risk_rows, _base_scores(risk_rows, star), epsilon, delta)
+    return _finish(pool, common, len(calib_rows))
+
+
+# ---------------------------------------------------------------- risk control shared by both families
+
+def _check_settings(delta: float, epsilon: float, kind: str) -> None:
+    if not 0.0 < delta < 1.0:
+        raise ValueError("delta must lie strictly between 0 and 1")
+    if not (math.isfinite(epsilon) and epsilon >= 0.0):
+        raise ValueError("epsilon must be a finite non-negative number")
+    if kind not in CONFIDENCE_KINDS:
+        raise ValueError(f"confidence must be one of {CONFIDENCE_KINDS}, not {kind!r}")
+
+
+def _calibration_setup(rows: list[dict]) -> tuple[list[str], dict[str, np.ndarray], list[str]]:
+    """Validate calibration rows. Returns the action names, their score arrays, and the mean ranking.
+
+    An action may be unavailable on some questions (an empty modality pool); it then has no score there and
+    its mean is taken over the questions where it is available. Only an action available on every question
+    can be a*, because the paired gap needs its score on every row. The ranking lists those actions first.
+    """
+    if not rows:
+        raise ValueError("calibration rows are empty")
+    names = [name for name in V2_ACTIONS if any(name in row["scores"] for row in rows)]
+    by_action, always = {}, []
+    for name in names:
+        values = []
+        for row in rows:
+            if name not in row["actions"]:
+                raise ValueError(f"question {row.get('qid')!r}: {name!r} is missing from actions")
+            if not _available(row["actions"], name):
+                continue
+            score = row["scores"].get(name)
+            if score is None or not math.isfinite(float(score)):
+                raise ValueError(f"question {row.get('qid')!r}: score for available action {name!r} is missing "
+                                 "or not finite")
+            values.append(float(score))
+        if not values:
+            continue
+        by_action[name] = np.asarray(values, dtype=float)
+        if len(values) == len(rows):
+            always.append(name)
+    if DIRECT not in always:
+        raise ValueError("direct must be available and scored on every calibration question")
+    means = {name: float(arr.mean()) for name, arr in by_action.items()}
+    ranking = _ranked({name: means[name] for name in always}) + _ranked(
+        {name: means[name] for name in means if name not in always})
+    return list(by_action), by_action, ranking
+
+
+def _common_fields(ranking: list[str], delta: float, epsilon: float, kind: str) -> dict:
+    return {
+        "best_single": ranking[0],
+        "action_ranking": list(ranking),
+        "evidence_ranking": [name for name in ranking if name in EVIDENCE_ACTIONS],
+        "confidence": kind,
+        "delta": float(delta),
+        "epsilon": float(epsilon),
+    }
+
+
+def _fallback(common: dict, n_calib: int, n_accepted: int) -> dict:
+    return {**common, "kind": "single", "fallback": True, "action": common["best_single"],
+            "calib_utility": None, "n_calib": n_calib, "n_accepted": n_accepted}
+
+
+def _finish(pool: list[tuple[float, dict]], common: dict, n_calib: int) -> dict:
+    """Pick the largest mean gap in the pool. The pool is in fixed-sequence order, so ties keep the earlier one."""
+    if not pool:
+        return _fallback(common, n_calib, 0)
+    best_u, best = pool[0]
+    for utility, decision in pool[1:]:
+        if utility > best_u:
+            best_u, best = utility, decision
+    if best_u <= 0.0:
+        return _fallback(common, n_calib, len(pool))
+    return {**best, "calib_utility": best_u, "n_calib": n_calib, "n_accepted": len(pool)}
+
+
+def _accept_prefix(candidates: list[dict], rows: list[dict], base: np.ndarray, epsilon: float,
+                   level: float) -> list[tuple[float, dict]]:
+    """Walk the fixed sequence and stop at the first candidate whose test fails. Returns (mean gap, candidate)."""
+    accepted = []
+    for candidate in candidates:
+        gaps = np.asarray(policy_scores(candidate, rows), dtype=float) - base
+        if _one_sided_p(gaps, epsilon) > level:
+            break
+        accepted.append((float(gaps.mean()), candidate))
+    return accepted
+
+
+def _one_sided_p(gap: np.ndarray, epsilon: float) -> float:
+    """p-value for H0: E[gap] < -epsilon, from the one-sided paired t statistic.
+
+    The t tail is replaced by the standard normal tail for every n (math.erfc, no scipy). For n < 30 this is
+    less conservative than the t distribution. A constant gap has zero variance: p = 0 if its mean is at
+    least -epsilon, otherwise p = 1. A policy identical to a* therefore passes at epsilon = 0.
+    """
+    gap = np.asarray(gap, dtype=float)
+    n = gap.size
+    if n < 2:
+        raise ValueError("the paired test needs at least two questions")
+    mean = float(gap.mean())
+    if np.ptp(gap) == 0.0:
+        return 0.0 if mean >= -epsilon else 1.0
+    t = (mean + epsilon) / (float(gap.std(ddof=1)) / math.sqrt(n))
+    return 0.5 * math.erfc(t / math.sqrt(2.0))
+
+
+def _base_scores(rows: list[dict], star: str) -> np.ndarray:
+    return np.asarray([float(row["scores"][star]) for row in rows], dtype=float)
+
+
+def _quantile_grid(values) -> list[float]:
+    """Quantiles at 0%, 5%, ..., 100% in ascending order, duplicates removed."""
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0 or not np.isfinite(arr).all():
+        raise ValueError("threshold grid needs a non-empty, finite set of values")
+    return _unique_in_order([float(q) for q in np.quantile(arr, np.linspace(0.0, 1.0, QUANTILE_STEPS + 1))])
+
+
+def _unique_in_order(values: list[float]) -> list[float]:
+    """Drop adjacent duplicates. The grids above are monotone, so this removes every duplicate."""
+    out: list[float] = []
+    for value in values:
+        if not out or value != out[-1]:
+            out.append(value)
+    return out

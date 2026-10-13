@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 import re
 
-from . import runio
+from . import answers, runio
 
 
 def shard_files(stem: Path) -> list[Path]:
@@ -40,19 +40,21 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
     files = shard_files(stem)
     if not files:
         raise SystemExit(f"no shard files for {stem}")
-    rows, qids, seen = [], [], set()
+    rows, qids, seen, flags = [], [], set(), []
     for f in files:
         for line in f.read_text(encoding="utf8").splitlines():
             if not line.strip():
                 continue
             try:
-                qid = json.loads(line)["qid"]
+                record = json.loads(line)
             except ValueError as exc:
                 raise SystemExit(f"{f.name} has a damaged line ({exc}); resume that shard before merging")
+            qid = record["qid"]
             if qid in seen:
                 raise SystemExit(f"question {qid} answered twice")
             seen.add(qid)
             qids.append(qid)
+            flags += answers.question_empty_flags(record)
             rows.append(line)
     if expected_questions is not None and len(rows) != expected_questions:
         raise SystemExit(f"{len(rows)} answers, expected {expected_questions}: resume the unfinished shards first")
@@ -67,8 +69,13 @@ def merge(stem: Path, expected_questions: int | None = None, expected_qids_sha25
     archive.mkdir(exist_ok=True)
     for f in files:
         f.replace(archive / f.name)
-    runio.write_completion_marker(stem.parent, stem.name, len(rows), out, runio.config_path_for(stem.parent, stem.name))
-    print(f"[merge] {len(rows)} answers from {len(files)} shards -> {out}", flush=True)
+    empty_report = answers.summarize_empty(flags)
+    runio.write_completion_marker(stem.parent, stem.name, len(rows), out, runio.config_path_for(stem.parent, stem.name),
+                                  extra=empty_report)
+    if empty_report.get("empty_answer_warning"):
+        print(empty_report["empty_answer_warning"], flush=True)
+    print(f"[merge] {len(rows)} answers from {len(files)} shards -> {out}; "
+          f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}", flush=True)
     return out
 
 

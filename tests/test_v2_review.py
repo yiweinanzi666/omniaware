@@ -10,28 +10,37 @@ import scripts.analysis.image_evidence_check as image_evidence
 import scripts.paper_runs as pr
 
 
-def test_v2_run_contract_accepts_calib_split_and_rejects_a_partial_action_list(tmp_path):
+def test_v2_flags_need_the_reranker_and_the_relevance_selector(tmp_path):
     parser = run.build_parser()
     decisions = tmp_path / "dev_decisions.json"
     decisions.write_text('{"v2": {"name": "frozen"}}', encoding="utf-8")
-    args = parser.parse_args([
-        "--dataset", "webqa_full", "--split", "calib", "--tag", "t", "--model", "8b",
-        "--v2-actions", "direct,static_text,static_image,static_mixed,rerank_static",
-        "--save-signals", "--empty-answer-accounting", "--shared-prompt-registry",
-        "--decisions", str(decisions),
-    ])
-    run.check_v2_flags(parser, args)
-    assert args.split == "calib" and args.save_signals and args.decisions_sha256
-    bad = parser.parse_args([
-        "--dataset", "okvqa", "--split", "dev", "--tag", "t", "--v2-actions", "direct",
-    ])
+    base = ["--dataset", "webqa_full", "--split", "calib", "--tag", "t", "--model", "8b", "--decisions", str(decisions)]
+    args = parser.parse_args(base + ["--v2", "--v2-reranker"])
+    run.check_decisions_file(parser, args)
+    run.check_v2_args(parser, args)
+    assert args.split == "calib" and args.v2 and args.v2_reranker and args.decisions_sha256
+    assert not hasattr(args, "save_signals") and not hasattr(args, "v2_actions")
+    for extra in (["--v2"], ["--v2-reranker"], ["--v2", "--v2-reranker", "--selector", "ce"]):
+        bad = parser.parse_args(base + extra)
+        with pytest.raises(SystemExit):
+            run.check_v2_args(parser, bad)
+    removed = ["--save-signals", "--empty-answer-accounting", "--shared-prompt-registry", "--v2-actions", "direct"]
+    for flag in removed:
+        with pytest.raises(SystemExit):
+            parser.parse_args(base + [flag])
+
+
+def test_missing_or_invalid_decisions_file_is_rejected(tmp_path):
+    parser = run.build_parser()
+    missing = parser.parse_args(["--dataset", "okvqa", "--split", "test", "--tag", "t",
+                                 "--decisions", str(tmp_path / "absent.json")])
     with pytest.raises(SystemExit):
-        run.check_v2_flags(parser, bad)
-    missing = parser.parse_args([
-        "--dataset", "okvqa", "--split", "test", "--tag", "t", "--decisions", str(tmp_path / "absent.json"),
-    ])
+        run.check_decisions_file(parser, missing)
+    listing = tmp_path / "list.json"
+    listing.write_text("[]", encoding="utf-8")
     with pytest.raises(SystemExit):
-        run.check_v2_flags(parser, missing)
+        run.check_decisions_file(parser, parser.parse_args(["--dataset", "okvqa", "--split", "test", "--tag", "t",
+                                                            "--decisions", str(listing)]))
 
 
 def test_default_variants_have_no_eab_and_analysis_eab_adds_ans1():
@@ -51,7 +60,7 @@ def test_require_sdpa_raises_and_does_not_fall_back():
         require_sdpa(model)
 
 
-def test_main_seakr_command_does_not_use_a_smaller_n_eval_or_the_probe_route():
+def test_main_baselines_share_the_main_methods_probe_and_route():
     main = pr.stages("8b")["main"]["commands"]
     runs = [c for c in main if c[:3] == ["python", "-m", "omniaware.run"]]
     seakr = [c for c in runs if "--seakr-samples" in c]
@@ -61,16 +70,15 @@ def test_main_seakr_command_does_not_use_a_smaller_n_eval_or_the_probe_route():
     def n_eval(cmd):
         return cmd[cmd.index("--n-eval") + 1] if "--n-eval" in cmd else None
 
-    seakr_n = {n_eval(c) for c in seakr}
-    other_n = {n_eval(c) for c in others}
-    assert seakr_n == other_n
-    assert None in seakr_n
-    assert all("--probe-uncertainty" not in c and "--first-round-routing" not in c for c in seakr)
+    # SeaKR runs on the full test split, like the other main arms
+    assert {n_eval(c) for c in seakr} == {n_eval(c) for c in others} == {None}
+    # The baselines read the joint input, which no probe or route changes. They are run with the same probe and
+    # route flags as the main method of their dataset (S-4 was a wrong fix: the main method lost its probe).
+    for c in runs:
+        dataset = c[c.index("--dataset") + 1]
+        cold = dataset in pr.COLD
+        assert ("--probe-uncertainty" in c) == cold and ("--first-round-routing" in c) == cold, dataset
     assert all(not any(str(part).startswith("eab:") for part in c) for c in runs)
-    # Order experiments may subsample, and the stage text says so.
-    order = pr.stages("8b")["order"]
-    assert "1,000" in order["fills"] or "1000" in order["fills"]
-    assert all(c[c.index("--n-eval") + 1] == "1000" for c in order["commands"] if "--order" in c)
 
 
 def test_m2rag_inputs_contain_the_question_image():

@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from omniaware.answers import parse_answer, summarize_empty
+from omniaware.answers import parse_answer, question_empty_flags, summarize_empty
 
 
 def test_citation_only_sources_line_is_empty():
@@ -53,3 +53,21 @@ def test_empty_answer_rate_warning_names_the_rate():
 def test_summary_round_trips_as_json():
     text = json.dumps(summarize_empty([True, False]))
     assert "empty_answer_rate" in text
+
+
+def test_question_empty_flags_cover_preds_and_available_actions_only():
+    record = {
+        "preds": {"direct": "Sources: none", "static": "Paris", "gated:static": ""},
+        "actions": {
+            "direct": {"available": True, "answer_empty": False},
+            "static_image": {"available": False, "answer_empty": True},
+            "static_text": {"available": True, "answer_empty": True},
+        },
+    }
+    assert question_empty_flags(record) == [True, False, True, False, True]
+
+
+def test_preds_keep_the_raw_text_when_parsed_separately():
+    raw = "Paris\n[E1] [E2]"
+    assert question_empty_flags({"preds": {"static": raw}}) == [False]
+    assert parse_answer(raw)["answer"] == "Paris"

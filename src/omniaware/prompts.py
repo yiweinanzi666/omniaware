@@ -56,10 +56,3 @@ def instruction_for_style(dataset: str, answer_style: str, *, cite_instruction: 
         text = instruction_text(dataset, overrides)
     return {"instruction": text, "instruction_sha256": instruction_sha256(text),
             "instruction_exceptions": dict(EXCEPTIONS)}
-
-
-def arm_sha256s(dataset: str, arms: list[str], instruction: str | None = None) -> dict[str, str]:
-    """sha256 each arm uses. Arms in ``EXCEPTIONS`` are omitted; every other arm shares one hash."""
-    text = instruction if instruction is not None else instruction_text(dataset)
-    sha = instruction_sha256(text)
-    return {arm: sha for arm in arms if arm not in EXCEPTIONS}

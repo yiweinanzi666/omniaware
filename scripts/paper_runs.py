@@ -158,8 +158,8 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
     main = []
     if model == "internvl3.5-8b":     # backbone transfer: static vs the controller, with its own calibration
         for d in datasets:
-            # No EAB on the main method (A4). No probe and no M_m·H_m route on this cold-start run (S-4).
-            main += [run(d, f"v321_main_{model}", "--replication-gamma", "1.2", probe=False, route=False),
+            # The main method decodes no eab: arm (A4). Cold-start runs keep their probe round and route.
+            main += [run(d, f"v321_main_{model}", "--replication-gamma", "1.2"),
                      score(d, f"v321_main_{model}")]
         transfer_order = []
         from omniaware.order import permutation_schedule
@@ -174,21 +174,21 @@ def stages(model: str, split: str = "test") -> dict[str, dict]:
                 "order": {"fills": "appendix: OK-VQA order deviations of InternVL3.5-8B" + frozen_note,
                           "commands": transfer_order, "requires": "frozen", "missing": []}}
     for d in datasets:
-        # Main method is not an EAB arm (A4). Static / CE / FiTM / M2-RAG / SeaKR use joint top-k:
-        # probe=False and route=False, so they do not reuse the M_m·H_m probe (S-4).
+        # The main method decodes no eab: arm (A4). The baselines (static_joint, FiTM, M2-RAG, SeaKR, CE) read the
+        # joint top-k of run.py, which no probe round or route changes, so they are run like the main method.
         extra = ["--replication-gamma", "1.2"]
         if model != "internvl3.5-8b":
             extra.append("--fitm")
         if d != "videorag_synth":
             extra.append("--m2rag")
-        main += [run(d, f"v321_main_{model}", *extra, probe=False, route=False), score(d, f"v321_main_{model}"),
-                 run(d, f"v321_ce_{model}", "--selector", "ce", probe=False, route=False),
+        main += [run(d, f"v321_main_{model}", *extra), score(d, f"v321_main_{model}"),
+                 run(d, f"v321_ce_{model}", "--selector", "ce"),
                  score(d, f"v321_ce_{model}"),
                  # SeaKR on the full test split (D5): no --n-eval, same questions as the other main arms
-                 run(d, f"v321_seakr_{model}", "--seakr-samples", "20", probe=False, route=False),
+                 run(d, f"v321_seakr_{model}", "--seakr-samples", "20"),
                  score(d, f"v321_seakr_{model}")]
     s["main"] = {"fills": "Table main (joint static, FiTM, M2-RAG, CE, SeaKR on the full test split; "
-                          "no eab: variant — mechanism EAB is --analysis-eab or the ablation stage; "
+                          "no eab: variant in the main command — mechanism EAB is --analysis-eab or the ablation stage; "
                           "UniversalRAG in its own stage); "
                           "backbone transfer with --model internvl3.5-8b" + frozen_note,
                  "commands": main, "requires": "frozen", "missing": []}

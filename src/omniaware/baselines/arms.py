@@ -84,19 +84,21 @@ def pixel_budget(qwen) -> dict:
 
 
 def m2rag_answer(qwen, e: dict, chunks: list[dict], rel: dict[str, float], max_new_tokens: int,
-                 document_tokens: int = 384) -> tuple[str, dict]:
+                 document_tokens: int = 384, instruction: str | None = None) -> tuple[str, dict]:
     """Official M2RAG single-stage summarizer over the same chunks, then the document-only answer extractor.
 
     The question's own images (OK-VQA query images) reach both the summarizer and the extractor, as
     the question image does for every other arm. Images use the same pixel budget as the other arms;
-    the chat template is the official one (see the paper's appendix).
+    the chat template is the official one (see the paper's appendix). ``instruction`` is the run's answer
+    instruction; run.py passes the one every arm decodes with. Without it, the dataset family's instruction is used.
     """
     from .m2rag_official import build_official_summarizer
     from .m2rag_qwen import LocalQwenVLM
     from .m2rag_webqa import extractor_messages, official_query, prepare_sources
     from .. import prompts
     query_images = list(e.get("query_images") or [])
-    instruction = prompts.instruction_text(e["dataset"]) if e.get("dataset") else None
+    if instruction is None and e.get("dataset"):
+        instruction = prompts.instruction_text(e["dataset"])
     sources, image_paths = [], {}
     for j, c in enumerate(chunks):
         fact_id = str(900000 + j) if c["modality"] == "image" else c["cid"]

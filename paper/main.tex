@@ -82,15 +82,14 @@
 
 \begin{abstract}
 Multimodal Web question answering has to choose, for each question, whether to trust parametric knowledge or evidence from text, from images, or from both.
-\method{} v2 decodes five actions in one run under one frozen prompt: direct answering, static text, static image, static mixed evidence, and reranked static evidence.
-It reads first-token entropy and entropy divided by $\log|V|$, the top-1--top-2 logit margin, the greedy sequence log-probability and the generated length, the KL divergence between an evidence action's first-token distribution and the direct distribution, and the retriever's top-1 score and top-1--top-2 gap.
-A rule with no fitted weights (v2-Rule) and one logistic regression with seven parameters (v2-Cal: an intercept and six features) select an action.
-Thresholds are screened by fixed-sequence Learn-then-Test with $\alpha=\delta=0.10$.
-The loss is 1 when the chosen action scores below the strongest single action.
-With probability at least $1-\delta$ over the calibration draw, every accepted threshold has true degradation rate at most $\delta$.
-The claim does not say that the method is never worse.
+\method{} v2 decodes five actions in one run under one frozen prompt: direct answering, static text, static image, static mixed evidence, and static evidence reranked by a cross-encoder.
+v2-Rule fits no weights: it thresholds the first-token margin of the direct answer and otherwise uses an evidence action.
+v2-Cal fits one ridge regression per evidence action that predicts its score gain over the strongest single action.
+Both selectors read only the direct margin, the agreement between answers (token F1), the KL divergence from the direct distribution, and the retriever's top-1 score; the other recorded signals are kept for analysis.
+Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action, with $\delta=0.10$ and a tolerance $\epsilon=1.0$ point.
+With probability at least $1-\delta$ over the calibration draw, the expected score of the chosen policy is at least the expected score of the strongest single action minus $\epsilon$.
 Utility, not accuracy, selects the threshold inside the accepted set.
-The strongest single action is chosen on the same calibration sample, which is slightly anti-conservative.
+The strongest single action is chosen on the same calibration sample, which is slightly optimistic.
 The primary relative gain uses that action as the denominator.
 Gain versus static mixed evidence, and a per-question oracle, are reported as well.
 OK-VQA uses official VQA accuracy only.
@@ -118,7 +117,7 @@ The v2 evaluation has not been run; every new experimental number in this draft 
 
 Web retrieval-augmented generation answers a question by retrieving evidence and conditioning a generator on it~\cite{guu2020realm,lewis2020rag}.
 On the Web, the supporting facts may sit in a text passage, an image, or both, and the same question can be helped by one source and hurt by another.
-The decision studied here is which action to take: answer from the model alone, from text evidence, from image evidence, from mixed evidence, or from a reranked mixed list.
+The decision studied here is which action to take: answer from the model alone, from text evidence, from image evidence, from mixed evidence, or from a top-$k$ list reranked by a cross-encoder.
 Attention-level steering is a poor substitute for that decision.
 A bias can move attention onto a supporting span while the first answer token, and therefore the answer, stays where it was.
 Section~\ref{sec:steer} quotes that measurement from the project root-cause report dated 13~October~2026.
@@ -134,10 +133,10 @@ Our contributions are as follows:
   \item A measurement, under that protocol, of when retrieval helps or hurts on WebQA and OK-VQA, including image and text subsets and the gap between the best single action and the per-question oracle.
   The new measurement has not been run.
   Its cells, including that gap, are \ph{}.
-  \item v2-Rule, which fits no weights, and v2-Cal, one logistic regression with seven parameters, which choose among the five actions using the signals in Section~\ref{sec:signals}.
-  Fixed-sequence Learn-then-Test at $\alpha=\delta=0.10$ accepts a threshold only under the degradation-rate claim in Section~\ref{sec:risk}.
+  \item v2-Rule, which fits no weights, and v2-Cal, one ridge regression per evidence action, which choose among the five actions using the signals in Section~\ref{sec:signals}.
+  Both are screened by fixed-sequence one-sided paired tests on the mean score gap to the strongest single action (Section~\ref{sec:risk}), at $\delta=0.10$ and $\epsilon=1.0$.
   Utility, not accuracy, selects the threshold inside the accepted set.
-  The claim does not say that the method is never worse.
+  The guarantee concerns expected score, under the assumptions stated in Section~\ref{sec:risk}.
   \item A mechanism analysis, titled as the subsection in Section~\ref{sec:steer}, that attention steering moves attention and does not move answers.
   Every number in that subsection is copied from the 13~October~2026 root-cause report and is attributed there.
 \end{itemize}
@@ -157,7 +156,7 @@ The controller in this paper chooses among the five actions in Section~\ref{sec:
 Adaptive retrieval decides from the generation state whether external knowledge is needed: Self-RAG learns reflection signals~\cite{asai2024selfrag}, FLARE retrieves when upcoming tokens have low probability~\cite{jiang2023flare}, DRAGIN combines token entropy with attention to decide when and what to retrieve~\cite{su2024dragin}, Adaptive-RAG classifies question complexity~\cite{jeong2024adaptiverag}, and SeaKR measures the consistency of sampled hidden states~\cite{yao2025seakr}; their cost--quality tradeoffs have been compared~\cite{moskvoretskii2025adaptive}.
 For multimodal inputs, MMA-RAG classifies hidden states of the input and the retrieved visual context~\cite{du2026mmarag}, and UniversalRAG routes the query alone to modality- and granularity-specific corpora~\cite{yeo2026universalrag}; retriever signals do not reliably improve such query-only routers~\cite{li2026beyond}.
 These methods read generated text, the query, retriever scores, or pooled hidden states, and most train a router or classifier or sample many generations.
-v2 reads first-token and retriever signals from one shared decoding of a fixed action set, fits at most the seven-parameter regression in Section~\ref{sec:cal}, and screens thresholds with the procedure in Section~\ref{sec:risk}.
+v2 reads first-token and retriever signals from one shared decoding of a fixed action set, fits one small ridge regression per evidence action (Section~\ref{sec:cal}), and screens thresholds with the procedure in Section~\ref{sec:risk}.
 
 \textit{Knowledge conflict and inference-time evidence control.}
 Retrieved context can agree or conflict with parametric knowledge, which is why the action set contains a direct arm and separate text, image, and mixed arms.
@@ -188,7 +187,7 @@ The action set is
 \end{equation}
 \texttt{direct} uses no retrieved evidence.
 The three static actions pack text, image, or mixed evidence.
-\texttt{rerank\_static} packs the mixed list after a reranker.
+\texttt{rerank\_static} packs the top-$k$ of the whole candidate pool, ranked by a cross-encoder reranker.
 Evidence Attention Bias is not a member of $\mathcal{A}$.
 All five actions are decoded in the same run, on the same candidates, with the same prompt and the same decoding budget.
 
@@ -198,8 +197,7 @@ The primary relative gain on a later split uses $s(a^{\star})$ as the denominato
 The same tables also report the gain versus \texttt{static\_mixed}.
 The oracle picks, for each question, the action in $\mathcal{A}$ with the best score.
 Risk control is stated in Section~\ref{sec:risk}.
-Its claim is a bound on the degradation rate of accepted thresholds.
-It does not say that the selector is never worse than $a^{\star}$.
+Its claim is a bound on the expected score of the chosen policy relative to $a^{\star}$.
 
 %% ===============================================================
 \section{Method}
@@ -209,9 +207,11 @@ It does not say that the selector is never worse than $a^{\star}$.
 \label{sec:signals}
 Each action stores the entropy of its first-token distribution and the same entropy divided by $\log|V|$, the gap between the top-1 and top-2 logits, the log-probability of the greedy answer and the number of generated tokens, and, for an evidence action, the KL divergence between that action's first-token distribution and the direct action's first-token distribution.
 The run also stores the retriever's top-1 score and the gap between retriever top-1 and top-2, per modality.
-\texttt{direct} has no retrieved list: its KL and its retriever features are defined as zero.
+\texttt{direct} has no KL term; its retriever fields describe the pool's top-1 score, not a selected list.
 \texttt{gold-in-top-$k$} is computed only for offline analysis.
 It is not an inference-time feature and it is not an input to v2-Cal.
+
+Only four quantities enter a decision: the first-token margin, the token F1 between an action's answer and the answer of $a^{\star}$, the KL divergence from \texttt{direct}, and the retriever top-1 score of the candidates an action uses. Entropy, the sequence log-probability, the generated length, and the retriever top-1--top-2 gap are stored for analysis.
 
 One direct prefill produces the direct first-token signals.
 Each evidence action then uses a short greedy decode.
@@ -221,40 +221,54 @@ Its measured cost is \ph{}, because that variant has not been run.
 \subsection{v2-Rule}
 \label{sec:rule}
 v2-Rule fits no weights.
-If the direct action's confidence, read from the logit margin or from the normalized first-token entropy, is above a threshold $\tau_1$, the rule selects \texttt{direct}.
-Otherwise it selects the evidence action with the highest confidence whose answer has token F1 at least $\theta$ with at least one other action.
-The thresholds are chosen on the calibration split.
-The selection criterion is utility, defined in Section~\ref{sec:risk}, and not the threshold with the highest accuracy.
+Let $c(\cdot)$ be the first-token margin, the gap between the top-1 and top-2 logits.
+If $c(\texttt{direct})\ge\tau$, the rule selects \texttt{direct}.
+Otherwise it selects an evidence action in one of two ways: the evidence action $e^{\star}$ with the highest calibration mean, which equals $a^{\star}$ whenever $a^{\star}$ is an evidence action, or the available evidence action with the largest margin on that question.
+Evidence actions with an empty candidate pool are unavailable and are skipped.
+The thresholds $\tau$ are the 0\%, 5\%, \dots, 100\% quantiles of the direct margin on the calibration split, together with $\pm\infty$.
+The sequence starts at the policy equal to $a^{\star}$, namely $\tau=-\infty$ when $a^{\star}$ is \texttt{direct} and $\tau=+\infty$ when it is an evidence action, and moves away from there.
+Each evidence rule has its own sequence at level $\delta/2$.
+The threshold is chosen by utility (Section~\ref{sec:risk}), not by accuracy.
 
 \subsection{v2-Cal}
 \label{sec:cal}
-v2-Cal is one logistic regression with seven parameters: an intercept and six coefficients.
-The six features are the top-1--top-2 logit margin, normalized first-token entropy (entropy$/\!\log|V|$), the greedy sequence log-probability divided by the generated length, the KL divergence against \texttt{direct}, the token F1 between that action's answer and the direct answer, and the retriever top-1 score.
-Unnormalized entropy, generated length as its own coordinate, and the retriever top-1--top-2 gap are stored in the run record and do not receive extra coefficients.
-The same weight vector is applied to each action's feature vector.
-The selected action is the one with the highest predicted probability of being correct under the official metric.
-The regression is fit on the calibration split.
-We describe it as calibration, not as a trained router.
+v2-Cal fits one ridge regression for each evidence action $b\neq a^{\star}$.
+Its target is the score gap $s(b)-s(a^{\star})$ on the fitting half of the calibration split.
+Each regression has an intercept and six features: the direct margin, the margin of $a^{\star}$, the margin gap $c(b)-c(a^{\star})$, the token F1 between the answers of $b$ and $a^{\star}$, the KL divergence of $b$ from \texttt{direct}, and the retriever top-1 score of $b$.
+The intercept is not penalized, and the standardized features receive a ridge penalty of 1.0; the coefficients are returned in raw units.
+A feature missing on every fitting question, or constant on all of them, is dropped and recorded in the model.
+A feature missing on only some questions is an error.
+Missing values are never filled with zero.
+The policy takes the evidence action with the largest predicted gain when that gain exceeds a threshold $\lambda_{\mathrm{gain}}$, and $a^{\star}$ otherwise.
+The calibration split is halved with a fixed seed: the fitting half trains the regressions, and the other half runs the risk control of Section~\ref{sec:risk}.
+Unavailable actions are excluded from fitting and from comparison.
+We describe v2-Cal as calibration, not as a trained router.
 A previous OK-VQA rule (\texttt{original\_retrieve} or $p_{\mathrm{image}}<0.5$) used a trained query classifier.
 v2 does not use that classifier.
 
 \subsection{Risk Control}
 \label{sec:risk}
-Thresholds are screened by fixed-sequence Learn-then-Test.
-The loss is 1 when the chosen action scores below the strongest single action:
+Both selectors are screened by a fixed-sequence test on the mean score gap to $a^{\star}$.
+For a calibration question $i$ and a policy $\pi$, let $d_i=s_i(\pi)-s_i(a^{\star})$ be the paired gap.
+The null hypothesis is $H_0:\mathbb{E}[d]<-\epsilon$, tested with the one-sided paired statistic
 \begin{equation}
-L(a)=\mathbf{1}\{s(a)<s(a^{\star})\},\qquad
-u(a)=s(a)-s(a^{\star}).
-\label{eq:loss}
+t=\frac{\bar d+\epsilon}{\hat\sigma_d/\sqrt{n}},
+\label{eq:stat}
 \end{equation}
-Here $\alpha=\delta=0.10$.
-The claim is: with probability at least $1-\delta$ over the calibration draw, every accepted threshold has true degradation rate at most $\delta$.
-It does not claim the method is never worse.
-Utility, not accuracy, selects the threshold inside the accepted set.
-The best single action is chosen on the same calibration sample, which is slightly anti-conservative.
-v2-Rule uses this utility to choose its thresholds.
-v2-Cal is reported as its own arm.
-Any threshold attached to it is chosen by the same rule, on the calibration split, and is not searched on the test split.
+whose $p$-value is taken from the standard normal upper tail at every sample size.
+A constant gap has zero variance: its $p$-value is 0 when its mean is at least $-\epsilon$, and 1 otherwise.
+The candidates are walked in their fixed order, and a candidate is accepted while its $p$-value is at most its family's level: $\delta/2$ for each evidence rule, and $\delta$ for v2-Cal.
+Among the accepted candidates, the one with the largest mean gap $\bar d$ is chosen.
+If none is accepted, or the largest mean gap is not positive, the selector returns $a^{\star}$.
+The two parameters have separate roles: $\delta=0.10$ is the failure probability, and $\epsilon=1.0$ point is the tolerated loss in expected score.
+Under i.i.d. questions and an asymptotically valid test, with probability at least $1-\delta$ over the calibration draw, the chosen policy satisfies
+\begin{equation}
+\mathbb{E}[s(\pi)]\ \ge\ \mathbb{E}[s(a^{\star})]-\epsilon.
+\label{eq:guarantee}
+\end{equation}
+The guarantee is a statement about expected score over questions, not a per-question or per-split statement, and it does not claim that the method is never worse.
+The strongest single action is chosen on the same calibration sample, which makes the guarantee slightly anti-conservative.
+v2-Cal is tested at level $\delta$ as its own decision, and the main text reports v2-Rule as the primary one.
 
 \subsection{Cost}
 \label{sec:cost}

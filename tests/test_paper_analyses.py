@@ -106,3 +106,17 @@ def test_paired_across_runs_and_loss_breakdown(tmp_path):
     assert t["questions"] == 3 and t["delta_pp"] == 100.0
     tr = pa.transitions_table(base, "acc", "gated:static", "gated:eab", 50)
     assert tr["correct_to_wrong"] == 100 and tr["losses_by_top_biased_chunk"] == {"top_text_chunk_without_answer": 100.0}
+
+
+def test_answer_of_reads_the_parsed_answer_and_parses_old_records():
+    # rec["preds"] keeps the raw output with its citation line; the answer is the parsed one.
+    raw = "Paris\n\n[E1]"
+    new = {"preds": {"static": raw}, "parsed": {"static": {"answer": "Paris", "answer_empty": False}}}
+    assert pa.answer_of(new, "static") == "Paris"
+    # A record written before the parse was stored is parsed here, with the same rule.
+    old = {"preds": {"static": raw}}
+    assert pa.answer_of(old, "static") == "Paris"
+    assert pa.answer_of({"preds": {"static": "Sources: none"}}, "static") == ""
+    # The error categories match the gold on the parsed answer, not on the citation text.
+    row = {"qid": "q", "golds": ["Paris"], "preds": {"static": raw}}
+    assert pa.categorize(row, "static", 0.0, None, 50) == "answer_normalization"

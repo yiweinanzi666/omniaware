@@ -50,13 +50,21 @@ def test_gold_in_topk_is_stored_and_not_read_by_routing():
     assert direct["per_modality"]["text"]["top1_score"] == pytest.approx(0.9)
 
 
-def test_lexical_rerank_does_not_read_gold():
-    scores = signals.lexical_overlap_scores(
-        "red car",
-        [{"cid": "a", "title": "red", "text": "car", "gold": True},
-         {"cid": "b", "title": "blue", "text": "sky", "gold": False}])
-    assert scores["a"] > scores["b"]
-    assert "gold" not in signals.lexical_overlap_scores.__code__.co_names
+def test_unavailable_action_has_the_same_fields_and_is_marked():
+    rec = signals.unavailable_record(signals.retriever_signals([], {}, []))
+    assert rec["available"] is False and rec["answer"] == "" and rec["answer_empty"] is True
+    assert rec["seq_logprob"] is None and rec["first_token"] is None and rec["gen_len"] == 0
+    logits = torch.arange(12, dtype=torch.float)
+    live = signals.action_record("Paris", logits, [3], [-0.5], 12, None, rec["retriever"])
+    assert live["available"] is True
+    assert set(rec) == set(live)
+
+
+def test_sequence_logprob_is_none_only_without_token_logprobs():
+    logits = torch.arange(12, dtype=torch.float)
+    assert signals.sequence_logprob(logits, [1, 2], None, 12) is None
+    assert signals.sequence_logprob(logits, [1, 2], [-0.25, -0.75], 12) == pytest.approx(-1.0)
+    assert signals.sequence_logprob(logits, [], [], 12) == 0.0
 
 
 def test_tiny_qwen_generation_populates_action_fields():
@@ -78,8 +86,9 @@ def test_tiny_qwen_generation_populates_action_fields():
         assert len(rec["first_token"]["topk"]) >= 10
         assert rec["gen_len"] == len(result.tokens)
         assert rec["seq_logprob"] == pytest.approx(sum(result.token_logprobs))
-        assert set(rec) == {"answer", "answer_empty", "citation_only", "seq_logprob", "gen_len",
+        assert set(rec) == {"available", "answer", "answer_empty", "citation_only", "seq_logprob", "gen_len",
                             "first_token", "kl_to_direct", "retriever"}
+        assert rec["available"] is True
     assert direct["kl_to_direct"] is None
     assert evidence["kl_to_direct"] == pytest.approx(0.0, abs=1e-5)
     assert isinstance(direct["answer_empty"], bool) and isinstance(direct["citation_only"], bool)

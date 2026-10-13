@@ -43,7 +43,7 @@ The oracle is the per-question best action in the same set.
 Evidence Attention Bias is not a main-method arm.
 All actions in a run share one prompt, one budget, and one candidate pool.
 The prompt is frozen on the development split.
-The test split is scored once after \texttt{docs/dev\_decisions.json} is frozen.
+The test split is scored once, after the frozen decision file \texttt{runs/v2\_decisions/} is written.
 Grids are not selected on the test split.
 The operating point previously taken from a test-set grid (Table~20 in the audited draft) is withdrawn.
 
@@ -52,18 +52,18 @@ Uncertainty is a paired bootstrap 95\% confidence interval over questions.
 Multiple comparisons use Holm correction.
 Decoding is greedy, so a configuration is deterministic given its inputs.
 This draft does not report a seed standard deviation under greedy decoding.
-The fraction of questions on which the chosen action scores below the strong baseline is reported with the risk-control claim.
+The risk-control claim is reported as the mean paired gap to the strong baseline, with its bootstrap interval.
 A score below \texttt{direct} is not described as better than no retrieval.
 
 \textit{Development gates.}
 Two preregistered gates are criteria, not results, and this draft does not claim that either has passed.
 After the pipeline fixes, the development-set per-question oracle is compared with the strongest single action against a relative gap of 8\%.
-A selector is eligible for the frozen test run when, on the development split, its relative gain over that baseline is at least 5\%, the lower end of its paired interval is positive, and its degradation rate is at most $\delta$.
+A selector is eligible for the frozen test run when, on the development split, its relative gain over that baseline is at least 5\%, and the lower end of its paired interval is positive.
 The test split is not used to make those choices.
 
 \textit{Figures withdrawn by the root-cause report.}
 The following numbers are copied from the root-cause report of 13~October~2026.
-They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
+They come from the legacy pipeline, which has known prompt and format problems; they motivate the protocol and are not results of the method. They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
 Relative gains of +33\% on WebQA and +15\% on OK-VQA used historical cached baselines: a cached static score of 17.9 against 23.4 for static retrieval on the same 512-question batch, a gap of 5.5 points, under different prompts, budgets, and retrieval scores.
 The same report withdraws a trained controller's +8.43\% and a +14.4\% chosen on a 32-question development set.
 On a 256-question OK-VQA development slice, official VQA accuracy was 61.5 for direct answering, 36.3 for static retrieval, 48.1 for the gated static arm, and 36.3 for EAB.
@@ -75,7 +75,7 @@ Image questions scored 63.2 acc$_{\mathrm{approx}}$ and 13.8 QA.
 Text questions scored 55.0 acc$_{\mathrm{approx}}$ and 33.0 QA.
 Over 2{,}560 items, a loose WebQA scorer and official acc$_{\mathrm{approx}}$ differed by 10.5 points on average (0.699 versus 0.594).
 On one static OK-VQA batch, a loose scorer gave 65.8 where official VQA accuracy was about 47.9.
-A greedy-decoding figure of $\pm 0.2$ is smaller than the binomial standard error of about 0.66 points on 5{,}046 OK-VQA questions, and it is not a confidence interval.
+A greedy-decoding figure of $\pm 0.2$ is smaller than the sampling standard error of about 0.66 points that 5{,}046 OK-VQA questions imply, and it is not a confidence interval.
 The v2 measurement that replaces these comparisons is the placeholder tables below.
 
 \subsection{Measurement Study}
@@ -145,7 +145,7 @@ Table~\ref{tab:main} is the main comparison.
 Relative gain versus the strong baseline is the primary column.
 Gain versus \texttt{static\_mixed} is secondary.
 Each gain cell is a point estimate and a paired bootstrap 95\% interval; both are \ph{}, so the cell is written \ph{} [\ph{},\,\ph{}].
-Degradation is the fraction of test questions on which the chosen action scores below the strong baseline.
+The gap column is the mean paired score difference to the strong baseline, with its interval.
 No row is marked significant, because no test has been run.
 A filled row that sits below \texttt{direct} will not be described as better than no retrieval.
 
@@ -156,7 +156,7 @@ OK-VQA uses official VQA accuracy.
 ``Versus strong'' uses the calibration-set best single action as the denominator.
 ``Versus static'' uses \texttt{static\_mixed}.
 Brackets are paired bootstrap 95\% intervals.
-Degr.\ is the degradation rate against the strong baseline.
+Gap is the mean paired score difference to the strong baseline.
 All entries are \ph{}.
 EAB is omitted.}
 \label{tab:main}
@@ -164,7 +164,7 @@ EAB is omitted.}
 \setlength{\tabcolsep}{2.4pt}
 \begin{tabular}{@{}lccccccc@{}}
 \toprule
-Method & \multicolumn{3}{c}{WebQA acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{OK-VQA} & Degr. \\
+Method & \multicolumn{3}{c}{WebQA acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{OK-VQA} & Gap \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}
  & Score & vs.\ strong & vs.\ static & Score & vs.\ strong & vs.\ static & \\
 \midrule
@@ -186,7 +186,7 @@ Oracle & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [
 
 \subsection{Ablations}
 \label{sec:ablation}
-Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the preregistered level $\alpha=\delta=0.10$.
+Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the preregistered $\delta=0.10$ and $\epsilon=1.0$.
 The $\delta$ row is a development-split description.
 It is not a point selected on the test set.
 Refitting uses the calibration split only.
@@ -196,25 +196,25 @@ Every entry is \ph{}.
 \caption{Ablations on the frozen test metrics after calibration-split refits.
 WebQA is acc$_{\mathrm{approx}}$.
 OK-VQA is official VQA accuracy.
-Utility is Equation~\eqref{eq:loss} on the calibration split and is not an accuracy.
+Utility is the mean paired gap to the strong baseline on the calibration split (Section~\ref{sec:risk}), and is not an accuracy.
 Every entry is \ph{}.
-The $\delta$ row is not used to pick the test operating point.}
+The last row is not used to pick the test operating point.}
 \label{tab:ablation}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Variant & WebQA & OK-VQA & Degr. & Utility \\
+Variant & WebQA & OK-VQA & Utility \\
 \midrule
-v2-Cal, six features & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without normalized entropy & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without logit margin & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without sequence log-prob. & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without length & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without KL vs.\ direct & \ph{} & \ph{} & \ph{} & \ph{} \\
-Without retriever gap & \ph{} & \ph{} & \ph{} & \ph{} \\
-v2-Rule & \ph{} & \ph{} & \ph{} & \ph{} \\
-Development $\delta=0.10$ & \ph{} & \ph{} & \ph{} & \ph{} \\
+v2-Cal, six features & \ph{} & \ph{} & \ph{} \\
+Without direct margin & \ph{} & \ph{} & \ph{} \\
+Without $a^{\star}$ margin & \ph{} & \ph{} & \ph{} \\
+Without margin gap & \ph{} & \ph{} & \ph{} \\
+Without token F1 to $a^{\star}$ & \ph{} & \ph{} & \ph{} \\
+Without KL vs.\ direct & \ph{} & \ph{} & \ph{} \\
+Without retriever top-1 & \ph{} & \ph{} & \ph{} \\
+v2-Rule & \ph{} & \ph{} & \ph{} \\
+Development $\delta=0.10$, $\epsilon=1.0$ & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -269,7 +269,7 @@ v2, cheap variant & \ph{} & \ph{} & \ph{} \\
 \subsection{Attention steering moves attention, not answers}
 \label{sec:steer}
 Every number in this subsection is copied from the root-cause report dated 13~October~2026.
-The measurements come from the previous pipeline.
+The measurements come from the legacy pipeline, which has known prompt and format problems; they motivate the analysis and are not results of the method.
 They are not v2 results, and they are not taken from \texttt{offline\_v2}.
 
 On a 64-question probe, the L1 distance of attention toward the supporting block moved from 0.77 to 0.26, and the answer flipped on 2 of 64 questions.
@@ -308,10 +308,10 @@ It is not a search over prompts on the test split.
 
 %% ===============================================================
 \section{Conclusion}
-We describe \method{} v2, a per-question choice among direct answering, static text, static image, static mixed evidence, and reranked static evidence.
+We describe \method{} v2, a per-question choice among direct answering, static text, static image, static mixed evidence, and static evidence reranked by a cross-encoder.
 v2-Rule fits no weights.
-v2-Cal is one logistic regression with seven parameters.
-Fixed-sequence Learn-then-Test at $\alpha=\delta=0.10$ supplies the degradation-rate claim in Section~\ref{sec:risk}, which does not say that the method is never worse.
+v2-Cal is one small ridge regression per evidence action.
+Fixed-sequence one-sided paired tests at $\delta=0.10$ and $\epsilon=1.0$ supply the expected-score guarantee in Section~\ref{sec:risk}.
 The primary comparison uses the strongest single action on the calibration split as the denominator.
 The measurement, the main table, and the ablations have not been run, and their numbers are \ph{}.
 The attention-steering subsection quotes the 13~October~2026 root-cause report: attention moves, and answers do not.

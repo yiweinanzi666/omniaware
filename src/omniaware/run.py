@@ -19,6 +19,7 @@ import torch
 
 from . import (analysis, answers, data, interventions, order as order_mod, paths, pipeline, prompts, relevance,
                rerank, routing, runio, signals)
+from .actions import DIRECT, V2_ACTIONS
 from .baselines import arms as baseline_arms, seakr, universalrag
 from .qwen_eab import QwenEAB
 
@@ -143,6 +144,53 @@ def modality_pool(example: dict, modality: str) -> dict:
             "fixed_evidence": False}
 
 
+def v2_action_chunks(e: dict, rel: dict[str, float], joint: list[dict], rerank_rel: dict[str, float], k: int,
+                     seed: int) -> dict[str, list[dict] | None]:
+    """Candidate list of each v2 action. None is direct (the question alone, no evidence).
+
+    static_text and static_image are the retriever top-k inside one modality pool. static_mixed is the joint top-k
+    by calibrated relevance (the list of the static joint arm). rerank_static is the top-k by cross-encoder logit
+    over the whole candidate pool. An empty list means the action has no candidates.
+    """
+    return {DIRECT: None,
+            "static_text": select_chunks(modality_pool(e, "text"), rel, k, "rank", seed),
+            "static_image": select_chunks(modality_pool(e, "image"), rel, k, "rank", seed),
+            "static_mixed": joint,
+            "rerank_static": select_chunks(e, rerank_rel, k, "rank", seed)}
+
+
+def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, direct, decoded: dict,
+                      max_new: int, answer_style: str) -> dict:
+    """One record per v2 action (signals.action_record), in V2_ACTIONS order.
+
+    ``direct`` is the direct decode, whose first-token logits give KL_to_direct. ``decoded`` maps a tuple of chunk
+    ids to a result already decoded from the same prompt; new decodes are added to it. An evidence action with no
+    candidates is recorded as unavailable: it is neither decoded nor replaced by another action's result.
+    """
+    direct_logits = direct.first_logits
+    records = {}
+    for name in V2_ACTIONS:
+        chosen = chunks_by_action[name]
+        if name != DIRECT and not chosen:
+            records[name] = signals.unavailable_record(signals.retriever_signals(e["candidates"], rel, chosen))
+            continue
+        if name == DIRECT:
+            result = direct
+        else:
+            key = tuple(c["cid"] for c in chosen)
+            if key not in decoded:
+                enc = qwen.encode(*pipeline.build_segments(e, chosen, answer_style))
+                decoded[key] = qwen.run(enc, None, max_new, decode_static=True)[0]["static"]
+            result = decoded[key]
+        if result.token_logprobs is None:
+            raise RuntimeError(f"{e['qid']}: the {name} decode recorded no token logprobs")
+        records[name] = signals.action_record(
+            result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
+            None if name == DIRECT else direct_logits,
+            signals.retriever_signals(e["candidates"], rel, chosen))
+    return records
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
@@ -248,46 +296,45 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--calibrate-only", action="store_true",
                     help="fill every cache (relevance, CE, U calibration, SeaKR) and write the config, then stop")
     ap.add_argument("--tag", required=True)
-    ap.add_argument("--v2-actions", default=",".join(signals.V2_ACTIONS),
-                    help="v2 actions decoded for every question; must be the full set, in this order")
-    ap.add_argument("--save-signals", action="store_true",
-                    help="v2 contract flag: first-token signals are always written on each action")
-    ap.add_argument("--empty-answer-accounting", action="store_true",
-                    help="v2 contract flag: empty_answer_rate is always written on the run summary")
-    ap.add_argument("--shared-prompt-registry", action="store_true",
-                    help="v2 contract flag: every arm already uses the prompt registry")
+    ap.add_argument("--v2", action="store_true",
+                    help="v2 action records: decode direct, static_text, static_image, static_mixed and rerank_static "
+                         "for every question (rec['actions']). Needs --v2-reranker")
+    ap.add_argument("--v2-reranker", action="store_true",
+                    help="load cross-encoder logits for the v2 rerank_static action only; the selector and every other "
+                         "arm keep relevance. Requires --v2")
     ap.add_argument("--decisions", default=None,
                     help="frozen decisions JSON. Checked and hashed into the config; this process does not search a grid")
     return ap
 
 
-def check_v2_flags(ap, args) -> None:
-    """Accept the flags scripts/v2_runs.py emits. Decoding all five actions is not optional."""
-    wanted = tuple(part.strip() for part in args.v2_actions.split(",") if part.strip())
-    if wanted != signals.V2_ACTIONS:
-        ap.error("--v2-actions must be " + ",".join(signals.V2_ACTIONS))
+def check_v2_args(ap, args) -> None:
+    """v2 options. static_mixed is the relevance top-k, so the selector stays relevance under --v2; the cross-encoder
+    logits of rerank_static come from --v2-reranker, which changes no other arm."""
+    if args.v2_reranker and not args.v2:
+        ap.error("--v2-reranker only applies to the v2 actions: add --v2")
+    if args.v2 and args.selector != "relevance":
+        ap.error("--v2 keeps static_mixed on the relevance top-k: drop --selector and pass --v2-reranker instead")
+    if args.v2 and not args.v2_reranker:
+        ap.error("--v2 needs cross-encoder logits for rerank_static: add --v2-reranker")
+
+
+def check_decisions_file(ap, args) -> None:
+    """Hash the frozen decisions file into the configuration. It is never expanded into a grid."""
+    args.decisions_sha256 = None
     if not args.decisions:
-        args.decisions_sha256 = None
         return
-    path = Path(args.decisions)
-    if not path.is_file():
-        ap.error(f"--decisions file not found: {args.decisions}. No default hyperparameters were substituted.")
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        ap.error(f"--decisions is not valid JSON: {args.decisions} ({exc}). "
-                 "No default hyperparameters were substituted.")
-    if not isinstance(payload, dict):
-        ap.error(f"--decisions must be a JSON object: {args.decisions}. "
-                 "No default hyperparameters were substituted.")
-    args.decisions_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        args.decisions_sha256 = runio.read_frozen_decisions(args.decisions)
+    except runio.FrozenDecisionsError as exc:
+        ap.error(str(exc))
 
 
 def main(argv=None):
     ap = build_parser()
     args = ap.parse_args(argv)
     apply_analysis_eab(args)
-    check_v2_flags(ap, args)
+    check_decisions_file(ap, args)
+    check_v2_args(ap, args)
     if args.order not in ("rank", "shuffle", "reverse") and args.order.removeprefix("perm:") not in PERMUTATIONS:
         ap.error(f"unknown --order {args.order}")
     if args.selector != "relevance" and (args.k != rerank.TOP_K or args.min_per_modality):
@@ -419,10 +466,12 @@ def main(argv=None):
         lo, hi = min(scores.values(), default=0.0), max(scores.values(), default=1.0)
         return {c: (s - lo) / (hi - lo) if hi > lo else 1.0 for c, s in scores.items()}
 
-    ce_of = ce_rel_of = None
-    if args.selector != "relevance":
+    ce_table = None
+    if args.selector != "relevance" or args.v2_reranker:
         ce_table = rerank.ce_logits(calib + evals, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER,
                                     write=writes_caches)
+    ce_of = ce_rel_of = None
+    if args.selector != "relevance":
         ce_cal = relevance.Calibrator.fit(
             {q: {c: {f"ce_{m}": v} for c, (m, v) in rows.items()} for q, rows in
              ((e["qid"], {c["cid"]: (c["modality"], ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]})
@@ -730,7 +779,7 @@ def main(argv=None):
     cache_fingerprints = {
         "relevance": runio.digest([relevance_fingerprint(e) for e in calib + evals]),
         "ce": (runio.digest([rerank.ce_fingerprint(e, paths.RERANKER) for e in calib + evals])
-               if args.selector != "relevance" else None),
+               if ce_table is not None else None),
         "ucal": runio.digest([ucal_fp[e["qid"]] for e in calib]),
         "seakr": runio.digest([seakr_fingerprint(e) for e in calib]) if args.seakr_samples else None,
     }
@@ -738,6 +787,10 @@ def main(argv=None):
     # when these agree (paper_analyses checks it), so a stale candidate set cannot slip into a table.
     candidate_sha = hashlib.sha256(json.dumps([[e["qid"], [c["cid"] for c in e["candidates"]]] for e in evals],
                                               ensure_ascii=False).encode()).hexdigest()
+    # The answer instruction of this run's arms (prompts.py); M2-RAG's extractor reads the same string.
+    run_instruction = prompts.instruction_for_style(family, args.answer_style,
+                                                    cite_instruction=pipeline.CITATION_INSTRUCTION,
+                                                    short_instruction=pipeline.SHORT_INSTRUCTION)
     config_text = runio.dumps_strict({
         **{k: v for k, v in vars(args).items() if k not in EXECUTION_ARGS},
         "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
@@ -755,11 +808,7 @@ def main(argv=None):
         "evaluation_qids_sha256": runio.qid_set_sha256([e["qid"] for e in evals]),
         "split_qids_sha256": {part: runio.qid_set_sha256(e["qid"] for e in sp[part])
                               for part in ("calib", "dev", "test")},
-        **prompts.instruction_for_style(family, args.answer_style,
-                                        cite_instruction=pipeline.CITATION_INSTRUCTION,
-                                        short_instruction=pipeline.SHORT_INSTRUCTION),
-        "baseline_retrieval": "joint_topk_no_probe_no_route",
-        "rerank_static_source": "cross_encoder" if args.selector != "relevance" else "lexical_overlap",
+        **run_instruction,
         "cache_fingerprints": cache_fingerprints,
     }, indent=1)
     if config_path.exists() and (has_outputs or args.num_shards > 1):
@@ -934,7 +983,7 @@ def main(argv=None):
             if args.m2rag:
                 t_b = time.perf_counter()
                 rec["preds"]["m2rag"], rec["m2rag"] = baseline_arms.m2rag_answer(
-                    qwen, e, joint, rel, max_new)
+                    qwen, e, joint, rel, max_new, instruction=run_instruction["instruction"])
                 rec["baseline_seconds"]["m2rag"] = time.perf_counter() - t_b
             if args.seakr_samples:
                 t_b = time.perf_counter()
@@ -980,53 +1029,14 @@ def main(argv=None):
                                   for c in chunks}
             if args.intervention:
                 rec["interventions"] = intervene(e, rec, chunks, eab_rel, enc, info)
-            # v2 actions share this run's instruction, max_new, and candidate pool. gold_in_topk is stored
-            # on the action and is not read when the chunks above were chosen.
-            # Modality arms are retriever top-k inside that modality. A fixed permutation applies to the
-            # joint list of length k, not to an empty or shorter modality pool.
-            text_chunks = select_chunks(modality_pool(e, "text"), rel, args.k, "rank", args.seed)
-            image_chunks = select_chunks(modality_pool(e, "image"), rel, args.k, "rank", args.seed)
-            if ce_of is not None:
-                rerank_rel = {c["cid"]: ce_of(e)["logits"][c["cid"]] for c in e["candidates"]}
-            else:
-                rerank_rel = signals.lexical_overlap_scores(e["question"], e["candidates"])
-            rerank_chunks = select_chunks(e, rerank_rel, args.k, "rank", args.seed)
-            decoded = {tuple(): res_d["static"], tuple(c["cid"] for c in joint): res_j["static"]}
-
-            def decode_chunks(chosen):
-                key = tuple(c["cid"] for c in chosen)
-                if key in decoded:
-                    return decoded[key]
-                enc_a = qwen.encode(*evidence_segments(e, chosen or None, rel))
-                got, _, _ = qwen.run(enc_a, None, max_new, decode_static=True)
-                decoded[key] = got["static"]
-                return decoded[key]
-
-            action_chunks = {
-                "direct": None,
-                "static_text": text_chunks,
-                "static_image": image_chunks,
-                "static_mixed": joint,
-                "rerank_static": rerank_chunks,
-            }
-            direct_logits = res_d["static"].first_logits
-            rec["actions"] = {}
-            for name in signals.V2_ACTIONS:
-                chosen = action_chunks[name]
-                result = res_d["static"] if chosen is None else decode_chunks(chosen)
-                selected = None if chosen is None else chosen
-                rec["actions"][name] = signals.action_record(
-                    result.text, result.first_logits, result.tokens, getattr(result, "token_logprobs", None),
-                    qwen.vocab_size, None if name == "direct" else direct_logits,
-                    signals.retriever_signals(e["candidates"], rel, selected))
-            flags_empty, flags_cite = {}, {}
-            for name, text in list(rec["preds"].items()):
-                parsed = answers.parse_answer(text)
-                rec["preds"][name] = parsed["answer"]
-                flags_empty[name] = parsed["answer_empty"]
-                flags_cite[name] = parsed["citation_only"]
-            rec["answer_empty"] = flags_empty
-            rec["citation_only"] = flags_cite
+            if args.v2:
+                # static_mixed reuses the joint decode above; rerank_static ranks by cross-encoder logit (--v2-reranker)
+                chunks_by_action = v2_action_chunks(e, rel, joint, ce_table[e["qid"]], args.k, args.seed)
+                rec["actions"] = decode_v2_actions(qwen, e, rel, chunks_by_action, res_d["static"],
+                                                   {tuple(rec["chunks_joint"]): res_j["static"]}, max_new,
+                                                   args.answer_style)
+            # preds keep the model's raw output; the parse (answer, answer_empty, citation_only) is stored beside it
+            rec["parsed"] = {name: answers.parse_answer(text) for name, text in rec["preds"].items()}
             rec["seconds"] = round(time.time() - t0, 2)
             fh.write(runio.dumps_strict(rec, ensure_ascii=False) + "\n")
             fh.flush()
@@ -1039,8 +1049,7 @@ def main(argv=None):
         if sorted(answered) != sorted(e["qid"] for e in evals):
             raise SystemExit(f"{out_path} holds {len(answered)} answers for {len(evals)} evaluation questions")
         written = runio.load_partial_jsonl(out_path)
-        flags = [bool(v) for row in written for v in (row.get("answer_empty") or {}).values()]
-        empty_report = answers.summarize_empty(flags)
+        empty_report = answers.summarize_empty([f for row in written for f in answers.question_empty_flags(row)])
         if empty_report.get("empty_answer_warning"):
             print(empty_report["empty_answer_warning"], flush=True)
         runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path, extra=empty_report)
