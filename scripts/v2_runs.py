@@ -61,14 +61,18 @@ def read_frozen_decisions(path_str: str) -> None:
         )
 
 
-def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None) -> list[str]:
-    split = "test" if stage == "s4" else "dev"
+def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None,
+                split: str | None = None, tag: str | None = None) -> list[str]:
+    if split is None:
+        split = "test" if stage == "s4" else "dev"
+    if tag is None:
+        tag = f"v2_{stage}_{dataset}"
     cmd = [
         "python", "-m", "omniaware.run",
         "--dataset", dataset,
         "--split", split,
         "--model", MODEL,
-        "--tag", f"v2_{stage}_{dataset}",
+        "--tag", tag,
         "--calib-source", DATASETS[dataset],
         "--n-calib", N_CALIB,
         "--n-dev", N_DEV,
@@ -103,9 +107,13 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None) -> t
     if n is not None:
         raise SystemExit("--n is only for --stage s1")
     if stage == "s2":
-        # One dev evaluation. Calib (500) is fixed by --n-calib and --calib-source.
-        # --split test is the full val and is not generated here.
-        return [run_command(stage, dataset)], []
+        # Two decodes. --n-calib only selects the calibration ids; run.py writes
+        # per-question records for --split, so the calibration questions need their own pass.
+        # --split calib is part of the v2 contract (the protocol branch adds it).
+        return [
+            run_command(stage, dataset, split="calib", tag=f"v2_s2_{dataset}_calib"),
+            run_command(stage, dataset, split="dev", tag=f"v2_s2_{dataset}_dev"),
+        ], []
     if stage == "s4":
         if not decisions:
             raise SystemExit(
