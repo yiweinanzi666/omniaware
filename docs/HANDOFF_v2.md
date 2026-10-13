@@ -19,7 +19,7 @@ pip install -e ".[all]"
 python -m pytest -p no:warnings
 ```
 
-预期：`460 passed, 5 skipped`（跳过的是缺少 torchvision / spacy / NLTK 数据或资产目录的测试，数量可能因环境略有不同）。**有失败就停下来反馈，不要继续。**
+预期：汇总行里没有 `failed` 和 `error`。passed 与 skipped 的数量随环境变化：缺少 torchvision / spacy / NLTK 数据或资产目录的测试会跳过；这一步在下载模型之前做，`tests/test_m2rag_qwen.py` 读取本地 Qwen3-VL-8B 的处理器文件，模型没下载时整个文件跳过，下载后再跑一次它会参与运行。**有 failed 或 error 就停下来反馈，不要继续。**
 
 数据和模型的准备方式没有变，见 README 的第 1–4 节。v2 用到三个数据集：
 
@@ -43,7 +43,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 
 **S1 要确认四件事：**
 
-1. **空答案率不超过 0.5%。** 命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。
+1. **空答案率不超过 0.5%。** 这里的空答案指空白输出和只有引用行的输出（如 `Sources: none`）。命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。拒答（如 “I cannot determine the answer from the provided information.”）评分时同样按空答案计，但单独统计，不触发这个退出码：`<数据集>.merged.json` 里的 `refusal_rate` 是总的拒答率，`empty_by_arm` 按臂和动作（`action:<动作>`）列出空白、纯引用、拒答各多少。WebQA 的 `direct` 不带图片，图像题上有一定拒答属于正常；**如果某个证据动作（尤其 `action:static_image`）的拒答明显多于 `direct`，说明图片可能没进模型，停下来反馈。**
 2. **各个动作的回答格式一致。** 打开 `runs/v2_s1_<数据集>/<数据集>.jsonl`，抽 20 题看 `actions` 里五个动作的 `answer`：WebQA 应当都是一个完整的句子，OK-VQA 应当都不超过 3 个词。旧管线的问题是带检索的臂答得很短、不带检索的臂答得很长，导致比较失真。**如果某个动作的回答明显更长或更短，停下来反馈。**
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 
@@ -74,13 +74,13 @@ python scripts/v2_runs.py --stage s2 --dataset okvqa_gs
 python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 ```
 
-每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json`。
+每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json` → 把冻结决定应用到开发集，检查选择器相对最强单一动作是否至少 +5% 且 CI 下界大于 0，结果写到 `runs/v2_decisions/<数据集>.dev_check.json`。
 
 - SeaKR 每题最多 125 次额外采样，很贵。算力不够时加 `--no-seakr`，主表会缺 SeaKR 一行，输出里会注明。
-- 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。**
+- 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。** 开发集检查不通过时，决定文件和检查文件都会写出，命令以 `development check FAIL` 结束。
 - 可以多卡分片，方法和以前一样（README 第 5 节）；同一个输出目录有运行锁，重复启动会被拒绝。
 
-**回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`。每个目录里各文件的用途见下面的“每次运行会留下什么”。
+**回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`（决定文件和 `*.dev_check.json` 都在里面）。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
 ## 5. 第二个停顿点：go/no-go（最关键的一步）
 
@@ -91,9 +91,14 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 
 不管 PASS 还是 FAIL，都把 `gate` 的完整输出和 `*.v2_build_summary.json` 回传。同时看一下决定文件里的 `fallback` 字段：如果是 `true`，说明选择器在校准集上没找到任何能通过风险控制的策略，退回了最强单一动作，这种情况也要先反馈再决定是否跑 S4。
 
+gate 只说明有空间。S2 的最后一步 `devcheck` 检查冻结后的选择器在开发集上实际拿到了多少：相对最强单一动作至少 +5%，且配对 bootstrap 95% CI 下界大于 0（协议第 5 节）。
+
+- **PASS**：可以进入第 6 步。
+- **FAIL**：先回传 `runs/v2_decisions/<数据集>.dev_check.json` 和 `runs/v2_s2_<数据集>_dev/<数据集>.v2_dev_main.json`，等决定。退回单一动作（`fallback=true`）时这一步必然 FAIL。S4 会拒绝在未通过的检查上运行；只有确认要按协议照跑一次并照实报告时，才加 `--allow-failed-dev-check`。
+
 ## 6. S4 冻结测试（1–2 张 A100，估计 1–2 天）
 
-只有第 5 步通过、并且确认要跑之后才执行。**每个数据集只跑一次。**
+只有第 5 步的 gate 和 devcheck 都通过、并且确认要跑之后才执行。**每个数据集只跑一次。** S4 会核对决定文件旁边的 `<数据集>.dev_check.json`：文件缺失、记录的 sha256 与决定文件不一致，或检查未通过时，都不会开始解码。
 
 ```bash
 python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions runs/v2_decisions/webqa_full.json

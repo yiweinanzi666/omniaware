@@ -26,7 +26,7 @@ v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论�
 
 ## v2 实验
 
-执行顺序和判断标准见 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)，每条命令的细节见 [docs/V2_RUNS.md](docs/V2_RUNS.md)。下面是 v2 的阶段命令，由 `scripts/v2_runs.py` 依次执行（加 `--dry-run` 只打印）。每个阶段内的评分、拼表、go/no-go 判断、冻结决定和出主表，由 `scripts/analysis/v2_table.py` 的 `build`、`gate`、`select`、`apply` 完成。整条流程已在 CPU 上用小模型和合成数据走通；S1、S2、S4 还没有在真实模型和数据上跑过。
+执行顺序和判断标准见 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)，每条命令的细节见 [docs/V2_RUNS.md](docs/V2_RUNS.md)。下面是 v2 的阶段命令，由 `scripts/v2_runs.py` 依次执行（加 `--dry-run` 只打印）。每个阶段内的评分、拼表、go/no-go 判断、冻结决定、开发集检查和出主表，由 `scripts/analysis/v2_table.py` 的 `build`、`gate`、`select`、`devcheck`、`apply` 完成。整条流程已在 CPU 上用小模型和合成数据走通；S1、S2、S4 还没有在真实模型和数据上跑过。
 
 ```bash
 python scripts/v2_runs.py --stage s1 --dataset webqa_full --n 50
@@ -41,7 +41,7 @@ python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2
 ```
 
 - **S1**：每个数据集 50 题冒烟，检查空答案、各臂格式和图像诊断命令（诊断命令只打印）。
-- **S2**：解码校准集与开发集，官方评分，生成逐题动作表。开发集上做 go/no-go（`v2_table.py gate`，+8% 判据），校准集上生成冻结决定（`v2_table.py select`）。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
+- **S2**：解码校准集与开发集，官方评分，生成逐题动作表。开发集上做 go/no-go（`v2_table.py gate`，+8% 判据），校准集上生成冻结决定（`v2_table.py select`），再把冻结决定应用到开发集做检查（`v2_table.py devcheck`，相对最强单一动作 +5% 且 CI 下界大于 0；S4 只在这一检查通过时运行）。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
 - **S4**：读取冻结的 `runs/v2_decisions/<dataset>.json`，全量测试集只跑一次，评分后用 `v2_table.py apply` 产出主表输入。不搜索网格。
 - **image_evidence_check**：50 道图像题的证据管线诊断。
 - **offline_v2**：`runs/offline_v2/REPORT.md`，由 `scripts/analysis/offline_v2.py` 生成。探索性结果，来自含已知 bug 的旧管线，不是主表。

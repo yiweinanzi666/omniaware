@@ -6,6 +6,8 @@
         --out runs/v2_decisions/<dataset>.json [--delta 0.1 --epsilon 1.0 --seed 0]
     python scripts/analysis/v2_table.py apply  --table runs/<tag>/<dataset>.v2_actions.jsonl \
         --decisions runs/v2_decisions/<dataset>.json --out runs/<tag>/<dataset>.v2_main.json
+    python scripts/analysis/v2_table.py devcheck --table runs/<dev_tag>/<dataset>.v2_actions.jsonl \
+        --decisions runs/v2_decisions/<dataset>.json --out runs/v2_decisions/<dataset>.dev_check.json
 
 build checks the run the way score_official does: the scored questions must be the configured evaluation set
 (<dataset>_config.json), and WebQA gold answers must match the dataset. An incomplete or foreign run is refused.
@@ -27,8 +29,13 @@ calibration table (dev_select.select_v2), tunes the two single-threshold adaptiv
 same table without risk control, and records the calibration means of every candidate for the strongest baseline.
 apply reads a frozen decisions file and a test table. It never searches: the choices read the actions and the
 baseline signals only, and scores are read after the choice, for reporting.
+devcheck is the check of docs/PROTOCOL.md section 5 before the test: it applies the frozen decisions to the
+development table and prints PASS when the primary selector beats the strongest single action a* (the
+calibration's) by at least +5% relative, with a paired bootstrap 95% CI whose lower bound is above 0. It writes the
+applied result next to the table (<dataset>.v2_dev_main.json) and the check, with the sha256 of the decisions file,
+to --out; scripts/v2_runs.py --stage s4 reads that file.
 
-Exit codes: 0 success (gate PASS), 1 gate FAIL, 2 bad input or inconsistent files.
+Exit codes: 0 success (gate or devcheck PASS), 1 gate or devcheck FAIL, 2 bad input or inconsistent files.
 """
 from __future__ import annotations
 
@@ -50,6 +57,7 @@ from omniaware.eval import score_official  # noqa: E402
 from scripts.analysis import dev_select  # noqa: E402
 
 GATE_THRESHOLD = 0.08
+DEV_CHECK_THRESHOLD = 0.05      # protocol section 5: selector over a* on the development set, relative
 FAMILY_METRIC = {"webqa": "acc_approx", "okvqa": "vqa_accuracy"}
 REFERENCE = "static_mixed"
 POLICY_FAMILIES = ("rule", "cal")
@@ -597,6 +605,57 @@ def apply(table: Path, decisions_path: Path, out: Path) -> dict:
     return result
 
 
+# ---------------------------------------------------------------- devcheck
+
+def dev_check(table: Path, decisions_path: Path, out: Path) -> tuple[bool, dict]:
+    """Apply the frozen decisions to the development table and test the primary selector against a*.
+
+    The comparison is the one ``apply`` reports as ``vs_reference``: the frozen primary family against a* (the
+    reference action where a* is unavailable), paired over the development questions. PASS needs the relative gain
+    (``relative_gap``, the plain difference when a* scores <= 0) to reach DEV_CHECK_THRESHOLD and the lower end of the
+    paired bootstrap 95% CI to be above 0. A fallback decision is a* itself and therefore fails. The strongest
+    baseline of the calibration is reported beside it and does not decide the check.
+    """
+    suffix = ".v2_actions.jsonl"
+    if not table.name.endswith(suffix):
+        raise TableError(f"{table}: expected a development action table named <dataset>{suffix}")
+    dev_main = table.with_name(table.name[:-len(suffix)] + ".v2_dev_main.json")
+    result = apply(table, decisions_path, dev_main)
+    primary = result["frozen_primary"]
+    policy = result["policies"][primary]
+    paired = policy["vs_reference"]
+    gain = relative_gap(paired["ours"], paired["baseline"])
+    ci_low, ci_high = paired["paired_ci95_pp"]
+    passed = gain >= DEV_CHECK_THRESHOLD and ci_low > 0.0
+    summary = {
+        "passed": passed, "threshold": DEV_CHECK_THRESHOLD, "primary": primary,
+        "fallback": bool(policy["decision"].get("fallback")), "best_single": result["best_single"],
+        "metric": result["metric"], "questions": result["questions"],
+        "reference_mean": paired["baseline"], "policy_mean": paired["ours"], "delta_pp": paired["delta_pp"],
+        "relative_gain": gain, "ci95_pp": [ci_low, ci_high],
+        "wins": paired["wins"], "losses": paired["losses"], "ties": paired["ties"],
+        "strongest_baseline": result["strongest_baseline"],
+        "table": result["table"], "decisions": result["decisions"],
+        "dev_main": {"path": str(dev_main), "sha256": runio.sha256_file(dev_main)},
+    }
+    runio.atomic_write_text(out, runio.dumps_strict(summary, ensure_ascii=False, indent=2) + "\n")
+    return passed, summary
+
+
+def format_dev_check(passed: bool, summary: dict) -> list[str]:
+    lines = [
+        "PASS" if passed else "FAIL",
+        f"questions={summary['questions']} metric={summary['metric']} primary={summary['primary']} "
+        f"fallback={summary['fallback']} best_single={summary['best_single']} "
+        f"reference_mean={summary['reference_mean']:.4f} policy_mean={summary['policy_mean']:.4f}",
+        f"delta_pp={summary['delta_pp']:.4f} ci95_pp=[{summary['ci95_pp'][0]:.4f}, {summary['ci95_pp'][1]:.4f}] "
+        f"relative_gain={summary['relative_gain']:.4f} threshold={summary['threshold']}",
+    ]
+    if not passed:
+        lines.append("开发集检查未通过：选择器相对最强单一动作未达到 +5% 或 CI 下界不大于 0。先反馈，不要直接跑 S4")
+    return lines
+
+
 # ---------------------------------------------------------------- command line
 
 def main(argv: list[str] | None = None) -> int:
@@ -623,6 +682,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--decisions", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True, help="main results JSON; choices go next to it")
 
+    p = sub.add_parser("devcheck", help="PASS when the frozen selector beats a* on the development table by >= 5%% "
+                                        "with a CI lower bound above 0")
+    p.add_argument("--table", type=Path, required=True, help="<dev_run>/<dataset>.v2_actions.jsonl")
+    p.add_argument("--decisions", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True,
+                   help="check JSON, e.g. runs/v2_decisions/<dataset>.dev_check.json")
+
     args = parser.parse_args(argv)
     try:
         if args.command == "build":
@@ -643,6 +709,10 @@ def main(argv: list[str] | None = None) -> int:
                 "baselines": {name: decisions["baselines"][name]["tau"] for name in ADAPTIVE_SIGNAL},
             }, indent=2))
             return 0
+        if args.command == "devcheck":
+            passed, summary = dev_check(args.table, args.decisions, args.out)
+            print("\n".join(format_dev_check(passed, summary)))
+            return 0 if passed else 1
         result = apply(args.table, args.decisions, args.out)
         print(json.dumps({"best_single": result["best_single"], "strongest_baseline": result["strongest_baseline"]["name"],
                           "rule": result["policies"]["rule"]["mean"], "cal": result["policies"]["cal"]["mean"]},

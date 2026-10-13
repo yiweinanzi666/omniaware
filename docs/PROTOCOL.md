@@ -85,7 +85,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 开发集关卡（判据，不是结果）：
 
 - S2 之后，`v2_table.py gate` 检查：修管线之后，开发集上逐题选对的上限相对最强单一动作（开发集上平均分最高者）是否仍不低于 **+8%**（相对）。输出 PASS 或 FAIL。
-- 进入测试之前，选择器在开发集上相对强基线的提升不低于 **+5%**（相对），且配对 bootstrap 的 CI 下界大于 0。不满足就不要把该选择器当作已经通过的测试结果；测试仍然只跑冻结后的那一次，结果好坏都照报。这一比较可用 `v2_table.py apply` 在开发动作表上应用冻结决定计算，其汇总命令尚未合入。
+- 进入测试之前，选择器在开发集上相对强基线的提升不低于 **+5%**（相对），且配对 bootstrap 的 CI 下界大于 0。不满足就不要把该选择器当作已经通过的测试结果；测试仍然只跑冻结后的那一次，结果好坏都照报。这一比较由 `v2_table.py devcheck` 计算（`scripts/v2_runs.py --stage s2` 的最后一步）：把冻结决定应用到开发动作表，结果写入 `runs/v2_decisions/<dataset>.dev_check.json`，并记录决定文件的 sha256。S4 读取该文件；未通过时拒绝运行，除非显式传入 `--allow-failed-dev-check`，此时冻结测试照常只跑一次，结果照报，选择器不算通过。
 
 `docs/PROTOCOL.md` 原先的“退化比例不超过 δ”一条随风险控制的改写一并撤销。
 

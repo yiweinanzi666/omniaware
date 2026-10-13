@@ -359,7 +359,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "process to <output>.prompts.ndjson (0 disables)")
     ap.add_argument("--max-empty-rate",type=float, default=None,
                     help="single-process runs: after the outputs and completion marker are written, exit non-zero when "
-                         "the empty-answer rate exceeds this value (default: only warn above 0.5%%)")
+                         "the rate of blank or citation-only answers exceeds this value (default: only warn above "
+                         "0.5%%). Refusals are reported apart (refusal_rate, per arm) and do not count toward it")
     return ap
 
 
@@ -1140,16 +1141,18 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
         answered = [r["qid"] for r in written]
         if sorted(answered) != sorted(e["qid"] for e in evals):
             raise SystemExit(f"{out_path} holds {len(answered)} answers for {len(evals)} evaluation questions")
-        empty_report = answers.summarize_empty([f for row in written for f in answers.question_empty_flags(row)])
+        empty_report = answers.summarize_empty([k for row in written for k in answers.question_empty_kinds(row)])
         if empty_report.get("empty_answer_warning"):
             print(empty_report["empty_answer_warning"], flush=True)
         marker = runio.write_completion_marker(out_dir, args.dataset, len(evals), out_path, config_path,
                                                extra=empty_report)
         notes.append(f"empty_answer_rate {empty_report['empty_answer_rate']:.6f}")
+        notes.append(f"refusal_rate {empty_report['refusal_rate']:.6f}")
         if args.max_empty_rate is not None and empty_report["empty_answer_rate"] > args.max_empty_rate:
             raise SystemExit(f"empty answer rate {empty_report['empty_answer_rate']:.6f} exceeds --max-empty-rate "
                              f"{args.max_empty_rate} ({empty_report['n_empty']} of {empty_report['n_answers']} "
-                             f"decoded strings are empty); outputs and {marker.name} were written")
+                             f"decoded strings are blank or citation-only; {empty_report['n_refusal']} refusals are "
+                             f"reported apart); outputs and {marker.name} were written")
     if args.route_rule == "query":
         notes.append(f"universalrag_fallback {tallies['universalrag_fallback']}")
     if args.seakr_samples:
