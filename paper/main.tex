@@ -229,8 +229,8 @@ The selection criterion is utility, defined in Section~\ref{sec:risk}, and not t
 \subsection{v2-Cal}
 \label{sec:cal}
 v2-Cal is one logistic regression with seven parameters: an intercept and six coefficients.
-The six features are normalized first-token entropy (entropy$/\!\log|V|$), the top-1--top-2 logit margin, the greedy sequence log-probability, the generated length, the KL divergence against \texttt{direct}, and the retriever top-1--top-2 gap.
-Unnormalized entropy and the retriever top-1 score are stored in the run record and do not receive extra coefficients.
+The six features are the top-1--top-2 logit margin, normalized first-token entropy (entropy$/\!\log|V|$), the greedy sequence log-probability divided by the generated length, the KL divergence against \texttt{direct}, the token F1 between that action's answer and the direct answer, and the retriever top-1 score.
+Unnormalized entropy, generated length as its own coordinate, and the retriever top-1--top-2 gap are stored in the run record and do not receive extra coefficients.
 The same weight vector is applied to each action's feature vector.
 The selected action is the one with the highest predicted probability of being correct under the official metric.
 The regression is fit on the calibration split.
