@@ -74,13 +74,13 @@ python scripts/v2_runs.py --stage s2 --dataset okvqa_gs
 python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 ```
 
-每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json`。
+每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json` → 把冻结决定应用到开发集，检查选择器相对最强单一动作是否至少 +5% 且 CI 下界大于 0，结果写到 `runs/v2_decisions/<数据集>.dev_check.json`。
 
 - SeaKR 每题最多 125 次额外采样，很贵。算力不够时加 `--no-seakr`，主表会缺 SeaKR 一行，输出里会注明。
-- 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。**
+- 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。** 开发集检查不通过时，决定文件和检查文件都会写出，命令以 `development check FAIL` 结束。
 - 可以多卡分片，方法和以前一样（README 第 5 节）；同一个输出目录有运行锁，重复启动会被拒绝。
 
-**回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`。每个目录里各文件的用途见下面的“每次运行会留下什么”。
+**回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`（决定文件和 `*.dev_check.json` 都在里面）。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
 ## 5. 第二个停顿点：go/no-go（最关键的一步）
 
@@ -91,9 +91,14 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 
 不管 PASS 还是 FAIL，都把 `gate` 的完整输出和 `*.v2_build_summary.json` 回传。同时看一下决定文件里的 `fallback` 字段：如果是 `true`，说明选择器在校准集上没找到任何能通过风险控制的策略，退回了最强单一动作，这种情况也要先反馈再决定是否跑 S4。
 
+gate 只说明有空间。S2 的最后一步 `devcheck` 检查冻结后的选择器在开发集上实际拿到了多少：相对最强单一动作至少 +5%，且配对 bootstrap 95% CI 下界大于 0（协议第 5 节）。
+
+- **PASS**：可以进入第 6 步。
+- **FAIL**：先回传 `runs/v2_decisions/<数据集>.dev_check.json` 和 `runs/v2_s2_<数据集>_dev/<数据集>.v2_dev_main.json`，等决定。退回单一动作（`fallback=true`）时这一步必然 FAIL。S4 会拒绝在未通过的检查上运行；只有确认要按协议照跑一次并照实报告时，才加 `--allow-failed-dev-check`。
+
 ## 6. S4 冻结测试（1–2 张 A100，估计 1–2 天）
 
-只有第 5 步通过、并且确认要跑之后才执行。**每个数据集只跑一次。**
+只有第 5 步的 gate 和 devcheck 都通过、并且确认要跑之后才执行。**每个数据集只跑一次。** S4 会核对决定文件旁边的 `<数据集>.dev_check.json`：文件缺失、记录的 sha256 与决定文件不一致，或检查未通过时，都不会开始解码。
 
 ```bash
 python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions runs/v2_decisions/webqa_full.json

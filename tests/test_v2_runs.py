@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 import scripts.v2_runs as v2
-from omniaware import paths
+from omniaware import paths, runio
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / "scripts" / "v2_runs.py"
@@ -22,6 +22,16 @@ def _cli(*args):
 
 def _fmt(*argv):
     return v2.format_argv(list(argv))
+
+
+def _decisions_with_check(path, passed=True, content=None):
+    """A decisions file and the development check that S2 writes beside it (sha256 of that decisions file)."""
+    path.write_text(json.dumps(content if content is not None else {"note": "frozen"}), encoding="utf-8")
+    check = {"passed": passed, "relative_gain": 0.07 if passed else 0.01,
+             "ci95_pp": [0.4, 3.0] if passed else [-1.0, 2.0],
+             "threshold": 0.05, "fallback": False, "decisions": {"path": str(path), "sha256": runio.sha256_file(path)}}
+    Path(v2.dev_check_path(str(path))).write_text(json.dumps(check), encoding="utf-8")
+    return path
 
 
 @pytest.mark.parametrize("dataset,source", [("webqa_full", "train"), ("okvqa_gs", "heldout")])
@@ -70,6 +80,10 @@ def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_f
         _fmt(sys.executable, str(V2_TABLE), "select", "--table",
              str(paths.RUNS / calib_tag / "webqa_full.v2_actions.jsonl"), "--out",
              str(paths.RUNS / "v2_decisions" / "webqa_full.json")),
+        _fmt(sys.executable, str(V2_TABLE), "devcheck", "--table",
+             str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl"), "--decisions",
+             str(paths.RUNS / "v2_decisions" / "webqa_full.json"), "--out",
+             str(paths.RUNS / "v2_decisions" / "webqa_full.dev_check.json")),
     ]
     assert "image_evidence_check.py" not in result.stdout
 
@@ -102,8 +116,7 @@ def test_no_seakr_is_rejected_for_s1():
 
 
 def test_s4_dry_run_decodes_test_with_baselines_then_scores_builds_and_applies(tmp_path):
-    decisions = tmp_path / "decisions.json"
-    decisions.write_text(json.dumps({"note": "frozen"}), encoding="utf-8")
+    decisions = _decisions_with_check(tmp_path / "decisions.json")
     result = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions), "--dry-run")
     assert result.returncode == 0, result.stderr
     lines = result.stdout.splitlines()
@@ -123,8 +136,7 @@ def test_s4_dry_run_decodes_test_with_baselines_then_scores_builds_and_applies(t
 
 
 def test_s4_okvqa_gs_uses_heldout_calib_and_no_bart(tmp_path):
-    decisions = tmp_path / "dev_decisions.json"
-    decisions.write_text("{}", encoding="utf-8")
+    decisions = _decisions_with_check(tmp_path / "dev_decisions.json", content={})
     result = _cli("--stage", "s4", "--dataset", "okvqa_gs", "--decisions", str(decisions), "--dry-run")
     assert result.returncode == 0, result.stderr
     run_line, score, build, _apply = result.stdout.splitlines()
@@ -152,6 +164,39 @@ def test_s4_decisions_must_be_a_json_object(tmp_path):
     bad.write_text("[1, 2]", encoding="utf-8")
     result = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(bad), "--dry-run")
     assert result.returncode != 0 and "must be a JSON object" in result.stderr
+
+
+def test_s4_refuses_without_a_development_check(tmp_path):
+    decisions = tmp_path / "webqa_full.json"
+    decisions.write_text(json.dumps({"note": "frozen"}), encoding="utf-8")
+    result = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions), "--dry-run")
+    assert result.returncode != 0 and "omniaware.run" not in result.stdout
+    assert "no development check" in result.stderr and "webqa_full.dev_check.json" in result.stderr
+
+
+def test_s4_refuses_a_development_check_of_other_decisions(tmp_path):
+    decisions = _decisions_with_check(tmp_path / "webqa_full.json")
+    decisions.write_text(json.dumps({"note": "changed after the check"}), encoding="utf-8")
+    result = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions), "--dry-run")
+    assert result.returncode != 0 and "different decisions file" in result.stderr
+
+
+def test_s4_refuses_a_failed_development_check_unless_allowed(tmp_path):
+    decisions = _decisions_with_check(tmp_path / "webqa_full.json", passed=False)
+    refused = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions), "--dry-run")
+    assert refused.returncode != 0 and "development check failed" in refused.stderr
+    assert "--allow-failed-dev-check" in refused.stderr and "omniaware.run" not in refused.stdout
+    allowed = _cli("--stage", "s4", "--dataset", "webqa_full", "--decisions", str(decisions),
+                   "--allow-failed-dev-check", "--dry-run")
+    assert allowed.returncode == 0, allowed.stderr
+    lines = allowed.stdout.splitlines()
+    assert lines[0].startswith("NOTE: --allow-failed-dev-check") and "relative_gain=0.01" in lines[0]
+    assert len(lines) == 5
+
+
+def test_allow_failed_dev_check_is_only_for_s4():
+    result = _cli("--stage", "s2", "--dataset", "webqa_full", "--allow-failed-dev-check", "--dry-run")
+    assert result.returncode != 0 and "only for --stage s4" in result.stderr
 
 
 def test_dry_run_does_not_launch_a_model(monkeypatch, capsys):
@@ -184,6 +229,17 @@ def test_gate_failure_stops_the_stage_before_the_selection(monkeypatch):
         v2.execute(commands)
     assert "gate FAIL" in str(info.value) and "not run" in str(info.value)
     assert [call[2] for call in fake.calls] == ["gate"]
+
+
+def test_dev_check_failure_ends_the_stage_and_names_the_s4_rule(monkeypatch):
+    fake = _Exit([0, 1])
+    monkeypatch.setattr(v2.subprocess, "run", fake)
+    commands = [[sys.executable, str(V2_TABLE), "select", "--table", "calib.jsonl", "--out", "d.json"],
+                [sys.executable, str(V2_TABLE), "devcheck", "--table", "dev.jsonl", "--decisions", "d.json",
+                 "--out", "d.dev_check.json"]]
+    with pytest.raises(SystemExit) as info:
+        v2.execute(commands)
+    assert "development check FAIL" in str(info.value) and "--allow-failed-dev-check" in str(info.value)
 
 
 def test_a_failing_step_stops_the_stage_with_its_command(monkeypatch):

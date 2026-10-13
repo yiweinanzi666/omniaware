@@ -88,8 +88,9 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_full --no-seakr --dry-run
 4. 拼表：`python scripts/analysis/v2_table.py build --run runs/<tag>/<数据集>.jsonl`（两个 tag 各一条；WebQA 带 `--bart`），生成 `runs/<tag>/<数据集>.v2_actions.jsonl`
 5. 开发集判据：`python scripts/analysis/v2_table.py gate --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`
 6. 校准选择：`python scripts/analysis/v2_table.py select --table runs/v2_s2_<数据集>_calib/<数据集>.v2_actions.jsonl --out runs/v2_decisions/<数据集>.json`
+7. 开发集检查：`python scripts/analysis/v2_table.py devcheck --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl --decisions runs/v2_decisions/<数据集>.json --out runs/v2_decisions/<数据集>.dev_check.json`。把冻结决定应用到开发动作表（结果写到 `runs/v2_s2_<数据集>_dev/<数据集>.v2_dev_main.json`），主选择器相对最强单一动作 a\* 的相对提升至少 +5%，且配对 bootstrap 95% CI 下界大于 0，才输出 PASS。检查文件记录决定文件的 sha256。
 
-不生成测试集，不传 `--n-eval`。`--n-calib` 只决定校准题的 id，所以校准集必须单独解码。非 dry-run 时，任一步非零退出即停止并打印原因；步骤 5 的 gate 失败（退出码 1）时打印 `gate FAIL`，不执行步骤 6。
+不生成测试集，不传 `--n-eval`。`--n-calib` 只决定校准题的 id，所以校准集必须单独解码。非 dry-run 时，任一步非零退出即停止并打印原因；步骤 5 的 gate 失败（退出码 1）时打印 `gate FAIL`，不执行步骤 6、7；步骤 7 失败（退出码 1）时打印 `development check FAIL`，决定文件和检查文件都已写出。
 
 ### S4 冻结测试（估计值：1–2 张 A100，约 1–2 天）
 
@@ -104,10 +105,12 @@ python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions runs/v2_de
 3. 拼表：`python scripts/analysis/v2_table.py build --run runs/v2_s4_<数据集>/<数据集>.jsonl`（WebQA 带 `--bart`）
 4. 应用冻结决定并出主表：`python scripts/analysis/v2_table.py apply --table runs/v2_s4_<数据集>/<数据集>.v2_actions.jsonl --decisions <决定文件> --out runs/v2_s4_<数据集>/<数据集>.v2_main.json`
 
-没有 `--decisions`，或文件不存在、不是 JSON 对象时，脚本以非零退出码结束，标准错误写明原因，不解码测试集。
+没有 `--decisions`，或文件不存在、不是 JSON 对象时，脚本以非零退出码结束，标准错误写明原因，不解码测试集。决定文件旁边必须有 S2 写出的 `<决定文件名>.dev_check.json`，且其中记录的 sha256 与决定文件一致；检查文件缺失、对不上，或记录为未通过时，S4 同样拒绝运行。协议允许在开发集检查未通过时仍跑一次冻结测试并照实报告：这时加 `--allow-failed-dev-check`，脚本在命令前打印一行 `NOTE`，写明未通过的数值。
 
 ## go/no-go 与主表的完整性
 
 `v2_table.py gate` 在开发集上判断：逐题选择的上限相对最强单一动作是否至少 +8%。判据的实现与输出格式见 `scripts/analysis/v2_table.py`。不通过则不进入校准选择与 S4。
+
+`v2_table.py devcheck` 是进入测试前的第二道判据（协议第 5 节）：冻结后的主选择器在开发集上相对 a\* 至少 +5%，且 CI 下界大于 0。上限判据只说明有空间，这一条检查选择器实际拿到了多少。
 
 `score_official` 核对运行的题集与配置（`check_question_set`）。`v2_table.py` 的 `build` 与 `apply` 的完整性检查见该脚本的说明。
