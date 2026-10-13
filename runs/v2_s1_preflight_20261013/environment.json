@@ -1,0 +1,33 @@
+{
+  "written_utc": "2026-10-13T08:25:26.985443+00:00",
+  "argv": [
+    "python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "git_commit": "162115ecea8cdd9b2d1503f2d304e3066f4adb8c",
+  "git_branch": "main",
+  "git_dirty": false,
+  "git_dirty_files": [],
+  "python": "3.12.10",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "torch": "2.14.1",
+  "transformers": "5.5.3",
+  "numpy": "2.5.3",
+  "cuda_available": false,
+  "cuda_version": null,
+  "gpus": [],
+  "cudnn_benchmark": false,
+  "matmul_precision": "highest",
+  "model": {
+    "kind": null,
+    "device": null,
+    "dtype": null,
+    "attn_implementation": null,
+    "n_layers": null,
+    "vocab_size": null,
+    "image_size": null
+  }
+}

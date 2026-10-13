@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_runtime_20261013/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "cwd": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013",
+  "asset_environment": {
+    "OMNIAWARE_ASSETS": "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token",
+    "OMNIAWARE_WEBQA_OPEN_DIR": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/webqa_open"
+  },
+  "start": "2026-10-13T01:22:21.941128-07:00",
+  "end": "2026-10-13T01:22:37.769855-07:00",
+  "exit_code": 1,
+  "reason_for_repeat": "Configure current WebQA open-retrieval directory explicitly as required by README, removing the legacy-directory warning without suppressing warnings or changing tests."
+}
