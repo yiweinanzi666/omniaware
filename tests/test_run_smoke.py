@@ -444,7 +444,7 @@ def test_cold_start_probe_round_gates_and_routes(tmp_path, monkeypatch):
                               else {"image_clip": 0.5 / int(c["cid"][1:])}) for c in e["candidates"]} for e in exs})
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
               "--n-dev", "2", "--tag", "probe", "--probe-uncertainty", "--first-round-routing", "--u-combine", "zsum",
-              "--attn-layer", "mid"])
+              "--attn-layer", "mid", "--analysis-eab"])
     out = tmp_path / "runs" / "probe"
     config = json.loads((out / "okvqa_config.json").read_text())
     assert config["norm_probe"] and config["comb_probe"]["mode"] == "zsum"

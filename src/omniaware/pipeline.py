@@ -6,15 +6,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from . import prompts
 from .qwen_eab import BiasSpec, Segment, chunk_mass, grounding_entropy, predictive_entropy
 
-INSTRUCTION = {
-    "okvqa": "Answer the question using a single word or phrase.",
-    "webqa": "Answer the question in one short sentence.",
-    # UniversalRAG suite: its own answer formats (eval/eval.py reformat)
-    "hybridqa": "Please respond with only the exact answer.",
-    "videorag": "Please respond in a complete sentence.",
-}
+# Frozen per-family strings live in prompts.INSTRUCTIONS. This alias keeps older callers working.
+INSTRUCTION = prompts.INSTRUCTIONS
 MAX_NEW_TOKENS = {"okvqa": 30, "webqa": 384, "hybridqa": 32, "videorag": 128}
 MAX_NEW_TOKENS["okvqa_dense"] = MAX_NEW_TOKENS["okvqa"]
 MAX_DOC_WORDS = 160
@@ -64,9 +60,12 @@ def build_segments(e: dict, chunks: list[dict] | None, answer_style: str = "defa
                 segs.append(Segment(text=f"{label} (text): {_trim(body)}\n\n", chunk=cid))
     split = len(segs)
     q = f"Question: {e['question']}\n"
-    instruction = SHORT_INSTRUCTION if answer_style == "short" else INSTRUCTION[e["dataset"]]
     if answer_style == "cite":
         instruction = CITATION_INSTRUCTION
+    elif answer_style == "short":
+        instruction = SHORT_INSTRUCTION
+    else:
+        instruction = prompts.instruction_text(e["dataset"])
     q += instruction + "<|im_end|>\n<|im_start|>assistant\n"
     segs.append(Segment(text=q))
     return segs, split
@@ -154,10 +153,10 @@ def raw_uncertainty(attn, enc, evidence_ids: list[str], logits, beta: float, voc
 
 @dataclass
 class Variant:
-    """EAB family.  rows: 'ans1' (paper default since V3.21) biases every row that predicts an answer
-    token, starting at t_end, the row that predicts the first one; 'ans2' decode-only (a >= t_ans,
-    cannot change the first answer token; ablation); 'q' starts at the question.  form: 'pos'
-    gamma*U*r (paper), 'ctr' gamma*U*(2r-1), 'fixed' gamma (PASTA-style uniform bias),
+    """EAB family.  rows: 'ans1' biases every row that predicts an answer
+    token, starting at t_end, the row that predicts the first one; 'ans2' is a decode-only variant
+    (a >= t_ans, cannot change the first answer token; ablation); 'q' starts at the question.  form: 'pos'
+    gamma*U*r, 'ctr' gamma*U*(2r-1), 'fixed' gamma (PASTA-style uniform bias),
     'pos_nou' gamma*r (relevance bias without U scaling, paper ablation).
     relevance: 'retriever' (calibrated r_j) or 'random' (uniform r_j per question, ablation);
     context: also bias the supplied context (query image / provided tables) with r = 1 (ablation)."""
