@@ -1,8 +1,8 @@
 # Omni-Aware
 
-Omni-Aware v2 在多模态 Web 问答里做逐题检索仲裁。每道题在同一次运行中解码同一组动作，共用同一个提示词、预算和候选池：`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`。选择器有两个：零训练的 v2-Rule（阈值网格），以及 v2-Cal（每个证据动作一个岭回归，预测相对最强单一动作的效用差）。两者都经过固定序列的单侧配对检验：对平均效用做风险控制，δ = 0.10，ε = 1.0。主比较的分母是校准集上得分最高的单一动作。
+Omni-Aware 是面向多模态 Web 问答的隐空间证据控制。它在一个冻结的生成模型上，用“不带证据和带各类证据做前向时，首个答案 token 的分布”这一套信号，同时决定三件事：是否检索、去哪个模态检索、怎么用证据。
 
-v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论文的机制分析里：注意力可以被推向支持证据，答案几乎不变。
+控制证据有两种方式。**软控制**不改输入，只调整模型对各段证据的注意力，即 v1 的 Evidence Attention Bias（EAB）。实测它能把注意力推向支持证据，答案却几乎不变，所以它只留在论文的机制分析里。**硬控制**直接决定把哪一组证据交给模型，这是现在的主方法（v2）：每道题有五个动作 `direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`，共用同一个提示词、预算和候选池。选择器有两个：零训练的 v2-Rule（只读首 token 的领先幅度，部署时只需前向加一次解码），以及 v2-Cal（每个证据动作一个岭回归，预测相对最强单一动作的效用差）。两者都经过固定序列的单侧配对检验：对平均效用做风险控制，δ = 0.10，ε = 1.0。主比较的分母是校准集上得分最高的单一动作。
 
 本仓库是实现与实验代码；论文 LaTeX 在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
@@ -164,7 +164,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install -e ".[all]"                         # transformers==5.5.3（已测试版本）及全部可选依赖，含 nltk、faiss-cpu
 python -m spacy download en_core_web_sm
 python scripts/fetch_external.py                # 官方仓库（固定 commit）-> external/：SeaKR、M2RAG、UniversalRAG、BARTScore、WebQA、VQA ...
-python -m pytest                                # CPU 上约 20 秒（2026-10-13 实测：460 通过、5 跳过）
+python -m pytest                                # CPU 上约 20 秒（2026-10-13 实测：468 通过、5 跳过）
 ```
 
 需要 **7z**（p7zip）解压 WebQA 的图片分卷（4.1 节）：

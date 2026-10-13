@@ -140,6 +140,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - `actions.<动作>.decode`：生成的 token id、逐 token 的对数概率、耗时、是否撞到生成长度上限。
 - `actions.<动作>.first_token`：首个答案 token 的前 10 个候选（id、文字、概率）、熵、领先幅度。
 - `actions.<动作>.retriever`：该动作所用证据上的检索分数统计，以及整个候选池的统计。
+- `v2_deploy`（只在 S4 出现）：冻结的零训练规则按部署方式运行的记录。它只对规则要读的动作做前向（不生成），再只解码被选中的那一个；记录了做了几次前向、几次解码、耗时，以及它选的动作是否和“全部解码后再选”一致（`matches_full_decode`，应当全部为 `true`，出现 `false` 请反馈）。
 - `preds` 与 `parsed`：各臂的原始输出，以及解析后的答案和空答案标记。
 
 决定文件 `runs/v2_decisions/<数据集>.json` 里的 `trace` 字段记录了选择器检验过的**每一个**候选阈值：p 值、平均收益、改变了多少题、是否通过，以及在哪一步停下。如果选择器退回了单一动作，`fallback_reason` 会写明原因。

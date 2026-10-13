@@ -187,6 +187,35 @@ def reference_action(decision: dict, actions: dict) -> str:
     raise ValueError("no available action on this question")
 
 
+def signals_needed(decision: dict, actions: dict) -> list[str]:
+    """Actions whose first-token signals must still be computed before ``decision`` can be applied.
+
+    ``actions`` holds, for every action, at least ``available``; an action whose prefill has been run also holds
+    ``first_token``. An empty list means ``apply_decision`` can run. This lets a deployment prefill only what
+    the decision reads and decode only the chosen action:
+
+    - a fallback decision reads no signal;
+    - v2-Rule reads the direct signal first; when direct is kept, or when the evidence rule is "best", nothing
+      else is read; the "confident" rule also reads the signal of every available evidence action.
+
+    v2-Cal reads the decoded answers (token F1), so it cannot be applied from prefills; ValueError is raised.
+    """
+    kind = decision["kind"]
+    if kind == "single":
+        return []
+    if kind != "rule":
+        raise ValueError(f"a {kind!r} decision reads decoded answers and cannot be applied from prefills alone")
+    if _available(actions, DIRECT):
+        if "first_token" not in actions[DIRECT]:
+            return [DIRECT]
+        if _confidence(actions[DIRECT], decision["confidence"]) >= decode_json_float(decision["tau"]):
+            return []
+    if decision["evidence_choice"] == "best":
+        return []
+    return [name for name in decision["evidence_ranking"]
+            if _available(actions, name) and "first_token" not in actions[name]]
+
+
 def _rule_action(decision: dict, actions: dict) -> str:
     kind = decision["confidence"]
     if _available(actions, DIRECT) and _confidence(actions[DIRECT], kind) >= decode_json_float(decision["tau"]):

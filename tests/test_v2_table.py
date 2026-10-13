@@ -596,3 +596,12 @@ def test_devcheck_refuses_a_table_that_is_not_an_action_table(okvqa_flow, tmp_pa
     assert vt.main(["devcheck", "--table", str(tmp_path / "dev.jsonl"), "--decisions", str(decisions),
                     "--out", str(tmp_path / "c.json")]) == 2
     assert "v2_actions.jsonl" in capsys.readouterr().err
+
+
+def test_deployment_summary_reports_cost_and_agreement():
+    deployed = [{"action": "direct", "prefill_calls": 1, "decode_calls": 1, "seconds": 0.2, "matches_full_decode": True},
+                {"action": "static_mixed", "prefill_calls": 4, "decode_calls": 1, "seconds": 0.6,
+                 "matches_full_decode": True}]
+    summary = vt.deployment_summary(deployed, 2)
+    assert summary["prefill_calls_mean"] == 2.5 and summary["decode_calls_mean"] == 1.0
+    assert summary["chosen"] == {"direct": 1, "static_mixed": 1} and summary["matches_full_decode"] == 2
