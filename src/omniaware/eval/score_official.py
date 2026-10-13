@@ -129,8 +129,9 @@ def score_webqa(preds, qids, records, bart=False, device=None):
         else:
             rows = fluent_rows
             for row in rows:
-                row['normalized_bart'] = row['normalized_bart_score']
-                row['QA_approx'] = row['acc_approx_x_normalized_bart']
+                # the per-question names of the paper: normalized_bart and QA_approx
+                row['normalized_bart'] = row.pop('normalized_bart_score')
+                row['QA_approx'] = row.pop('acc_approx_x_normalized_bart')
             metrics.extend(['normalized_bart', 'QA_approx'])
     scores = {arm: {} for arm in preds}
     for row in rows:
@@ -139,29 +140,20 @@ def score_webqa(preds, qids, records, bart=False, device=None):
             cell.setdefault(m, None)
         scores[row['variant']][row['qid']] = cell
     extra['subsets'] = _webqa_subsets(scores, qids, records, metrics)
-    extra['normalized_bart'] = _arm_means(scores, qids, 'normalized_bart') if 'normalized_bart' in metrics else None
-    extra['QA_approx'] = _arm_means(scores, qids, 'QA_approx') if 'QA_approx' in metrics else None
     return scores, metrics, extra
 
 
 def webqa_subset_name(record: dict) -> str:
-    """Image question vs text question. Gold modalities win; qcate is only a fallback."""
+    """Image question or text question, from the gold modalities. qcate does not say which: its values are
+    text / YesNo / color / shape / number / choose / Others for every question type, so it is never used."""
     mods = record.get('gold_modalities')
-    if isinstance(mods, (list, tuple, set)):
-        return 'image_question' if 'image' in mods else 'text_question'
-    if str(record.get('qcate') or '').lower() in {'image', 'img'}:
-        return 'image_question'
-    return 'text_question'
-
-
-def _mean_defined(values):
-    vals = [v for v in values if v is not None]
-    return float(np.mean(vals)) if vals else None
+    if not isinstance(mods, (list, tuple, set)):
+        raise ValueError(f"{record.get('qid')}: no gold_modalities, so its WebQA image/text subset is unknown")
+    return 'image_question' if 'image' in mods else 'text_question'
 
 
 def _arm_means(scores, qids, metric):
-    if not qids:
-        return {arm: None for arm in scores}
+    """arm -> mean of ``metric`` over ``qids``, skipping questions where it is undefined (None)."""
     out = {}
     for arm in scores:
         vals = [scores[arm][q].get(metric) for q in qids]
@@ -176,17 +168,6 @@ def _webqa_subsets(scores, qids, records, metrics):
         groups[webqa_subset_name(records[q])].append(q)
     return {name: {'n': len(qs), **{m: _arm_means(scores, qs, m) for m in metrics}}
             for name, qs in groups.items()}
-
-
-def diagnostic_substring_accuracy(prediction: str, reference: str) -> float:
-    """Diagnostic only: 1 if the reference is a substring of the prediction. Not an official score.
-
-    Paper-table scripts must not call this. OK-VQA uses ``score_okvqa``; WebQA uses acc_approx.
-    """
-    pred, ref = (prediction or '').lower().strip(), (reference or '').lower().strip()
-    if not ref:
-        return 0.0
-    return 1.0 if ref in pred else 0.0
 
 
 def webqa_references():
@@ -263,6 +244,9 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
             parsed = answers.parse_answer(by_qid[q]['preds'][arm] or '')
             preds[arm][q] = parsed['answer']
             empty_flags.append(parsed['answer_empty'])
+    for q in qids:       # the v2 actions of the run count in the empty-answer statistics too (unavailable ones do not)
+        empty_flags += [bool(a['answer_empty']) for a in (by_qid[q].get('actions') or {}).values()
+                        if a.get('available', True)]
     if family == 'webqa':
         check_golds(by_qid, qids, webqa_references())
         scores, metrics, extra = score_webqa(preds, qids, by_qid, bart=bart, device=device)
@@ -283,8 +267,7 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
                'predictions_sha256': hashlib.sha256(raw).hexdigest(), 'dataset': family, 'n': len(qids),
                'question_check': question_check, 'subset': question_check['mode'] == 'subset',
                'metrics': metrics,
-               'means': {arm: {m: _mean_defined([scores[arm][q][m] for q in qids]) for m in metrics}
-                         for arm in arms},
+               'means': {arm: {m: _arm_means(scores, qids, m)[arm] for m in metrics} for arm in arms},
                'comparisons': {}, **answers.summarize_empty(empty_flags)}
     if 'bart_error' in extra:
         summary['bart_error'] = extra['bart_error']
@@ -296,8 +279,6 @@ def score_run(path, references=('static', 'direct'), bart=False, device=None, su
     if 'acc_approx_provenance' in extra:
         summary['webqa_metric_provenance'] = extra['acc_approx_provenance']
         summary['primary_metric'] = 'acc_approx'
-        summary['normalized_bart'] = extra.get('normalized_bart')
-        summary['QA_approx'] = extra.get('QA_approx')
         summary['subsets'] = extra.get('subsets')
     if 'bertscore' in extra:          # fixed model and reference rule of the BERTScore column
         summary['bertscore'] = extra['bertscore']

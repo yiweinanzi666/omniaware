@@ -112,6 +112,28 @@ def load_partial_jsonl(path) -> list[dict]:
     return rows
 
 
+class FrozenDecisionsError(ValueError):
+    """The frozen decisions file is missing, not JSON, or not a JSON object."""
+
+
+def read_frozen_decisions(path) -> str:
+    """Check the frozen decisions file and return its sha256 (recorded in the run configuration). The file is
+    not expanded into a grid, and nothing is substituted when it is unusable."""
+    path = Path(path)
+    if not path.is_file():
+        raise FrozenDecisionsError(f"frozen decisions file not found: {path}. "
+                                   "No default hyperparameters were substituted.")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise FrozenDecisionsError(f"frozen decisions file is not readable JSON: {path} ({exc}). "
+                                   "No default hyperparameters were substituted.") from exc
+    if not isinstance(payload, dict):
+        raise FrozenDecisionsError(f"frozen decisions file must be a JSON object: {path}. "
+                                   "No default hyperparameters were substituted.")
+    return sha256_file(path)
+
+
 def config_path_for(out_dir, dataset: str) -> Path:
     return Path(out_dir) / f"{dataset}_config.json"
 

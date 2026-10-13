@@ -3,8 +3,9 @@
     python -m scripts.analysis.dev_select --phase 1 [--runs runs] [--model 8b]   # base grid -> runs/dev_decisions.json
     python -m scripts.paper_runs --stage dev_beta --run                          # beta x tau_b grid (phase-1 choice)
     python -m scripts.analysis.dev_select --phase 2 [--runs runs] [--model 8b]   # beta, tau_b, tau -> complete file
-    python -m scripts.analysis.dev_select --v2-records calib.jsonl               # v2 grid -> decisions["v2"]
-    python -m scripts.analysis.dev_select --stage test                           # read decisions["v2"], do not search
+    python -m scripts.analysis.dev_select --v2-records calib.jsonl [--epsilon 1.0] [--seed 0]   # v2 -> decisions["v2"]
+    python -m scripts.analysis.dev_select --stage test --test-table test.v2_actions.jsonl \
+        --choices-out choices.jsonl                                              # apply frozen v2, do not search
 
 Phase 1 reads runs/v321dev_base_<model>/<dataset>.jsonl (all EAB candidates) and the sum/zsum/mid U-setting runs,
 and chooses, in this order: the OK-VQA corpus (largest static - direct gap), the uncertainty setting (highest mean
@@ -17,9 +18,10 @@ tau is exact without rerunning the model (see paper_analyses tau).
 Every file read is checked (present, scored, finite) and its sha256 is written to the decisions file.
 The test-stage commands in scripts/paper_runs.py refuse to run unless the phase-2 file exists for the model.
 
-v2 is a separate mechanical step (docs/DEV_DECISIONS.md, "v2 预注册"). ``select_v2`` scores the preregistered
-margin grid on calibration records only and writes the Learn-then-Test choice under decisions["v2"].
-``--stage test`` reads that entry and does not search. Phase 1 and phase 2 are unchanged: pass ``--phase``,
+v2 is a separate mechanical step (docs/DEV_DECISIONS.md, "v2 预注册"). ``select_v2`` runs the v2-Rule and v2-Cal
+selectors of ``omniaware.arbitration`` on calibration rows only and writes both under decisions["v2"], with
+"rule" as the primary. ``--stage test`` reads that entry, applies the primary decision to each test row with
+``arbitration.apply_decision``, and does not search. Phase 1 and phase 2 are unchanged: pass ``--phase``,
 not ``--v2-records``.
 """
 from __future__ import annotations
@@ -35,7 +37,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from omniaware import analysis  # noqa: E402
+from omniaware import analysis, arbitration  # noqa: E402
 from scripts.analysis.paper_analyses import load_run, load_scores, mean  # noqa: E402
 
 ALPHA = 0.05
@@ -279,57 +281,34 @@ def _load_jsonl(path: Path) -> list[dict]:
     return rows
 
 
-def select_v2(calib_records, delta=0.1):
-    """Score the preregistered v2-Rule grid on calibration records and choose by LTT.
+def select_v2(calib_rows, delta=0.1, epsilon=1.0, seed=0):
+    """Run the v2-Rule and v2-Cal selectors on calibration rows and freeze both. Rule is the primary.
 
-    Each record has ``actions`` (per-action signal dicts) and ``scores`` (per-action official score, a
-    number). Returns a decisions dict with the choice under ``v2``. Pass only the calibration half;
-    this function does not split or look at evaluation records. ``gold_in_topk`` is not read.
+    Each row is ``{"qid", "actions", "scores"}`` from the v2 action table. This function never sees evaluation
+    rows. The cal family splits the rows into halves by ``seed`` internally.
     """
-    from omniaware.arbitration import (V2_ACTIONS, apply_candidate, best_single_action, ltt_select,
-                                       preregistered_grid)
-    if not calib_records:
-        raise DevDataError("v2 selection needs calibration records")
-    for rec in calib_records:
-        missing = [name for name in V2_ACTIONS if name not in rec.get("actions", {}) or name not in rec.get("scores", {})]
-        if missing:
-            raise DevDataError(f"record {rec.get('qid')}: missing {missing}")
-        for name in V2_ACTIONS:
-            value = rec["scores"][name]
-            if isinstance(value, dict) or not math.isfinite(float(value)):
-                raise DevDataError(f"record {rec.get('qid')}: score for {name} must be a finite number")
-    scores_by_action = {
-        name: np.array([float(rec["scores"][name]) for rec in calib_records], dtype=float) for name in V2_ACTIONS
-    }
-    best_name = best_single_action(scores_by_action)
-    scores_by_candidate = {}
-    for candidate in preregistered_grid():
-        column = []
-        for rec in calib_records:
-            chosen = apply_candidate(candidate, rec["actions"])
-            column.append(float(rec["scores"][chosen["action"]]))
-        scores_by_candidate[candidate["name"]] = np.asarray(column, dtype=float)
-    chosen = ltt_select(preregistered_grid(), scores_by_candidate, scores_by_action[best_name],
-                        delta=delta, best_action=best_name)
-    return {"v2": chosen}
+    if not calib_rows:
+        raise DevDataError("v2 selection needs calibration rows")
+    rule = arbitration.select_rule(calib_rows, delta=delta, epsilon=epsilon)
+    cal = arbitration.select_cal(calib_rows, delta=delta, epsilon=epsilon, seed=seed)
+    return {"v2": {"rule": rule, "cal": cal, "primary": "rule"}}
 
 
 def frozen_v2(decisions):
-    """Test stage. Return the frozen ``v2`` decision and do not search the grid."""
+    """Test stage. Return the frozen ``v2`` entry and do not search."""
     if isinstance(decisions, (str, Path)):
         decisions = json.loads(Path(decisions).read_text(encoding="utf-8"))
     if not isinstance(decisions, dict) or "v2" not in decisions:
         raise DevDataError("test stage requires a frozen decisions['v2'] entry and does not search")
-    return decisions["v2"]
+    entry = decisions["v2"]
+    if entry.get("primary") not in ("rule", "cal"):
+        raise DevDataError("frozen decisions['v2'] must name a primary family, 'rule' or 'cal'")
+    return entry
 
 
-def apply_frozen_v2(decision, actions):
-    """Apply a frozen v2 decision. A fallback uses that single action; otherwise the stored thresholds."""
-    from omniaware.arbitration import apply_candidate
-    if decision.get("fallback"):
-        name = decision["action"]
-        return {"action": name, "answer": actions[name]["answer"], "used_evidence": name != "direct"}
-    return apply_candidate(decision, actions)
+def apply_frozen_v2(frozen, actions):
+    """Apply the frozen primary decision to one question's actions. Reads no scores."""
+    return arbitration.apply_decision(frozen[frozen["primary"]], actions)
 
 
 def main(argv=None):
@@ -341,6 +320,10 @@ def main(argv=None):
     ap.add_argument("--stage", choices=("dev", "test"), default="dev")
     ap.add_argument("--v2-records", type=Path, default=None)
     ap.add_argument("--delta", type=float, default=0.1)
+    ap.add_argument("--epsilon", type=float, default=1.0)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--test-table", type=Path, default=None, help="test-split v2 action table (stage test only)")
+    ap.add_argument("--choices-out", type=Path, default=None, help="where to write the applied choices (stage test only)")
     args = ap.parse_args(argv)
     out = args.output or args.runs / "dev_decisions.json"
     if args.stage == "test":
@@ -348,13 +331,20 @@ def main(argv=None):
             raise DevDataError("test stage only reads a frozen decisions file; do not pass --phase or --v2-records")
         if not out.exists():
             raise DevDataError(f"test stage needs a frozen decisions file at {out}")
-        decision = frozen_v2(out)
-        print(json.dumps(decision, indent=1))
-        return {"v2": decision}
+        frozen = frozen_v2(out)
+        print(json.dumps(frozen, indent=1))
+        if args.test_table is None:
+            return {"v2": frozen}
+        if args.choices_out is None:
+            raise DevDataError("--test-table needs --choices-out")
+        choices = [{"qid": row["qid"], **apply_frozen_v2(frozen, row["actions"])} for row in _load_jsonl(args.test_table)]
+        args.choices_out.parent.mkdir(parents=True, exist_ok=True)
+        args.choices_out.write_text("".join(json.dumps(c) + "\n" for c in choices), encoding="utf-8")
+        return {"v2": frozen, "choices": choices}
     if args.v2_records is not None:
         if args.phase is not None:
             raise DevDataError("pass either --phase or --v2-records, not both")
-        result = select_v2(_load_jsonl(args.v2_records), delta=args.delta)
+        result = select_v2(_load_jsonl(args.v2_records), delta=args.delta, epsilon=args.epsilon, seed=args.seed)
         prev = json.loads(out.read_text(encoding="utf-8")) if out.exists() else {}
         prev["v2"] = result["v2"]
         out.parent.mkdir(parents=True, exist_ok=True)

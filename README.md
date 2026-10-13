@@ -1,12 +1,12 @@
 # Omni-Aware
 
-Omni-Aware v2 在多模态 Web 问答里做逐题检索仲裁。每道题在同一次运行中解码同一组动作，共用同一个提示词、预算和候选池：`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`。选择器有两个：零训练的 v2-Rule，以及只有 7 个参数（截距加 6 个特征）的逻辑回归 v2-Cal。阈值用固定序列的 Learn-then-Test 筛选。主比较的分母是校准集上得分最高的单一动作。
+Omni-Aware v2 在多模态 Web 问答里做逐题检索仲裁。每道题在同一次运行中解码同一组动作，共用同一个提示词、预算和候选池：`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`。选择器有两个：零训练的 v2-Rule（阈值网格），以及 v2-Cal（每个证据动作一个岭回归，预测相对最强单一动作的效用差）。两者都经过固定序列的单侧配对检验：对平均效用做风险控制，δ = 0.10，ε = 1.0。主比较的分母是校准集上得分最高的单一动作。
 
 v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论文的机制分析里：注意力可以被推向支持证据，答案几乎不变。
 
 本仓库是实现与实验代码；论文 LaTeX 在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
-> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文由另一处写入 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)；测试命令只读冻结的 `docs/dev_decisions.json`。
+> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
 
 作废、不得进入论文主表的旧结果：
 
@@ -24,27 +24,25 @@ v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论�
 
 ## v2 实验
 
-下面的命令是 v2 的接口。对应脚本由另一分支实现；此处只固定命令行。S1、S2、S4 都还没有作为论文结果跑过。
+下面的命令是 v2 的阶段接口，由 `scripts/v2_runs.py` 生成（`--dry-run` 只打印）。选择、评分与拼表由 `scripts/analysis/v2_table.py` 的 `build`、`gate`、`select`、`apply` 完成；该脚本由另一子任务实现，合入本分支之前这些子命令不存在。S1、S2、S4 都还没有作为论文结果跑过。
 
 ```bash
 python scripts/v2_runs.py --stage s1 --dataset webqa_full --n 50
-python scripts/v2_runs.py --stage s1 --dataset okvqa --n 50
+python scripts/v2_runs.py --stage s1 --dataset okvqa_gs --n 50
 python scripts/v2_runs.py --stage s2 --dataset webqa_full
 python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
-python scripts/v2_runs.py --stage s2 --dataset okvqa
-python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions docs/dev_decisions.json
-python scripts/v2_runs.py --stage s4 --dataset okvqa --decisions docs/dev_decisions.json
-python scripts/analysis/v2_gate.py --scores <dev-scores.json>
+python scripts/v2_runs.py --stage s2 --dataset okvqa_gs
+python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions runs/v2_decisions/webqa_full.json
+python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_decisions/okvqa_gs.json
 python scripts/analysis/image_evidence_check.py --n 50
 python scripts/analysis/offline_v2.py --seed 20261013 --out runs/offline_v2
 ```
 
-- **S1**：每个数据集 50 题冒烟，检查空答案、各臂格式和图像诊断。
-- **S2**：按协议生成校准集和开发集，并保存信号。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
-- **S4**：读取冻结的 `docs/dev_decisions.json`，全量测试集只跑一次。
-- **v2_gate**：用 S2 产出的开发集分数做 go/no-go。判据是预注册门槛，不是已有结果。`<dev-scores.json>` 是该开发集分数文件的路径。
+- **S1**：每个数据集 50 题冒烟，检查空答案、各臂格式和图像诊断命令（诊断命令只打印）。
+- **S2**：解码校准集与开发集，官方评分，生成逐题动作表。开发集上做 go/no-go（`v2_table.py gate`，+8% 判据），校准集上生成冻结决定（`v2_table.py select`）。`webqa_full` 是 distractor 主设置；`webqa_open_img` 是开放检索的第二设置。
+- **S4**：读取冻结的 `runs/v2_decisions/<dataset>.json`，全量测试集只跑一次，评分后用 `v2_table.py apply` 产出主表输入。不搜索网格。
 - **image_evidence_check**：50 道图像题的证据管线诊断。
-- **offline_v2**：见上面的当前状态。探索性，旧管线，含已知 bug，不是主表。
+- **offline_v2**：见上面的当前状态。探索性，旧管线，含已知 bug，返工后需重写，不是主表。
 
 GPU 时间都是**估计值**，不是实测，也不要写成测量结果：
 
@@ -466,7 +464,7 @@ python -m scripts.analysis.routing_metrics runs/v321_route_*/webqa_open_full.jso
 
 ## 7. 论文表格与代码的对应
 
-v2 论文里每张表对应哪条命令，见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。实验协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)。规范见 [CONVENTIONS.md](CONVENTIONS.md)。dev 决策的原文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)；v2 测试命令读取的是 `docs/dev_decisions.json`。
+v2 论文里每张表对应哪条命令，见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。实验协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)。规范见 [CONVENTIONS.md](CONVENTIONS.md)。dev 决策的原文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md)；v2 测试命令读取的是 `runs/v2_decisions/<dataset>.json`。
 
 ## 8. 测试
 

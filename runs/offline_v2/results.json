@@ -1,214 +1,81 @@
 {
-  "label": "探索性、旧管线、含已知 bug 的数据",
+  "exploratory": true,
+  "paper_table": false,
+  "seed": 20261013,
+  "delta": 0.1,
+  "epsilons": [
+    0.0,
+    1.0
+  ],
+  "inputs": {
+    "webqa": {
+      "path": "C:\\rc\\experiments\\v318_missing_experiments_5h_root_20261008\\pro6000_resume_20261009\\official_scoring_pipeline\\server_results_37028\\results\\full4966_scoring\\seed17\\OFFICIAL_SCORES.jsonl",
+      "sha256": "cd7a21769873a92fc5a5f1b278d7f360f38f97a72db0efc245037e4211f2f7b9"
+    },
+    "okvqa_preds": {
+      "path": "C:\\rc\\experiments\\omniaware_github_20261009\\a100_20261012\\results\\reward_gate_v1\\fast_math_v1\\runs\\tf32_ce_calibrated_k5_dev256\\okvqa_gs.jsonl",
+      "sha256": "3144057e2b134538f757572c89574855db36fb8be8387b5418ae3eb82d8e0dc1"
+    },
+    "okvqa_official": {
+      "path": "C:\\rc\\experiments\\omniaware_github_20261009\\a100_20261012\\results\\reward_gate_v1\\fast_math_v1\\runs\\tf32_ce_calibrated_k5_dev256\\okvqa_gs.official_scores.jsonl",
+      "sha256": "e5b091a6da17055b3e22d08006d6c155a2d78f28bc67372dfd693208ed321fc7"
+    }
+  },
   "datasets": {
     "webqa": {
-      "label": "探索性、旧管线、含已知 bug 的数据",
-      "objective": "acc_approx",
-      "seed": 20261013,
-      "n_questions": 4966,
-      "n_calib": 2483,
-      "n_eval": 2483,
-      "best_single_action_on_calib": "static_mixed",
-      "declared_actions": [
-        "direct",
-        "static_text",
-        "static_image",
-        "static_mixed",
-        "rerank_static"
-      ],
-      "actions_in_dump": [
-        "direct",
-        "static_mixed"
-      ],
-      "grid": [
-        {
-          "name": "margin_tau-1e9_theta1",
-          "tau1": -1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin"
+      "questions": 4966,
+      "calib": 2483,
+      "eval": 2483,
+      "best_single": "static_mixed",
+      "calib_qids_sha256": "6612cd2668b1ef93e70ff8ecedf29b58f4162f47981cb9ce98f61de5fe397bad",
+      "eval_qids_sha256": "27db7713a6523dbe0c8c1e4e44f93d9f7df49181911c5242fcaf9db27451f7ff",
+      "naive": {
+        "kind": "naive_threshold",
+        "tau": 0.6214480643163273,
+        "calib_mean": 42.84638409831423
+      },
+      "empty_rates": {
+        "direct": {
+          "empty": 410,
+          "questions": 4966,
+          "rate": 0.08256141763995167
         },
-        {
-          "name": "margin_tau-1e9_theta0.5",
-          "tau1": -1000000000.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau-1e9_theta0",
-          "tau1": -1000000000.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta1",
-          "tau1": 0.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta0.5",
-          "tau1": 0.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta0",
-          "tau1": 0.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta1",
-          "tau1": 0.25,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta0.5",
-          "tau1": 0.25,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta0",
-          "tau1": 0.25,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta1",
-          "tau1": 0.5,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta0.5",
-          "tau1": 0.5,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta0",
-          "tau1": 0.5,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta1",
-          "tau1": 1.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta0.5",
-          "tau1": 1.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta0",
-          "tau1": 1.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta1",
-          "tau1": 2.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta0.5",
-          "tau1": 2.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta0",
-          "tau1": 2.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta1",
-          "tau1": 4.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta0.5",
-          "tau1": 4.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta0",
-          "tau1": 4.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta1",
-          "tau1": 1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta0.5",
-          "tau1": 1000000000.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta0",
-          "tau1": 1000000000.0,
-          "theta": 0.0,
-          "confidence": "margin"
+        "static_mixed": {
+          "empty": 447,
+          "questions": 4966,
+          "rate": 0.09001208215867902
         }
-      ],
-      "v2_rule": {
-        "decision": {
-          "name": "best_single",
-          "action": "static_mixed",
-          "fallback": true
+      },
+      "blocks": [
+        {
+          "name": "direct",
+          "mean": 41.27519215193165,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 41.27519215193165,
+            "delta_pp": -0.044857212722081145,
+            "relative_percent": -0.10856040448115535,
+            "paired_ci95_pp": [
+              -1.9008085477743628,
+              1.7762770708928897
+            ],
+            "p_two_sided": 0.9648070385922816,
+            "wins": 591,
+            "losses": 550,
+            "ties": 1342
+          },
+          "capture_ratio": -0.003396711684579761,
+          "chosen": {
+            "direct": 2483
+          },
+          "decision": null
         },
-        "candidate": null,
-        "delta": 0.1,
-        "eval": {
-          "policy_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41320049364653727,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "best_single_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41320049364653727,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "direct_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41275192151931644,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "static_mixed_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41320049364653727,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "oracle_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.5452611949586895,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "utility": 0.0,
-          "paired": {
-            "baseline": 0.4132004936465373,
-            "ours": 0.4132004936465373,
+        {
+          "name": "static_mixed",
+          "mean": 41.32004936465373,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 41.32004936465373,
             "delta_pp": 0.0,
             "relative_percent": 0.0,
             "paired_ci95_pp": [
@@ -220,384 +87,286 @@
             "losses": 0,
             "ties": 2483
           },
-          "oracle_gap": {
-            "numerator_sum_policy_minus_best": 0.0,
-            "denominator_sum_oracle_minus_best": 327.9067213580742,
-            "fraction": 0.0,
-            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "action_counts": {
+          "capture_ratio": 0.0,
+          "chosen": {
             "static_mixed": 2483
           },
-          "bart_policy_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.17428410337418798,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "bart_direct_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.17424697023677568,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "bart_static_mixed_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.17428410337418798,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
         },
-        "label": "探索性、旧管线、含已知 bug 的数据"
-      },
-      "v2_cal": {
-        "status": "ok",
-        "fit_on": "calib_half_only",
-        "model": {
-          "n_params": 7,
-          "n_weights": 7,
-          "weights": [
-            -0.7614946651864644,
-            0.7912718177205086,
-            0.0,
-            0.0,
-            0.0,
-            0.09957804011188741,
-            0.0
-          ],
-          "label": "探索性、旧管线、含已知 bug 的数据"
-        },
-        "eval": {
-          "policy_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41275192151931644,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "best_single_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.41320049364653727,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "utility": -0.0004485721272208135,
-          "paired": {
-            "baseline": 0.4132004936465373,
-            "ours": 0.41275192151931644,
-            "delta_pp": -0.0004485721272208135,
-            "relative_percent": -0.10856040448115582,
+        {
+          "name": "最强单一动作 static_mixed",
+          "mean": 41.32004936465373,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 41.32004936465373,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
             "paired_ci95_pp": [
-              -0.0184402702861263,
-              0.017099027685546546
+              0.0,
+              0.0
             ],
-            "p_two_sided": 0.9582083583283343,
-            "wins": 591,
-            "losses": 550,
-            "ties": 1342
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 2483
           },
-          "oracle_gap": {
-            "numerator_sum_policy_minus_best": -1.1138045918892812,
-            "denominator_sum_oracle_minus_best": 327.9067213580742,
-            "fraction": -0.003396711684579976,
-            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.0,
+          "chosen": {
+            "static_mixed": 2483
           },
-          "action_counts": {
-            "direct": 2483
-          },
-          "bart_policy_mean": {
-            "n": 2483,
-            "n_missing": 0,
-            "mean": 0.17424697023677568,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
         },
-        "label": "探索性、旧管线、含已知 bug 的数据"
-      },
-      "eval_by_subset": {
-        "text": {
-          "direct": {
-            "n": 1195,
-            "n_missing": 0,
-            "mean": 0.4220906020988302,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+        {
+          "name": "朴素基线",
+          "mean": 43.307867903240414,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 43.307867903240414,
+            "delta_pp": 1.9878185385866902,
+            "relative_percent": 4.810784520231293,
+            "paired_ci95_pp": [
+              0.9613179834892521,
+              3.0083153960712887
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 237,
+            "losses": 160,
+            "ties": 2086
           },
-          "static_mixed": {
-            "n": 1195,
-            "n_missing": 0,
-            "mean": 0.5278283224828569,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.15052309421620247,
+          "chosen": {
+            "direct": 1013,
+            "static_mixed": 1470
           },
-          "v2_rule": {
-            "n": 1195,
-            "n_missing": 0,
-            "mean": 0.5278283224828569,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "oracle": {
-            "n": 1195,
-            "n_missing": 0,
-            "mean": 0.6150559869335577,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "best_single": {
-            "n": 1195,
-            "n_missing": 0,
-            "mean": 0.5278283224828569,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": {
+            "kind": "naive_threshold",
+            "tau": 0.6214480643163273
           }
         },
-        "img": {
-          "direct": {
-            "n": 1288,
-            "n_missing": 0,
-            "mean": 0.4040875400810255,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+        {
+          "name": "逐题上限",
+          "mean": 54.526119495868954,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 54.526119495868954,
+            "delta_pp": 13.206070131215226,
+            "relative_percent": 31.96044132152478,
+            "paired_ci95_pp": [
+              12.102192830539307,
+              14.360001565279644
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 591,
+            "losses": 0,
+            "ties": 1892
           },
-          "static_mixed": {
-            "n": 1288,
-            "n_missing": 0,
-            "mean": 0.3068493636314734,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 1.0,
+          "chosen": {
+            "direct": 1933,
+            "static_mixed": 550
           },
-          "v2_rule": {
-            "n": 1288,
-            "n_missing": 0,
-            "mean": 0.3068493636314734,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
+        },
+        {
+          "name": "v2-Rule ε=0",
+          "mean": 43.307867903240414,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 43.307867903240414,
+            "delta_pp": 1.9878185385866902,
+            "relative_percent": 4.810784520231293,
+            "paired_ci95_pp": [
+              0.9613179834892521,
+              3.0083153960712887
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 237,
+            "losses": 160,
+            "ties": 2086
           },
-          "oracle": {
-            "n": 1288,
-            "n_missing": 0,
-            "mean": 0.4805059337708267,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.15052309421620247,
+          "chosen": {
+            "direct": 1013,
+            "static_mixed": 1470
           },
-          "best_single": {
-            "n": 1288,
-            "n_missing": 0,
-            "mean": 0.3068493636314734,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": {
+            "kind": "rule",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 2483,
+            "n_accepted": 22,
+            "calib_utility": 1.4401808984327102,
+            "evidence_choice": "best",
+            "tau": 0.6214480643163273
+          }
+        },
+        {
+          "name": "v2-Rule ε=1",
+          "mean": 43.307867903240414,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 43.307867903240414,
+            "delta_pp": 1.9878185385866902,
+            "relative_percent": 4.810784520231293,
+            "paired_ci95_pp": [
+              0.9613179834892521,
+              3.0083153960712887
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 237,
+            "losses": 160,
+            "ties": 2086
+          },
+          "capture_ratio": 0.15052309421620247,
+          "chosen": {
+            "direct": 1013,
+            "static_mixed": 1470
+          },
+          "decision": {
+            "kind": "rule",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 2483,
+            "n_accepted": 28,
+            "calib_utility": 1.4401808984327102,
+            "evidence_choice": "best",
+            "tau": 0.6214480643163273
+          }
+        },
+        {
+          "name": "v2-Cal ε=0",
+          "mean": 41.32004936465373,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 41.32004936465373,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 2483
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "static_mixed": 2483
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "static_mixed",
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 2483,
+            "n_accepted": 3,
+            "calib_utility": null,
+            "seed": 20261013,
+            "n_fit": 1241,
+            "n_risk": 1242
+          }
+        },
+        {
+          "name": "v2-Cal ε=1",
+          "mean": 43.74857940786063,
+          "vs_best_single": {
+            "baseline": 41.32004936465373,
+            "ours": 43.74857940786063,
+            "delta_pp": 2.428530043206898,
+            "relative_percent": 5.877364815745664,
+            "paired_ci95_pp": [
+              1.276596230639619,
+              3.58842125337729
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 326,
+            "losses": 227,
+            "ties": 1930
+          },
+          "capture_ratio": 0.18389498307044283,
+          "chosen": {
+            "direct": 1565,
+            "static_mixed": 918
+          },
+          "decision": {
+            "kind": "cal",
+            "fallback": false,
+            "best_single": "static_mixed",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 2483,
+            "n_accepted": 18,
+            "calib_utility": 2.2924448166836275,
+            "lam": -3.2348218968692017,
+            "seed": 20261013,
+            "n_fit": 1241,
+            "n_risk": 1242,
+            "n_params": 4,
+            "models": {
+              "direct": {
+                "features": [
+                  "conf_direct",
+                  "conf_star",
+                  "token_f1_to_star"
+                ],
+                "dropped": [
+                  "conf_gap",
+                  "kl_to_direct",
+                  "retriever_top1"
+                ],
+                "n_params": 4
+              }
+            }
           }
         }
+      ],
+      "cal_seed_spread": {
+        "seeds": 20,
+        "min": 42.680486880817384,
+        "median": 43.304263373284456,
+        "max": 43.60657768408194
       }
     },
     "okvqa": {
-      "label": "探索性、旧管线、含已知 bug 的数据",
-      "objective": "vqa_accuracy",
-      "seed": 20261013,
-      "n_questions": 256,
-      "n_calib": 128,
-      "n_eval": 128,
-      "best_single_action_on_calib": "direct",
-      "declared_actions": [
-        "direct",
-        "static_text",
-        "static_image",
-        "static_mixed",
-        "rerank_static"
-      ],
-      "actions_in_dump": [
-        "direct",
-        "static_mixed"
-      ],
-      "grid": [
-        {
-          "name": "margin_tau-1e9_theta1",
-          "tau1": -1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin"
+      "questions": 256,
+      "calib": 128,
+      "eval": 128,
+      "best_single": "direct",
+      "calib_qids_sha256": "0a8319f2cf4fb229894c2f7baddad31207020fb68473ca9be7d1f6cda3bbbc6e",
+      "eval_qids_sha256": "a053ed115373686eb4994694db28d8efdb377084c303b1441302cecf1a5782ba",
+      "naive": {
+        "kind": "naive_threshold",
+        "tau": -0.18220247365492095,
+        "calib_mean": 64.375
+      },
+      "empty_rates": {
+        "direct": {
+          "empty": 0,
+          "questions": 256,
+          "rate": 0.0
         },
-        {
-          "name": "margin_tau-1e9_theta0.5",
-          "tau1": -1000000000.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau-1e9_theta0",
-          "tau1": -1000000000.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta1",
-          "tau1": 0.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta0.5",
-          "tau1": 0.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0_theta0",
-          "tau1": 0.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta1",
-          "tau1": 0.25,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta0.5",
-          "tau1": 0.25,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.25_theta0",
-          "tau1": 0.25,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta1",
-          "tau1": 0.5,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta0.5",
-          "tau1": 0.5,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau0.5_theta0",
-          "tau1": 0.5,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta1",
-          "tau1": 1.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta0.5",
-          "tau1": 1.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1_theta0",
-          "tau1": 1.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta1",
-          "tau1": 2.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta0.5",
-          "tau1": 2.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau2_theta0",
-          "tau1": 2.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta1",
-          "tau1": 4.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta0.5",
-          "tau1": 4.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau4_theta0",
-          "tau1": 4.0,
-          "theta": 0.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta1",
-          "tau1": 1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta0.5",
-          "tau1": 1000000000.0,
-          "theta": 0.5,
-          "confidence": "margin"
-        },
-        {
-          "name": "margin_tau1e9_theta0",
-          "tau1": 1000000000.0,
-          "theta": 0.0,
-          "confidence": "margin"
+        "static_mixed": {
+          "empty": 0,
+          "questions": 256,
+          "rate": 0.0
         }
-      ],
-      "v2_rule": {
-        "decision": {
-          "name": "margin_tau-1e9_theta1",
-          "tau1": -1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin",
-          "fallback": false,
-          "utility": 0.0
-        },
-        "candidate": {
-          "name": "margin_tau-1e9_theta1",
-          "tau1": -1000000000.0,
-          "theta": 1.0,
-          "confidence": "margin"
-        },
-        "delta": 0.1,
-        "eval": {
-          "policy_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "best_single_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "direct_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "static_mixed_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 32.03125,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "oracle_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 60.625,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "utility": 0.0,
-          "paired": {
+      },
+      "blocks": [
+        {
+          "name": "direct",
+          "mean": 58.59375,
+          "vs_best_single": {
             "baseline": 58.59375,
             "ours": 58.59375,
             "delta_pp": 0.0,
@@ -611,138 +380,257 @@
             "losses": 0,
             "ties": 128
           },
-          "oracle_gap": {
-            "numerator_sum_policy_minus_best": 0.0,
-            "denominator_sum_oracle_minus_best": 260.0,
-            "fraction": 0.0,
-            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
           },
-          "action_counts": {
-            "direct": 128,
-            "__used_evidence__": 0
-          },
-          "bart_policy_mean": {
-            "n": 0,
-            "n_missing": 128,
-            "mean": null,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "bart_direct_mean": {
-            "n": 0,
-            "n_missing": 128,
-            "mean": null,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "bart_static_mixed_mean": {
-            "n": 0,
-            "n_missing": 128,
-            "mean": null,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
         },
-        "label": "探索性、旧管线、含已知 bug 的数据"
-      },
-      "v2_cal": {
-        "status": "ok",
-        "fit_on": "calib_half_only",
-        "model": {
-          "n_params": 7,
-          "n_weights": 7,
-          "weights": [
-            -1.4287061042664069,
-            10.194224198817684,
-            -10.194224198817682,
-            0.0,
-            0.0,
-            2.964859184255918,
-            0.08256264996676989
-          ],
-          "label": "探索性、旧管线、含已知 bug 的数据"
-        },
-        "eval": {
-          "policy_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.125,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "best_single_mean": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "utility": -0.46875,
-          "paired": {
+        {
+          "name": "static_mixed",
+          "mean": 32.03125,
+          "vs_best_single": {
             "baseline": 58.59375,
-            "ours": 58.125,
-            "delta_pp": -0.46875,
-            "relative_percent": -0.8,
+            "ours": 32.03125,
+            "delta_pp": -26.5625,
+            "relative_percent": -45.333333333333336,
             "paired_ci95_pp": [
-              -1.40625,
+              -34.6875,
+              -18.90625
+            ],
+            "p_two_sided": 0.0001999600079984003,
+            "wins": 4,
+            "losses": 42,
+            "ties": 82
+          },
+          "capture_ratio": -13.076923076923077,
+          "chosen": {
+            "static_mixed": 128
+          },
+          "decision": null
+        },
+        {
+          "name": "最强单一动作 direct",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
               0.0
             ],
-            "p_two_sided": 0.6186762647470506,
+            "p_two_sided": 1.0,
             "wins": 0,
-            "losses": 1,
-            "ties": 127
+            "losses": 0,
+            "ties": 128
           },
-          "oracle_gap": {
-            "numerator_sum_policy_minus_best": -60.0,
-            "denominator_sum_oracle_minus_best": 260.0,
-            "fraction": -0.23076923076923078,
-            "definition": "sum(policy - best_single) / sum(oracle - best_single) on the eval half; null when the denominator is not > 0. Oracle is the per-question max of the available actions' official scores.",
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
           },
-          "action_counts": {
-            "direct": 98,
-            "static_mixed": 30
-          },
-          "bart_policy_mean": {
-            "n": 0,
-            "n_missing": 128,
-            "mean": null,
-            "label": "探索性、旧管线、含已知 bug 的数据"
-          },
-          "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
         },
-        "label": "探索性、旧管线、含已知 bug 的数据"
-      },
-      "eval_by_subset": {
-        "all": {
-          "direct": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+        {
+          "name": "朴素基线",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
           },
-          "static_mixed": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 32.03125,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 127,
+            "static_mixed": 1
           },
-          "v2_rule": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": {
+            "kind": "naive_threshold",
+            "tau": -0.18220247365492095
+          }
+        },
+        {
+          "name": "逐题上限",
+          "mean": 60.625,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 60.625,
+            "delta_pp": 2.03125,
+            "relative_percent": 3.466666666666667,
+            "paired_ci95_pp": [
+              0.3125,
+              4.375
+            ],
+            "p_two_sided": 0.0621875624875025,
+            "wins": 4,
+            "losses": 0,
+            "ties": 124
           },
-          "oracle": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 60.625,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "capture_ratio": 1.0,
+          "chosen": {
+            "direct": 124,
+            "static_mixed": 4
           },
-          "best_single": {
-            "n": 128,
-            "n_missing": 0,
-            "mean": 58.59375,
-            "label": "探索性、旧管线、含已知 bug 的数据"
+          "decision": null
+        },
+        {
+          "name": "v2-Rule ε=0",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 128,
+            "n_accepted": 4,
+            "calib_utility": null
+          }
+        },
+        {
+          "name": "v2-Rule ε=1",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 128,
+            "n_accepted": 4,
+            "calib_utility": null
+          }
+        },
+        {
+          "name": "v2-Cal ε=0",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 0.0,
+            "n_calib": 128,
+            "n_accepted": 3,
+            "calib_utility": null,
+            "seed": 20261013,
+            "n_fit": 64,
+            "n_risk": 64
+          }
+        },
+        {
+          "name": "v2-Cal ε=1",
+          "mean": 58.59375,
+          "vs_best_single": {
+            "baseline": 58.59375,
+            "ours": 58.59375,
+            "delta_pp": 0.0,
+            "relative_percent": 0.0,
+            "paired_ci95_pp": [
+              0.0,
+              0.0
+            ],
+            "p_two_sided": 1.0,
+            "wins": 0,
+            "losses": 0,
+            "ties": 128
+          },
+          "capture_ratio": 0.0,
+          "chosen": {
+            "direct": 128
+          },
+          "decision": {
+            "kind": "single",
+            "fallback": true,
+            "action": "direct",
+            "best_single": "direct",
+            "confidence": "margin",
+            "delta": 0.1,
+            "epsilon": 1.0,
+            "n_calib": 128,
+            "n_accepted": 3,
+            "calib_utility": null,
+            "seed": 20261013,
+            "n_fit": 64,
+            "n_risk": 64
           }
         }
+      ],
+      "cal_seed_spread": {
+        "seeds": 20,
+        "min": 58.59375,
+        "median": 58.59375,
+        "max": 58.59375
       }
     }
   }

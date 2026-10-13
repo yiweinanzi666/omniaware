@@ -133,8 +133,8 @@ def exact_webqa_metric(monkeypatch):
 
 
 def _webqa_run(tmp_path, golds_in_run, preds):
-    rows = [{"qid": q, "dataset": "webqa", "qcate": "text", "golds": golds_in_run[q], "preds": p}
-            for q, p in preds.items()]
+    rows = [{"qid": q, "dataset": "webqa", "qcate": "text", "golds": golds_in_run[q], "gold_modalities": ["text"],
+             "preds": p} for q, p in preds.items()]
     path = tmp_path / "webqa_open_full.jsonl"
     path.write_text("".join(json.dumps(r) + "\n" for r in rows))
     _write_config(path, list(preds))

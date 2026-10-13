@@ -6,13 +6,10 @@ reads it back to choose an action.
 from __future__ import annotations
 
 import math
-import re
 
 import torch
 
 from .answers import parse_answer
-
-V2_ACTIONS = ("direct", "static_text", "static_image", "static_mixed", "rerank_static")
 
 
 def _as_logits(logits, vocab_size: int | None) -> torch.Tensor:
@@ -73,20 +70,6 @@ def sequence_logprob(logits, tokens: list[int] | None, token_logprobs: list[floa
     return float(logp[int(tokens[0])])
 
 
-def lexical_overlap_scores(question: str, candidates: list[dict]) -> dict[str, float]:
-    """CPU rerank of the same candidate pool when the cross-encoder is not loaded for this run.
-
-    Token overlap of the question with the candidate title and text. It does not call a model and
-    does not read ``gold``.
-    """
-    qwords = set(re.findall(r"[a-z0-9]+", (question or "").lower()))
-    scores = {}
-    for c in candidates:
-        words = re.findall(r"[a-z0-9]+", f"{c.get('title') or ''} {c.get('text') or ''}".lower())
-        scores[c["cid"]] = (sum(w in qwords for w in words) / len(words)) if words and qwords else 0.0
-    return scores
-
-
 def _rank_stats(pool: list[dict], scores: dict[str, float], selected_ids: set[str] | None) -> dict:
     ranked = sorted(pool, key=lambda c: (-float(scores.get(c["cid"], float("-inf"))), str(c["cid"])))
     if not ranked:
@@ -129,10 +112,11 @@ def retriever_signals(candidates: list[dict], scores: dict[str, float], selected
 
 def action_record(text: str, logits, tokens: list[int] | None, token_logprobs: list[float] | None,
                   vocab_size: int | None, direct_logits, retriever: dict, k: int = 10) -> dict:
-    """One v2 action. ``direct_logits is None`` marks the direct action (``kl_to_direct`` is None)."""
+    """One available v2 action. ``direct_logits is None`` marks the direct action (``kl_to_direct`` is None)."""
     parsed = parse_answer(text)
     first = first_token_signals(logits, k=k, vocab_size=vocab_size)
     return {
+        "available": True,
         "answer": parsed["answer"],
         "answer_empty": parsed["answer_empty"],
         "citation_only": parsed["citation_only"],
@@ -140,5 +124,21 @@ def action_record(text: str, logits, tokens: list[int] | None, token_logprobs: l
         "gen_len": len(tokens or []),
         "first_token": first,
         "kl_to_direct": None if direct_logits is None else kl_to(logits, direct_logits, vocab_size),
+        "retriever": retriever,
+    }
+
+
+def unavailable_record(retriever: dict) -> dict:
+    """A v2 action with no candidates (for example a modality pool that is empty). Nothing is decoded, so no
+    selector may choose it: ``available`` is False and the answer fields are empty."""
+    return {
+        "available": False,
+        "answer": "",
+        "answer_empty": True,
+        "citation_only": False,
+        "seq_logprob": None,
+        "gen_len": 0,
+        "first_token": None,
+        "kl_to_direct": None,
         "retriever": retriever,
     }

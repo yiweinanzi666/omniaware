@@ -50,7 +50,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from omniaware import analysis, interventions, order as order_mod  # noqa: E402
+from omniaware import analysis, answers, interventions, order as order_mod  # noqa: E402
 
 # Fields that must agree for runs to be aggregated (order, noise) or paired (across runs).
 STRICT_FIELDS = ("dataset", "split", "model", "model_path", "calib_source", "n_calib", "split_seed", "n_dev", "k",
@@ -60,6 +60,13 @@ STRICT_FIELDS = ("dataset", "split", "model", "model_path", "calib_source", "n_c
                  "no_calibration", "seed")
 PAIR_FIELDS = ("split", "model", "calib_source", "n_calib", "split_seed", "k", "answer_style", "dataset",
                "candidate_sha256")
+
+
+def answer_of(row: dict, arm: str) -> str:
+    """Parsed answer of one arm of a run record. rec["preds"] keeps the raw model output, so the answer is
+    rec["parsed"][arm]["answer"]; a record without that field (written before the parse was stored) is parsed here."""
+    parsed = (row.get("parsed") or {}).get(arm)
+    return parsed["answer"] if parsed is not None else answers.parse_answer(row["preds"][arm])["answer"]
 
 
 # ------------------------------------------------------------------ loading --
@@ -235,14 +242,15 @@ def intervention_table(path: Path) -> dict:
                 continue
             success += 1
             entity = r["interventions"].get("entity")
-            for arm, pred in entry["preds"].items():
+            for arm, raw in entry["preds"].items():
                 if (r.get("eab_active") or {}).get(arm) is False:
                     continue                        # this EAB arm was inactive on the question: not eligible for it
+                answer = answers.parse_answer(raw)["answer"]
                 c = per_arm[arm]
                 c["n"] += 1
-                c["changed"] += interventions.normalize(pred) != interventions.normalize(r["preds"][arm])
+                c["changed"] += interventions.normalize(answer) != interventions.normalize(answer_of(r, arm))
                 if entity and kind in ("cf", "random_edit", "inject_answer", "inject_instruction"):
-                    c["follows"] += interventions.matches(pred, entity)
+                    c["follows"] += interventions.matches(answer, entity)
         attempted = len(eligible)
         rates = {}
         for arm, c in per_arm.items():
@@ -397,7 +405,7 @@ CATEGORIES = ("missing_topk_evidence", "answer_normalization", "unsupported_cita
 def categorize(r: dict, arm: str, score: float, faith: float | None, correct_at: float) -> str | None:
     if score >= correct_at:
         return None
-    pred = r["preds"].get(arm) or ""
+    pred = answer_of(r, arm)
     if any(interventions.matches(pred, g) for g in r["golds"] if g):
         return "answer_normalization"           # gold string present, official metric still fails
     if r.get("gold_in_topk") is False:
@@ -422,7 +430,7 @@ def errors_table(path: Path, metric: str, arm: str, correct_at: float, attributi
         cat = categorize(r, arm, scores[r["qid"]][arm], faith.get(r["qid"]), correct_at)
         if cat:
             labelled.append({"qid": r["qid"], "category": cat, "question": r["question"], "golds": r["golds"],
-                             "pred": r["preds"][arm], "chunks": r.get("chunks")})
+                             "pred": answer_of(r, arm), "chunks": r.get("chunks")})
     counts = Counter(x["category"] for x in labelled)
     n = len(labelled)
     picked = random.Random(seed).sample(labelled, min(sample, n))

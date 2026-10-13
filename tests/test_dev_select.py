@@ -138,3 +138,81 @@ def test_max_statistic_correction_has_the_nominal_size_under_the_null():
 def test_decisions_need_the_exact_candidate_grid():
     assert len(ds.EAB_CANDIDATES) == 30 and ds.eab_name(1.2, "ans1", "pos") == "eab:g1.2:ans1:pos:gate"
     assert ds.eab_name(2.0, "q", "ctr") == "eab:g2:q:ctr:gate"
+
+
+def _v2_rows(n, prefix):
+    """Direct is right and confident on half the questions; static_text is right and confident on the rest."""
+    from omniaware.actions import V2_ACTIONS
+
+    def rec(answer, margin):
+        return {"answer": answer, "available": True, "seq_logprob": -0.5, "gen_len": 3,
+                "first_token": {"margin": margin, "entropy": 0.5, "entropy_norm": 0.5},
+                "kl_to_direct": 0.1, "retriever": {"top1_score": 0.3, "gold_in_topk": False}}
+
+    rows = []
+    for i in range(n):
+        direct_right = i % 2 == 0
+        scores = {name: 0.0 for name in V2_ACTIONS}
+        actions = {name: rec(f"{prefix}{i}-{name}", 0.3) for name in V2_ACTIONS}
+        if direct_right:
+            scores["direct"] = 100.0
+            actions["direct"] = rec("right", 2.0)
+        else:
+            scores["static_text"] = 100.0
+            actions["direct"] = rec("wrong", 0.1)
+            actions["static_text"] = rec("right", 3.0)
+        rows.append({"qid": f"{prefix}{i}", "actions": actions, "scores": scores})
+    return rows
+
+
+def test_select_v2_freezes_both_families_with_rule_primary():
+    out = ds.select_v2(_v2_rows(40, "c"), delta=0.1, epsilon=1.0, seed=0)
+    assert set(out) == {"v2"}
+    entry = out["v2"]
+    assert entry["primary"] == "rule"
+    assert entry["rule"]["kind"] in ("rule", "single") and entry["cal"]["kind"] in ("cal", "single")
+    assert entry["rule"]["fallback"] is False
+
+
+def test_test_stage_applies_the_frozen_primary_and_never_searches(tmp_path, monkeypatch):
+    calib = _v2_rows(40, "c")
+    decisions = tmp_path / "dev_decisions.json"
+    assert ds.main(["--v2-records", _write_jsonl(tmp_path / "calib.jsonl", calib), "--output", str(decisions)])
+    before = decisions.read_bytes()
+    test_rows = _v2_rows(20, "t")
+    table = _write_jsonl(tmp_path / "test.v2_actions.jsonl", test_rows)
+    choices_path = tmp_path / "choices.jsonl"
+
+    from omniaware import arbitration
+
+    def no_search(*args, **kwargs):
+        raise AssertionError("the test stage must not search")
+
+    monkeypatch.setattr(arbitration, "select_rule", no_search)
+    monkeypatch.setattr(arbitration, "select_cal", no_search)
+    out = ds.main(["--stage", "test", "--output", str(decisions), "--test-table", table,
+                   "--choices-out", str(choices_path)])
+    assert decisions.read_bytes() == before
+    frozen = json.loads(before)["v2"]
+    assert out["v2"] == frozen
+    choices = [json.loads(line) for line in choices_path.read_text(encoding="utf-8").splitlines()]
+    assert [c["qid"] for c in choices] == [row["qid"] for row in test_rows]
+    for row, choice in zip(test_rows, choices):
+        assert choice["action"] == arbitration.apply_decision(frozen["rule"], row["actions"])["action"]
+        assert choice["answer"] == row["actions"][choice["action"]]["answer"]
+
+
+def test_epsilon_and_seed_flags_reach_the_selectors(tmp_path):
+    calib = _write_jsonl(tmp_path / "calib.jsonl", _v2_rows(40, "c"))
+    out_path = tmp_path / "dev_decisions.json"
+    ds.main(["--v2-records", calib, "--output", str(out_path), "--epsilon", "0.5", "--seed", "3"])
+    entry = json.loads(out_path.read_text(encoding="utf-8"))["v2"]
+    assert entry["rule"]["epsilon"] == 0.5
+    assert entry["cal"]["epsilon"] == 0.5 and entry["cal"]["seed"] == 3
+    with pytest.raises(SystemExit, match="does not search"):
+        ds.frozen_v2({"phase": 2})
+
+
+def _write_jsonl(path, rows):
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    return str(path)

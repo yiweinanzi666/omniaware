@@ -47,6 +47,14 @@ def parse_answer(text: str | None) -> dict:
     return {"answer": answer, "answer_empty": False, "citation_only": False}
 
 
+def question_empty_flags(record: dict) -> list[bool]:
+    """``answer_empty`` of every decoded arm of one question (parsed from ``preds``, which keeps the raw model
+    output) and of every available v2 action. Unavailable actions decoded nothing and are not counted."""
+    flags = [parse_answer(text)["answer_empty"] for text in (record.get("preds") or {}).values()]
+    flags += [bool(a["answer_empty"]) for a in (record.get("actions") or {}).values() if a.get("available", True)]
+    return flags
+
+
 def summarize_empty(flags: list[bool]) -> dict:
     """Empty-answer rate over decoded strings. Above 0.5% the summary carries a warning line."""
     n = len(flags)
