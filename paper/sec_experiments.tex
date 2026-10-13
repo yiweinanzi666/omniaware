@@ -1,181 +1,318 @@
 %% ===============================================================
 \section{Experiments}
 \label{sec:experiments}
-The experiments address four research questions. \textbf{RQ1}: Does \method{} change answer quality on Web and other evidence formats? \textbf{RQ2}: How do the trigger, score normalization, modality routing, and EAB each contribute? \textbf{RQ3}: How do EAB and the other evidence-use operations affect order sensitivity, citation support, and dependence on the emphasized chunks? \textbf{RQ4}: How robust is the controller to retrieval errors, calibration, and the backbone, and what does it cost? RQ2 examines Challenge~1 through the trigger, normalization, and routing controls, and RQ3 examines Challenge~2.
+The v2 evaluation has not been run.
+Every new experimental number below is \ph{}.
+Numbers copied from the root-cause report dated 13~October~2026 are marked as such.
+They were computed on the previous pipeline and are not v2 results.
+Exploratory outputs of \texttt{offline\_v2} are from that old pipeline, contain known bugs, and are not the main table.
+The section is a measurement study, a main table, ablations, and analysis.
+No cell has been filled from a v2 run.
 
 \subsection{Experimental Setup}
 \label{sec:setup}
-\textit{Datasets and evidence.} WebQA~\cite{chang2022webqa} is our primary Web task: its textual questions require facts retrieved from a global pool of about \ph{} text snippets and \ph{} images, each of which is one chunk. Calibration and development questions come from the WebQA training split, so every one of the 4{,}966 validation questions is an evaluation question. We report all of them as WebQA (full val) and report separately the 2{,}511 questions whose gold facts are images (\webimg{}); the remaining 2{,}455 have text gold facts. Three further benchmarks vary the evidence format. OK-VQA~\cite{marino2019okvqa} tests image-based knowledge with passages retrieved from the GS training corpus of 112{,}724 sentences (GS-112K)~\cite{luo2021weakly}; the corpus was chosen on development questions among three candidates (Appendix~\ref{app:protocol}). HybridQA~\cite{chen2020hybridqa} asks multi-hop questions over Web tables and the passages linked from their cells. VideoRAG-Synth asks about instructional procedures shown in HowTo100M videos~\cite{miech2019howto100m}, following VideoRAG~\cite{jeong2025videorag}; each retrieved video or clip is one chunk of sampled frames and its transcript. Only OK-VQA supplies context, the question image; the other benchmarks start cold, with text and image candidates on WebQA, table and text candidates on HybridQA, and video and clip candidates on VideoRAG-Synth. For HybridQA and VideoRAG-Synth we use the query sets of the UniversalRAG suite~\cite{yeo2026universalrag} together with subsets of its corpora: passages and tables from HybridQA only (\ph{} passages and \ph{} tables) and the \ph{} videos that remained downloadable (Appendix~\ref{app:protocol}). Every method reads the same candidate pool, the top five per modality returned by the suite's own retrievers (Appendix~\ref{app:protocol}).
+\textit{Splits.}
+WebQA calibration is at least 500 questions and the development split is 256 questions.
+Both are drawn from the training split, they are disjoint, and neither is drawn from the validation split.
+The test split is all 4{,}966 validation questions.
+The previous statement that calibration came from the validation split, while the reported set was the entire validation split, is withdrawn.
+OK-VQA uses 500 calibration questions, 256 development questions, and the remainder of the validation split as the test set.
+The three OK-VQA splits are pairwise disjoint.
+An empty test split is an error.
+When the validation split has 5{,}046 questions, the remainder is 4{,}290.
+MMQA and video are generalization settings whose sizes follow the available assets.
+The current command interface does not include them, and their scores are \ph{}.
 
-\textit{Splits.} Each dataset is shuffled with a fixed seed (2027) and split into calibration, development, and evaluation questions that are disjoint by construction, and the evaluation set does not depend on the calibration size. On OK-VQA the 5{,}046 validation questions give 500 calibration questions, 256 development questions, and $5{,}046-500-256=4{,}290$ evaluation questions. On HybridQA the 2{,}000 queries give 500 calibration questions, 256 development questions, and $2{,}000-500-256=1{,}244$ evaluation questions. On VideoRAG-Synth the 374 queries give 100 calibration questions, 50 development questions, and $374-100-50=224$ evaluation questions. On WebQA, \ph{} calibration questions and the 256 development questions are drawn from the training split.
+\textit{Settings and metrics.}
+The primary WebQA setting is the distractor pool (\texttt{webqa\_full}), in which each question brings its own candidates.
+Open retrieval (\texttt{webqa\_open\_*}; the current interface generates \texttt{webqa\_open\_img} at stage~s2) is the second setting.
+OK-VQA is scored with official VQA accuracy only.
+WebQA's primary metric is acc$_{\mathrm{approx}}$.
+Normalized BART and QA$_{\mathrm{approx}}$ are reported as well, on the full set and on the image and text subsets.
+The image subset has 2{,}511 questions and the text subset has 2{,}455.
+Loose lexical WebQA scores are not placed next to acc$_{\mathrm{approx}}$.
 
-\textit{Evaluation metrics.} WebQA scores separate answer accuracy from BARTScore-based fluency (Appendix~\ref{app:webqa_scoring}); OK-VQA uses the official VQA accuracy; HybridQA and VideoRAG-Synth use the metrics of the UniversalRAG suite, exact match (EM) and ROUGE-L, with F1 and BERTScore in Appendix~\ref{app:supp}. Relative improvement over a baseline is $(\mathrm{ours}-\mathrm{baseline})/\mathrm{baseline}\times100\%$; all other differences are absolute points. For order sensitivity, we fix the candidate chunks of each question and apply 14 orderings of the five retrieval ranks, identically to all questions: the relevance-sorted and reverse-sorted packings, and 12 random permutations drawn with three seeds. The orderings are run on the first 1{,}000 evaluation questions of each dataset (all 224 for VideoRAG-Synth). We report the standard deviation of the score, the gap between relevance-sorted and reverse-sorted packing, and the flip rate, the share of questions whose correctness changes; a question is correct when its official score is at least 50. We also report the attention--relevance divergence (ARD); attribution precision (AP) and Faith of citations, where alias hits and NLI judgments are reported separately (Appendix~\ref{app:protocol}); AURC and the Spearman $\rho$ between uncertainty and error; and the wrong-route (WR) and coverage (Cov.) rates of routing.
+\textit{Actions and the strong baseline.}
+The decoded actions are \texttt{direct}, \texttt{static\_text}, \texttt{static\_image}, \texttt{static\_mixed}, and \texttt{rerank\_static}.
+Adaptive comparators are an NTE trigger, SeaKR, the previous $\Uomni$ gate (v1), and UniversalRAG routing.
+They are not eligible to be the strong baseline.
+The strong baseline is the single action with the best calibration-set score.
+Primary relative gain uses that score as the denominator.
+The tables also report gain versus \texttt{static\_mixed}.
+The oracle is the per-question best action in the same set.
+Evidence Attention Bias is not a main-method arm.
+All actions in a run share one prompt, one budget, and one candidate pool.
+The prompt is frozen on the development split.
+The test split is scored once after \texttt{docs/dev\_decisions.json} is frozen.
+Grids are not selected on the test split.
+The operating point previously taken from a test-set grid (Table~20 in the audited draft) is withdrawn.
 
-\textit{Baselines.} The baselines separate gains from retrieving evidence, from deciding when and where to retrieve, and from changing how the retrieved chunks are used. Within a dataset, all arms are decoded in the same run with the same question, candidate pool, backbone, prompt, decoding limits, and at most $k=5$ retrieved chunks. (1) Direct answering without retrieval. (2) Static concatenation (\texttt{static\_joint}): the joint top-$k$ over all modalities, ranked by calibrated relevance and packed in that order, without a probe round, routing, or bias. Cross-encoder + static concatenation uses bge-reranker-v2-m3~\cite{chen2024m3}, built on BGE-M3, to select the chunks for the same concatenation; Found-in-the-Middle attention calibration~\cite{hsieh2024found} is applied to the same joint input. (3) M2-RAG~\cite{ma2025m2rag} receives the same joint top-$k$ chunks and the question image. Its official single-stage summarizer writes a document from the chunks, and an answer extractor that we added produces the short answer; M2-RAG uses its official chat template, and its image pixel budget equals that of the other arms (Appendix~\ref{app:protocol}). It does not accept video. (4) SeaKR~\cite{yao2025seakr}, which reads internal states on the same joint input, with its threshold set on the calibration queries to the retrieval rate of $\Uomni$; it is run on all evaluation questions. (5) Modality routing: UniversalRAG~\cite{yeo2026universalrag}, whose official router, trained after removing our evaluation questions from its training data, decides from the query text alone whether to retrieve and which of its corpora to search, with clip and video as separate modalities. A query whose labels match no corpus is answered directly and counted, and its candidates are ranked by the suite's own retrieval scores. Omni-Aware and its ablations use their own routed input (Section~\ref{sec:routing}). Next-token entropy (NTE) as the trigger and a PASTA-inspired uniform bias~\cite{zhang2024pasta} are ablations of our controller (Section~\ref{sec:ablation}); the NTE threshold is the calibrated quantile that matches the retrieval rate of $\Uomni$. The baselines use the default settings of their official implementations, except for the SeaKR threshold and the FiTM temperature (Appendix~\ref{app:protocol}). Unlike the controller, they received no development-set tuning, so the comparison is not budget-matched.
+\textit{Statistics.}
+Uncertainty is a paired bootstrap 95\% confidence interval over questions.
+Multiple comparisons use Holm correction.
+Decoding is greedy, so a configuration is deterministic given its inputs.
+This draft does not report a seed standard deviation under greedy decoding.
+The fraction of questions on which the chosen action scores below the strong baseline is reported with the risk-control claim.
+A score below \texttt{direct} is not described as better than no retrieval.
 
-\textit{Prompts and answer format.} All configurations receive identical instructions, and every chunk carries an identifier such as \texttt{[E3]} for citation. OK-VQA asks for a word or phrase, WebQA for one sentence, and HybridQA and VideoRAG-Synth keep the answer instructions of the UniversalRAG suite (the exact answer, and a complete sentence). The first answer token alone determines \ph\% of OK-VQA, \ph\% of HybridQA, \ph\% of VideoRAG-Synth, and \ph\% of WebQA answers, which is why EAB starts at the row that predicts it (Section~\ref{sec:eab}).
+\textit{Development gates.}
+Two preregistered gates are criteria, not results, and this draft does not claim that either has passed.
+After the pipeline fixes, the development-set per-question oracle is compared with the strongest single action against a relative gap of 8\%.
+A selector is eligible for the frozen test run when, on the development split, its relative gain over that baseline is at least 5\%, the lower end of its paired interval is positive, and its degradation rate is at most $\delta$.
+The test split is not used to make those choices.
 
-\textit{Implementation and calibration.} Qwen3-VL-8B-Instruct~\cite{bai2025qwen3vl} is the primary backbone, with InternVL3.5-8B~\cite{wang2025internvl35} for transfer. Text and image retrieval use BGE-large-en-v1.5~\cite{xiao2024cpack} and CLIP ViT-L/14~\cite{radford2021clip} with FAISS~\cite{johnson2021faiss}; on HybridQA and VideoRAG-Synth these encoders score the shared candidates to obtain $r_j$. Tables are serialized row by row, and each retrieved video or clip is represented by 8 uniformly sampled frames with its transcript. For each benchmark and backbone, unlabeled calibration queries disjoint from all evaluation and development questions estimate the median and IQR of Eq.~\eqref{eq:norm} and the ECDFs of the retriever scores. The calibration reserves hold 500 queries for OK-VQA and HybridQA and 100 for VideoRAG-Synth, and WebQA uses training queries. The shared settings are $k=5$ and $\delta=0.08$, which is set a priori. The thresholds $\tau$ and $\taub$, the entropy weight $\beta$, and the strength $\gamma$ are frozen on development questions as described below; their selected values are $\tau=$~\ph{}, $\taub=$~\ph{}, $\beta=$~\ph{}, and $\gamma=$~\ph{} (Appendix~\ref{app:protocol}).
+\textit{Figures withdrawn by the root-cause report.}
+The following numbers are copied from the root-cause report of 13~October~2026.
+They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
+Relative gains of +33\% on WebQA and +15\% on OK-VQA used historical cached baselines: a cached static score of 17.9 against 23.4 for static retrieval on the same 512-question batch, a gap of 5.5 points, under different prompts, budgets, and retrieval scores.
+The same report withdraws a trained controller's +8.43\% and a +14.4\% chosen on a 32-question development set.
+On a 256-question OK-VQA development slice, official VQA accuracy was 61.5 for direct answering, 36.3 for static retrieval, 48.1 for the gated static arm, and 36.3 for EAB.
+Direct answering won 82 questions and lost 10 against static retrieval.
+The per-question maximum of direct and static on that slice was 64.4, which is 2.9 points above direct answering (about +4.7\% relative).
+The gated arm and EAB are both below direct answering, so the report does not call that slice an improvement over no retrieval.
+On 512 WebQA questions, static retrieval scored 59.1 acc$_{\mathrm{approx}}$, 27.4 normalized BART, and 23.4 QA.
+Image questions scored 63.2 acc$_{\mathrm{approx}}$ and 13.8 QA.
+Text questions scored 55.0 acc$_{\mathrm{approx}}$ and 33.0 QA.
+Over 2{,}560 items, a loose WebQA scorer and official acc$_{\mathrm{approx}}$ differed by 10.5 points on average (0.699 versus 0.594).
+On one static OK-VQA batch, a loose scorer gave 65.8 where official VQA accuracy was about 47.9.
+A greedy-decoding figure of $\pm 0.2$ is smaller than the binomial standard error of about 0.66 points on 5{,}046 OK-VQA questions, and it is not a confidence interval.
+The v2 measurement that replaces these comparisons is the placeholder tables below.
 
-\textit{Development protocol.} Before any evaluation run, we fixed the development protocol: 256 development questions per benchmark (50 for VideoRAG-Synth), disjoint from calibration and evaluation questions, and the rules that map the development results to the remaining choices. These rules are written in \texttt{docs/DEV\_DECISIONS.md} (dated 2026-10-10, before any development run) and executed by a script that writes the frozen choices. The choices are, in order: the OK-VQA retrieval corpus (by the gain of static concatenation over direct answering); the uncertainty variant (by the mean Spearman correlation between the score and the error of direct answers); the EAB candidate, a start row, a bias form, and $\gamma$ chosen jointly (by its mean gain over static concatenation with equal weight per dataset, and counted as effective only if a max-statistic bootstrap over all 30 candidates gives a positive lower bound); and then the pair $(\beta,\taub)$ and $\tau$, by the rules stated in Appendix~\ref{app:protocol}. Evaluation sets are then run once with these choices frozen, and no number in this paper comes from development questions. The sensitivity of the controller to $\beta$, $\taub$, and $\tau$ is reported on the evaluation sets only as a description and is not used to choose any setting. Decoding is greedy, so each configuration is run once; random seeds only fix the evidence orderings of Section~\ref{sec:order}. Significance markers use two-sided paired bootstrap tests over questions (5{,}000 resamples; by source video on VideoRAG-Synth) between the controller and each baseline of the column. The strongest baseline of each column is the one with the highest mean score, as determined by the code, and the $p$-values are Holm-corrected over the comparisons of that column. Latency is the measured end-to-end wall-clock time per query of each arm, including the probe round, routing, retrieval lookup, encoding, prefill, and decoding; static concatenation excludes the probe round. It is averaged over all evaluation queries and measured on \tbd{[[GPU model and count]]} with identical batch size, decoding settings, cache policy, and warmup. Code, prompts, and evaluation scripts are available at \tbd{[[anonymous repository URL]]}.
+\subsection{Measurement Study}
+\label{sec:measure}
+The measurement reserves three quantities.
+The gap between the best single action and the per-question oracle is \ph{}.
+Image questions and text questions are separate columns in Tables~\ref{tab:webqa} and~\ref{tab:okvqa}, and every column is \ph{}.
+The size of the normalized BART factor, reported beside acc$_{\mathrm{approx}}$, is \ph{}.
+A 50-question image-evidence diagnostic is specified, and its conclusion is \ph{}.
+The audit's 256-question and 512-question figures above are the motive for these tables.
+They are not substitutes for the cells.
 
 \begin{table*}[t]
-\caption{Answer scores with Qwen3-VL-8B (at most $k=5$ chunks from shared candidate pools; WebQA: acc$_{\mathrm{approx}}$ with BARTScore, OK-VQA: VQA accuracy, HybridQA: EM, VideoRAG-Synth: ROUGE-L). Best in bold; the strongest baseline of each column is underlined. An em dash marks an unsupported setting: M2-RAG does not accept video, and UniversalRAG has no OK-VQA entry because its router reads only the query text while the OK-VQA corpus has one modality. \webimg{} is filtered from the WebQA full run. $^\dagger$: two-sided paired-bootstrap $p<0.05$ against the strongest baseline, Holm-corrected. Latency is measured on \tbd{[[dataset]]}.}
-\label{tab:main}
-\small
-\begin{tabular}{@{}lcccccc@{}}
+\caption{WebQA distractor test split (\texttt{webqa\_full}): placeholder measurement.
+acc$_{\mathrm{approx}}$ is primary.
+Normalized BART and QA$_{\mathrm{approx}}$ are secondary.
+Image and text are subsets of the same run.
+The strong baseline is whichever single action scores highest on the calibration split; its identity is frozen before test and is not chosen on this table.
+The oracle is the per-question best action.
+Every entry is \ph{}.
+The v2 run has not been executed.}
+\label{tab:webqa}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lccccccccc@{}}
 \toprule
-Method & \makecell{WebQA\\(full val)} & \webimg{} & OK-VQA & HybridQA & \makecell{VideoRAG-\\Synth} & Latency (ms)$\downarrow$\\
+Action & \multicolumn{3}{c}{acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{norm.\ BART} & \multicolumn{3}{c}{QA$_{\mathrm{approx}}$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(l){8-10}
+ & All & Image & Text & All & Image & Text & All & Image & Text \\
 \midrule
-\multicolumn{7}{@{}l}{\textit{No retrieval}}\\
-Direct (zero-shot) & \ph & \ph & \ph & \ph & \ph & \ph\\
-\midrule
-\multicolumn{7}{@{}l}{\textit{Evidence selection and use}}\\
-Static concatenation (joint top-$k$) & \ph & \ph & \ph & \ph & \ph & \ph\\
-Cross-encoder + static concatenation & \ph & \ph & \ph & \ph & \ph & \ph\\
-Found-in-the-Middle~\cite{hsieh2024found} & \ph & \ph & \ph & \ph & \ph & \ph\\
-\midrule
-\multicolumn{7}{@{}l}{\textit{Multimodal RAG}}\\
-M2-RAG~\cite{ma2025m2rag} & \ph & \ph & \ph & \ph & --- & \ph\\
-\midrule
-\multicolumn{7}{@{}l}{\textit{Adaptive retrieval and routing}}\\
-SeaKR~\cite{yao2025seakr} & \ph & \ph & \ph & \ph & \ph & \ph\\
-UniversalRAG~\cite{yeo2026universalrag} & \ph & \ph & --- & \ph & \ph & \ph\\
-\midrule
-\textbf{\method{}} & \ph & \ph & \ph & \ph & \ph & \ph\\
-\method{} + cross-encoder & \ph & \ph & \ph & \ph & \ph & \ph\\
+\texttt{direct} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+Strong baseline & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+Oracle & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table*}
-%% NOTE: bold, underlines, and daggers must be re-derived once every cell is filled from the V3.21 runs.
-
-\subsection{Overall Performance (RQ1)}
-\label{sec:overall}
-On the full validation set, \method{} reaches \ph{} against \ph{} for M2-RAG (\ph{}\% relative); on \webimg{} it reaches \ph{} against \ph{} (Table~\ref{tab:main}). Of its gain over \texttt{static\_joint} on \webimg{}, routing accounts for \ph{} points (always-retrieve routed static against \texttt{static\_joint}), the retrieval decision for \ph{} points (gated against always-retrieve routed static), and EAB for \ph{} points (Section~\ref{sec:ablation}).
-
-The relative differences between \method{} and static concatenation are \ph{}\%, \ph\%, and \ph\% on OK-VQA, HybridQA, and VideoRAG-Synth. M2-RAG does not accept video evidence, and UniversalRAG, which routes from the query alone, reaches \ph{} on HybridQA and \ph{} on VideoRAG-Synth; Section~\ref{sec:ablation} compares the two routing signals on WebQA.
-
-SeaKR reaches \ph{} on \webimg{} and \ph{} on OK-VQA. A cross-encoder reranker gives \ph{} for static concatenation on \webimg{}, and \ph{} when added to \method{}.
-
-\subsection{Ablation Study (RQ2)}
-\label{sec:ablation}
 
 \begin{table}[t]
-\caption{Component controls (AP: attribution precision, from a separate decoding with the citation prompt, computed over retrieved questions for gated arms; R\%: retrieval rate). Accuracy columns use the default prompt. Blocks vary the trigger under static concatenation, evidence use at the $\Uomni$ decision, and normalization, relevance, or gate. On \webimg{} the ablation arms use the routed input, and on OK-VQA routing is not applied, so the joint input is used; the $\hgrd$-only row is not reported for \webimg{}.}
-\label{tab:uomni_ablation}
-\footnotesize
-\setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
- & \multicolumn{3}{c}{OK-VQA} & \multicolumn{3}{c}{\webimg{}}\\
-\cmidrule(lr){2-4}\cmidrule(l){5-7}
-Configuration & Acc & AP & R\% & Acc & AP & R\%\\
-\midrule
-Always retrieve, static & \ph{} & \ph{} & 100.0 & \ph & \ph & 100.0\\
-NTE, static & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
-Per-format thresholds, static & \ph & \ph & \ph & \ph & \ph & \ph\\
-$\hgrd$ only, static & \ph{} & \ph{} & \ph{} & --- & --- & ---\\
-$\Uomni$, static & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
-\midrule
-$\Uomni$, replication & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
-$\Uomni$, EAB & \textbf{\ph} & \textbf{\ph} & \ph{} & \ph & \ph & \ph\\
-$\Uomni$, decode-only EAB & \ph & \ph & \ph & \ph & \ph & \ph\\
-Cold start without probe round & --- & --- & --- & \ph & \ph & \ph\\
-$\Uomni$, EAB + context bias & \ph & \ph & \ph{} & --- & --- & ---\\
-\midrule
-Raw retriever scores & \ph{} & \ph & \ph & \ph & \ph & \ph\\
-Always retrieve, relevance bias & \ph{} & \ph{} & 100.0 & \ph & \ph & 100.0\\
-Relevance bias without $\Uomni$ scaling & \ph & \ph & \ph{} & \ph & \ph & \ph\\
-Uniform (PASTA-style) bias, gated & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
-Random relevance, gated & \ph{} & \ph{} & \ph{} & \ph & \ph & \ph\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textit{When to retrieve.} Under static concatenation (Table~\ref{tab:uomni_ablation}, block 1), always retrieving gives \ph{} on OK-VQA, and $\Uomni$ gives \ph{} at \ph{}\% retrieval, whereas NTE gives \ph{} at \ph{}\%. The two triggers disagree on \ph{}\% of queries. The scores of the questions that each trigger answers without retrieval are \ph{} under NTE and \ph{} under $\Uomni$ (Appendix~\ref{app:supp}). Without the grounding term, NTE can skip retrieval on questions whose evidence attention is still diffuse. A controller with its own predictive-entropy threshold per format, matched to the retrieval rate, gives \ph{} on OK-VQA and \ph{} on \webimg{}; it needs one threshold per modality, whereas $\Uomni$ uses one threshold for all formats. The cold-start row removes only the probe round's grounding term and keeps the first-round routing. Without it, $\Uomni$ is a monotone function of predictive entropy and ranks the cold-start \webimg{} queries as NTE does; the probe round adds the grounding term over the probe chunks and changes the score from \ph{} to \ph{}.
-
-\textit{How to use the retrieved chunks.} Holding the retrieval decision fixed (block 2), static concatenation, chunk replication, and EAB give \ph{}, \ph{}, and \ph{} on OK-VQA. Chunk replication emphasizes the same chunks as EAB, but only with integer copy counts $\max(1,\mathrm{round}(e^{\gamma\Uomni r_j}))$ and duplicated tokens that lengthen the prompt (we report prompt token counts, \ph{}, in Appendix~\ref{app:dca}). On \webimg{}, EAB changes the score from \ph{} under static concatenation to \ph. Decode-only EAB, which leaves the first answer token to the unbiased prefill, gives \ph{} on OK-VQA and \ph{} on \webimg{}. Biasing the supplied OK-VQA image as well, with $r=1$, gives \ph. The first answer row matters for short answers, whose first token often carries the whole answer: on HybridQA, EAB gives \ph{} against \ph{} for decode-only EAB.
-
-\textit{Score normalization, relevance, and gating.} With raw instead of per-modality percentile scores (block 3), the full controller gives \ph{} on OK-VQA and \ph{} on \webimg{}, against \ph{} and \ph{} with per-modality percentiles. Raw scores from different retrievers are not comparable, so the bias can favor whichever modality has the larger score scale. A uniform bias on all retrieved chunks, as in PASTA, gives \ph{} on OK-VQA and random relevance gives \ph{}, which isolates the contribution of chunk-specific relevance. A fixed bias $\gamma r_j$ that ignores $\Uomni$, close to a frozen OpenDecoder-style prior, gives \ph.
-
-\begin{table}[t]
-\caption{Modality routing on WebQA (full val, open retrieval) with the trigger and EAB fixed. Mod./q is the average number of searched modalities per triggered query; WR is the wrong-route rate and Cov.\ the coverage rate (Section~\ref{sec:setup}).}
-\label{tab:routing}
+\caption{OK-VQA test split: official VQA accuracy only.
+Placeholder measurement.
+The same action definitions as Table~\ref{tab:webqa}.
+Every entry is \ph{}.}
+\label{tab:okvqa}
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lc@{}}
 \toprule
-Routing rule & Score & WR$\downarrow$ & Cov.$\uparrow$ & Mod./q\\
+Action & VQA accuracy \\
 \midrule
-All modalities & \ph & \ph & 100.0 & 2.00\\
-Retriever-side scores & \ph & \ph & \ph & \ph\\
-UniversalRAG router (query only) & \ph & \ph & \ph & \ph\\
-Attention mass $M_m$ only & \ph & \ph & \ph & \ph\\
-Conditional entropy $H_m$ only & \ph & \ph & \ph & \ph\\
-$M_m\cdot H_m$ (ours) & \ph & \ph & \ph & \ph\\
-\midrule
-Oracle modality & \ph & 0.0 & 100.0 & \ph\\
+\texttt{direct} & \ph{} \\
+\texttt{static\_text} & \ph{} \\
+\texttt{static\_image} & \ph{} \\
+\texttt{static\_mixed} & \ph{} \\
+\texttt{rerank\_static} & \ph{} \\
+Strong baseline & \ph{} \\
+Oracle & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textit{Where to retrieve.} On WebQA, every question can draw on text snippets or images from the full pool, and its gold facts identify the modality it needs. We fix the trigger and EAB and change only the routing rule (Table~\ref{tab:routing}); WebQA questions start cold, so $M_m\cdot H_m$ is computed over a first joint retrieval round (Section~\ref{sec:routing}). $M_m\cdot H_m$ reaches \ph{} with a wrong-route rate of \ph\%, against \ph{} for retriever-side scores and \ph{} for the query-only router of UniversalRAG, and searching both modalities reaches \ph{} with \ph{} times as many retrieval calls. Mass alone and entropy alone are reported as separate rows. A plausible reason is that mass alone favors a modality that has already located its evidence, and entropy alone favors modalities that the prediction barely uses; the WR column tests this. Routing selects text for \ph\%, images for \ph\%, and both modalities for \ph\% of triggered queries.
+\subsection{Main Results}
+\label{sec:main}
+Table~\ref{tab:main} is the main comparison.
+Relative gain versus the strong baseline is the primary column.
+Gain versus \texttt{static\_mixed} is secondary.
+Each gain cell is a point estimate and a paired bootstrap 95\% interval; both are \ph{}, so the cell is written \ph{} [\ph{},\,\ph{}].
+Degradation is the fraction of test questions on which the chosen action scores below the strong baseline.
+No row is marked significant, because no test has been run.
+A filled row that sits below \texttt{direct} will not be described as better than no retrieval.
 
-\begin{table}[t]
-\caption{Order sensitivity over 14 orderings (two anchors and 12 random permutations drawn with 3 seeds) on the first 1{,}000 evaluation questions: score standard deviation (Std.) and share of questions whose correctness changes (Flip, \%). FITM: Found-in-the-Middle. Appendix~\ref{app:supp} adds gaps, ARD, and seed deviations.}
-\label{tab:order}
-\footnotesize
-\setlength{\tabcolsep}{1.6pt}
-\begin{tabular}{@{}lcccccccc@{}}
-\toprule
- & \multicolumn{2}{c}{OK-VQA} & \multicolumn{2}{c}{\webimg{}} & \multicolumn{2}{c}{HybridQA} & \multicolumn{2}{c}{VideoRAG-S.}\\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(l){8-9}
-Method & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$ & Std.$\downarrow$ & Flip$\downarrow$\\
-\midrule
-Static & \ph{} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-FITM & \ph & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-Replication & \ph{} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-EAB & \textbf{\ph} & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Further Analysis (RQ3, RQ4)}
-
-\subsubsection{Evidence Order and Citation Support}
-\label{sec:order}
-Table~\ref{tab:order} reports order sensitivity for the four evidence-use operations with the candidate set fixed. On OK-VQA the standard deviation is \ph{} with static concatenation, \ph{} with chunk replication, and \ph{} with EAB, a relative change of \ph{}\% for EAB, and the sorted--reverse gap is \ph{} for static concatenation and \ph{} for EAB (Appendix~\ref{app:supp}). The relative changes on the other three datasets are \ph\% to \ph\%. These changes are empirical properties of the complete system: Proposition~\ref{thm:tilt} bounds ratios of chunk masses within one row and does not by itself predict order sensitivity (Section~\ref{sec:eab}). FITM gives \ph{} on OK-VQA. Relevance-sorted packing, which fixes one order, scores \ph{} on OK-VQA against an EAB mean of \ph. At the question level, \ph\% of OK-VQA questions change correctness across orderings under EAB, against \ph\% for static concatenation. InternVL3.5-8B results are reported in Appendix~\ref{app:supp}.
-
-Citation support is reported alongside the answer scores (Table~\ref{tab:uomni_ablation} and Appendix~\ref{app:supp}). On OK-VQA, attribution precision is \ph{} for static concatenation and \ph{} for \method{}, and the share of invalid citations is \ph{}\% and \ph{}\%; the same comparison on HybridQA and WebQA is in Appendix~\ref{app:supp}. Because the generator tends to cite the chunks it attends to, we hypothesize that raising the mass of high-relevance chunks moves citations toward supporting chunks; the AP columns test this.
-
-\begin{table}[t]
-\caption{Interventions and retrieval errors on \webimg{} (\%). Mask: answers changed when the target chunk is masked at the attention level; CF: answers changed when the target chunk's gold aliases are replaced by a same-type entity; both use fixed denominators (eligible questions) and report failure counts (Appendix~\ref{app:protocol}). Dist.: AP with two distractors; Gold@2--5: score when gold is not ranked first; $\sigma$: score under relevance noise; Misled: answers adopting an injected passage.}
-\label{tab:causal}
-\footnotesize
+\begin{table*}[t]
+\caption{Main results on the frozen test splits.
+WebQA uses acc$_{\mathrm{approx}}$ in the distractor setting.
+OK-VQA uses official VQA accuracy.
+``Versus strong'' uses the calibration-set best single action as the denominator.
+``Versus static'' uses \texttt{static\_mixed}.
+Brackets are paired bootstrap 95\% intervals.
+Degr.\ is the degradation rate against the strong baseline.
+All entries are \ph{}.
+EAB is omitted.}
+\label{tab:main}
+\scriptsize
 \setlength{\tabcolsep}{2.4pt}
 \begin{tabular}{@{}lccccccc@{}}
 \toprule
- & \multicolumn{3}{c}{Interventions} & \multicolumn{4}{c}{Retrieval errors}\\
-\cmidrule(lr){2-4}\cmidrule(l){5-8}
-Method & Mask & CF & Dist. & Gold@2--5 & $\sigma{=}0.1$ & $\sigma{=}0.2$ & Misled$\downarrow$\\
+Method & \multicolumn{3}{c}{WebQA acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{OK-VQA} & Degr. \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ & Score & vs.\ strong & vs.\ static & Score & vs.\ strong & vs.\ static & \\
 \midrule
-Static & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-Replication & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
-EAB & \ph & \ph & \ph & \ph & \ph & \ph & \ph\\
+\texttt{direct} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+NTE trigger & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+SeaKR & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v1 $\Uomni$ gate & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+UniversalRAG & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v2-Rule & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v2-Cal & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+Oracle & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Ablations}
+\label{sec:ablation}
+Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the preregistered level $\alpha=\delta=0.10$.
+The $\delta$ row is a development-split description.
+It is not a point selected on the test set.
+Refitting uses the calibration split only.
+Every entry is \ph{}.
+
+\begin{table}[t]
+\caption{Ablations on the frozen test metrics after calibration-split refits.
+WebQA is acc$_{\mathrm{approx}}$.
+OK-VQA is official VQA accuracy.
+Utility is Equation~\eqref{eq:loss} on the calibration split and is not an accuracy.
+Every entry is \ph{}.
+The $\delta$ row is not used to pick the test operating point.}
+\label{tab:ablation}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Variant & WebQA & OK-VQA & Degr. & Utility \\
+\midrule
+v2-Cal, six features & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without normalized entropy & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without logit margin & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without sequence log-prob. & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without length & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without KL vs.\ direct & \ph{} & \ph{} & \ph{} & \ph{} \\
+Without retriever gap & \ph{} & \ph{} & \ph{} & \ph{} \\
+v2-Rule & \ph{} & \ph{} & \ph{} & \ph{} \\
+Development $\delta=0.10$ & \ph{} & \ph{} & \ph{} & \ph{} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsubsection{Dependence on the Emphasized Chunks}
-\label{sec:causal}
-Attention alignment and citations do not show that answers depend on the emphasized chunks, so we intervene on \webimg{} with the retrieval decision fixed (Table~\ref{tab:causal}). Among queries where retrieval triggers and EAB is active, and where the gold answer string occurs in a retrieved text chunk, the target chunk is the highest-relevance retrieved text chunk that contains the answer; it is not necessarily the chunk with the largest bias. We mask the target chunk at the attention level, replace all of its gold aliases with a same-type entity, or add two distractors (controls and definitions in Appendix~\ref{app:protocol}). Masking changes \ph\% of EAB answers against \ph\% under static concatenation. EAB follows counterfactual edits in \ph\% of cases against \ph\% for static concatenation; a high follow rate would mean reliance on the target chunk, which also implies that a wrong target can mislead it. With distractors, the attribution precision is \ph{} for EAB and \ph{} for static concatenation.
+\subsection{Open Retrieval, Generalization, and Cost}
+\label{sec:extra}
+Table~\ref{tab:open} is the open-retrieval image setting.
+The current interface builds it with stage~s2, not with a frozen stage-s4 test, so the table is not a test result.
+Generalization to MMQA and to video is \ph{} and has no command in that interface.
+Table~\ref{tab:cost} reserves mean generator calls, input tokens, and latency.
+Planning estimates of GPU time are not entered here.
 
-\subsubsection{Robustness to Retrieval Errors}
-\label{sec:noise}
-EAB raises the weight of highly scored chunks, so a confident but wrong retrieval can be amplified (Table~\ref{tab:causal}). When the gold fact is retrieved but not ranked first, EAB scores \ph{} against \ph{} for static concatenation. With Gaussian noise ($\sigma=0.1$, $0.2$) on the relevance, EAB scores \ph{} and \ph. An injected Web passage that states a wrong answer or instructs the model misleads \ph\% of EAB answers, against \ph\% for static concatenation. Proposition~\ref{thm:tilt} bounds the change in attention odds at one row by $e^{\gamma}$, but not how often answers are misled.
+\begin{table}[t]
+\caption{Open-retrieval WebQA image setting (\texttt{webqa\_open\_img}), stage~s2 interface only.
+Not a frozen test.
+Primary metric acc$_{\mathrm{approx}}$, plus normalized BART and QA$_{\mathrm{approx}}$.
+Every entry is \ph{}.}
+\label{tab:open}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Action & acc$_{\mathrm{approx}}$ & norm.\ BART & QA$_{\mathrm{approx}}$ \\
+\midrule
+\texttt{direct} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsubsection{Cost and Transfer}
-Entropy and routing take $O(N)$ operations for $N$ evidence tokens. Triggered queries need a second prefill, cold-start queries add the probe prefill, and EAB requires eager or SDPA attention. We therefore report measured end-to-end latency per arm (Table~\ref{tab:main}; definition in Section~\ref{sec:setup}). On OK-VQA, skipping retrieval for \ph{}\% of queries gives an average latency of \ph\,ms, against \ph\,ms for always-retrieve static concatenation. Uncertainty computation adds \ph\,ms, against \ph\,ms for the 20 sampled generations behind each SeaKR decision. With per-backbone calibration, the controller improves InternVL3.5-8B on \ph{} of the four benchmarks; calibration size and transfer are in Appendix~\ref{app:supp}.
+\begin{table}[t]
+\caption{Cost placeholders on the stage-s4 runs.
+Calls, input tokens, and latency are \ph{}.
+The cheap variant decodes evidence actions only when the direct signal is below its threshold.}
+\label{tab:cost}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+System & Calls & Input tokens & Latency \\
+\midrule
+\texttt{direct} only & \ph{} & \ph{} & \ph{} \\
+Always \texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
+SeaKR & \ph{} & \ph{} & \ph{} \\
+v2, all actions & \ph{} & \ph{} & \ph{} \\
+v2, cheap variant & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Attention steering moves attention, not answers}
+\label{sec:steer}
+Every number in this subsection is copied from the root-cause report dated 13~October~2026.
+The measurements come from the previous pipeline.
+They are not v2 results, and they are not taken from \texttt{offline\_v2}.
+
+On a 64-question probe, the L1 distance of attention toward the supporting block moved from 0.77 to 0.26, and the answer flipped on 2 of 64 questions.
+On the 38 questions in that probe where the gate was on, the median gap between the top-1 and top-2 first-token logits was about 3.4--3.5, and the median largest logit displacement caused by the bias was about 2.0.
+On 29 of those 38 questions the gap exceeded the displacement.
+The two flips had gaps of 0 and 0.75.
+First-token predictive entropy was about 0.01--0.02, and on 65\% of questions $h_{\mathrm{sem}}<0.01$.
+Before the bias, about 59\% of the attention already lay on the supporting evidence.
+The bias raised that absolute mass by 0.011 on average.
+The largest bias was about 1.2 nats (median of the per-question maximum 0.78, 90th percentile 1.07).
+Among 306 gated-on questions, the median attention odds between the best and worst chunk were 1.185, against the propositional upper bound $e^{1.2}=3.32$ at $U=1$ and a full relevance gap.
+The same gap is why a uniform span bias in the style of PASTA, or a positional recalibration in the style of Found-in-the-Middle, has little room to change an answer the first token has already determined.
+This draft does not report a new PASTA or Found-in-the-Middle run.
+
+On 512 questions decoded under one protocol on CUDA, the first token changed on 14 questions.
+EAB-P versus static retrieval changed official QA by +1.30\%, with a 95\% interval of $[-0.11,+0.87]$ points, which includes zero.
+The same comparison on MPS was +1.20\% and also includes zero.
+Of a +0.304 point QA difference, two questions contributed +0.195 and +0.122, and the other 510 questions summed to $-0.013$.
+Replacing CUDA with MPS and adding no bias changed 62 of 512 answers.
+EAB-P changed 55--64 answers.
+
+The bias formula applies on rows $a\ge\tend$ (implementation name \texttt{ans1}).
+A previous default applied the bias only on decode rows (\texttt{ans2}) and was labeled as the paper form.
+That label is withdrawn.
+The gate in those runs read $U_{\mathrm{post}}$, not the retrieval-time uncertainty named in the text.
+Appendix~\ref{app:dca} records the local algebra of this retired bias.
+It is not an accuracy result.
+
+\subsection{Failure Cases and Format Sensitivity}
+\label{sec:cases}
+Failure counts for missing evidence, wrong modality, and format mismatch are \ph{}.
+No case is filled in, because the v2 runs have not been executed.
+Format sensitivity uses the single frozen prompt from Section~\ref{sec:setup}.
+A comparison across prompt variants, if it is run, is a development-split description and is \ph{} here.
+It is not a search over prompts on the test split.
 
 %% ===============================================================
 \section{Conclusion}
-We present \method{}, a training-free latent-space controller for multimodal Web answering: an uncertainty score on evidence spans decides whether to retrieve, modality-level attention decides where, and EAB reuses the score as a bounded relevance prior. We compare \method{} with M2-RAG, SeaKR, and UniversalRAG on four benchmarks spanning text, image, table, and video evidence, and we measure the contributions of the retrieval decision and of EAB. Appendix~\ref{app:limitations} discusses limitations and future work.
+We describe \method{} v2, a per-question choice among direct answering, static text, static image, static mixed evidence, and reranked static evidence.
+v2-Rule fits no weights.
+v2-Cal is one logistic regression with seven parameters.
+Fixed-sequence Learn-then-Test at $\alpha=\delta=0.10$ supplies the degradation-rate claim in Section~\ref{sec:risk}, which does not say that the method is never worse.
+The primary comparison uses the strongest single action on the calibration split as the denominator.
+The measurement, the main table, and the ablations have not been run, and their numbers are \ph{}.
+The attention-steering subsection quotes the 13~October~2026 root-cause report: attention moves, and answers do not.
+Appendix~\ref{app:limitations} states the limitations.

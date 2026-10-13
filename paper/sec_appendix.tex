@@ -1,148 +1,168 @@
 %% ===============================================================
-
 \section{Evaluation Details}
 \label{app:protocol}
-\textit{Evidence pools.} OK-VQA retrieves passages from the GS training corpus (GS-112K, 112{,}724 sentences), the training-split corpus of Luo et al.~\cite{luo2021weakly} (\tbd{[[confirm from the original paper whether answers entered the collection queries]]}). The development stage compares three candidate corpora: BM25 over Wikipedia passages, BGE over the Wikipedia passages of DPR~\cite{karpukhin2020dpr}, and BGE over GS-112K, and the corpus with the largest gain of static concatenation over direct answering is used (selected: \tbd{[[corpus; fill from runs/dev\_decisions.json]]}). The full GS corpus of 168{,}306 sentences is reported only as a control in Appendix~\ref{app:supp}: it contains retrieval results for test questions, so it is not a valid pool for the main table. WebQA retrieves from a global pool of text snippets and images (\ph{} snippets and \ph{} images), with BGE for text and CLIP for images. Every WebQA question is posed in text, so retrieving from the full text-and-image pool tests routing from text queries to visual evidence. \webimg{} is the image-question subset of the same full run, and no separate split is drawn. Candidate images or facts whose files are missing are excluded and counted per question, and the totals are reported (\ph{} questions affected). HybridQA and VideoRAG-Synth use subsets of the corpora of the UniversalRAG suite~\cite{yeo2026universalrag}, built by its download scripts and by our subset script: HybridQA passages and tables only (\ph{} passages and \ph{} tables), and the VideoRAG videos and clips that remained downloadable (\ph{} videos). The suite's full corpora contain passages from other datasets and are not used. Candidates are the top five per modality returned by the suite's own retrievers (text and tables with its text embedder, videos and clips with its multimodal embedder, video scores mixed with transcript scores at weight 0.2), exported once and shared by every method. Video and clip are separate modalities. On average, a text chunk occupies \ph{} decoder tokens, a serialized table \ph, an image \ph, and a video chunk \ph; raw retriever scores range from \ph{} to \ph{} for text and from \ph{} to \ph{} for images. Within the top-$k$, the calibrated relevance $r_j$ of the first and the fifth chunk differs by \ph{} on average. Our controller rescores these candidates: a video or clip receives the mean of the per-modality percentiles of its transcript BGE score and of the CLIP score of its mean frame embedding. Video frames enter the decoder as independent images, not through the temporal video input of Qwen3-VL.
+This appendix restates the v2 protocol.
+The v2 runs have not been executed.
+Placeholder cells in the body stay \ph{}.
 
-\textit{Cold-start routing and incremental decoding.} At cold start, routing runs after the trigger: the joint top-$k$ round is packed without bias, one prefill gives $M_m\cdot H_m$ over its evidence spans, and only the final top-$k$ inside the routed modalities is used for answering; the first-round chunks are not reused. The no-probe ablation removes only the probe round's uncertainty term and keeps this first-round routing. During incremental decoding, the biases assigned to evidence keys are kept across steps.
+\textit{Splits.}
+WebQA draws at least 500 calibration questions and 256 development questions from the training split.
+Those two sets are disjoint from each other and from the test split.
+The test split is all 4{,}966 validation questions.
+Calibration is not taken from the WebQA validation split.
+OK-VQA uses 500 calibration questions, 256 development questions, and the remainder of the validation split.
+The three OK-VQA sets are pairwise disjoint.
+An empty test set is an error.
+For a validation split of 5{,}046 questions the remainder is 4{,}290.
+Question-id lists are hashed, and the test command checks the hash of \texttt{docs/dev\_decisions.json}.
 
-\textit{Prefills.} A query uses up to three forward passes: a zero-bias direct prefill of the input, which gives $\hpred$ and, when context is supplied, $\hgrd$ (this pass is also the source of the no-evidence score $\Uomni^{\mathrm{pre}}$); at cold start, a zero-bias probe prefill of the joint top-$k$ round, which gives $\hgrd$, $\hpred$, and the route; and, when retrieval triggers, the prefill of the packed evidence, in which EAB biases the answer rows. Decisions come from the zero-bias passes; EAB is applied only in the last one.
+\textit{Actions.}
+The main-method actions are \texttt{direct}, \texttt{static\_text}, \texttt{static\_image}, \texttt{static\_mixed}, and \texttt{rerank\_static}.
+They share one prompt, one decoding budget, and one candidate pool inside a run.
+The prompt asks for the frozen answer format.
+It does not ask for a sources line in place of an answer.
+WebQA uses one sentence aligned with the reference style.
+OK-VQA uses at most three words and official VQA normalization.
+The prompt is chosen on the development split and frozen before test.
+Evidence Attention Bias is not one of the five actions.
 
-\textit{Implementation.} EAB is an additive mask of shape $[\mathrm{batch},1,q_{\mathrm{len}},kv_{\mathrm{len}}]$ that broadcasts across heads and grows along the key dimension as positions enter the key--value (KV) cache. Attention and entropy computations use $\epsilon=10^{-9}$. Decoding uses eager or scaled dot-product attention, since FlashAttention-2 may ignore non-binary masks. The strength $\gamma$ is selected from the development grid below.
+\textit{Metrics and baselines.}
+OK-VQA reports official VQA accuracy only.
+WebQA's primary metric is acc$_{\mathrm{approx}}$ (Appendix~\ref{app:webqa_scoring}), with normalized BART and QA$_{\mathrm{approx}}$ on the full set and on image and text subsets.
+The primary WebQA setting is the distractor pool.
+Open retrieval is the second setting.
+The strong baseline is the single action with the best calibration-set score.
+Primary relative gain uses that score as the denominator.
+Gain versus \texttt{static\_mixed} is also reported.
+The oracle is the per-question best action.
+Adaptive comparators (NTE trigger, SeaKR, the v1 $\Uomni$ gate, UniversalRAG) are not candidates for the strong baseline.
+\texttt{gold-in-top-$k$} is offline analysis only.
 
-\textit{Calibration protocol.} Each calibration query stores $\hgrd+\beta\hpred$ computed before any intervention, together with the raw scores of its retrieval candidates per modality. Probe-round scores of cold-start calibration queries form a separate set $S$ with its own median and IQR. The median, IQR, and per-modality ECDFs are then frozen for all evaluation runs; when $\mathrm{IQR}(S)=0$, it is floored at $10^{-6}$.
-
-\textit{Development grid and selection rules.} All choices are made on development questions only, by the rules in \texttt{docs/DEV\_DECISIONS.md}, which were written before any development run. The grid has 30 EAB candidates (start row $\tend$, $\tans$, or the first question token; bias $\gamma\Uomni r_j$ or $\gamma\Uomni(2r_j-1)$; $\gamma\in\{0.6,0.9,1.2,1.5,2.0\}$), three uncertainty variants (the sum of Eq.~\eqref{eq:uomni}; the same sum after standardizing $\hgrd$ and $\hpred$ separately by their calibration median and IQR; and the sum with the attention of the middle decoder layer instead of the last), two OK-VQA corpora (BGE over the first 3M Wikipedia passages of DPR~\cite{karpukhin2020dpr}, and BGE over GS-112K), $(\beta,\taub)\in\{0,0.15,0.3,0.5,1.0\}\times\{0.2,0.4,0.6\}$, and $\tau\in\{0.25,0.35,0.45\}$. The routing margin $\delta=0.08$ is a fixed prior and is not tuned. The rules are applied in order: (a) the OK-VQA corpus with the largest gain of static concatenation over direct answering, counted as helpful only if the gain is nonnegative; (b) the uncertainty variant with the largest mean Spearman correlation between the score and the error of direct answers, which counts as outperforming NTE only if its mean correlation exceeds that of next-token entropy; (c) the EAB candidate with the largest equal-weight mean, across datasets, of the same-input gain over static concatenation, counted as effective only if the one-sided simultaneous lower bound of a max-statistic bootstrap over all 30 candidates is positive; (d) $(\beta,\taub)$ maximizing the same mean gain for the selected candidate, in a second set of development runs; and (e) $\tau$, maximizing the mean gated score, computed offline from those runs because $\tau$ only changes the retrieval decision. Selected: \tbd{[[corpus, uncertainty variant, EAB candidate, $\beta$, $\taub$, $\tau$; fill from runs/dev\_decisions.json]]}. Development scores are not reported in the paper.
-
-\textit{Citation support.} Every chunk carries a normalized identifier such as \texttt{[E3]}. Missing, malformed, and out-of-prompt citations receive zero credit, and Inv.\ is the share of citation markers that are malformed (any identifier not of the form \texttt{[E$j$]}) or point outside the prompt, among all citation markers. The citation output comes from a separate decoding with the citation prompt, which asks for one complete factual statement per line. For answer $y$ to question $x$, cited chunks $C(x)$, and a binary support checker $\mathcal{S}$, let $\mathrm{Supp}(x)=\sum_{e\in C(x)}\mathcal{S}(y,e)$. Faith is $\mathbb{I}[\mathrm{Supp}(x)>0]$, and attribution precision is $\mathrm{Supp}(x)/|C(x)|$. Faith is averaged over all answers and AP over the answers with at least one citation. For gated arms, questions that do not retrieve are excluded from the AP denominator, and their share is reported as coverage; coverage times AP cannot exceed Faith. Support is judged in two ways, reported separately. The alias judgment accepts a cited chunk when a gold alias occurs in it. The NLI judgment uses DeBERTa-v3-large (MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli, revision b3546ea): the chunk supports the answer when it entails an answer sentence citing it, i.e., when the entailment logit is the largest. Premises are not truncated: a premise longer than the checker's window is split into windows, and the maximum entailment score over the windows is used. Alias and NLI results are not combined by short-circuit.
-
-\textit{Attention--relevance divergence.} ARD compares the normalized attention mass $p$ of the retrieved chunks with a relevance target. The attention is read at row $\tend$, the row that predicts the first answer token, from the last decoder layer, averaged over heads, and from the logits that include EAB's bias; every arm uses this same row. With $\bar A_i$ as in Eq.~\eqref{eq:attn}, the mass of chunk $j$ is $\mu_j=\sum_{i\in\mathrm{span}(d_j)}\bar A_i$ and $p_j=\mu_j/\sum_l\mu_l$ over the retrieved chunks:
-\begin{equation}
-\pi_j^{\mathrm{rel}}=\frac{e^{r_j/T_r}}{\sum_l e^{r_l/T_r}},\qquad
-\mathrm{ARD}=\mathrm{JSD}(p\,\|\,\pi^{\mathrm{rel}}),
-\label{eq:ard}
-\end{equation}
-where $T_r=0.1$ is a temperature fixed a priori and not tuned. ARD shares EAB's retriever scores, so it measures alignment with the intervention signal.
-
-\textit{Order and routing metrics.} The orderings are the relevance-sorted anchor, the reverse anchor, and 12 random permutations of the five retrieval ranks (seeds 17, 23, and 29, four permutations each), applied identically to all questions. Order statistics use the first 1{,}000 evaluation questions of each dataset (all 224 for VideoRAG-Synth). To fix the chunk set across operations, the order runs pack the joint top-$k$ without modality routing, so static concatenation, chunk replication, EAB, and Found-in-the-Middle read the same five chunks; the cold-start probe round still supplies $\Uomni$. The flip indicator of question $x$ is $1$ if answer correctness differs between any two orderings, and the flip rate averages this indicator over questions. A question is correct when its official score is at least 50 (VQA accuracy of at least 50, for example); answer recall, used in the error analysis, counts any positive score. Among triggered queries with annotated gold modalities $\mathcal{M}^\ast$ and searched modalities $\mathcal{M}'$, WR is the share with $\mathcal{M}'\cap\mathcal{M}^\ast=\emptyset$ and Cov.\ the share with $\mathcal{M}^\ast\subseteq\mathcal{M}'$.
-
-\textit{Evidence interventions.} Interventions use the queries for which retrieval triggers, EAB is active ($\Uomni>\taub$), and the gold answer string occurs in a retrieved text chunk. The target chunk is the highest-relevance retrieved text chunk that contains the answer, not the chunk with the largest bias; \ph{} of the \webimg{} questions remain after these filters. The denominator for each intervention and each arm is this fixed set of eligible questions. A question whose intervened input cannot be built or decoded counts as a failure, and failure counts and reasons are reported with each rate. The retrieval decision and the $\Uomni$ used by EAB stay those of the unperturbed run. \textit{Mask} blocks attention to the target chunk's span: every row's logit toward its keys is set to $-\infty$, EAB adds no bias to them, and positions are unchanged. \textit{Counterfactual edits} replace every occurrence of every gold alias in the target chunk with a same-type entity, the gold answer of another evaluation question chosen by a hash of the question identifier. Types are year, number, color, yes/no, the named-entity label of spaCy \texttt{en\_core\_web\_sm}, or otherwise the word count. An answer follows the edit when it contains that entity after answer normalization. \textit{Random edits} replace a whole-word, non-answer span of the same length as the gold answer with a same-length whole-word string, on the same questions as the counterfactual edits; an unedited rerun measures the base rate of answer changes. Replication is re-decoded on the intervened input as well. \textit{Distractors} are the two highest-scoring candidates beyond the top $k$ that neither contain the gold answer nor are gold facts; they replace the two lowest-ranked non-target chunks at their positions. Only text chunks are edited.
-
-\textit{Retrieval errors.} Gold@2--5 contains \webimg{} questions whose top-ranked chunk is not a gold fact while a gold fact appears at ranks 2--5. Noise is added to calibrated relevance and clipped to $[0,1]$, averaged over three draws. For injection, a passage resembling a relevant Web page, with a wrong answer or an instruction to the model, replaces the lowest-ranked non-gold chunk and receives relevance $r=1$, which places it first under relevance-sorted packing; the wrong answer is the counterfactual entity above, and an answer is misled when it contains it.
-
-\textit{Baseline implementation details.} Found-in-the-Middle~\cite{hsieh2024found} follows the document-mean attention calibration of Hsieh et al. For each document, the mean attention probability of its tokens is compared with a reference computed from a second forward pass in which the documents are replaced by a null reference (\tbd{[[check against the original paper]]}). A softmax over the documents, with temperature $t=$~\ph{} (following Hsieh et al.; \tbd{[[confirm value]]}), turns the differences into a factor $\alpha$ for each layer, head, and row; each document's attention mass is then redistributed according to $\alpha$ and its length, and the other probabilities are unchanged. The factors are applied to the last prefill row and to every decoded row. M2-RAG~\cite{ma2025m2rag} receives the question image and the same joint top-$k$ chunks. Its official summarizer writes a document of at most 384 tokens, and the answer extractor we added answers from that document alone with the arm's decoding limit. M2-RAG uses its official chat template, whereas the other arms use a hand-written ChatML prompt (\tbd{[[align the template or report the difference]]}); its image pixel budget equals that of the other arms.
+\textit{Statistics and selection.}
+Intervals are paired bootstrap 95\% confidence intervals over questions, with Holm correction for multiple comparisons.
+Greedy decoding does not contribute a seed standard deviation.
+The degradation rate is the fraction of questions on which the chosen action scores below the strong baseline.
+Thresholds and grids are chosen on the calibration or development split.
+The test split is scored once.
+A grid is not selected on the test split.
+The development gates in Section~\ref{sec:setup} are criteria.
+This draft does not claim that a gate has passed.
 
 %% ===============================================================
-\section{Proofs for Evidence Attention Bias}
+\section{Local Algebra of the Retired Attention Bias}
 \label{app:dca}
-Both propositions fix one layer, head, and attention row $a$ with pre-bias logits $s_i$ (including existing masks) and values $v_i$. Chunk $j\in\{1,\dots,k\}$ occupies evidence span $\mathrm{span}(d_j)$; the remaining visible keys form group $0$ with relevance $r_0=0$.
+The identities below describe the attention bias removed from the main method.
+They are not v2 accuracy results, and they do not say that the bias improves answers or order robustness.
+Section~\ref{sec:steer} quotes the empirical measurement.
 
-\textit{Proof of Proposition~\ref{thm:tilt}.} Under EAB, a key $i$ in $\mathrm{span}(d_j)$ receives logit $s_i+\lambda r_j$, so its weight is $\alpha_ie^{\lambda r_j}/\sum_{i'}\alpha_{i'}e^{\lambda r(i')}$. Because all keys in the span share $e^{\lambda r_j}$, proportions within the span are preserved; summing over the span gives Eq.~\eqref{eq:local} with $Z(\lambda)=\sum_l\mu_le^{\lambda r_l}$. For any distribution $p$ over the groups, substituting $\log\mu'_j=\log\mu_j+\lambda r_j-\log Z(\lambda)$ gives
+Fix one layer, one head, and one attention row, with pre-bias attention mass $\mu_j$ on chunk $j$.
+Retrieved chunks $j\in\{1,\dots,k\}$ receive a logit bias $\lambda r_j$ on the rows $a\ge\tend$ (\texttt{ans1}).
+Group $0$ is the remaining visible keys, with $r_0=0$.
+When the old gate is active, $\lambda=\gamma\Uomni$; otherwise $\lambda=0$.
+The previous default path that biased only decode rows (\texttt{ans2}) is not this formula, and it is not labeled as the paper form.
+The gate that produced the quoted runs read $U_{\mathrm{post}}$.
+
+\begin{proposition}[Bounded relevance tilt]
+\label{thm:tilt}
+Under this bias, attention inside each span keeps its proportions, and the chunk masses become
+\begin{equation}
+\mu_j'=\frac{\mu_j e^{\lambda r_j}}{\sum_{l=0}^{k}\mu_l e^{\lambda r_l}}.
+\label{eq:local}
+\end{equation}
+For any two chunks, $\mu'_j/\mu'_l=(\mu_j/\mu_l)\,e^{\lambda(r_j-r_l)}$ with $|\lambda(r_j-r_l)|\le\gamma$.
+\end{proposition}
+
+\begin{proof}
+A key $i$ in $\mathrm{span}(d_j)$ receives logit $s_i+\lambda r_j$, so its weight is $\alpha_i e^{\lambda r_j}/\sum_{i'}\alpha_{i'}e^{\lambda r(i')}$.
+Keys in one span share $e^{\lambda r_j}$, so proportions inside the span are unchanged.
+Summing over the span gives Equation~\eqref{eq:local} with $Z(\lambda)=\sum_l\mu_l e^{\lambda r_l}$.
+For any distribution $p$ over the groups,
 \[
-\lambda\textstyle\sum_jp_jr_j-D_{\mathrm{KL}}(p\,\|\,\mu)=\log Z(\lambda)-D_{\mathrm{KL}}(p\,\|\,\mu'),
+\lambda\sum_j p_j r_j-D_{\mathrm{KL}}(p\,\|\,\mu)
+=\log Z(\lambda)-D_{\mathrm{KL}}(p\,\|\,\mu'),
 \]
-which is maximized uniquely at $p=\mu'$. The odds ratio follows by dividing two instances of Eq.~\eqref{eq:local}, and $|\lambda(r_j-r_l)|\le\gamma$ because $\lambda\le\gamma\Uomni\le\gamma$ and $r\in[0,1]$. $\square$
+which is maximized uniquely at $p=\mu'$.
+The odds ratio is the quotient of two instances of Equation~\eqref{eq:local}.
+$|\lambda(r_j-r_l)|\le\gamma$ because $\lambda\le\gamma\Uomni\le\gamma$ and $r\in[0,1]$.
+\end{proof}
 
-\textit{Relation to chunk replication.} Let chunk $j$ have $n_j$ copies, with $n_0=1$, and let EAB add $b_j$ to each logit in its span. Chunk replication (superscript $\mathrm{rep}$) repeats the key and value rows of the span. Local equivalence requires (A1) unchanged replica logits at row $a$, (A2) unchanged values, and (A3) all copies visible to row $a$. The replication arm uses $n_j=\max(1,\mathrm{round}(e^{\gamma\Uomni r_j}))$ copies with no truncation, so it equals the EAB arm with bias $b_j=\log n_j$; this differs from the bias $\gamma\Uomni r_j$ of the EAB arm only by the rounding of the copy count.
+Chunk replication with $n_j=\max(1,\mathrm{round}(e^{\gamma\Uomni r_j}))$ copies matches the same reweighting at bias $\log n_j$, up to rounding, under three local assumptions: replica logits at the row are unchanged, values are unchanged, and every copy is visible to the row.
+Rotary embeddings, causal masking, and cross-layer residuals can break those assumptions.
+A full-system accuracy comparison of replication and the bias is not a v2 result and is not reported.
 
-\begin{proposition}[Local equivalence of chunk replication and EAB]
+\begin{proposition}[Local copy identity]
 \label{thm:dca-local}
-Under (A1)--(A3), pooling the weights of the copies of key $i\in\mathrm{span}(d_j)$ gives
-$\tilde\alpha_i^{\mathrm{rep}}:=\sum_{\ell=1}^{n_j}\alpha^{\mathrm{rep}}_{i,\ell}=\alpha_i^{\mathrm{EAB}}\big|_{b_j=\log n_j}$,
-and every key of group $0$ has the same weight under both. The chunk masses satisfy $\mu_j^{\mathrm{rep}}=\mu_j^{\mathrm{EAB}}=n_j\sum_{i\in\mathrm{span}(d_j)}e^{s_i}/D$ with
+Under the three assumptions, pooling the copies of key $i\in\mathrm{span}(d_j)$ gives the EAB weight at bias $b_j=\log n_j$, and the chunk masses match.
+\end{proposition}
+
+\begin{proof}
+Both normalizers equal
 \begin{equation}
 D=\sum_{i\in\text{group }0}e^{s_i}+\sum_{\ell=1}^{k}n_\ell\sum_{i\in\mathrm{span}(d_\ell)}e^{s_i},
 \label{eq:dca-norm}
 \end{equation}
-and the attention outputs at row $a$ coincide.
-\end{proposition}
-
-\begin{proof}
-By (A1) and (A3), both normalizers equal $D$ because $n_je^{s_i}=e^{s_i+\log n_j}$. Pooling the copies gives $\tilde\alpha_i^{\mathrm{rep}}=n_je^{s_i}/D=\alpha_i^{\mathrm{EAB}}\big|_{b_j=\log n_j}$, and summing within the span proves mass equality. By (A2), equal pooled weights give identical attention outputs.
+because $n_j e^{s_i}=e^{s_i+\log n_j}$.
+Pooling copies gives weight $n_j e^{s_i}/D$.
+Equal pooled weights and equal values give the same attention output at the row.
 \end{proof}
 
-\textit{Boundary conditions.} Rotary position embeddings (RoPE) and the surrounding sequence can violate (A1) and (A2). Under causal attention, (A3) requires the copies to precede row $a$; with $c_j(a)>0$ visible copies, the effective bias is $\log c_j(a)$. Cross-layer residual updates can also break the matching of replica keys and values, so the full-system difference between chunk replication and EAB (\ph{} against \ph{} on OK-VQA) lies beyond this local relation. Replication also lengthens the prompt: its mean prompt length is \ph{} tokens, against \ph{} for EAB, and the copies are not truncated.
-
 %% ===============================================================
-\section{Supplementary Results}
+\section{Supplementary Placeholders}
 \label{app:supp}
-
-\textit{Entropy weight and intervention threshold.} The frozen values are $\beta=$~\ph{} and $\taub=$~\ph{} (Section~\ref{sec:setup}). Over the sensitivity grid $\beta\in\{0,0.15,0.3,0.5,1.0\}$ and $\taub\in\{0.2,0.4,0.6\}$, OK-VQA accuracy ranges from \ph{} to \ph{} and HybridQA EM from \ph{} to \ph. The frozen pair reaches \ph{} on OK-VQA and \ph{} on HybridQA. This grid is reported as sensitivity only; no cell is chosen on evaluation questions. Grounding entropy alone ($\beta=0$) gives \ph{} to \ph{} on OK-VQA, and $\beta=1$ gives \ph{} to \ph. Setting $\taub$ below $\tau$, which biases every retrieved query, gives \ph{} on OK-VQA and \ph{} on HybridQA at the frozen $\beta$.
-
-\textit{Calibration size and transfer.} OK-VQA uses 100 and 500 calibration queries; 500 is the whole held-out reserve, so larger sizes are not run. \webimg{} draws its calibration queries from the WebQA training split and uses 100, 500, and 1{,}000; it reaches \ph, \ph, and \ph. With 100 and 500 queries, OK-VQA reaches \ph{} and \ph{} at retrieval rates of \ph\% and \ph\%, so 100 queries recover \ph\% of the gain that 500 queries achieve over static concatenation. Transfer of calibration statistics is reported only between cold-start datasets (WebQA-img, HybridQA, and VideoRAG-Synth), which share the probe-round statistic. Transferring the HybridQA statistics to VideoRAG-Synth changes its score from \ph{} to \ph{}, and to \webimg{} changes the score from \ph{} to \ph{}, with retrieval rates of \ph\% and \ph\%. Transfer from OK-VQA is not reported: OK-VQA has no probe round, so a cold-start target would keep its own probe statistic in the gate. Without calibration, the controller uses heuristic default statistics; it reaches \ph{} with a retrieval rate of \ph\%, and \tbd{[[is EAB active?]]}.
-
-\textit{Citation support.} Faith and AP are reported for the alias and NLI judgments separately. With the DeBERTa-v3-large checker, Faith is \ph{} for static concatenation and \ph{} for \method{} on OK-VQA, \ph{} and \ph{} on HybridQA, and \ph{} and \ph{} on \webimg{}. Attribution precision on HybridQA is \ph{} and \ph{}, and invalid citations are \ph\%, \ph\%, and \ph\% for static concatenation and \ph\%, \ph\%, and \ph\% for \method{} on OK-VQA, HybridQA, and \webimg{}. For gated arms, the coverage of AP is reported with each entry.
-
-\textit{Selective risk.} Scoring each system on its own answers, AURC and the Spearman $\rho$ between uncertainty and error are \ph{} and \ph{} for \method{} on \webimg{}, against \ph{} and \ph{} for SeaKR and \ph{} and \ph{} for NTE; on OK-VQA they are \ph{} and \ph{}, \ph{} and \ph{}, and \ph{} and \ph{}. AURC mixes answer quality with error ranking.
-
-\textit{Retrieval threshold.} With chunk replication as the evidence-use operation on OK-VQA, varying $\tau$ over $\{0.25,0.35,0.45\}$ changes the retrieval rate to \ph{}, \ph{}, and \ph{}\%, with accuracy and attribution precision of \ph{}, \ph{}, and \ph{} at each setting. This sweep is a sensitivity report; accuracy stays near \ph{} down to about \ph\% retrieval.
-
-\textit{Backbone transfer.} With per-backbone calibration statistics, the controller changes the scores of InternVL3.5-8B on WebQA, OK-VQA, HybridQA, and VideoRAG-Synth from \ph, \ph, \ph, and \ph{} under static concatenation to \ph, \ph, \ph, and \ph. The EAB hook is the same additive attention mask; InternVL3.5 places its image tokens in the decoder sequence, so the span map applies unchanged. Two differences from the official pipeline are applied to all arms: each image is encoded as one $448\times448$ tile rather than with dynamic tiling, and the prompt is assembled by hand instead of by the model's chat template. On OK-VQA, the order standard deviation of InternVL3.5-8B is \ph{} for static concatenation, \ph{} for chunk replication, and \ph{} for EAB.
-
-\textit{Secondary metrics.} HybridQA F1 is \ph{} for static concatenation and \ph{} for \method{}; VideoRAG-Synth BERTScore is \ph{} and \ph.
-
-\textit{Full-corpus control for OK-VQA.} With the 168{,}306-sentence GS corpus (which includes retrieval results for test questions), static concatenation reaches \ph{} and \method{} reaches \ph{} on OK-VQA. This control is not used for selection or in the main table.
-
-\begin{table}[t]
-\caption{Order sensitivity with seed deviations (Qwen3-VL-8B; 14 orderings: two anchors and 12 random permutations drawn with three seeds, four per seed; first 1{,}000 evaluation questions, all 224 for VideoRAG-Synth). $\pm$ is the spread of the statistic across the three seed groups. Gap is the relevance-sorted minus reverse-sorted score; ARD measures attention--relevance alignment.}
-\label{tab:order_full}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Method & Std.$\downarrow$ & Gap$\downarrow$ & Flip\%$\downarrow$ & ARD$\downarrow$\\
-\midrule
-\multicolumn{5}{@{}l}{\textit{OK-VQA}}\\
-Static concatenation & \ph{}$\pm$\ph{} & \ph{}$\pm$\ph{} & \ph & \ph{}\\
-Chunk replication & \ph{}$\pm$\ph{} & \ph{}$\pm$\ph{} & \ph & \ph{}\\
-EAB (ours) & \textbf{\ph} & \textbf{\ph} & \ph & \textbf{\ph}\\
-\midrule
-\multicolumn{5}{@{}l}{\textit{\webimg{}}}\\
-Static concatenation & \ph & \ph & \ph & \ph\\
-Chunk replication & \ph & \ph & \ph & \ph\\
-EAB (ours) & \ph & \ph & \ph & \ph\\
-\midrule
-\multicolumn{5}{@{}l}{\textit{HybridQA}}\\
-Static concatenation & \ph & \ph & \ph & \ph\\
-Chunk replication & \ph & \ph & \ph & \ph\\
-EAB (ours) & \ph & \ph & \ph & \ph\\
-\midrule
-\multicolumn{5}{@{}l}{\textit{VideoRAG-Synth}}\\
-Static concatenation & \ph & \ph & \ph & \ph\\
-Chunk replication & \ph & \ph & \ph & \ph\\
-EAB (ours) & \ph & \ph & \ph & \ph\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textit{Normalizing cross-modal retrieval scores.} Per-query min--max normalization of retriever scores gives \ph{} on OK-VQA and \ph{} on \webimg{} (ARD \ph), between raw scores (\ph{}, \ph; \ph) and per-modality percentiles (\ph{}, \ph; \ph{}).
-
-\textit{Trigger agreement.} On OK-VQA, NTE and $\Uomni$ both retrieve on \ph{}\% of queries and both skip on \ph{}\%; NTE alone retrieves on \ph{}\% and $\Uomni$ alone on \ph{}\%. The questions answered without retrieval reach \ph{} under NTE and \ph{} under $\Uomni$, while retrieved questions reach \ph{} and \ph{} in the respective complete configurations.
+Open-retrieval scores, cost, and the degradation rate are the placeholder tables in Section~\ref{sec:extra} and Table~\ref{tab:main}.
+No seed-wise standard deviation is attached to a greedy run.
+Sensitivity to $\delta$ is the development-split row of Table~\ref{tab:ablation}.
+That row is not a test-set search.
+Backbone transfer, if it is run, is \ph{} and is not claimed here.
+Secondary WebQA numbers for a filled run are normalized BART and QA$_{\mathrm{approx}}$ from the same predictions as acc$_{\mathrm{approx}}$.
+They are \ph{} until stage~s4 is run.
 
 %% ===============================================================
-\section{Public WebQA Scoring Diagnostics}
+\section{WebQA Scoring}
 \label{app:webqa_scoring}
-\textit{Public metric.} The published WebQA evaluator~\cite{chang2022webqa} computes $\mathrm{acc}_{\mathrm{approx}}$ from category-specific F1 for color, shape, number, and yes/no questions and from recall for the other categories. We combine this accuracy component $a_i$ with the ParaBank2 BARTScore checkpoint of the WebQA authors. For reference $r_i$, answer $y_i$, and reference-to-answer log score $s$,
+The published WebQA evaluator~\cite{chang2022webqa} computes acc$_{\mathrm{approx}}$ from category-specific F1 for color, shape, number, and yes/no questions and from recall for the other categories.
+We combine this accuracy component $a_i$ with the ParaBank2 BARTScore checkpoint of the WebQA authors.
+For reference $r_i$, answer $y_i$, and reference-to-answer log score $s$,
 \begin{equation}
-F_i=\min\bigl\{e^{s(r_i,y_i)-s(r_i,r_i)},1\bigr\},\qquad \mathrm{QA}_{\mathrm{approx}}=\frac{100}{N}\sum_{i=1}^{N}a_iF_i.
+F_i=\min\bigl\{e^{s(r_i,y_i)-s(r_i,r_i)},1\bigr\},\qquad
+\mathrm{QA}_{\mathrm{approx}}=\frac{100}{N}\sum_{i=1}^{N}a_i F_i .
 \label{eq:webqa}
 \end{equation}
-Public validation has full reference answers but not the keyword labels of the hidden test set, hence the name $\mathrm{QA}_{\mathrm{approx}}$. BART scoring uses CPU FP32, eager attention, and one checkpoint for every arm.
-
-\textit{Development history and reporting.} The BARTScore component was added during development, after the lexical metric had been inspected. We therefore report $\mathrm{acc}_{\mathrm{approx}}$ alone next to $\mathrm{QA}_{\mathrm{approx}}$ for every arm in the appendix (\ph{}). Because the recall branch of $\mathrm{acc}_{\mathrm{approx}}$ can give full credit to long or hedged answers (for example, ``It is not Paris'' for Paris), we also report the mean answer length of each arm (\ph{} words).
+$F_i$ is the normalized BART factor.
+Public validation has reference answers and does not have the keyword labels of the hidden test set, which is why the combined score is called QA$_{\mathrm{approx}}$.
+The primary reported WebQA number is acc$_{\mathrm{approx}}$.
+Normalized BART and QA$_{\mathrm{approx}}$ are reported with it, including image and text subsets.
+Loose lexical scores are not reported beside them.
+BART scoring uses CPU FP32, eager attention, and one checkpoint for every action.
+Filled values of these metrics are \ph{} until the v2 run exists.
+The 512-question static figures in Section~\ref{sec:setup} are quotations from the root-cause report, not cells of Table~\ref{tab:webqa}.
 
 %% ===============================================================
 \section{Error and Case Analysis}
 \label{app:error}
-\textit{Residual errors.} Over \tbd{[[sample size and sampling]]}, categorized errors on OK-VQA and WebQA come from missing top-$k$ evidence (\ph{}\% and \ph{}\%), ambiguous visual grounding (\ph{}\% and \ph{}\%), answer normalization (\ph{}\% and \ph{}\%), and unsupported citations (\ph{}\% and \ph{}\%).
-
-\textit{Error sources.} Missing top-$k$ evidence causes \ph{}\% of categorized errors on OK-VQA and \ph{}\% on WebQA. A reranker can recover gold evidence in the candidate pool but outside the top $k$ (recall \ph\% against \ph\% at $k=5$), which can be compared with the gain of adding the reranker to the controller (Table~\ref{tab:main}). Relative to static concatenation at the same retrieval decision, EAB turns \ph\% of OK-VQA answers from wrong to correct and \ph\% from correct to wrong. Losses are attributed to relevance errors as follows: \ph\% amplify a highly scored chunk without the answer, \ph\% an unrelated image region, and \ph\% a misaligned table cell.
-
-\textit{Cases where EAB changes the answer.} In one OK-VQA example, EAB corrects the answer: \tbd{[[question; top chunk, i.e., the chunk with the largest bias; static $\to$ EAB answers]]}. In another, it amplifies a highly scored chunk without the answer, a failure category above: \tbd{[[question; top chunk; static $\to$ EAB answers]]}.
+Shares of errors from missing top-$k$ evidence, from the wrong modality, and from answer normalization are \ph{}.
+The denominator, once a run exists, is the number of scored test questions, and failures to decode are counted in that denominator.
+No example is inserted in this draft.
+The attention-bias cases discussed in Section~\ref{sec:steer} are the root-cause report's cases, not a new error study.
 
 %% ===============================================================
 \section{Limitations and Ethical Considerations}
 \label{app:limitations}
-\textit{Limitations.} \method{} needs a decoder that exposes attention and next-token probabilities. Without attention access, chunk replication gives a similar reweighting with integer copy counts (Proposition~\ref{thm:dca-local}). The span interface assumes that visual tokens enter the decoder sequence; models that feed images through cross-attention layers, such as Llama-3.2-Vision, fall outside it. Grounding entropy ignores total evidence attention, can mix heads that attend to different chunks, and depends on tokenization and patch density: an image occupies many more decoder tokens than a text chunk, so its entropy is not on the same scale as that of text, and we do not correct for this. The probe round costs one prefill and one retrieval call per cold-start query, also when the controller then answers directly. As a bounded prior on chunk mass, EAB lowers dataset-level order sensitivity in our runs but does not make each answer order-invariant. The bound constrains ratios between chunks; the absolute mass of keys outside the chunks, such as attention sinks and the query image, can change substantially under EAB. The cross-encoder reads text only: an image enters it as its caption, and a video as its transcript, so the reranker does not see the frames that the generator sees. On VideoRAG-Synth the candidates have two modalities, video and clip, so routing chooses between them, a weaker test than the cross-format routing on WebQA. Per-modality percentiles align score ranks across retrievers, not the probability that a chunk supports the answer. Normalization statistics are estimated per benchmark and backbone. Each retrieved video is represented by eight sampled frames, fed as independent images, and its transcript; long videos that need temporal reasoning across many frames remain untested. Baselines received no development-set tuning, and M2-RAG's extractor and chat template differ from the other arms (Appendix~\ref{app:protocol}).
+\textit{Limitations.}
+v2 decodes several actions per question.
+Thresholds and the seven regression coefficients depend on the calibration split.
+The strongest single action is chosen on that same sample, which makes the risk claim slightly anti-conservative.
+The claim in Section~\ref{sec:risk} bounds the degradation rate of accepted thresholds at $\delta=0.10$.
+It does not say that a deployed selector is never worse than the strongest single action.
+The image-evidence pipeline is a separate 50-question diagnostic whose outcome is \ph{}.
+\texttt{gold-in-top-$k$} is not available as an inference-time feature.
+MMQA and video are outside the current command interface.
+Historical cached baselines, loose WebQA scores, greedy seed standard deviations, and test-set grid selection are withdrawn and are not repaired by filling \ph{}.
 
-\label{app:ethics}\textit{Ethical considerations.} EAB increases the influence of highly scored chunks, so low-quality, biased, adversarial, or model-directed Web content can mislead answers (Section~\ref{sec:noise}), with greater risk in medical, legal, and educational use. Source-quality filtering and prompt-injection detection before packing, reporting $\Uomni$ and the cited sources, and abstaining when $\Uomni$ stays high reduce this risk. All datasets are public; deployments on private content need access controls. \tbd{[[AI-use disclosure]]}
+\label{app:ethics}
+\textit{Ethical considerations.}
+Retrieved Web text and images can be wrong, biased, or adversarial, and a selector that sometimes trusts them can repeat that content.
+The direct action is kept in the action set so that retrieval is not mandatory.
+Datasets used here are public.
+Deployments on private content need access controls.
+\tbd{[[AI-use disclosure]]}
