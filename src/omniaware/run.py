@@ -193,7 +193,6 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
     direct_logits = direct[0].first_logits
     image_token_id = getattr(qwen, "image_token_id", None)
     answer_first = prompts.answer_format(e["dataset"], answer_style) == "answer_first"
-    decode_text = token_text_of(qwen)
     records = {}
     for name in V2_ACTIONS:
         chosen = chunks_by_action[name]
@@ -210,23 +209,36 @@ def decode_v2_actions(qwen, e: dict, rel: dict[str, float], chunks_by_action: di
             result, enc = decoded[key]
         if result.token_logprobs is None:
             raise RuntimeError(f"{e['qid']}: the {name} decode recorded no token logprobs")
-        record = signals.action_record(
-            result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
-            None if name == DIRECT else direct_logits,
-            signals.retriever_signals(e["candidates"], rel, chosen),
-            [] if name == DIRECT else [c["cid"] for c in chosen], answer_first=answer_first)
-        evidence_ids = pipeline.context_ids(e) if name == DIRECT else [c["cid"] for c in chosen]
-        h_grd = pipeline.raw_uncertainty(result.attention, enc, evidence_ids, result.first_logits, beta,
-                                         qwen.vocab_size)["h_grd"]
-        route = None if name == DIRECT else routing.route_modalities(
-            result.attention, enc.spans, {c["cid"]: c["modality"] for c in chosen})
-        texts = None if decode_text is None else [decode_text(t) for t in result.tokens]
-        record = signals.with_answer_token(record, getattr(result, "step_entropy", None),
-                                           getattr(result, "step_margin", None), texts, e["question"], answer_first,
-                                           h_grd, beta, route)
+        record = action_signal_record(qwen, e, rel, name, chosen, result, enc, direct_logits, answer_first, beta)
         records[name] = signals.with_trace(record, signals.input_trace(enc, image_token_id),
-                                           signals.decode_trace(result, max_new, decode_text))
+                                           signals.decode_trace(result, max_new, token_text_of(qwen)))
     return records
+
+
+def action_signal_record(qwen, e: dict, rel: dict[str, float], name: str, chosen: list[dict] | None, result, enc,
+                         direct_logits, answer_first: bool, beta: float) -> dict:
+    """The signal record of one available action from one decode of its prompt (``result``, ``enc``).
+
+    The full decode (decode_v2_actions) and the deployment path (deploy_v2) both build their records here, so the
+    selector reads the same quantities in both: the first token, the answer token with U_omni = H_grd + beta * H_sem
+    (H_grd of the t_end row over the action's evidence, the supplied context for direct), and for an evidence
+    action the M_m H_m route of its evidence (routing.route_modalities, margin 0.08).
+    """
+    chosen = chosen or []
+    record = signals.action_record(
+        result.text, result.first_logits, result.tokens, result.token_logprobs, qwen.vocab_size,
+        None if name == DIRECT else direct_logits, signals.retriever_signals(e["candidates"], rel, chosen),
+        [] if name == DIRECT else [c["cid"] for c in chosen], answer_first=answer_first)
+    evidence_ids = pipeline.context_ids(e) if name == DIRECT else [c["cid"] for c in chosen]
+    h_grd = pipeline.raw_uncertainty(result.attention, enc, evidence_ids, result.first_logits, beta,
+                                     qwen.vocab_size)["h_grd"]
+    route = None if name == DIRECT else routing.route_modalities(
+        result.attention, enc.spans, {c["cid"]: c["modality"] for c in chosen})
+    decode_text = token_text_of(qwen)
+    texts = None if decode_text is None else [decode_text(t) for t in result.tokens]
+    return signals.with_answer_token(record, getattr(result, "step_entropy", None),
+                                     getattr(result, "step_margin", None), texts, e["question"], answer_first, h_grd,
+                                     beta, route)
 
 
 def candidate_scores(e: dict, rel: dict[str, float], ce_logits: dict[str, float] | None) -> list[dict]:
@@ -257,17 +269,28 @@ def prompt_sample(e: dict, chunks_by_action: dict, answer_style: str) -> dict:
     return {"qid": e["qid"], "question": e["question"], "actions": actions}
 
 
-def deploy_v2(qwen, e: dict, chunks_by_action: dict, decision: dict, max_new: int, answer_style: str) -> dict:
-    """Apply a frozen v2-Rule decision the way a deployment would: prefill only the actions whose first-token
-    signal the decision reads, then decode the one chosen action.
+# Greedy tokens a deployment decodes on an action whose signal the rule reads, to reach its answer token. In the
+# answer-first format the answer token is the first or second generated token; signals.answer_slot looks no further.
+DEPLOY_SIGNAL_TOKENS = 8
 
-    The prefill of an action is one forward pass over its prompt with no generation. Nothing here reads a score
-    or a gold field. The returned record counts the passes and the wall time of this path alone.
+
+def deploy_v2(qwen, e: dict, rel: dict[str, float], chunks_by_action: dict, decision: dict, max_new: int,
+              answer_style: str, beta: float) -> dict:
+    """Apply a frozen v2-Rule decision the way a deployment would: read only the signals the decision needs, then
+    decode the one chosen action.
+
+    Reading the signal of an action is one prefill of its prompt followed by at most DEPLOY_SIGNAL_TOKENS greedy
+    tokens, enough to reach the answer token where U_omni is defined; the record is built by
+    action_signal_record, as in the full decode, so the rule reads the same quantities (answer_token, and the
+    route of static_mixed for the "route" family). Nothing here reads a score or a gold field. The returned record
+    counts the passes, their decoded tokens and the wall time of this path alone; the answer is parsed in the
+    run's answer format.
     """
     t0 = time.perf_counter()
+    answer_first = prompts.answer_format(e["dataset"], answer_style) == "answer_first"
     actions = {name: {"available": name == DIRECT or bool(chunks_by_action[name]), "answer": None}
                for name in V2_ACTIONS}
-    encodings, prefills = {}, []
+    encodings, passes, direct_logits = {}, [], None
 
     def encoding(name):
         if name not in encodings:
@@ -279,13 +302,18 @@ def deploy_v2(qwen, e: dict, chunks_by_action: dict, decision: dict, max_new: in
         if not needed:
             break
         for name in needed:
-            logits = qwen.run(encoding(name), None, max_new, decode_static=False)[2]
-            actions[name]["first_token"] = signals.first_token_signals(logits, vocab_size=qwen.vocab_size)
-            prefills.append(name)
+            enc = encoding(name)
+            result = qwen.run(enc, None, DEPLOY_SIGNAL_TOKENS, decode_static=True)[0]["static"]
+            if name == DIRECT:
+                direct_logits = result.first_logits
+            actions[name] = action_signal_record(qwen, e, rel, name, chunks_by_action[name], result, enc,
+                                                 direct_logits, answer_first, beta)
+            passes.append({"action": name, "decoded_tokens": len(result.tokens or [])})
     chosen = arbitration.apply_decision(decision, actions)["action"]
     result = qwen.run(encoding(chosen), None, max_new, decode_static=True)[0]["static"]
-    return {"action": chosen, "answer": answers.parse_answer(result.text)["answer"], "raw": result.text,
-            "prefilled": prefills, "prefill_calls": len(prefills), "decode_calls": 1,
+    return {"action": chosen, "answer": answers.parse_answer(result.text, answer_first)["answer"], "raw": result.text,
+            "prefilled": [p["action"] for p in passes], "prefill_calls": len(passes),
+            "signal_tokens": sum(p["decoded_tokens"] for p in passes), "decode_calls": 1,
             "seconds": round(time.perf_counter() - t0, 4)}
 
 
@@ -1187,7 +1215,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
                 if deploy_decision is not None:
                     # The deployment path of the frozen rule: prefill what it reads, decode what it chooses. The
                     # full decode of every action above stays the reference; the two must agree.
-                    deployed = deploy_v2(qwen, e, chunks_by_action, deploy_decision, max_new, args.answer_style)
+                    deployed = deploy_v2(qwen, e, rel, chunks_by_action, deploy_decision, max_new, args.answer_style,
+                                         args.beta)
                     full = arbitration.apply_decision(deploy_decision, rec["actions"])
                     deployed["matches_full_decode"] = (deployed["action"] == full["action"]
                                                        and deployed["answer"] == full["answer"])

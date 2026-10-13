@@ -170,9 +170,9 @@ def test_a_fallback_says_why_and_still_carries_the_trace():
 
 
 
-def _rule(tau, choice):
+def _rule(tau, choice, confidence="margin"):
     ranking = [DIRECT, "static_mixed", "rerank_static", "static_text", "static_image"]
-    return {"kind": "rule", "fallback": False, "confidence": "margin", "tau": tau, "evidence_choice": choice,
+    return {"kind": "rule", "fallback": False, "confidence": confidence, "tau": tau, "evidence_choice": choice,
             "best_single": DIRECT, "action_ranking": ranking, "evidence_ranking": ranking[1:], "delta": 0.1,
             "epsilon": 1.0}
 
@@ -195,9 +195,21 @@ def test_signals_needed_asks_only_for_what_the_decision_reads():
         arbitration.signals_needed({"kind": "cal"}, _state({}))
 
 
-@pytest.mark.parametrize("choice", ["best", "confident"])
+def test_signals_needed_asks_for_the_answer_token_under_u_omni_and_for_static_mixed_under_route():
+    state = _state({DIRECT: 0.1})                          # first_token only: not enough for u_omni
+    assert arbitration.signals_needed(_rule(1.0, "best", "u_omni"), state) == [DIRECT]
+    state[DIRECT]["answer_token"] = {"u_raw": 0.9, "margin": 0.1, "entropy_norm": 0.5}
+    assert arbitration.signals_needed(_rule(-0.5, "route", "u_omni"), state) == ["static_mixed"]   # -0.9 < -0.5
+    state["static_mixed"]["route"] = {"mode": "attention", "modalities": ["image"], "statistics": {}}
+    assert arbitration.signals_needed(_rule(-0.5, "route", "u_omni"), state) == []
+    assert arbitration.signals_needed(_rule(-1.0, "route", "u_omni"), state) == []                 # direct is kept
+
+
+@pytest.mark.parametrize("confidence", ["margin", "u_omni"])
+@pytest.mark.parametrize("choice", ["best", "confident", "route"])
 @pytest.mark.parametrize("tau", [-1e9, 1.0, 1e9])
-def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(fake_run, monkeypatch, choice, tau):  # noqa: F811
+def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(  # noqa: F811
+        fake_run, monkeypatch, choice, tau, confidence):
     # A real model gives the same logits for the same prompt; the stand-in draws them at random, so seed by prompt.
     original = run.QwenEAB.run
 
@@ -207,10 +219,10 @@ def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(fake_r
 
     monkeypatch.setattr(run.QwenEAB, "run", same_prompt_same_logits)
     decisions = fake_run / "decisions.json"
-    rule = _rule(tau, choice)
+    rule = _rule(tau, choice, confidence)
     decisions.write_text(json.dumps({"v2": {"rule": rule, "cal": {**rule, "kind": "single", "fallback": True,
                                                                   "action": DIRECT}, "primary": "rule"}}))
-    out, rows = _v2_run(fake_run, tag=f"deploy_{choice}_{tau}", extra=("--decisions", str(decisions)))
+    out, rows = _v2_run(fake_run, tag=f"deploy_{confidence}_{choice}_{tau}", extra=("--decisions", str(decisions)))
     assert rows
     for row in rows:
         deployed = row["v2_deploy"]
@@ -221,6 +233,44 @@ def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(fake_r
             assert deployed["prefilled"] == [DIRECT]                 # kept on its own signal: one prefill
         elif choice == "best":
             assert deployed["prefilled"] == [DIRECT]                 # the best evidence action needs no signal
+        elif choice == "route":
+            assert deployed["prefilled"] == [DIRECT, "static_mixed"]  # the route is read on static_mixed alone
         else:
             assert set(deployed["prefilled"]) == set(available)
         assert deployed["prefill_calls"] <= len(available)
+
+
+def test_the_deployment_path_parses_the_answer_first_format_like_the_full_decode():
+    """WebQA answers in two lines. The deployed answer is the sentence line, as in the full decode, so the two agree."""
+    import dataclasses
+
+    from omniaware import pipeline
+    from tests.test_v2_prompts import FakeQwen, _examples
+
+    class TwoLineQwen(FakeQwen):
+        def run(self, enc, make_variants, max_new_tokens, decode_static=True):
+            torch.manual_seed(enc.length)                            # same prompt, same logits and attention
+            results, attn, logits = super().run(enc, make_variants, max_new_tokens, decode_static)
+            if "static" in results:
+                results["static"] = dataclasses.replace(results["static"],
+                                                        text=f"answer{enc.length}\nThe answer is {enc.length}.")
+            return results, attn, logits
+
+    e = {**_examples(1)[0], "dataset": "webqa_full"}
+    cands = {c["cid"]: c for c in e["candidates"]}
+    rel = {cid: 1.0 / int(cid[1:]) for cid in cands}
+    chunks = {DIRECT: None, "static_text": [cands[k] for k in ("k1", "k2", "k3")],
+              "static_image": [cands["i1"], cands["i2"]], "static_mixed": [cands["k1"], cands["i1"], cands["k2"]],
+              "rerank_static": [cands[k] for k in ("k2", "k3", "k4")]}
+    qwen = TwoLineQwen("unused")
+    enc_d = qwen.encode(*pipeline.build_segments(e, None, "default"))
+    full = run.decode_v2_actions(qwen, e, rel, chunks, (qwen.run(enc_d, None, 64)[0]["static"], enc_d), {}, 64,
+                                 "default", 0.3)
+    assert full[DIRECT]["answer"].startswith("The answer is") and full[DIRECT]["answer_first_ok"] is True
+    for tau in (-1e9, 1e9):
+        for choice in ("best", "route"):
+            rule = _rule(tau, choice, "u_omni")
+            deployed = run.deploy_v2(qwen, e, rel, chunks, rule, 64, "default", 0.3)
+            expected = arbitration.apply_decision(rule, full)
+            assert deployed["action"] == expected["action"] and deployed["answer"] == expected["answer"]
+            assert deployed["answer"].startswith("The answer is")
