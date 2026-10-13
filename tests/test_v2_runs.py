@@ -73,11 +73,13 @@ def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_f
         assert "--v2 --v2-reranker" in cmd and "--n-eval" not in cmd and "--split test" not in cmd
     run_file = lambda tag: str(paths.RUNS / tag / "webqa_full.jsonl")   # noqa: E731
     assert rest == [
-        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(calib_tag), "--bart"),
-        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(dev_tag), "--bart"),
-        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(calib_tag), "--bart"),
-        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(dev_tag), "--bart"),
+        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(calib_tag), "--bart", "--semantic"),
+        _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file(dev_tag), "--bart", "--semantic"),
+        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(calib_tag), "--bart", "--semantic"),
+        _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file(dev_tag), "--bart", "--semantic"),
         _fmt(sys.executable, str(ROOT / "scripts" / "analysis" / "answer_slot.py"), "position", "--table",
+             str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
+        _fmt(sys.executable, str(ROOT / "scripts" / "analysis" / "semantic_audit.py"), "export", "--table",
              str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
         _fmt(sys.executable, str(V2_TABLE), "gate", "--table",
              str(paths.RUNS / dev_tag / "webqa_full.v2_actions.jsonl")),
@@ -145,8 +147,8 @@ def test_s4_dry_run_decodes_test_with_baselines_then_scores_builds_and_applies(t
     assert f"--decisions {v2.format_argv([str(decisions)])}" in run_line
     tag = "v2_s4_webqa_full"
     run_file = str(paths.RUNS / tag / "webqa_full.jsonl")
-    assert score == _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file, "--bart")
-    assert build == _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file, "--bart")
+    assert score == _fmt(sys.executable, "-m", "omniaware.eval.score_official", run_file, "--bart", "--semantic")
+    assert build == _fmt(sys.executable, str(V2_TABLE), "build", "--run", run_file, "--bart", "--semantic")
     assert apply_line == _fmt(sys.executable, str(V2_TABLE), "apply", "--table",
                               str(paths.RUNS / tag / "webqa_full.v2_actions.jsonl"), "--decisions", str(decisions),
                               "--out", str(paths.RUNS / tag / "webqa_full.v2_main.json"))

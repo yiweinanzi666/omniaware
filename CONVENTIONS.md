@@ -67,6 +67,7 @@ runs/  cache/         运行输出与缓存，不进 git
 - **只用官方评测**：OK-VQA VQAEval、WebQA acc_approx（可加 BARTScore）、HybridQA EM/F1 与 VideoRAG ROUGE-L/BERTScore（按 UniversalRAG 论文 Table 1）。入口只有一个：`python -m omniaware.eval.score_official`。
 - **禁止**宽松匹配、同义词表、按题修补评分规则。如果某个官方评测确有缺陷，在论文中说明并单独报告，不改分数。
 - **例外：引用支持度的 alias 判定。** `src/omniaware/eval/citation/attribution.py` 中的 alias 判定（某个 gold 别名出现在被引块中）是字符串匹配，字面上违反上一条。豁免理由：(1) 它只用于引用支持度（Faith、AP），**不改变任何答案分数**，答案分数仍只用官方指标；(2) 按 D9，alias 判定与 NLI 判定分别报告，论文两者都给出，不做短路组合；(3) alias 命中是可解释的快速信号，用于判断引用的块是否含答案词。该例外只适用于 `eval/citation/`，不得扩展到答案评分或其它指标。
+- **例外：预注册的第二指标 `semantic_acc`。** `src/omniaware/eval/semantic.py` 用固定版本的 NLI 检查器判断预测与参考答案是否语义一致。豁免理由：(1) 它是第二指标，主指标仍只用官方评测，选择、关卡和结论只读主指标；(2) 它在任何 v2 运行之前写入 `docs/DEV_DECISIONS.md`，所有方法、所有表格都与主指标同时报告，不按结果选择；(3) 它在开发集上做盲标人工抽检，并报告与主指标的一致率。旧的宽松词面匹配仍然禁止。
 - 评分不在推理时进行，不读取模型输入之外的任何信息去影响生成。
 
 ## 6. 实验协议（详见 docs/PROTOCOL.md）

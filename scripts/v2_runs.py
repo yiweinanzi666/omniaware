@@ -109,7 +109,7 @@ def score_command(tag: str, dataset: str) -> list[str]:
     cmd = [sys.executable, "-m", "omniaware.eval.score_official", run_file(tag, f"{dataset}.jsonl")]
     if dataset in WEBQA_DATASETS:
         cmd.append("--bart")       # normalized BARTScore and QA_approx are written only with --bart
-    return cmd
+    return cmd + ["--semantic"]    # the pre-registered secondary metric, reported for every arm
 
 
 def build_command(tag: str, dataset: str) -> list[str]:
@@ -117,7 +117,13 @@ def build_command(tag: str, dataset: str) -> list[str]:
            "--run", run_file(tag, f"{dataset}.jsonl")]
     if dataset in WEBQA_DATASETS:
         cmd.append("--bart")
-    return cmd
+    return cmd + ["--semantic"]
+
+
+def audit_command(tag: str, dataset: str) -> list[str]:
+    """The blind, stratified human-audit sample of semantic_acc, drawn from the development table."""
+    return [sys.executable, str(ROOT / "scripts" / "analysis" / "semantic_audit.py"), "export",
+            "--table", run_file(tag, f"{dataset}.v2_actions.jsonl")]
 
 
 def gate_command(tag: str, dataset: str) -> list[str]:
@@ -217,7 +223,7 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
                 run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr)]
         runs += [score_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [build_command(tag, dataset) for tag in (calib_tag, dev_tag)]
-        runs += [position_command(dev_tag, dataset)]
+        runs += [position_command(dev_tag, dataset), audit_command(dev_tag, dataset)]
         if position_ablation:
             # The same development questions under the sentence-only instruction: there the first generated token
             # is often a template word, so the analysis can compare it with the answer token inside one decode.

@@ -84,6 +84,8 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 
 **回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`（决定文件和 `*.dev_check.json` 都在里面）。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
+**人工抽检（第二指标）：** S2 会在 `runs/v2_s2_<数据集>_dev/semantic_audit/` 写出 `audit_items.csv`（盲标表）和 `audit_key.json`。把 `audit_items.csv` 交给不参与实验的人标注：在 `label` 列填 1（预测答案与参考答案回答同一件事）或 0，另存为同目录的 `audit_labels.csv`，**标注者不要打开 key 文件**。然后运行 `python scripts/analysis/semantic_audit.py score --key .../audit_key.json --labels .../audit_labels.csv`，结果写到 `audit_result.json`，一并回传。
+
 ## 5. 第二个停顿点：go/no-go（最关键的一步）
 
 `v2_table.py gate` 在开发集上算一个数：**每题都选对动作时的得分，比最强的单一动作高多少。** 判据是相对差距至少 +8%。
