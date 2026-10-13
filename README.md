@@ -6,6 +6,8 @@ v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论�
 
 本仓库是实现与实验代码；论文 LaTeX 在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
+> **拿到代码后先读 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)。** 它按顺序写了要做什么、在哪两处必须停下来等判断、每一步回传什么。
+>
 > **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
 
 作废、不得进入论文主表的旧结果：
@@ -24,7 +26,7 @@ v1 的 Evidence Attention Bias（EAB）不再是主方法的臂，只留在论�
 
 ## v2 实验
 
-下面的命令是 v2 的阶段接口，由 `scripts/v2_runs.py` 生成（`--dry-run` 只打印）。选择、评分与拼表由 `scripts/analysis/v2_table.py` 的 `build`、`gate`、`select`、`apply` 完成；该脚本由另一子任务实现，合入本分支之前这些子命令不存在。S1、S2、S4 都还没有作为论文结果跑过。
+执行顺序和判断标准见 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)，每条命令的细节见 [docs/V2_RUNS.md](docs/V2_RUNS.md)。下面是 v2 的阶段命令，由 `scripts/v2_runs.py` 依次执行（加 `--dry-run` 只打印）。每个阶段内的评分、拼表、go/no-go 判断、冻结决定和出主表，由 `scripts/analysis/v2_table.py` 的 `build`、`gate`、`select`、`apply` 完成。整条流程已在 CPU 上用小模型和合成数据走通；S1、S2、S4 还没有在真实模型和数据上跑过。
 
 ```bash
 python scripts/v2_runs.py --stage s1 --dataset webqa_full --n 50
