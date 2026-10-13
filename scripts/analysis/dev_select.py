@@ -3,6 +3,8 @@
     python -m scripts.analysis.dev_select --phase 1 [--runs runs] [--model 8b]   # base grid -> runs/dev_decisions.json
     python -m scripts.paper_runs --stage dev_beta --run                          # beta x tau_b grid (phase-1 choice)
     python -m scripts.analysis.dev_select --phase 2 [--runs runs] [--model 8b]   # beta, tau_b, tau -> complete file
+    python -m scripts.analysis.dev_select --v2-records calib.jsonl               # v2 grid -> decisions["v2"]
+    python -m scripts.analysis.dev_select --stage test                           # read decisions["v2"], do not search
 
 Phase 1 reads runs/v321dev_base_<model>/<dataset>.jsonl (all EAB candidates) and the sum/zsum/mid U-setting runs,
 and chooses, in this order: the OK-VQA corpus (largest static - direct gap), the uncertainty setting (highest mean
@@ -14,6 +16,11 @@ tau is exact without rerunning the model (see paper_analyses tau).
 
 Every file read is checked (present, scored, finite) and its sha256 is written to the decisions file.
 The test-stage commands in scripts/paper_runs.py refuse to run unless the phase-2 file exists for the model.
+
+v2 is a separate mechanical step (docs/DEV_DECISIONS.md, "v2 预注册"). ``select_v2`` scores the preregistered
+margin grid on calibration records only and writes the Learn-then-Test choice under decisions["v2"].
+``--stage test`` reads that entry and does not search. Phase 1 and phase 2 are unchanged: pass ``--phase``,
+not ``--v2-records``.
 """
 from __future__ import annotations
 
@@ -262,14 +269,100 @@ def phase2(runs: Path, model: str, decided: dict) -> dict:
     return out
 
 
+def _load_jsonl(path: Path) -> list[dict]:
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rows.append(json.loads(line))
+    if not rows:
+        raise DevDataError(f"{path}: no records")
+    return rows
+
+
+def select_v2(calib_records, delta=0.1):
+    """Score the preregistered v2-Rule grid on calibration records and choose by LTT.
+
+    Each record has ``actions`` (per-action signal dicts) and ``scores`` (per-action official score, a
+    number). Returns a decisions dict with the choice under ``v2``. Pass only the calibration half;
+    this function does not split or look at evaluation records. ``gold_in_topk`` is not read.
+    """
+    from omniaware.arbitration import (V2_ACTIONS, apply_candidate, best_single_action, ltt_select,
+                                       preregistered_grid)
+    if not calib_records:
+        raise DevDataError("v2 selection needs calibration records")
+    for rec in calib_records:
+        missing = [name for name in V2_ACTIONS if name not in rec.get("actions", {}) or name not in rec.get("scores", {})]
+        if missing:
+            raise DevDataError(f"record {rec.get('qid')}: missing {missing}")
+        for name in V2_ACTIONS:
+            value = rec["scores"][name]
+            if isinstance(value, dict) or not math.isfinite(float(value)):
+                raise DevDataError(f"record {rec.get('qid')}: score for {name} must be a finite number")
+    scores_by_action = {
+        name: np.array([float(rec["scores"][name]) for rec in calib_records], dtype=float) for name in V2_ACTIONS
+    }
+    best_name = best_single_action(scores_by_action)
+    scores_by_candidate = {}
+    for candidate in preregistered_grid():
+        column = []
+        for rec in calib_records:
+            chosen = apply_candidate(candidate, rec["actions"])
+            column.append(float(rec["scores"][chosen["action"]]))
+        scores_by_candidate[candidate["name"]] = np.asarray(column, dtype=float)
+    chosen = ltt_select(preregistered_grid(), scores_by_candidate, scores_by_action[best_name],
+                        delta=delta, best_action=best_name)
+    return {"v2": chosen}
+
+
+def frozen_v2(decisions):
+    """Test stage. Return the frozen ``v2`` decision and do not search the grid."""
+    if isinstance(decisions, (str, Path)):
+        decisions = json.loads(Path(decisions).read_text(encoding="utf-8"))
+    if not isinstance(decisions, dict) or "v2" not in decisions:
+        raise DevDataError("test stage requires a frozen decisions['v2'] entry and does not search")
+    return decisions["v2"]
+
+
+def apply_frozen_v2(decision, actions):
+    """Apply a frozen v2 decision. A fallback uses that single action; otherwise the stored thresholds."""
+    from omniaware.arbitration import apply_candidate
+    if decision.get("fallback"):
+        name = decision["action"]
+        return {"action": name, "answer": actions[name]["answer"], "used_evidence": name != "direct"}
+    return apply_candidate(decision, actions)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--runs", type=Path, default=Path("runs"))
     ap.add_argument("--model", default="8b")
-    ap.add_argument("--phase", type=int, choices=[1, 2], required=True)
+    ap.add_argument("--phase", type=int, choices=[1, 2], default=None)
     ap.add_argument("--output", type=Path, default=None)
+    ap.add_argument("--stage", choices=("dev", "test"), default="dev")
+    ap.add_argument("--v2-records", type=Path, default=None)
+    ap.add_argument("--delta", type=float, default=0.1)
     args = ap.parse_args(argv)
     out = args.output or args.runs / "dev_decisions.json"
+    if args.stage == "test":
+        if args.phase is not None or args.v2_records is not None:
+            raise DevDataError("test stage only reads a frozen decisions file; do not pass --phase or --v2-records")
+        if not out.exists():
+            raise DevDataError(f"test stage needs a frozen decisions file at {out}")
+        decision = frozen_v2(out)
+        print(json.dumps(decision, indent=1))
+        return {"v2": decision}
+    if args.v2_records is not None:
+        if args.phase is not None:
+            raise DevDataError("pass either --phase or --v2-records, not both")
+        result = select_v2(_load_jsonl(args.v2_records), delta=args.delta)
+        prev = json.loads(out.read_text(encoding="utf-8")) if out.exists() else {}
+        prev["v2"] = result["v2"]
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(prev, indent=1), encoding="utf-8")
+        print(json.dumps(result, indent=1))
+        return result
+    if args.phase is None:
+        raise DevDataError("--phase is required unless --stage test or --v2-records is set")
     if args.phase == 1:
         result = phase1(args.runs, args.model)
     else:
