@@ -53,13 +53,18 @@ def official_query(qid, question, sources, query_images=()):
     return dict(query_id=qid, content=question, webpages=webpages, aux_images=aux_images)
 
 
-def extractor_messages(question, result, query_images=()):
-    """Read the generated document, its captions and retained images, and the question's own images."""
+def extractor_messages(question, result, query_images=(), instruction=None):
+    """Read the generated document, its captions and retained images, and the question's own images.
+
+    ``instruction`` is the run's shared answer instruction (prompts.py). It is prepended so this arm
+    uses the same string as the others; the extractor constraints stay around it.
+    """
     pieces = result['placeholder_response'].split('<IMAGE_PLACEHOLDER>')
     images = result['output_images']
     if len(pieces) != len(images) + 1:
         raise ValueError('Generated document placeholders and retained images do not match')
-    messages, pending = [], EXTRACTOR_INSTRUCTION + '\n\nQuestion: ' + question + '\n\n'
+    head = EXTRACTOR_INSTRUCTION if not instruction else instruction + '\n\n' + EXTRACTOR_INSTRUCTION
+    messages, pending = [], head + '\n\nQuestion: ' + question + '\n\n'
     for path in query_images:
         pending += 'Question image:\n'
         messages += [dict(type='text', text=pending), dict(type='image_url', image_url=dict(url=path))]
