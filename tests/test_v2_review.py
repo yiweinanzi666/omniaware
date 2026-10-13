@@ -10,6 +10,30 @@ import scripts.analysis.image_evidence_check as image_evidence
 import scripts.paper_runs as pr
 
 
+def test_v2_run_contract_accepts_calib_split_and_rejects_a_partial_action_list(tmp_path):
+    parser = run.build_parser()
+    decisions = tmp_path / "dev_decisions.json"
+    decisions.write_text('{"v2": {"name": "frozen"}}', encoding="utf-8")
+    args = parser.parse_args([
+        "--dataset", "webqa_full", "--split", "calib", "--tag", "t", "--model", "8b",
+        "--v2-actions", "direct,static_text,static_image,static_mixed,rerank_static",
+        "--save-signals", "--empty-answer-accounting", "--shared-prompt-registry",
+        "--decisions", str(decisions),
+    ])
+    run.check_v2_flags(parser, args)
+    assert args.split == "calib" and args.save_signals and args.decisions_sha256
+    bad = parser.parse_args([
+        "--dataset", "okvqa", "--split", "dev", "--tag", "t", "--v2-actions", "direct",
+    ])
+    with pytest.raises(SystemExit):
+        run.check_v2_flags(parser, bad)
+    missing = parser.parse_args([
+        "--dataset", "okvqa", "--split", "test", "--tag", "t", "--decisions", str(tmp_path / "absent.json"),
+    ])
+    with pytest.raises(SystemExit):
+        run.check_v2_flags(parser, missing)
+
+
 def test_default_variants_have_no_eab_and_analysis_eab_adds_ans1():
     parser = run.build_parser()
     args = parser.parse_args(["--dataset", "okvqa", "--split", "dev", "--tag", "t"])
