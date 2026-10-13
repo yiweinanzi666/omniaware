@@ -129,13 +129,15 @@ def has_outputs(out_dir, dataset: str) -> bool:
             or (out_dir / f"{dataset}.shards").exists() or any(out_dir.glob(f"{dataset}.shard*-of-*.jsonl")))
 
 
-def write_completion_marker(out_dir, dataset: str, questions: int, output, config) -> Path:
+def write_completion_marker(out_dir, dataset: str, questions: int, output, config, extra: dict | None = None) -> Path:
     """Mark <dataset>.jsonl as complete: question count, and sha256 of the configuration and of the output."""
     output, config = Path(output), Path(config)
     record = {"dataset": dataset, "questions": questions, "output": output.name,
               "output_sha256": sha256_file(output), "config": config.name,
               "config_sha256": sha256_file(config) if config.exists() else None,
               "written_utc": datetime.now(timezone.utc).isoformat()}
+    if extra:
+        record.update(extra)
     marker = completion_marker(out_dir, dataset)
     atomic_write_text(marker, json.dumps(record, indent=1) + "\n")
     return marker

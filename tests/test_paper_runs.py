@@ -51,7 +51,9 @@ def test_frozen_choices_reach_every_test_command(monkeypatch):
     st = pr.stages("8b", "test")
     main = st["main"]["commands"]
     runs_ = [c for c in main if c[:3] == ["python", "-m", "omniaware.run"]]
-    assert runs_ and all("eab:g0.9:ans1:pos:gate" in c for c in runs_ if "--variants" in c)
+    # A4: the main-method commands do not decode an eab: arm. Frozen beta/tau still reach every command.
+    assert runs_ and all(not any(str(part).startswith("eab:") for part in c) for c in runs_)
+    assert all("--analysis-eab" not in c for c in runs_)
     for c in runs_:
         i = c.index("--beta")
         assert c[i + 1] == "0.5" and c[c.index("--tau-bias") + 1] == "0.6" and c[c.index("--tau") + 1] == "0.45"
