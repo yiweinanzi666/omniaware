@@ -98,6 +98,20 @@ dev 网格：
 
 下文各节中与本修订冲突的旧条文以本修订为准。
 
+### 修订：OK-VQA 指令改为单词或短语（2026-10-14，任何开发集与测试集结果之前）
+
+本机 MPS 上第一次 okvqa_gs 校准运行（500 题，commit `bbead80`）中，直答的官方 VQA accuracy 只有 14.56，而 2026-10 旧管线在同 500 题上为 46.4。用 transformers 的原生 `generate`、同一张问题图，在这 500 题的前 40 题上做了 2 × 3 的对照（官方 VQA accuracy）：
+
+| 指令 | transformers 5.5.3 | transformers 5.17.0 |
+|---|---|---|
+| 原 OK-VQA 指令 "Answer in no more than 3 words. Give the answer only." | 23.0 | 23.0 |
+| 旧管线指令（system 提示 + `Question: …\nAnswer:`） | 55.5 | 55.5 |
+| VQA 通用指令 "Answer the question using a single word or phrase." | 56.5 | — |
+
+库版本对结果没有影响（S-17 关心的真实权重行为在两个版本下一致）。差距来自指令："不超过 3 个词"让模型给出两三个词的描述（"cormorant birds"、"Italian restaurant"），官方 VQA 评测按精确匹配记 0 分。
+
+修订：OK-VQA 指令改为 VQA 的通用指令 "Answer the question using a single word or phrase."（`pipeline.SHORT_INSTRUCTION` 的同一句）。选它的理由是它是 VQA 评测的通用写法，不是因为它在 40 题上分数最高；与旧管线指令的差别（56.5 对 55.5）在 40 题上没有意义。修订时没有任何开发集或测试集的结果：开发集运行在解码第一道开发题之前就已停止。原指令下的校准运行作废，按新指令重跑。第 1 节修订中"OK-VQA 的指令（不超过 3 个词）不变"一句以本修订为准。
+
 上文的 EAB / β / τ 规则不变。v2 是单独的决定，由 `scripts/analysis/v2_table.py select` 机械执行（`scripts/v2_runs.py --stage s2` 生成该命令），调用 `omniaware.arbitration` 的 `select_rule` 与 `select_cal`，结果写入 `runs/v2_decisions/<dataset>.json`。`scripts/analysis/dev_select.py` 的 `select_v2` 调用同样两个函数，是另一个入口，正式流程以 `v2_runs.py` 生成的命令为准。测试阶段（`v2_runs.py --stage s4`）只读取这个冻结文件，不搜索网格。
 
 ### 动作集合

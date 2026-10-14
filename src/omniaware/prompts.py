@@ -12,7 +12,7 @@ import hashlib
 INSTRUCTIONS = {
     "webqa": ("Write the short answer alone on the first line. On the second line, answer in one complete sentence "
               "that restates the key object in the question."),
-    "okvqa": "Answer in no more than 3 words. Give the answer only.",
+    "okvqa": "Answer the question using a single word or phrase.",   # DEV_DECISIONS revision of 2026-10-14
     "hybridqa": "Please respond with only the exact answer.",
     "videorag": "Please respond in a complete sentence.",
 }
