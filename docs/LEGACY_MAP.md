@@ -56,7 +56,7 @@
 | `runs/claude_direct_repair_*`、`goal_diagnosis_codex_*`、`local_m4_*`、`pro6000_preparation_*` 等目录 | 绝大多数是一次性的审计、复现、按轮次的测试和运行编排；可复用的只有已迁移的三个小工具 |
 | WebQA 开放检索中的图像修复脚本（`prepare_official_jpeg_assets` 等） | 只用于一次性修复少数图片；索引已经建好 |
 | Pro6000 的 MMQA 投票、分歧复核、表头复核脚本 | 多次生成后投票属于额外推理开销的工程技巧，不是本方法；如需保留，应作为单独的对照方法重新实现 |
-| `reference/self-aware-mrag-main` | 原 EMNLP 代码，未实现 EAB / U_omni（见审查报告 §1.2）；其中的 SAM-RAG、ViDoRAG 等基线依赖 FlashRAG 框架和宽松评分 |
+| `reference/self-aware-mrag-main`（上游 `github.com/yiweinanzi/self-aware-mrag`，commit `9fe9af84`） | 早于 EMNLP 投稿版的 Self-Aware-MRAG 代码，未实现 EAB / U_omni（见审查报告 §1.2）；其中的 SAM-RAG、ViDoRAG 等基线依赖 FlashRAG 框架和宽松评分。只作参考：可参考的实现、有启发的观察和不要照搬的问题见 [reports/self-aware-mrag_参考清单_20261014.md](reports/self-aware-mrag_参考清单_20261014.md) |
 | `deliveries/`、`Each Stage Review Work/`、根目录约 30 个 `EMNLP_INCREMENT_*.json` | 交付快照与进度记录，不是代码 |
 
 需要追溯时，到旧仓库用 `git show c8d08ebb:<路径>` 读取。

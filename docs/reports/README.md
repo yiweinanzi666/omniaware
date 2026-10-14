@@ -9,5 +9,6 @@
 | `Omni-Aware_方向与改造方案_20261013.md` | 新方向（逐题在直接作答与各类证据之间选择）、必须先修的问题、实验协议与分阶段计划 |
 | `CURSOR_REVIEW_v2_验收意见.md` | 对 v2 初版实现的验收意见 |
 | `V2_REWORK_SPEC.md` | 返工时采用的选择器统计设计与接口规格 |
+| `self-aware-mrag_参考清单_20261014.md` | 更早的 self-aware-mrag 代码（只作参考）：可参考的工程实现、有启发的观察、不要照搬的问题 |
 
 报告里出现的 `C:\rc\...` 是分析时证据包在本机的解压位置，对应 `EMNLP-reproduction` 仓库的 `evidence/root-cause-20261013` 分支。报告写于代码返工之前；与当前代码不一致的地方，以 `docs/DEV_DECISIONS.md`、`docs/PROTOCOL.md` 和代码为准。
