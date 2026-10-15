@@ -27,11 +27,12 @@
 
 ### 基线臂的每题额外成本（S2 开发集与 S4 运行）
 
-S2 开发集与 S4 运行带 `--fitm --m2rag --seakr-samples 20`。除 v2 动作本身的约 4 次额外证据解码外，每题的额外前向如下（计数，未计时）：
+S2 开发集与 S4 运行带 `--fitm --m2rag --seakr-samples 20 --analysis-eab`。除 v2 动作本身的约 4 次额外证据解码外，每题的额外前向如下（计数，未计时）：
 
 - FiTM：每题一次额外的 greedy 生成，加一次标定前向。
 - M2-RAG：每题两次生成，一次官方摘要器（最多 384 词元）和一次答案抽取器。不适用于 VideoRAG。
 - SeaKR（`--seakr-samples 20`）：直答的特征值需要 20 次采样续写（每次最多 100 词元）。当 SeaKR 判定检索时，还要对联合 top-5 的每个块做 1 次贪心解码加 20 次采样，即再 5 × 21 = 105 次。每题的期望额外采样数约为 20 + 105 × r，r 为 SeaKR 的检索率（未知，需用开发集实测）。上限为每题 125 次。
+- EAB 分析臂（`--analysis-eab`，DEV_DECISIONS 2026-10-15 修订）：门控打开（U > τ_b）的题上，多一次与 `static` 共享证据前缀的贪心解码；门控关闭时直接复用 `static` 的结果。它只由 `score_official` 评分，`v2_table.py` 的各步不读它。
 - SeaKR 的阈值在校准集上匹配 U 的检索率，因此 S2 开发集运行另外要对 500 道校准题各做 20 次采样（一次性，写入缓存）。
 
 算力不足时，给 `scripts/v2_runs.py` 加 `--no-seakr`：S2 开发集与 S4 都不再带 SeaKR。该开关会在输出中打印一条 NOTE，说明主表缺 SeaKR 行。S1 不带基线臂，不接受该开关。
@@ -87,7 +88,7 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_full --no-seakr --dry-run
 每个数据集按执行顺序打印命令：
 
 1. 解码校准集：`--split calib --tag v2_s2_<数据集>_calib`
-2. 解码开发集：`--split dev --tag v2_s2_<数据集>_dev --fitm --m2rag --seakr-samples 20`（`--no-seakr` 时去掉 `--seakr-samples 20`）
+2. 解码开发集：`--split dev --tag v2_s2_<数据集>_dev --fitm --m2rag --seakr-samples 20 --analysis-eab`（`--no-seakr` 时去掉 `--seakr-samples 20`）
 3. 评分：`python -m omniaware.eval.score_official runs/<tag>/<数据集>.jsonl`（两个 tag 各一条；WebQA 带 `--bart`）
 4. 拼表：`python scripts/analysis/v2_table.py build --run runs/<tag>/<数据集>.jsonl`（两个 tag 各一条；WebQA 带 `--bart`），生成 `runs/<tag>/<数据集>.v2_actions.jsonl`
 5. 开发集判据：先运行 `python scripts/analysis/answer_slot.py position --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`（第一个生成 token 与答案 token 上直答置信度的 AUROC，写到同目录的 `*.answer_slot.json`）；加 `--position-ablation` 时（只限 WebQA），再用 `--answer-style sentence` 在同一批开发题上解码、评分、拼表并做同样的分析（tag `v2_s2_<数据集>_dev_sentence`）。然后 `python scripts/analysis/v2_table.py gate --table runs/v2_s2_<数据集>_dev/<数据集>.v2_actions.jsonl`
@@ -104,7 +105,7 @@ python scripts/v2_runs.py --stage s4 --dataset webqa_full --decisions runs/v2_de
 
 打印四条命令：
 
-1. 解码测试集：`--split test --tag v2_s4_<数据集> --decisions <决定文件> --fitm --m2rag --seakr-samples 20`
+1. 解码测试集：`--split test --tag v2_s4_<数据集> --fitm --m2rag --seakr-samples 20 --analysis-eab --decisions <决定文件>`
 2. 评分：`python -m omniaware.eval.score_official runs/v2_s4_<数据集>/<数据集>.jsonl`（WebQA 带 `--bart`）
 3. 拼表：`python scripts/analysis/v2_table.py build --run runs/v2_s4_<数据集>/<数据集>.jsonl`（WebQA 带 `--bart`）
 4. 应用冻结决定并出主表：`python scripts/analysis/v2_table.py apply --table runs/v2_s4_<数据集>/<数据集>.v2_actions.jsonl --decisions <决定文件> --out runs/v2_s4_<数据集>/<数据集>.v2_main.json`
