@@ -32,6 +32,31 @@ python -m pytest -p no:warnings
 
 另外需要 cross-encoder reranker（`bge-reranker-v2-m3`）的权重，`rerank_static` 这个动作和 CE 基线都要用。
 
+## 1.5 真实权重自检（1 张 GPU，模型下载之后、S1 之前）
+
+第 1 步的测试只在随机初始化的小模型上运行推理代码。按 README 第 3 节下载 Qwen3-VL-8B 之后，先在真实权重上核对一遍，再开始 S1。命令与 README 第 0 节的 `verify` 一步相同（`scripts/run_all.sh` 里的 `step_verify`），在仓库根目录执行：
+
+```bash
+python -m scripts.verify_real_model --model "${ERC_QWEN_8B:-$OMNIAWARE_ASSETS/cache/qwen3-vl-8b-instruct}" \
+    --out runs/verify_real_model_8b.json
+```
+
+`$OMNIAWARE_ASSETS` 按 README 第 2 节设置；模型放在别处时，把 `ERC_QWEN_8B` 设为模型目录。
+
+报告 `runs/verify_real_model_8b.json` 里有三项判定通过与否的检查，各带一个 `ok` 字段：
+
+| 检查 | 核对什么 | 通过标准 |
+|---|---|---|
+| `template` | 代码拼出的对话模板（ChatML prompt）与处理器的 `apply_chat_template`，对同一道纯文本题逐 token 比较 | 完全一致 |
+| `segmented` | 先 prefill 前缀、再接问题后缀（`QwenEAB.run` 的共享缓存路径，v2 每个动作的解码都走这条路径），与整段 prompt 一次前向，比较首 token 的 logits | 最大差 ≤ 0.05，且 argmax 相同 |
+| `reference` | `QwenEAB.run` 的每个臂（`static` 是 v2 解码用的无偏置路径，`ans1`、`ans2` 是 EAB 臂），与不用缓存、自己写注意力的参考实现比较 | 首 token logits 最大差 ≤ 0.05，且最后一层 t_end 行的注意力最大差 ≤ 0.02 |
+
+`statistics` 一项只记录各模态的注意力质量与熵等统计量，不判定通过；`reference` 里的 `tokens_match`（贪心生成的 token 是否与参考实现相同）也只报告，不计入通过标准。这条命令不带 `--image`，核对的是纯文本题；图片如何进入模型，由第 2 步 S1 的第 3、4 条检查。
+
+**判断：** 退出码为 0、报告顶层 `"ok"` 为 `true` 时，继续第 2 步。**任一项检查的 `ok` 为 `false`（退出码 1），或命令中途报错，就停下来反馈，不要开始 S1。**
+
+**回传：** `runs/verify_real_model_8b.json`，通过与否都要回传。`.gitignore` 只放行 `runs/` 下的 v2 运行目录，这个文件要用 `git add -f` 加入（见第 9 节的命令），和 S1 的结果放在同一个分支提交；不通过时单独提交这一个文件。命令中途报错、没有写出文件时，按第 10 节回传完整命令和报错的最后 30 行。
+
 ## 2. S1 冒烟 + 图像证据诊断（1 张 GPU，估计半天）
 
 ```bash
@@ -81,7 +106,8 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 
 - SeaKR 每题最多 125 次额外采样，很贵。算力不够时加 `--no-seakr`，主表会缺 SeaKR 一行，输出里会注明。
 - 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。** 开发集检查不通过时，决定文件和检查文件都会写出，命令以 `development check FAIL` 结束。
-- 可以多卡分片，方法和以前一样（README 第 5 节）；同一个输出目录有运行锁，重复启动会被拒绝。
+- `scripts/v2_runs.py` 是单进程，只用第一张卡：它逐条执行 `omniaware.run`，模型加载到第一张可见的 GPU 上，其余的卡空闲。多卡要按 README 第 5 节用 `scripts.launch` 分片：用 `--dry-run` 打印各条命令，把其中 `omniaware.run` 之后的参数放到 `python -m scripts.launch --gpus 0,1 --` 后面执行，然后按打印的顺序手动执行其余命令（评分、拼表、gate 等），任何一步非零退出就停下。v2 运行的分片与合并在 CPU 测试里用假模型走通过；和 `scripts.launch` 一起在 GPU 上运行未测试。S1 只有 50 题，不要分片：`scripts.launch` 合并分片时不检查 `--max-empty-rate`。同一个输出目录有运行锁，重复启动会被拒绝。
+- 两个数据集各用一张卡并行：按代码，不同数据集的输出和缓存文件名互不重叠（`runs/v2_<阶段>_<数据集>*/`、`runs/v2_decisions/<数据集>.json`，以及 `cache/` 下的 `relevance_<数据集>*`、`ce_<数据集>*`、`ucal_<数据集>_*`、`seakr_<数据集>_*`），评分、拼表、决定等后续步骤也只写各自数据集的文件。因此可以各起一条 `v2_runs.py`，用 `CUDA_VISIBLE_DEVICES` 分到两张卡上，例如 `CUDA_VISIBLE_DEVICES=0 python scripts/v2_runs.py --stage s2 --dataset webqa_full --position-ablation` 与 `CUDA_VISIBLE_DEVICES=1 python scripts/v2_runs.py --stage s2 --dataset okvqa_gs` 同时运行。这种并行方式未测试。
 
 **回传：** 每个 `runs/v2_s2_*` 目录整个提交（方法见第 9 节），加上 `runs/v2_decisions/*.json`（决定文件和 `*.dev_check.json` 都在里面）。每个目录里各文件的用途见下面的“每次运行会留下什么”。
 
@@ -163,7 +189,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - **OK-VQA 的校准集和开发集取自评测数据里保留出来的部分**，不是 train（仓库里没有 OK-VQA 的 train 加载器）。三部分互不重叠，论文里会如实写明。
 - **校准运行不带 SeaKR / FiTM / M2-RAG**，所以“校准集上的最强基线”只在单一动作、U 门控、NTE 之间确定；测试时仍会逐个报告 v2 相对这三个基线的比较。
 - **FiTM 的温度是 5e-5**，没有对照原论文核实过。
-- **真实权重下的对话模板**只用小模型测过，S1 时请留意生成的回答是否正常。
+- **真实权重下的对话模板**此前只用小模型测过，由第 1.5 步在真实 Qwen3-VL-8B 上核对（`template`、`segmented`、`reference` 三项）；这一步不通过时不要开始 S1。
 - **UniversalRAG 基线在 WebQA 上不可用**（WebQA 的候选没有它需要的 suite 分数），主表里这一格是空的。
 
 ## 9. 结果怎么提交回来
@@ -173,6 +199,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 ```bash
 git checkout -b results/v2-s1-<日期>          # 每个阶段一个分支，不要直接推 main
 git add runs/v2_s1_* runs/image_evidence_check*.json
+git add -f runs/verify_real_model_8b.json          # 第 1.5 步的报告，不在 .gitignore 放行的范围内
 git commit -m "S1 smoke runs and image evidence check"
 git push -u origin results/v2-s1-<日期>
 ```
