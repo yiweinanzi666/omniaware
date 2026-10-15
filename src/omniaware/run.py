@@ -631,7 +631,6 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     if args.selector != "relevance" or args.v2_reranker:
         ce_table = rerank.ce_logits(ce_questions, cache_dir / f"ce_{args.dataset}{data_tag}.json", paths.RERANKER,
                                     write=writes_caches)
-    ce_of = ce_rel_of = None
     if args.selector != "relevance":
         ce_cal = relevance.Calibrator.fit(
             {q: {c: {f"ce_{m}": v} for c, (m, v) in rows.items()} for q, rows in
@@ -646,6 +645,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
 
         def ce_rel_of(e):
             return {c["cid"]: ce_cal.ecdf(f"ce_{c['modality']}", ce_table[e["qid"]][c["cid"]]) for c in e["candidates"]}
+    else:
+        ce_of = ce_rel_of = None
 
     model_path = {"8b": paths.QWEN_8B, "2b": paths.QWEN_2B, "internvl3.5-8b": paths.INTERNVL_8B}[args.model]
     t0 = time.time()
