@@ -8,7 +8,9 @@ import torch
 
 from omniaware import arbitration, run, runio, signals
 from omniaware.actions import DIRECT, V2_ACTIONS
-from tests.test_v2_prompts import fake_run  # noqa: F401  (fixture)
+from tests import test_v2_prompts
+
+fake_run = test_v2_prompts.fake_run          # the fake model and assets of the v2 run tests (a fixture)
 
 pytestmark = pytest.mark.usefixtures("tiny_reserves")
 
@@ -43,7 +45,7 @@ def _v2_run(tmp_path, tag="trace", extra=()):
     return out, [json.loads(line) for line in (out / "okvqa.jsonl").read_text(encoding="utf8").splitlines()]
 
 
-def test_every_available_action_records_its_input_and_its_decode(fake_run):  # noqa: F811
+def test_every_available_action_records_its_input_and_its_decode(fake_run):
     _, rows = _v2_run(fake_run)
     assert rows
     for row in rows:
@@ -61,7 +63,7 @@ def test_every_available_action_records_its_input_and_its_decode(fake_run):  # n
         assert row["actions"][DIRECT]["input"]["prompt_sha256"] != row["actions"]["static_mixed"]["input"]["prompt_sha256"]
 
 
-def test_the_candidate_ranking_is_stored_whole_and_explains_each_selection(fake_run):  # noqa: F811
+def test_the_candidate_ranking_is_stored_whole_and_explains_each_selection(fake_run):
     _, rows = _v2_run(fake_run)
     for row in rows:
         ranked = row["candidate_scores"]
@@ -76,7 +78,7 @@ def test_the_candidate_ranking_is_stored_whole_and_explains_each_selection(fake_
         assert set(row["actions"]["rerank_static"]["chunks"]) == {c["cid"] for c in by_ce}
 
 
-def test_prompt_samples_hold_the_text_the_model_read_for_the_first_questions_only(fake_run):  # noqa: F811
+def test_prompt_samples_hold_the_text_the_model_read_for_the_first_questions_only(fake_run):
     out, rows = _v2_run(fake_run, extra=("--trace-prompts", "2"))
     samples = [json.loads(line) for line in (out / "okvqa.prompts.ndjson").read_text(encoding="utf8").splitlines()]
     assert len(samples) == 2 and len(rows) > 2
@@ -88,12 +90,12 @@ def test_prompt_samples_hold_the_text_the_model_read_for_the_first_questions_onl
         assert sample["actions"]["static_image"]["images"] == ["img1.jpg", "img2.jpg"]
 
 
-def test_prompt_sampling_can_be_switched_off(fake_run):  # noqa: F811
+def test_prompt_sampling_can_be_switched_off(fake_run):
     out, _ = _v2_run(fake_run, extra=("--trace-prompts", "0"))
     assert not (out / "okvqa.prompts.ndjson").exists()
 
 
-def test_each_launch_appends_its_environment_and_the_log_survives_a_rerun(fake_run):  # noqa: F811
+def test_each_launch_appends_its_environment_and_the_log_survives_a_rerun(fake_run):
     out, _ = _v2_run(fake_run)
     env = [json.loads(line) for line in (out / "okvqa.env.ndjson").read_text(encoding="utf8").splitlines()]
     assert len(env) == 1
@@ -119,7 +121,7 @@ def test_the_log_keeps_the_traceback_of_a_failed_run(tmp_path):
     assert "[failed] ValueError: decode exploded" in text and "Traceback" in text
 
 
-def test_trace_files_are_not_taken_for_shard_outputs(fake_run):  # noqa: F811
+def test_trace_files_are_not_taken_for_shard_outputs(fake_run):
     base = ["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout", "--n-dev", "4",
             "--image-mode", "clip", "--tag", "sh", "--v2", "--v2-reranker"]
     run.main([*base, "--calibrate-only"])
@@ -208,7 +210,7 @@ def test_signals_needed_asks_for_the_answer_token_under_u_omni_and_for_static_mi
 @pytest.mark.parametrize("confidence", ["margin", "u_omni"])
 @pytest.mark.parametrize("choice", ["best", "confident", "route"])
 @pytest.mark.parametrize("tau", [-1e9, 1.0, 1e9])
-def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(  # noqa: F811
+def test_the_deployment_path_agrees_with_the_full_decode_and_decodes_once(
         fake_run, monkeypatch, choice, tau, confidence):
     # A real model gives the same logits for the same prompt; the stand-in draws them at random, so seed by prompt.
     original = run.QwenEAB.run
