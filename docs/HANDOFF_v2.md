@@ -4,10 +4,10 @@
 
 ## 0. 先知道这几件事
 
-- **方向变了。** 主方法不再是 EAB（注意力偏置）。现在的方法是：每道题同时解码五个动作（`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`），再由选择器逐题选一个。EAB 只留在论文的机制分析里。
+- **方向变了。** 主方法不再是 EAB（注意力偏置）。现在的方法叫 **Omni-Arbiter**：每道题同时解码五个动作（`direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`），再由选择器逐题选一个。主决定是零训练的规则 Omni-Arbiter；轻量校准的 Omni-Arbiter-Cal 作为第二个臂报告。代码、`docs/DEV_DECISIONS.md` 和决定文件里，两者分别叫 v2-Rule 和 v2-Cal。EAB 只留在论文的机制分析里。
 - **旧结果全部作废。** 相对历史缓存基线的 +33% / +15%、训练式控制器的 +8.43%、32 题上的 +14.4%，都不能再引用。原因见 [reports/Omni-Aware_根因溯源报告_20261013.md](reports/Omni-Aware_根因溯源报告_20261013.md)；新方向的依据见 [reports/Omni-Aware_方向与改造方案_20261013.md](reports/Omni-Aware_方向与改造方案_20261013.md)。
 - **目前没有任何 v2 的正式结果。** `runs/offline_v2/REPORT.md` 是在旧数据上做的探索，只说明代码能用、方向没错：去掉旧管线的空答案后，零训练规则相对“始终检索”是 +2.8%，逐题选对的上限是 +25%。能不能到 5%，要看这次 GPU 跑出来的新信号。
-- **EAB 已按预注册规则退出主方法（2026-10-14）。** 本机（Apple MPS）在 `okvqa_gs` 上做了运行前写定判定规则的正面比较：开发集 256 题，v2 主选择器 61.88，U 门控 + EAB 45.00，配对差 +16.88 分，95% CI [11.88, 21.95]，满足“v2 比 EAB 好则淘汰 EAB”。v2 在这个数据集上的决定是回退到 `direct`：校准集 500 题上没有任何证据动作的候选平均优于直答（direct 55.96，static_text / static_mixed 34.76，rerank_static 34.16），开发集 +5% 检查 FAIL，增益为 0。这次运行用的是 PR #7 分支（commit 75e399e）的 OK-VQA 指令，#7 合并前 main 上的 OK-VQA 指令不同，数字不能直接对照。v2 能否带来增益，看 `webqa_full` 和 `webqa_open_img`。
+- **EAB 已按预注册规则退出主方法（2026-10-14）。** 本机（Apple MPS）在 `okvqa_gs` 上做了运行前写定判定规则的正面比较：开发集 256 题，Omni-Arbiter（v2 主选择器）61.88，U 门控 + EAB 45.00，配对差 +16.88 分，95% CI [11.88, 21.95]，满足“v2 比 EAB 好则淘汰 EAB”。v2 在这个数据集上的决定是回退到 `direct`：校准集 500 题上没有任何证据动作的候选平均优于直答（direct 55.96，static_text / static_mixed 34.76，rerank_static 34.16），开发集 +5% 检查 FAIL，增益为 0。这次运行用的是 PR #7 分支（commit 75e399e）的 OK-VQA 指令，#7 合并前 main 上的 OK-VQA 指令不同，数字不能直接对照。v2 能否带来增益，看 `webqa_full` 和 `webqa_open_img`。
 - **有两个地方必须停下来等判断**（第 3 步和第 5 步），不要一口气跑到底。
 - **不要改任何规则和阈值。** 提示词、δ、ε、阈值网格、数据切分都已冻结。发现问题先反馈，不要自己调。
 
@@ -139,9 +139,9 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 它会解码全部测试集（WebQA 是 4966 道 val），官方评分，拼表，再把冻结的决定应用上去，输出 `runs/v2_s4_<数据集>/<数据集>.v2_main.json`。这个文件就是论文主表的来源，里面有：
 
 - 五个单一动作各自的得分、逐题选对的上限；
-- v2-Rule（主方法）和 v2-Cal 的得分；
+- Omni-Arbiter（主方法）和 Omni-Arbiter-Cal 的得分；
 - 各基线的得分：调过阈值的 U 门控和 NTE、SeaKR、FiTM、M2-RAG；
-- v2-Rule 相对每个基线的配对差、95% 置信区间、胜 / 负 / 平；
+- Omni-Arbiter 相对每个基线的配对差、95% 置信区间、胜 / 负 / 平；
 - WebQA 另外按图像题和文本题各报一遍。
 
 **回传：** `runs/v2_s4_*` 整个目录。如果 `<数据集>.jsonl` 太大，先传其余文件，这个文件单独压缩后再传；**不要删掉它**，逐题的输入、解码和候选排序都在里面。

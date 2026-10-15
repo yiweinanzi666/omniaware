@@ -35,7 +35,9 @@
 
 ## 3. 动作、基线与强基线
 
-主方法的动作集合（EAB **不是**其中的臂）：
+主方法叫 **Omni-Arbiter**：逐题在下面五个动作里选一个，选择规则在校准集上经风险控制后冻结。主决定是零训练的规则，记作 Omni-Arbiter；轻量校准的版本记作 Omni-Arbiter-Cal，作为第二个臂报告。代码、`docs/DEV_DECISIONS.md` 和决定文件里，两者分别叫 v2-Rule 和 v2-Cal（决定文件的 `primary = "rule"`）。
+
+Omni-Arbiter 的动作集合（EAB **不是**其中的臂）：
 
 | 动作 | 含义 |
 |---|---|
@@ -55,7 +57,7 @@
 
 历史缓存基线作废。根因报告中的 +33%（WebQA）和 +15%（OK-VQA）比的就是这种基线，不能进入主表。+8.43% 和 +14.4% 同样作废。
 
-`gold-in-top-k` 只用于离线分析，**不是**推理时特征，也不能进入 v2-Cal。
+`gold-in-top-k` 只用于离线分析，**不是**推理时特征，也不能进入 Omni-Arbiter-Cal。
 
 ## 4. 统计
 
@@ -81,7 +83,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - **S2**（校准与开发）：分别解码校准集与开发集，对每个动作的答案做官方评分，`v2_table.py build` 生成逐题动作表；开发集上 `v2_table.py gate`，校准集上 `v2_table.py select` 写出冻结决定。
 - **S4**（测试）：解码测试集，评分，`v2_table.py build`，再用 `v2_table.py apply` 把冻结决定应用到测试动作表，产出主表输入。测试阶段不搜索网格。
 
-冻结文件至少记录：信号集合、v2-Rule 的阈值网格、δ、ε、种子、强基线（a\*）的身份、v2-Rule 各族（best、confident，以及满足条件时的 route）与 v2-Cal 的校准统计量与被接受的候选、v2-Cal 的模型（每个动作的特征、权重、被丢弃的列、参数个数）、lam 网格与选中的 lam、效用定义、答案格式提示词的 sha256、输入动作表的 sha256。网格和阈值只在校准集或开发集上决定。**不在测试集上选网格。** 以往 Table 20 的选定点落在测试集网格的最大值上，这一做法作废。
+冻结文件至少记录：信号集合、Omni-Arbiter 的阈值网格、δ、ε、种子、强基线（a\*）的身份、Omni-Arbiter 各族（best、confident，以及满足条件时的 route）与 Omni-Arbiter-Cal 的校准统计量与被接受的候选、Omni-Arbiter-Cal 的模型（每个动作的特征、权重、被丢弃的列、参数个数）、lam 网格与选中的 lam、效用定义、答案格式提示词的 sha256、输入动作表的 sha256。网格和阈值只在校准集或开发集上决定。**不在测试集上选网格。** 以往 Table 20 的选定点落在测试集网格的最大值上，这一做法作废。
 
 开发集关卡（判据，不是结果）：
 
@@ -102,7 +104,7 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 
 最强单一动作 a\* 在全部校准题上选出，因此略偏乐观。
 
-v2-Rule 的阈值与 v2-Cal 的 lam 都按同一效用选择，不按准确率最大值选。v2-Cal 是每个证据动作一个岭回归，预测相对 a\* 的效用差；论文里写成校准，不写成训练出来的 router。v1 里 `original_retrieve or p_image<0.5` 用过训练过的问题分类器，和“不训练 router”冲突；v2 不使用该分类器。
+Omni-Arbiter 的阈值与 Omni-Arbiter-Cal 的 lam 都按同一效用选择，不按准确率最大值选。Omni-Arbiter-Cal 是每个证据动作一个岭回归，预测相对 a\* 的效用差；论文里写成校准，不写成训练出来的 router。v1 里 `original_retrieve or p_image<0.5` 用过训练过的问题分类器，和“不训练 router”冲突；v2 不使用该分类器。
 
 ## 7. 信号（推理时）
 
@@ -119,7 +121,7 @@ v2-Rule 的阈值与 v2-Cal 的 lam 都按同一效用选择，不按准确率�
 
 熵、归一化熵、log-prob、生成长度与检索器分差只存储，不进入决策。`gold-in-top-k` 不是推理时特征。
 
-v2-Cal 每个证据动作的特征为：截距、conf(direct)、conf(a\*)、conf(b) − conf(a\*)、token F1(answer_b, answer_{a\*})、KL(b 与 direct)、检索器 top-1(b)。某特征在拟合集上全部缺失或为常数则丢弃并记录，部分缺失则报错，不填 0。
+Omni-Arbiter-Cal 每个证据动作的特征为：截距、conf(direct)、conf(a\*)、conf(b) − conf(a\*)、token F1(answer_b, answer_{a\*})、KL(b 与 direct)、检索器 top-1(b)。某特征在拟合集上全部缺失或为常数则丢弃并记录，部分缺失则报错，不填 0。
 
 ## 8. 作废的旧声明
 
@@ -133,7 +135,7 @@ v2-Cal 每个证据动作的特征为：截距、conf(direct)、conf(a\*)、conf
 6. 贪心解码不报 seed 标准差，改报配对 bootstrap CI。
 7. 选参只在开发集或校准集上进行。测试集网格不能用来挑选报告点。
 8. 选择器若仍低于 `direct`，不能声称优于无检索。
-9. v2-Rule 的“逐题退化率 ≤ δ”的 Learn-then-Test 声明（2026-10-13 作废）。它会否决所有真正切换的策略。改为对平均效用的单侧配对检验。
+9. Omni-Arbiter 的“逐题退化率 ≤ δ”的 Learn-then-Test 声明（2026-10-13 作废）。它会否决所有真正切换的策略。改为对平均效用的单侧配对检验。
 10. `α = δ = 0.10` 的写法（2026-10-13 作废）。δ 与 ε 是两个独立参数。
-11. v2-Cal 的共享逻辑回归（7 个参数）与“按预测的正确概率选动作”（2026-10-13 作废）。改为每个证据动作一个岭回归，预测相对 a\* 的效用差。
+11. Omni-Arbiter-Cal 的共享逻辑回归（7 个参数）与“按预测的正确概率选动作”（2026-10-13 作废）。改为每个证据动作一个岭回归，预测相对 a\* 的效用差。
 12. 没有 cross-encoder 时用词面重叠代替的 `rerank_static`（2026-10-13 作废）。现在没有 cross-encoder 时报错。
