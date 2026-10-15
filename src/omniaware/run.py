@@ -835,12 +835,14 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
         route["first_round"] = [c["cid"] for c in p["chunks"]]
         return route
     # The answer instruction of this run's arms (prompts.py); M2-RAG's extractor reads the same string.
-    # Its sha256 keys the U and SeaKR calibration caches: their raw values come from prompts that contain it.
+    # Its sha256 keys the U and SeaKR calibration caches: their raw values come from prompts that contain it. Its
+    # first 12 hex digits also name both cache files, so runs with different instructions never overwrite each other.
     run_instruction = prompts.instruction_for_style(family, args.answer_style,
                                                     cite_instruction=pipeline.CITATION_INSTRUCTION,
                                                     short_instruction=pipeline.SHORT_INSTRUCTION)
+    instruction_tag = f"_ins{run_instruction['instruction_sha256'][:12]}"
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
-                             f"_{args.calib_source}{args.split_seed}{style}.json")
+                             f"_{args.calib_source}{args.split_seed}{style}{instruction_tag}.json")
     # Each calibration entry is keyed by its fingerprint: question content, every setting its raw values depend
     # on, and (for route-rule query) the hash of the UniversalRAG route file.
     query_routes_sha = runio.sha256_file(args.query_routes) if args.query_routes else None
@@ -926,7 +928,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     seakr_threshold, seakr_missing_calibration = None, None
     if args.seakr_samples:
         scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
-                                   f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}.json")
+                                   f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}"
+                                   f"{instruction_tag}.json")
         saved_scache = json.loads(scache_path.read_text(encoding="utf8")) if scache_path.exists() else {}
         scache = {e["qid"]: saved_scache[e["qid"]] for e in calib
                   if e["qid"] in saved_scache and saved_scache[e["qid"]].get("fingerprint") == seakr_fingerprint(e)}
