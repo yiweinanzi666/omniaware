@@ -58,7 +58,7 @@ GPU 时间为估计值，不是实测：S1 约 0.5 天、1 张 GPU；S2 约 4–
 
 | 论文位置 | 来源 | 说明 |
 |---|---|---|
-| Attention steering moves attention, not answers | **无 v2 命令**。数字只引用 2026-10-13 根因报告里已经印出的数，并在正文标明出处 | 不是 S1/S2/S4 的结果，也不是 `offline_v2`。EAB 不作为主方法臂 |
+| Attention steering moves attention, not answers | S2 开发集与 S4 运行中的 EAB 分析臂（`--analysis-eab`，DEV_DECISIONS 2026-10-15 修订）。答案层面：`<数据集>.official_summary.json` 里 `eab:g1.2:ans1:pos:gate` 与 `static` 的官方分数，以及逐题 `preds` 中两臂答案不同的题数。注意力层面：逐题记录 `ard` 里这两个臂的 ARD。2026-10-13 根因报告里的数来自旧管线，引用时在正文标明出处 | EAB 臂只由 `score_official` 评分，不进入 `v2_table.py` 的任何一步，也不在主表里。取值为论文值（γ = 1.2、ans1、pos、门控），没有在开发集上选择；输入是 `static` 的联合 top-k，不另开探测轮。测试集上的数要等 S4 跑完，此前写 `\ph`。EAB 不作为主方法臂，也不是 `offline_v2` 的结果 |
 | 失败案例与格式敏感性 | 两条 S4 命令 | 未跑之前全部是 `\ph`。提示词在开发集上冻结，不在测试集上挑选 |
 
 ## 附录
