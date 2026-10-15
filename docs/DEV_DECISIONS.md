@@ -157,11 +157,11 @@ dev 网格：
 - 若直答的置信度 ≥ tau，选 `direct`。
 - 否则选证据动作：
   - `evidence_choice = "best"`：选 e\*，即证据动作中校准集平均得分最高者。若该题的 e\* 不可用，选该题可用证据动作中校准均分最高者；都不可用则选 `direct`。
-  - `evidence_choice = "confident"`：选该题可用证据动作中 margin 最高者。
+  - `evidence_choice = "confident"`：选该题可用证据动作中 margin 最高者（2026-10-13 修订后为答案 token 上的 `u_omni`，见上方「在答案 token 上测不确定性」第 3 条；代码为 `arbitration.PRIMARY_CONFIDENCE`）。
 
 `tau = −∞` 为永远直答，`tau = +∞` 为永远用证据动作。
 
-**阈值网格**：取校准集上直答 margin 的 0%、5%、…、100% 分位数（21 个），再加 −∞ 与 +∞，去掉相邻重复。网格只依赖校准集的信号分布，不依赖标签。
+**阈值网格**：取校准集上直答 margin（2026-10-13 修订后为答案 token 上的 `u_omni`，见上方「在答案 token 上测不确定性」第 3 条；代码为 `arbitration.PRIMARY_CONFIDENCE`）的 0%、5%、…、100% 分位数（21 个），再加 −∞ 与 +∞，去掉相邻重复。网格只依赖校准集的信号分布，不依赖标签。
 
 **固定序列的顺序（关键）**：必须从“等价于 a\* 的一端”开始，逐步远离。
 
@@ -174,7 +174,7 @@ dev 网格：
 ### 2. v2-Cal（轻量校准，预测效用差）
 
 - 对每个非 a\* 的动作 b，单独拟合一个岭回归，预测 `score_b − score_{a*}`。每个动作一组权重，不共享。
-- 特征（每个动作一组，`conf` 为 margin）：`[1, conf(direct), conf(a*), conf(b) − conf(a*), token_F1(answer_b, answer_a*), kl_to_direct(b), retriever.top1_score(b)]`，即截距加 6 个特征。截距不受惩罚；特征标准化后加岭惩罚（系数 1.0），返回的权重换回原始尺度。
+- 特征（每个动作一组，`conf` 为 margin；2026-10-13 修订后为答案 token 上的 `u_omni`，见上方「在答案 token 上测不确定性」第 3 条，代码为 `arbitration.PRIMARY_CONFIDENCE`）：`[1, conf(direct), conf(a*), conf(b) − conf(a*), token_F1(answer_b, answer_a*), kl_to_direct(b), retriever.top1_score(b)]`，即截距加 6 个特征。截距不受惩罚；特征标准化后加岭惩罚（系数 1.0），返回的权重换回原始尺度。
 - **缺失处理**：某特征在拟合集上全部缺失或方差为 0，丢弃该列，并在模型里记录被丢弃的列名。某特征只在部分行缺失，报错。**缺失不填 0。** 预测时若模型保留的某特征在该题缺失，报错。
 - 不可用的动作行不参与拟合；预测时不可用的动作不参与比较。
 - **校准集对半拆分**（固定种子 `seed = 0`，随机排列后取前一半）：前一半拟合回归，后一半做第 3 节的风险控制。两半不相交。
