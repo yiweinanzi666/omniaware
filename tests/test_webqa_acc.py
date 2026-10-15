@@ -9,10 +9,9 @@ spacy = pytest.importorskip('spacy')
 pytest.importorskip('word2number')
 
 # spaCy installs without its English model (README: `python -m spacy download en_core_web_sm`); load_official_metric
-# needs it, so the module skips until the model is downloaded instead of erroring with E050.
-try:
-    spacy.load('en_core_web_sm', disable=['ner', 'textcat', 'parser'])
-except OSError:
+# needs it, so the module skips until the model is downloaded instead of erroring with E050. is_package checks the
+# installed package without loading the pipeline at collection time.
+if not spacy.util.is_package('en_core_web_sm'):
     pytest.skip('spaCy model en_core_web_sm not installed (python -m spacy download en_core_web_sm)',
                 allow_module_level=True)
 
