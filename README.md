@@ -2,13 +2,13 @@
 
 Omni-Aware 是面向多模态 Web 问答的隐空间证据控制。它在一个冻结的生成模型上，用“不带证据和带各类证据做前向时，首个答案 token 的分布”这一套信号，同时决定三件事：是否检索、去哪个模态检索、怎么用证据。
 
-控制证据有两种方式。**软控制**不改输入，只调整模型对各段证据的注意力，即 v1 的 Evidence Attention Bias（EAB）。实测它能把注意力推向支持证据，答案却几乎不变，所以它只留在论文的机制分析里。**硬控制**直接决定把哪一组证据交给模型，这是现在的主方法（v2）：每道题有五个动作 `direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`，共用同一个提示词、预算和候选池。选择器有两个：零训练的 v2-Rule（读答案 token 上的 U_omni，见 `docs/DEV_DECISIONS.md` 2026-10-13 的修订；部署时只对规则要读的动作做前向，再解码选中的一个），以及 v2-Cal（每个证据动作一个岭回归，预测相对最强单一动作的效用差）。两者都经过固定序列的单侧配对检验：对平均效用做风险控制，δ = 0.10，ε = 1.0。主比较的分母是校准集上得分最高的单一动作。
+控制证据有两种方式。**软控制**不改输入，只调整模型对各段证据的注意力，即 v1 的 Evidence Attention Bias（EAB）。实测它能把注意力推向支持证据，答案却几乎不变，所以它只留在论文的机制分析里。**硬控制**直接决定把哪一组证据交给模型，这是现在的主方法 **Omni-Arbiter**（v2）：每道题有五个动作 `direct`、`static_text`、`static_image`、`static_mixed`、`rerank_static`，共用同一个提示词、预算和候选池。选择器有两个：零训练的 **Omni-Arbiter**（主决定；读答案 token 上的 U_omni，见 `docs/DEV_DECISIONS.md` 2026-10-13 的修订；部署时只对规则要读的动作做前向，再解码选中的一个），以及 **Omni-Arbiter-Cal**（第二个臂；每个证据动作一个岭回归，预测相对最强单一动作的效用差）。代码、`docs/DEV_DECISIONS.md` 和决定文件里，两者分别叫 v2-Rule 和 v2-Cal（决定文件的 `primary = "rule"`）。两者都经过固定序列的单侧配对检验：对平均效用做风险控制，δ = 0.10，ε = 1.0。主比较的分母是校准集上得分最高的单一动作。
 
 本仓库是实现与实验代码；论文 LaTeX 在 [`paper/`](paper/)，用 `cd paper && latexmk -pdf main.tex` 编译。
 
 > **拿到代码后先读 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)。** 它按顺序写了要做什么、在哪两处必须停下来等判断、每一步回传什么。
 >
-> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
+> **当前状态（v2）：** 方向是风险控制下的逐题仲裁（Omni-Arbiter）。**正式 v2 实验还没有跑。** 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
 
 作废、不得进入论文主表的旧结果：
 
