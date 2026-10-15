@@ -844,8 +844,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     # on, and (for route-rule query) the hash of the UniversalRAG route file.
     query_routes_sha = runio.sha256_file(args.query_routes) if args.query_routes else None
     ucal_settings = {"encoders": runio.encoder_identity(), "model": args.model, "model_path": str(model_path),
-                     "answer_style": args.answer_style,
-                     "instruction_sha256": run_instruction["instruction_sha256"], "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
+                     "answer_style": args.answer_style, "instruction_sha256": run_instruction["instruction_sha256"],
+                     "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
                      "min_per_modality": args.min_per_modality, "modality_routing": args.modality_routing,
                      "route_rule": args.route_rule, "first_round_routing": args.first_round_routing,
                      "probe_uncertainty": args.probe_uncertainty, "selector": args.selector,
@@ -916,7 +916,8 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
     seakr_settings = {"model": args.model, "model_path": str(model_path), "answer_style": args.answer_style,
-                      "instruction_sha256": run_instruction["instruction_sha256"], "samples": args.seakr_samples, "max_new_tokens": args.seakr_max_new_tokens}
+                      "instruction_sha256": run_instruction["instruction_sha256"],
+                      "samples": args.seakr_samples, "max_new_tokens": args.seakr_max_new_tokens}
 
     def seakr_fingerprint(e):
         return runio.fingerprint(e, seakr_settings)
