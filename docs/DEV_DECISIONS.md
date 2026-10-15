@@ -112,6 +112,16 @@ dev 网格：
 
 修订：OK-VQA 指令改为 VQA 的通用指令 "Answer the question using a single word or phrase."（`pipeline.SHORT_INSTRUCTION` 的同一句）。选它的理由是它是 VQA 评测的通用写法，不是因为它在 40 题上分数最高；与旧管线指令的差别（56.5 对 55.5）在 40 题上没有意义。修订时没有任何开发集或测试集的结果：开发集运行在解码第一道开发题之前就已停止。原指令下的校准运行作废，按新指令重跑。第 1 节修订中"OK-VQA 的指令（不超过 3 个词）不变"一句以本修订为准。
 
+### 修订：S2 开发集与 S4 加解码 EAB 分析臂（2026-10-15，任何 WebQA 开发集结果与任何测试集结果之前）
+
+写定时的数据：修复后管线的开发集结果只有本机 MPS 上 `okvqa_gs` 的一次（`docs/HANDOFF_v2.md` 第 0 节，其中 U 门控 + EAB 为 45.00）；`webqa_full`、`webqa_open_img` 没有任何开发集或测试集结果；任何数据集都没有测试集结果。
+
+1. **加什么**：`scripts/v2_runs.py` 的 S2 开发集运行和 S4 运行加 `--analysis-eab`，在同一输入上多解码一个 EAB 臂 `eab:g1.2:ans1:pos:gate`（`run.ANALYSIS_EAB`）及其门控版本 `gated:eab:g1.2:ans1:pos:gate`。S1、S2 校准集运行和 `--position-ablation` 的整句对照不加。
+2. **取值**：γ = 1.2，起始行 ans1，形式 pos，带门控；β = 0.30，τ = 0.35，τ_b = 0.40。这组值就是上文修订记录中的论文值 (τ, τ_b, β, γ) = (0.35, 0.40, 0.30, 1.2)，没有按规则 3–5 在开发集上选择。EAB 臂用这次运行已有的输入（联合 top-k，即 `static`）和门控信号，不另开探测轮（`--probe-uncertainty`），所以它是同一输入上的 EAB，不是 v1 论文全流程的复现。
+3. **作用范围**：EAB 臂只用于对照与机制分析。它和其他臂一样由 `score_official` 评分，结果在 `<数据集>.official_scores.jsonl` 与 `<数据集>.official_summary.json`。`v2_table.py` 的 build、gate、select、devcheck、apply 都不读它（`BASELINE_ARMS` 不含它），因此 v2-Rule 与 v2-Cal 的选择、+8% 关卡、+5% 开发集检查和主决定都不变，`v2_main.json` 里也没有它。五个动作的证据与答案不受影响（`tests/test_v2_trace.py` 在假模型上逐题核对）。
+4. **原因**：论文 V3.21 的方法部分保留 EAB；不加这个臂，新协议下没有任何 EAB 的数字。
+5. **不变的决定**：2026-10-14“EAB 退出主方法”的决定不变（`docs/HANDOFF_v2.md` 第 0 节）。若论文要重新把 EAB 当作主方法并报告它的提升，需要再记一次修订，并在附录披露。
+
 上文的 EAB / β / τ 规则不变。v2 是单独的决定，由 `scripts/analysis/v2_table.py select` 机械执行（`scripts/v2_runs.py --stage s2` 生成该命令），调用 `omniaware.arbitration` 的 `select_rule` 与 `select_cal`，结果写入 `runs/v2_decisions/<dataset>.json`。`scripts/analysis/dev_select.py` 的 `select_v2` 调用同样两个函数，是另一个入口，正式流程以 `v2_runs.py` 生成的命令为准。测试阶段（`v2_runs.py --stage s4`）只读取这个冻结文件，不搜索网格。
 
 ### 动作集合

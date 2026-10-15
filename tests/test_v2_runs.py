@@ -54,6 +54,7 @@ def test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate(data
     assert "--v2 --v2-reranker" in cmd
     assert "--max-empty-rate 0.005" in cmd
     assert "--fitm" not in cmd and "--seakr-samples" not in cmd and "--selector" not in cmd
+    assert "--analysis-eab" not in cmd
 
 
 def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_for_webqa():
@@ -68,6 +69,8 @@ def test_s2_dry_run_decodes_calib_and_dev_then_scores_builds_gates_and_selects_f
     # The baseline arms run on the dev decode only; the calibration table reads the v2 actions alone.
     assert "--fitm --m2rag --seakr-samples 20" in dev
     assert "--fitm" not in calib and "--seakr-samples" not in calib
+    # The EAB analysis arm (DEV_DECISIONS revision of 2026-10-15) is decoded on the dev run only.
+    assert dev.endswith("--analysis-eab") and "--analysis-eab" not in calib
     for cmd in (calib, dev):
         assert "--calib-source train" in cmd and "--n-calib 500" in cmd and "--n-dev 256" in cmd
         assert "--v2 --v2-reranker" in cmd and "--n-eval" not in cmd and "--split test" not in cmd
@@ -100,6 +103,7 @@ def test_position_ablation_decodes_the_dev_set_again_in_the_sentence_format():
     lines = result.stdout.splitlines()
     sentence = [line for line in lines if "--tag v2_s2_webqa_full_dev_sentence" in line]
     assert len(sentence) == 1 and sentence[0].endswith("--answer-style sentence") and "--fitm" not in sentence[0]
+    assert "--analysis-eab" not in sentence[0]
     table = str(paths.RUNS / "v2_s2_webqa_full_dev_sentence" / "webqa_full.v2_actions.jsonl")
     assert any(line.endswith(_fmt("position", "--table", table)) for line in lines)
     assert lines[-3].split()[2] == "gate"                # the ablation runs before the gate, select and devcheck
@@ -126,7 +130,7 @@ def test_no_seakr_leaves_the_baseline_arm_out_and_says_so():
     first = result.stdout.splitlines()[0]
     assert first.startswith("NOTE: --no-seakr") and "no SeaKR row" in first
     dev = [line for line in result.stdout.splitlines() if "--tag v2_s2_webqa_full_dev" in line][0]
-    assert "--fitm --m2rag" in dev and "--seakr-samples" not in dev
+    assert "--fitm --m2rag" in dev and "--seakr-samples" not in dev and dev.endswith("--analysis-eab")
 
 
 def test_no_seakr_is_rejected_for_s1():
@@ -144,6 +148,7 @@ def test_s4_dry_run_decodes_test_with_baselines_then_scores_builds_and_applies(t
     assert run_line.startswith(_fmt(sys.executable, "-m", "omniaware.run") + " ")
     assert "--dataset webqa_full" in run_line and "--split test" in run_line and "--n-eval" not in run_line
     assert "--v2 --v2-reranker" in run_line and "--fitm --m2rag --seakr-samples 20" in run_line
+    assert "--analysis-eab" in run_line
     assert f"--decisions {v2.format_argv([str(decisions)])}" in run_line
     tag = "v2_s4_webqa_full"
     run_file = str(paths.RUNS / tag / "webqa_full.jsonl")
