@@ -274,6 +274,20 @@ def test_query_routes_file_is_part_of_the_calibration_key(tmp_path, monkeypatch)
         run.main(base)
 
 
+def test_answer_instruction_is_part_of_the_calibration_key(tmp_path, monkeypatch):
+    from omniaware import prompts
+    _setup(tmp_path, monkeypatch)
+    run.main(BASE + ["--tag", "ia"])
+    (ucal,) = (tmp_path / "cache").glob("ucal_*.json")
+    before = {q: v["fingerprint"] for q, v in json.loads(ucal.read_text()).items()}
+    monkeypatch.setitem(prompts.INSTRUCTIONS, "okvqa", "Answer with one word.")    # same answer style, other text
+    with pytest.raises(SystemExit, match="cache_fingerprints"):
+        run.main(BASE + ["--tag", "ia"])
+    run.main(BASE + ["--tag", "ib"])
+    after = {q: v["fingerprint"] for q, v in json.loads(ucal.read_text()).items()}
+    assert before.keys() == after.keys() and all(before[q] != after[q] for q in before)
+
+
 # ------------------------------------------------------------ launch and merge --
 
 class _NoSubprocess:
