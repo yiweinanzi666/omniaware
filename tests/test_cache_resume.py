@@ -276,16 +276,27 @@ def test_query_routes_file_is_part_of_the_calibration_key(tmp_path, monkeypatch)
 
 def test_answer_instruction_is_part_of_the_calibration_key(tmp_path, monkeypatch):
     from omniaware import prompts
+    from omniaware.baselines import seakr
     _setup(tmp_path, monkeypatch)
-    run.main(BASE + ["--tag", "ia"])
-    (ucal,) = (tmp_path / "cache").glob("ucal_*.json")
-    before = {q: v["fingerprint"] for q, v in json.loads(ucal.read_text()).items()}
+    monkeypatch.setattr(seakr, "score_input", lambda qwen, enc, n, m, layer=None, seed=42: float(enc.length))
+    base = BASE + ["--seakr-samples", "4"]
+    cache = tmp_path / "cache"
+    run.main(base + ["--tag", "ia"])
+    first = {}
+    for kind in ("ucal", "seakr"):
+        (first[kind],) = cache.glob(f"{kind}_*.json")
+    saved = {kind: path.read_bytes() for kind, path in first.items()}
     monkeypatch.setitem(prompts.INSTRUCTIONS, "okvqa", "Answer with one word.")    # same answer style, other text
     with pytest.raises(SystemExit, match="cache_fingerprints"):
-        run.main(BASE + ["--tag", "ia"])
-    run.main(BASE + ["--tag", "ib"])
-    after = {q: v["fingerprint"] for q, v in json.loads(ucal.read_text()).items()}
-    assert before.keys() == after.keys() and all(before[q] != after[q] for q in before)
+        run.main(base + ["--tag", "ia"])
+    run.main(base + ["--tag", "ib"])
+    for kind, path in first.items():
+        # The other instruction gets a file of its own; the first instruction's file is left as it was.
+        (other,) = set(cache.glob(f"{kind}_*.json")) - {path}
+        assert path.read_bytes() == saved[kind]
+        assert path.name.rsplit("_ins", 1)[0] == other.name.rsplit("_ins", 1)[0]
+        before, after = ({q: v["fingerprint"] for q, v in json.loads(p.read_text()).items()} for p in (path, other))
+        assert before.keys() == after.keys() and all(before[q] != after[q] for q in before)
 
 
 # ------------------------------------------------------------ launch and merge --
