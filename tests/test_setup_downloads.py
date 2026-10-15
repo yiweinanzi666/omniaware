@@ -97,3 +97,19 @@ def test_check_assets_help_exits_cleanly(capsys):
         check_assets.main(["--help"])
     assert info.value.code == 0
     assert "usage" in capsys.readouterr().out.lower()
+
+
+def test_webqa_distractor_images_need_every_train_and_val_image_fact(tmp_path, monkeypatch):
+    webqa = {"q1": {"split": "val", "img_posFacts": [{"image_id": 1}], "img_negFacts": [{"image_id": 2}]},
+             "q2": {"split": "train", "img_posFacts": [], "img_negFacts": [{"image_id": 3}]},
+             "q3": {"split": "test", "img_posFacts": [{"image_id": 9}], "img_negFacts": []}}
+    monkeypatch.setattr(paths, "WEBQA_JSON", tmp_path / "WebQA_train_val.json")
+    images = tmp_path / "images"
+    assert not check_assets._webqa_distractor_images(images)          # no annotation file, no directory
+    paths.WEBQA_JSON.write_text(json.dumps(webqa))
+    images.mkdir()
+    for iid in (1, 2):
+        (images / f"{iid}.jpg").write_bytes(b"")
+    assert not check_assets._webqa_distractor_images(images)          # the train image 3 is missing
+    (images / "3.jpg").write_bytes(b"")
+    assert check_assets._webqa_distractor_images(images)              # image 9 belongs to a test question
