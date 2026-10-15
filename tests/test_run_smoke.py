@@ -1,5 +1,6 @@
 """End-to-end run.main() with a fake model and synthetic OK-VQA-like data."""
 import json
+import sys
 
 import pytest
 from dataclasses import dataclass, field
@@ -367,10 +368,15 @@ def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "QwenEAB", FakeQwen)
     monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
         e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+    # Entity types from surface rules only: en_core_web_sm tags Oslo as ORG and the other cities as GPE, which would
+    # leave an Oslo question without a same-type substitute whenever the model happens to be installed.
+    monkeypatch.setitem(sys.modules, "spacy", None)
     kinds = ["mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction"]
     run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
               "--n-dev", "2", "--tag", "iv", "--tau=-1e9", "--tau-bias=-1e9",
               "--variants", "eab:g1.2:ans1:pos:gate", "--relevance-noise", "0.1", "--intervention", *kinds])
+    config = json.loads((tmp_path / "runs" / "iv" / "okvqa_config.json").read_text())
+    assert config["intervention_entity_types"] == "rules"
     rows = [json.loads(line) for line in (tmp_path / "runs" / "iv" / "okvqa.jsonl").read_text().splitlines()]
     assert rows
     for r in rows:
