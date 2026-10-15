@@ -257,7 +257,14 @@ python -m scripts.setup.prepare_webqa_open search --split train --top 5 --chunk 
 - 检索是对全部归一化向量的精确内积 top-k，结果等同 FAISS `IndexFlatIP`。`--top` 不能超过索引大小。
 - 索引中的路径相对于 `$OMNIAWARE_ASSETS` 记录，资产目录可以整体移动。
 
-加载器中的 `webqa_img`、`webqa_full`（WebQA 的 distractor 设定）是 **legacy**：它们读取 `cache/webqa_full4966_images/images`，该目录没有生成步骤，论文的主实验不使用这两个数据集。需要时，先用 `prepare_webqa_open images` 的同一 imgs.tsv 另行生成该目录。
+`webqa_full`（WebQA 的 distractor 设定）是 v2 的主设置；`webqa_img` 是它的图像题子集，v2 不使用。两者都从 `$OMNIAWARE_ASSETS/cache/webqa_full4966_images/images/<image_id>.jpg` 读图，val 用于评测、train 用于校准，缺任何一张都会报错。这个目录没有单独的生成步骤：`prepare_webqa_open images` 在 `webqa_open/images/` 下写出同名文件，覆盖全部图片事实，默认位置下建一个符号链接即可：
+
+```bash
+mkdir -p $OMNIAWARE_ASSETS/cache/webqa_full4966_images
+ln -s $OMNIAWARE_ASSETS/webqa_open/images $OMNIAWARE_ASSETS/cache/webqa_full4966_images/images
+```
+
+`check_assets` 的 `WebQA distractor images` 一项核对 train 与 val 的每个图片事实都有图。`prepare_webqa_open images` 记为缺失或损坏的图片（`missing_images.jsonl`、`bad_images.jsonl`）不会写出文件，其中属于 train 或 val 图片事实的会让这一项不通过。
 
 ### 4.2 OK-VQA（val 5,046 题）与 dev 选型语料
 

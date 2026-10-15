@@ -11,6 +11,8 @@ missing.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from pathlib import Path
 import sys
 
@@ -26,6 +28,19 @@ def _exists(path) -> bool:
 
 def _nonempty_dir(path) -> bool:
     return Path(path).is_dir() and any(Path(path).iterdir())
+
+
+def _webqa_distractor_images(path) -> bool:
+    """Every image fact (img_posFacts, img_negFacts) of the WebQA train and val questions has its <image_id>.jpg in
+    ``path``. webqa_full, the v2 main setting, reads val for evaluation and train for calibration, and
+    data.load_webqa raises on a missing image, so a partial directory is MISSING."""
+    path = Path(path)
+    if not (path.is_dir() and paths.WEBQA_JSON.is_file()):
+        return False
+    present = {entry.name for entry in os.scandir(path)}
+    raw = json.loads(paths.WEBQA_JSON.read_text(encoding="utf-8"))
+    return all(f"{fact['image_id']}.jpg" in present for v in raw.values() if v["split"] in ("train", "val")
+               for key in ("img_posFacts", "img_negFacts") for fact in v[key])
 
 
 def _m2rag_source() -> Path:
@@ -44,6 +59,8 @@ ASSETS = {   # name -> (path, needed by, check)
     "NLTK English Punkt": (CITATION_CACHE / "sentence_splitter_assets.json", "citation metrics", _exists),
     "BARTScore ParaBank": (paths.BARTSCORE / "bart_score.pth", "WebQA QA_approx (--bart)", _exists),
     "WebQA_train_val.json": (paths.WEBQA_JSON, "WebQA", _exists),
+    "WebQA distractor images": (paths.WEBQA_IMAGES, "webqa_full (v2 main setting), train and val",
+                                _webqa_distractor_images),
     "WebQA open pool": (paths.WEBQA_OPEN / "text_documents.jsonl", "WebQA", _exists),
     "WebQA open pool stats": (paths.WEBQA_OPEN / "pool_stats.json", "WebQA (pool numbers)", _exists),
     "WebQA val rankings (BGE)": (paths.WEBQA_OPEN / "dense_top5_full" / "webqa_val" / "bge" / "rankings.jsonl",
