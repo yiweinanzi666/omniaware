@@ -208,7 +208,7 @@ def test_webqa_and_okvqa_wording_is_the_frozen_default():
     webqa = prompts.instruction_text("webqa")
     okvqa = prompts.instruction_text("okvqa")
     assert "complete sentence" in webqa and "key object" in webqa
-    assert "3 words" in okvqa
+    assert "single word or phrase" in okvqa
     assert "complete sentence" in prompts.instruction_text("videorag")
     assert prompts.instruction_text("hybridqa")
 

@@ -833,13 +833,19 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
         route = routing.evidence_route(p["attn"], p["enc"], p["chunks"], rule=args.route_rule)
         route["first_round"] = [c["cid"] for c in p["chunks"]]
         return route
+    # The answer instruction of this run's arms (prompts.py); M2-RAG's extractor reads the same string.
+    # Its sha256 keys the U and SeaKR calibration caches: their raw values come from prompts that contain it.
+    run_instruction = prompts.instruction_for_style(family, args.answer_style,
+                                                    cite_instruction=pipeline.CITATION_INSTRUCTION,
+                                                    short_instruction=pipeline.SHORT_INSTRUCTION)
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
                              f"_{args.calib_source}{args.split_seed}{style}.json")
     # Each calibration entry is keyed by its fingerprint: question content, every setting its raw values depend
     # on, and (for route-rule query) the hash of the UniversalRAG route file.
     query_routes_sha = runio.sha256_file(args.query_routes) if args.query_routes else None
     ucal_settings = {"encoders": runio.encoder_identity(), "model": args.model, "model_path": str(model_path),
-                     "answer_style": args.answer_style, "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
+                     "answer_style": args.answer_style, "instruction_sha256": run_instruction["instruction_sha256"],
+                     "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
                      "min_per_modality": args.min_per_modality, "modality_routing": args.modality_routing,
                      "route_rule": args.route_rule, "first_round_routing": args.first_round_routing,
                      "probe_uncertainty": args.probe_uncertainty, "selector": args.selector,
@@ -910,6 +916,7 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
     seakr_settings = {"model": args.model, "model_path": str(model_path), "answer_style": args.answer_style,
+                      "instruction_sha256": run_instruction["instruction_sha256"],
                       "samples": args.seakr_samples, "max_new_tokens": args.seakr_max_new_tokens}
 
     def seakr_fingerprint(e):
@@ -960,10 +967,6 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     # Fingerprint of the evaluated questions and their candidate lists: analysis scripts pair or pool runs only
     # when these agree (paper_analyses checks it), so a stale candidate set cannot slip into a table.
     candidate_sha = runio.digest([[e["qid"], [c["cid"] for c in e["candidates"]]] for e in evals])
-    # The answer instruction of this run's arms (prompts.py); M2-RAG's extractor reads the same string.
-    run_instruction = prompts.instruction_for_style(family, args.answer_style,
-                                                    cite_instruction=pipeline.CITATION_INSTRUCTION,
-                                                    short_instruction=pipeline.SHORT_INSTRUCTION)
     config_text = runio.dumps_strict({
         **{k: v for k, v in vars(args).items() if k not in EXECUTION_ARGS},
         "norm_pre": vars(norm_pre), "norm_post": vars(norm_post),
