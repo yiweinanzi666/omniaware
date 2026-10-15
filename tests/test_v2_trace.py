@@ -45,6 +45,19 @@ def _v2_run(tmp_path, tag="trace", extra=()):
     return out, [json.loads(line) for line in (out / "okvqa.jsonl").read_text(encoding="utf8").splitlines()]
 
 
+def test_the_analysis_eab_arm_is_decoded_beside_the_actions_and_leaves_them_unchanged(fake_run):
+    # S2 dev and S4 pass --analysis-eab (DEV_DECISIONS revision of 2026-10-15): two more arms, same v2 actions.
+    _, plain = _v2_run(fake_run, tag="no_eab")
+    _, with_eab = _v2_run(fake_run, tag="with_eab", extra=("--analysis-eab",))
+    assert [r["qid"] for r in plain] == [r["qid"] for r in with_eab]
+    for a, b in zip(plain, with_eab):
+        assert set(b["preds"]) - set(a["preds"]) == {run.ANALYSIS_EAB, f"gated:{run.ANALYSIS_EAB}"}
+        assert set(a["actions"]) == set(b["actions"]) == set(V2_ACTIONS)
+        for name in V2_ACTIONS:
+            assert b["actions"][name]["chunks"] == a["actions"][name]["chunks"]
+            assert b["actions"][name]["answer"] == a["actions"][name]["answer"]
+
+
 def test_every_available_action_records_its_input_and_its_decode(fake_run):
     _, rows = _v2_run(fake_run)
     assert rows

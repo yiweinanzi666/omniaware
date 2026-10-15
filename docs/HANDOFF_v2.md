@@ -104,6 +104,7 @@ python scripts/v2_runs.py --stage s2 --dataset webqa_open_img
 
 每条命令会依次做：解码校准集（500 题）→ 解码开发集（256 题，带 FiTM / M2-RAG / SeaKR 基线臂）→ 官方评分 → 拼逐题动作表 → 在开发集上做 go/no-go 判断 → 在校准集上冻结选择器的决定，写到 `runs/v2_decisions/<数据集>.json` → 把冻结决定应用到开发集，检查选择器相对最强单一动作是否至少 +5% 且 CI 下界大于 0，结果写到 `runs/v2_decisions/<数据集>.dev_check.json`。
 
+- 开发集运行另外解码一个 EAB 分析臂（`--analysis-eab`，DEV_DECISIONS 2026-10-15 修订）：官方分数在 `<数据集>.official_summary.json` 的 `eab:g1.2:ans1:pos:gate` 和 `gated:eab:g1.2:ans1:pos:gate` 两项里。它不进入 gate、select、devcheck，也不改变五个动作的输出。
 - SeaKR 每题最多 125 次额外采样，很贵。算力不够时加 `--no-seakr`，主表会缺 SeaKR 一行，输出里会注明。
 - 任何一步失败都会停下并打印原因。**go/no-go 不通过时不会生成决定文件，这是预期行为。** 开发集检查不通过时，决定文件和检查文件都会写出，命令以 `development check FAIL` 结束。
 - `scripts/v2_runs.py` 是单进程，只用第一张卡：它逐条执行 `omniaware.run`，模型加载到第一张可见的 GPU 上，其余的卡空闲。多卡要按 README 第 5 节用 `scripts.launch` 分片：用 `--dry-run` 打印各条命令，把其中 `omniaware.run` 之后的参数放到 `python -m scripts.launch --gpus 0,1 --` 后面执行，然后按打印的顺序手动执行其余命令（评分、拼表、gate 等），任何一步非零退出就停下。v2 运行的分片与合并在 CPU 测试里用假模型走通过；和 `scripts.launch` 一起在 GPU 上运行未测试。S1 只有 50 题，不要分片：`scripts.launch` 合并分片时不检查 `--max-empty-rate`。同一个输出目录有运行锁，重复启动会被拒绝。
@@ -143,6 +144,8 @@ python scripts/v2_runs.py --stage s4 --dataset okvqa_gs --decisions runs/v2_deci
 - 各基线的得分：调过阈值的 U 门控和 NTE、SeaKR、FiTM、M2-RAG；
 - v2-Rule 相对每个基线的配对差、95% 置信区间、胜 / 负 / 平；
 - WebQA 另外按图像题和文本题各报一遍。
+
+S4 同样解码 EAB 分析臂；它的官方分数在 `<数据集>.official_summary.json`（`eab:g1.2:ans1:pos:gate` 及其门控版本），不在 `v2_main.json` 里。
 
 **回传：** `runs/v2_s4_*` 整个目录。如果 `<数据集>.jsonl` 太大，先传其余文件，这个文件单独压缩后再传；**不要删掉它**，逐题的输入、解码和候选排序都在里面。
 

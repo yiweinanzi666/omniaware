@@ -9,6 +9,8 @@ decodes, then scoring and the v2_table steps. A step that exits non-zero stops t
 in S2 a failed gate stops the stage before the selection. S1 ends with the answer-first format check
 (scripts/analysis/answer_slot.py format), which fails when an action of an answer-first run keeps the format on fewer
 than 90% of its questions. The S1 image-evidence check is only printed.
+The S2 development run and the S4 run also decode the ans1 EAB analysis arm (omniaware.run --analysis-eab,
+docs/DEV_DECISIONS.md revision of 2026-10-15). It is scored with every other arm and read by no v2 step.
 S2 ends with the development check of docs/PROTOCOL.md section 5 (v2_table.py devcheck): the frozen selector must
 beat the strongest single action on the development table by at least +5% with a CI lower bound above 0. Its
 result, <decisions>.dev_check.json next to the decisions file, is read by S4, which refuses to run without a
@@ -75,9 +77,10 @@ def dev_check_path(decisions: str) -> str:
 
 def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None,
                 split: str | None = None, tag: str | None = None, baselines: bool = False,
-                seakr: bool = True) -> list[str]:
+                seakr: bool = True, analysis_eab: bool = False) -> list[str]:
     """One omniaware.run command. ``baselines`` adds the external baseline arms (FiTM, M2-RAG, SeaKR) that the
-    main table reports next to the v2 actions; ``seakr=False`` leaves out SeaKR (its cost, see docs/V2_RUNS.md)."""
+    main table reports next to the v2 actions; ``seakr=False`` leaves out SeaKR (its cost, see docs/V2_RUNS.md).
+    ``analysis_eab`` adds the ans1 EAB arm of the mechanism analysis (--analysis-eab); no v2 step reads it."""
     if split is None:
         split = "test" if stage == "s4" else "dev"
     if tag is None:
@@ -98,6 +101,8 @@ def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decision
         cmd += ["--fitm", "--m2rag"]
         if seakr:
             cmd += ["--seakr-samples", SEAKR_SAMPLES]
+    if analysis_eab:
+        cmd.append("--analysis-eab")
     if n_eval is not None:
         cmd += ["--n-eval", str(n_eval)]
     if decisions is not None:
@@ -220,7 +225,8 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
         # run.py writes per-question records only for --split, so calibration and dev are decoded separately.
         # The baseline arms are decoded on the dev run only: the calibration table reads the v2 actions alone.
         runs = [run_command(stage, dataset, split="calib", tag=calib_tag),
-                run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr)]
+                run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr,
+                            analysis_eab=True)]
         runs += [score_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [build_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [position_command(dev_tag, dataset), audit_command(dev_tag, dataset)]
@@ -241,7 +247,8 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
         check_decisions(decisions)
         notes += check_dev_check(decisions, allow_failed_dev_check)
         tag = f"v2_s4_{dataset}"
-        return [run_command(stage, dataset, decisions=decisions, tag=tag, baselines=True, seakr=seakr),
+        return [run_command(stage, dataset, decisions=decisions, tag=tag, baselines=True, seakr=seakr,
+                            analysis_eab=True),
                 score_command(tag, dataset), build_command(tag, dataset), apply_command(tag, dataset, decisions)], \
             [], notes
     raise SystemExit(f"unknown stage {stage}")
