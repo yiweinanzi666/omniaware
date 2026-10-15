@@ -34,14 +34,14 @@ python -m pytest -p no:warnings
 
 ## 1.5 真实权重自检（1 张 GPU，模型下载之后、S1 之前）
 
-第 1 步的测试只在随机初始化的小模型上运行推理代码。按 README 第 3 节下载 Qwen3-VL-8B 之后，先在真实权重上核对一遍，再开始 S1。命令与 README 第 0 节的 `verify` 一步相同（`scripts/run_all.sh` 里的 `step_verify`），在仓库根目录执行：
+第 1 步的测试只在随机初始化的小模型上运行推理代码。按 README 第 3 节下载 Qwen3-VL-8B 之后，先在真实权重上核对一遍，再开始 S1。检查内容与 README 第 0 节的 `verify` 一步相同（`scripts/run_all.sh` 里的 `step_verify`），在仓库根目录执行：
 
 ```bash
-python -m scripts.verify_real_model --model "${ERC_QWEN_8B:-$OMNIAWARE_ASSETS/cache/qwen3-vl-8b-instruct}" \
+python -m scripts.verify_real_model --model "$(python -c 'from omniaware import paths; print(paths.QWEN_8B)')" \
     --out runs/verify_real_model_8b.json
 ```
 
-`$OMNIAWARE_ASSETS` 按 README 第 2 节设置；模型放在别处时，把 `ERC_QWEN_8B` 设为模型目录。
+`--model` 取 `omniaware.paths.QWEN_8B`，和 S1–S4 的 `omniaware.run` 加载的是同一个目录：设了 `ERC_QWEN_8B` 就用它；否则是资产根目录（`OMNIAWARE_ASSETS`，其次 `ERC_ASSET_ROOT`，都没设时为仓库下的 `assets/`，见 README 第 2 节）里的 `cache/qwen3-vl-8b-instruct`。
 
 报告 `runs/verify_real_model_8b.json` 里有三项判定通过与否的检查，各带一个 `ok` 字段：
 
@@ -70,7 +70,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 **S1 要确认四件事：**
 
 1. **空答案率不超过 0.5%。** 这里的空答案指空白输出和只有引用行的输出（如 `Sources: none`）。命令里带了 `--max-empty-rate 0.005`，超过会以非零退出码结束并打印 `EMPTY ANSWER RATE`。旧管线里约 10% 的题只输出 `Sources: none`，这次必须确认它消失了。拒答（如 “I cannot determine the answer from the provided information.”）评分时同样按空答案计，但单独统计，不触发这个退出码：`<数据集>.merged.json` 里的 `refusal_rate` 是总的拒答率，`empty_by_arm` 按臂和动作（`action:<动作>`）列出空白、纯引用、拒答各多少。WebQA 的 `direct` 不带图片，图像题上有一定拒答属于正常；**如果某个证据动作（尤其 `action:static_image`）的拒答明显多于 `direct`，说明图片可能没进模型，停下来反馈。**
-2. **各个动作的回答格式一致，而且答案在最前面。** WebQA 的指令要求第一行只写短答案、第二行写一句完整的话。S1 命令会自动运行 `scripts/analysis/answer_slot.py format`，结果写到 `runs/v2_s1_<数据集>/<数据集>.answer_format.json`：任一动作遵守两行格式（`answer_first_ok`）的比例低于 90% 时，命令以 `answer-first format FAIL` 结束。同一文件里还有每个动作的 `template_start`（第一个生成 token 是 The / A 这类句式词的比例）和 `answer_token_is_first`。再打开 `<数据集>.jsonl` 抽 20 题人工看：WebQA 每个动作的 `short` 是短答案、`answer` 是完整句；OK-VQA 都不超过 3 个词。**格式关卡失败，或某个动作的 `template_start` 明显高于其他动作，停下来反馈。** 这一条决定首 token 信号能不能用：第一个 token 落在句式词上时，信号接近随机（旧管线实测 AUROC 0.52，落在答案上时 0.62）。
+2. **各个动作的回答格式一致，而且答案在最前面。** WebQA 的指令要求第一行只写短答案、第二行写一句完整的话。S1 命令会自动运行 `scripts/analysis/answer_slot.py format`，结果写到 `runs/v2_s1_<数据集>/<数据集>.answer_format.json`：任一动作遵守两行格式（`answer_first_ok`）的比例低于 90% 时，命令以 `answer-first format FAIL` 结束。同一文件里还有每个动作的 `template_start`（第一个生成 token 是 The / A 这类句式词的比例）和 `answer_token_is_first`。再打开 `<数据集>.jsonl` 抽 20 题人工看：WebQA 每个动作的 `short` 是短答案、`answer` 是完整句；OK-VQA 每个动作的回答是一个词或短语（指令为 "Answer the question using a single word or phrase."），不是 “cormorant birds” 这类带修饰的描述（官方 VQA 评测按精确匹配给这类回答记 0 分，见 DEV_DECISIONS 2026-10-14 的修订）。**格式关卡失败，或某个动作的 `template_start` 明显高于其他动作，停下来反馈。** 这一条决定首 token 信号能不能用：第一个 token 落在句式词上时，信号接近随机（旧管线实测 AUROC 0.52，落在答案上时 0.62）。
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 
 4. **溯源记录写出来了，而且内容合理。** 这一条在本机只用假模型测过，真实模型和真实图片上要在冒烟时确认：
