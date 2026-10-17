@@ -216,6 +216,21 @@
       "file": "environment_complete.json",
       "bytes": 142,
       "sha256": "07c3c1f00a0ef0de44fa448317458fecaafc96e469f7c6ea604f7dd51275056e"
+    },
+    {
+      "file": "cleanup_comparison_1725.json",
+      "bytes": 20389,
+      "sha256": "a8ce5dcbaf4b71eb1d4d7bb1a51d0a8355aa2b8330caa1799c6786bdab949bd3"
+    },
+    {
+      "file": "cleanup_hashes_1635_local.json",
+      "bytes": 1608,
+      "sha256": "5f5c06e9ea0fb3555bc8a09d5249d1607799f9745aea8e63910dd51b079f86d1"
+    },
+    {
+      "file": "cleanup_hashes_1645_server.json",
+      "bytes": 472,
+      "sha256": "42570ac5d8079a6f4b7672d8baaff3e480eaaf7f0cde8a87ad4180110787f72b"
     }
   ],
   "local_cleanup": "Only task data/cache; code/reports/other data retained. File deletion requires matching local/server SHA256 and a separately logged deletion receipt.",
@@ -229,5 +244,12 @@
     "MISSING HybridQA rankings            /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/rankings/hybridqa/table.jsonl   [HybridQA]",
     "MISSING VideoRAG rankings            /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/rankings/videorag_synth/video.jsonl   [VideoRAG-Synth]",
     "MISSING VideoRAG frames              /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/frames   [VideoRAG-Synth]"
-  ]
+  ],
+  "cleanup_verification": {
+    "matched_files": 394864,
+    "matched_bytes": 225657120356,
+    "retained_files": 26,
+    "eligible_manifest_sha256": "8093880f2ceb112a8202a0982f5416ec82d3086c05a6870b084c97e231467086",
+    "deletion_performed": false
+  }
 }
