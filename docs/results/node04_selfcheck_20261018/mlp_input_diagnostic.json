@@ -1,0 +1,61 @@
+{
+  "diagnostic_only": true,
+  "dtype": "bfloat16",
+  "backend": "math_sdpa",
+  "first_layer_mlp": {
+    "model.language_model.layers.0.mlp.gate_proj:input": {
+      "shape": [
+        1,
+        63,
+        4096
+      ],
+      "max_abs_diff": 0.0,
+      "different_values": 0
+    },
+    "model.language_model.layers.0.mlp.gate_proj:output": {
+      "shape": [
+        1,
+        63,
+        12288
+      ],
+      "max_abs_diff": 0.0,
+      "different_values": 0
+    },
+    "model.language_model.layers.0.mlp.up_proj:input": {
+      "shape": [
+        1,
+        63,
+        4096
+      ],
+      "max_abs_diff": 0.0,
+      "different_values": 0
+    },
+    "model.language_model.layers.0.mlp.up_proj:output": {
+      "shape": [
+        1,
+        63,
+        12288
+      ],
+      "max_abs_diff": 0.0,
+      "different_values": 0
+    },
+    "model.language_model.layers.0.mlp.down_proj:input": {
+      "shape": [
+        1,
+        63,
+        12288
+      ],
+      "max_abs_diff": 0.0,
+      "different_values": 0
+    },
+    "model.language_model.layers.0.mlp.down_proj:output": {
+      "shape": [
+        1,
+        63,
+        4096
+      ],
+      "max_abs_diff": 0.00390625,
+      "different_values": 457
+    }
+  }
+}
