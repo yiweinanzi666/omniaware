@@ -1,0 +1,522 @@
+{
+  "time": "2026-10-17T17:29:44.069520+08:00",
+  "candidate_files": 394890,
+  "groups": [
+    [
+      "WebQA",
+      "WebQA",
+      "raw"
+    ],
+    [
+      "WebQA/chunks",
+      "WebQA",
+      "chunks"
+    ],
+    [
+      "OmniAware_Data/assets/webqa_open",
+      "omniaware/assets/webqa_open",
+      "open"
+    ],
+    [
+      "OmniAware_Data/assets/data/coco/val2014",
+      "omniaware/assets/data/coco/val2014",
+      "jpg"
+    ],
+    [
+      "OmniAware_Data/assets/data/okvqa_local/original",
+      "omniaware/assets/data/okvqa_local/original",
+      "data"
+    ],
+    [
+      "OmniAware_Data/assets/data/okvqa_gs",
+      "omniaware/assets/downloads/okvqa_gs",
+      "csv"
+    ],
+    [
+      "OmniAware_Data/transfer/models/qwen3-vl-8b-instruct",
+      "omniaware/assets/cache/qwen3-vl-8b-instruct",
+      "model"
+    ],
+    [
+      "OmniAware_Data/transfer/models/bge-reranker-v2-m3",
+      "omniaware/assets/cache/bge-reranker-v2-m3",
+      "model"
+    ],
+    [
+      "OmniAware_Data/transfer/models/deberta_nli",
+      "omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+      "model"
+    ],
+    [
+      "data_ops/node04_v2_20261017",
+      "omniaware/assets/cache/bartscore",
+      "bart"
+    ]
+  ],
+  "group_summary": {
+    "0": {
+      "matched_files": 6,
+      "matched_bytes": 73169441492,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "1": {
+      "matched_files": 51,
+      "matched_bytes": 54445524319,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "2": {
+      "matched_files": 389741,
+      "matched_bytes": 75632599463,
+      "retained_files": 3,
+      "retained_bytes": 316557547
+    },
+    "3": {
+      "matched_files": 5033,
+      "matched_bytes": 830594178,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "4": {
+      "matched_files": 4,
+      "matched_bytes": 1433136,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "5": {
+      "matched_files": 2,
+      "matched_bytes": 101698004,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "6": {
+      "matched_files": 14,
+      "matched_bytes": 17545907231,
+      "retained_files": 16,
+      "retained_bytes": 23798
+    },
+    "7": {
+      "matched_files": 6,
+      "matched_bytes": 2293242108,
+      "retained_files": 0,
+      "retained_bytes": 0
+    },
+    "8": {
+      "matched_files": 6,
+      "matched_bytes": 11115130,
+      "retained_files": 7,
+      "retained_bytes": 15260
+    },
+    "9": {
+      "matched_files": 1,
+      "matched_bytes": 1625565295,
+      "retained_files": 0,
+      "retained_bytes": 0
+    }
+  },
+  "matched_files": 394864,
+  "matched_bytes": 225657120356,
+  "retained_files": 26,
+  "retained": [
+    {
+      "local": {
+        "g": 2,
+        "r": "image_corpus.jsonl",
+        "b": 62901802,
+        "m": 1792056242063968200,
+        "sha256": "435707c7319ed1e5fba8c6362b5de05b735df83086941c6aba03f0c5cf2720f1"
+      },
+      "server": {
+        "g": 2,
+        "r": "image_corpus.jsonl",
+        "b": 62512052,
+        "m": 1792100615590329129,
+        "error": "size mismatch"
+      },
+      "reason": "size mismatch"
+    },
+    {
+      "local": {
+        "g": 2,
+        "r": "pool_stats.json",
+        "b": 370,
+        "m": 1792056243838875100,
+        "sha256": "62d04c04bde34c8db2942e5a28d694a6b9f1b3e55b5ae0c067376f4bd26d548c"
+      },
+      "server": {
+        "g": 2,
+        "r": "pool_stats.json",
+        "b": 362,
+        "m": 1792100616514329118,
+        "error": "size mismatch"
+      },
+      "reason": "size mismatch"
+    },
+    {
+      "local": {
+        "g": 2,
+        "r": "text_documents.jsonl",
+        "b": 253655375,
+        "m": 1792056240558320200,
+        "sha256": "aefd97b1fccf8b755162c0bddbabfe37c2a29d80a414acfe91cf249c46cb989c"
+      },
+      "server": {
+        "g": 2,
+        "r": "text_documents.jsonl",
+        "b": 253109555,
+        "m": 1792100613407329157,
+        "error": "size mismatch"
+      },
+      "reason": "size mismatch"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "chat_template.json.verified.json",
+        "b": 280,
+        "m": 1792176112401594800,
+        "sha256": "e5987ed4a1621b97e0a0a88d347739507b372d92b9b7f9d1fe96d378d6b1ef4f"
+      },
+      "server": {
+        "g": 6,
+        "r": "chat_template.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/chat_template.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/chat_template.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "config.json.verified.json",
+        "b": 273,
+        "m": 1792176112403591900,
+        "sha256": "fa152df0236c4f66c1337e30165521bdc2050e9018ea91ec7cee0f63943d1711"
+      },
+      "server": {
+        "g": 6,
+        "r": "config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "generation_config.json.verified.json",
+        "b": 283,
+        "m": 1792176112403591900,
+        "sha256": "f50047c995cf23cd5a42c7b99323f11558444c343ef875432144488d93e15544"
+      },
+      "server": {
+        "g": 6,
+        "r": "generation_config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/generation_config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/generation_config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "merges.txt.verified.json",
+        "b": 275,
+        "m": 1792176112414562100,
+        "sha256": "2d6a59ee99c9accfd1c35121e99bd8d3be130bbed0e549106ab01f2965ce705a"
+      },
+      "server": {
+        "g": 6,
+        "r": "merges.txt.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/merges.txt.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/merges.txt.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "model-00001-of-00004.safetensors.verified.json",
+        "b": 300,
+        "m": 1792190815133670600,
+        "sha256": "c3445e9742c71ce8b8b5cab7a380db5667984d0cd87e2ffcdb5748658604d59e"
+      },
+      "server": {
+        "g": 6,
+        "r": "model-00001-of-00004.safetensors.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00001-of-00004.safetensors.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00001-of-00004.safetensors.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "model-00002-of-00004.safetensors.verified.json",
+        "b": 300,
+        "m": 1792176151707566300,
+        "sha256": "99edac0bdc768a09e7a5c8d8aabad8d75b1b4c7820d38234c8840d92b393f8a8"
+      },
+      "server": {
+        "g": 6,
+        "r": "model-00002-of-00004.safetensors.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00002-of-00004.safetensors.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00002-of-00004.safetensors.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "model-00003-of-00004.safetensors.verified.json",
+        "b": 300,
+        "m": 1792176152344453400,
+        "sha256": "1fd378a29509ee40e0b07cdfcb4fb93fad382e981780e7c52212a479c77f2a83"
+      },
+      "server": {
+        "g": 6,
+        "r": "model-00003-of-00004.safetensors.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00003-of-00004.safetensors.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00003-of-00004.safetensors.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "model-00004-of-00004.safetensors.verified.json",
+        "b": 300,
+        "m": 1792188919445656800,
+        "sha256": "fce475f06ab8e1d2811e754d116cd846ddd181e0c89ecb1c6e50b62b448c3e1a"
+      },
+      "server": {
+        "g": 6,
+        "r": "model-00004-of-00004.safetensors.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00004-of-00004.safetensors.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model-00004-of-00004.safetensors.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "model.safetensors.index.json.verified.json",
+        "b": 291,
+        "m": 1792176112415559600,
+        "sha256": "337511754fc350f8af68af4a56088a066c91993280bbf8abc096197c7cf3ca67"
+      },
+      "server": {
+        "g": 6,
+        "r": "model.safetensors.index.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model.safetensors.index.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/model.safetensors.index.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "MODEL_COMPLETE.json",
+        "b": 106,
+        "m": 1792190815137125200,
+        "sha256": "1d42218b602fd75e7422d083244948bfa0fb357524d8617b56aed62a3865e5a5"
+      },
+      "server": {
+        "g": 6,
+        "r": "MODEL_COMPLETE.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/MODEL_COMPLETE.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/MODEL_COMPLETE.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "preprocessor_config.json.verified.json",
+        "b": 285,
+        "m": 1792176112416557000,
+        "sha256": "7d596ae8e3e87f7de7f3f7940ccfb1bba0fbdabe48a153b5ae35a5fa270c97ed"
+      },
+      "server": {
+        "g": 6,
+        "r": "preprocessor_config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/preprocessor_config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/preprocessor_config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "tokenizer.json.verified.json",
+        "b": 279,
+        "m": 1792176112456449600,
+        "sha256": "e3ea243d6f36bcadb4a270e255dead35bf769d16fd5a8312155c63d8bd55b250"
+      },
+      "server": {
+        "g": 6,
+        "r": "tokenizer.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/tokenizer.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/tokenizer.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "tokenizer_config.json.verified.json",
+        "b": 284,
+        "m": 1792176112458473700,
+        "sha256": "8e8812fb25ae956b795002237220cd41657069ad7311f2623faddf5cc53baf64"
+      },
+      "server": {
+        "g": 6,
+        "r": "tokenizer_config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/tokenizer_config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/tokenizer_config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "upstream_manifest.json",
+        "b": 19676,
+        "m": 1792176112400000900,
+        "sha256": "3699acea5e7a7ff4d0412b25a8e78c9745a4dd322856af3baf7ab8915596820d"
+      },
+      "server": {
+        "g": 6,
+        "r": "upstream_manifest.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/upstream_manifest.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/upstream_manifest.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "video_preprocessor_config.json.verified.json",
+        "b": 291,
+        "m": 1792176112458473700,
+        "sha256": "496acb1682488907550ab9f3a7ed70c3a5ce390a88ea8f52f0067a3838fc5a2d"
+      },
+      "server": {
+        "g": 6,
+        "r": "video_preprocessor_config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/video_preprocessor_config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/video_preprocessor_config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 6,
+        "r": "vocab.json.verified.json",
+        "b": 275,
+        "m": 1792176112475606000,
+        "sha256": "662ea952323e604d2c08a52a87c259008bae1f5125be94cb8426b81e074d0c95"
+      },
+      "server": {
+        "g": 6,
+        "r": "vocab.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/vocab.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct/vocab.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "added_tokens.json.verified.json",
+        "b": 308,
+        "m": 1792180028699338300,
+        "sha256": "6b4ec485e84c10044ba4fc568215d2a29c97254f247d1b22cd671fcede6344d3"
+      },
+      "server": {
+        "g": 8,
+        "r": "added_tokens.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/added_tokens.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/added_tokens.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "config.json.verified.json",
+        "b": 304,
+        "m": 1792180028701342900,
+        "sha256": "a4add2e84d1a28032b1f94957da9159950837ff0da95846a4e4f6f7acd7a9eab"
+      },
+      "server": {
+        "g": 8,
+        "r": "config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "special_tokens_map.json.verified.json",
+        "b": 315,
+        "m": 1792180028702330000,
+        "sha256": "c30e517668bcd903dea211da70cd91a0da66e7d34b84d4ab65ca4ddb038a28df"
+      },
+      "server": {
+        "g": 8,
+        "r": "special_tokens_map.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/special_tokens_map.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/special_tokens_map.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "spm.model.verified.json",
+        "b": 305,
+        "m": 1792180028719599700,
+        "sha256": "8049ac6175a172f0d031aa73cd85d9439d6e2bd7726d40273c19717af5479523"
+      },
+      "server": {
+        "g": 8,
+        "r": "spm.model.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/spm.model.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/spm.model.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "tokenizer.json.verified.json",
+        "b": 310,
+        "m": 1792180028776895800,
+        "sha256": "c44dcf71d0936430da0a7916420121c0a8c985e85e155e4c8ff4d017c85f6567"
+      },
+      "server": {
+        "g": 8,
+        "r": "tokenizer.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "tokenizer_config.json.verified.json",
+        "b": 313,
+        "m": 1792180028777895100,
+        "sha256": "85f590e6703717211764474148b002f355360ee2d8f7753c01f06897c748855f"
+      },
+      "server": {
+        "g": 8,
+        "r": "tokenizer_config.json.verified.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer_config.json.verified.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer_config.json.verified.json'"
+    },
+    {
+      "local": {
+        "g": 8,
+        "r": "upstream_manifest.json",
+        "b": 13405,
+        "m": 1792180028698337700,
+        "sha256": "5f99ff344b108ca64e692b204d9ae21bd44555ec130a2e1bd17b537319bedd84"
+      },
+      "server": {
+        "g": 8,
+        "r": "upstream_manifest.json",
+        "error": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/upstream_manifest.json'"
+      },
+      "reason": "[Errno 2] No such file or directory: '/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/upstream_manifest.json'"
+    }
+  ],
+  "eligible_manifest_sha256": "8093880f2ceb112a8202a0982f5416ec82d3086c05a6870b084c97e231467086",
+  "deletion_performed": false,
+  "deletion_gate": "Requires successful GitHub push and unchanged local file size/mtime, with resolved paths restricted to the approved task-data roots."
+}
