@@ -147,15 +147,15 @@ def reference_decode(q, enc, arm, steps: int):
         v = value.repeat_interleave(rep, dim=1).double()
         s = scaling if scaling is not None else module.scaling
         logits = (query.double() @ k.transpose(-1, -2)) * s
-        q_pos = torch.arange(kv_len - q_len, kv_len)
-        k_pos = torch.arange(kv_len)
+        q_pos = torch.arange(kv_len - q_len, kv_len, device=query.device)
+        k_pos = torch.arange(kv_len, device=query.device)
         logits = logits.masked_fill((k_pos[None, :] > q_pos[:, None])[None, None], float("-inf"))
         if arm is not None and (arm.layers is None or layer in arm.layers):
             # Keys after the prompt (generated tokens) carry no bias, as in the hook.
-            col = torch.zeros(kv_len, dtype=torch.float64)
-            col[:min(kv_len, bias.numel())] = bias[:kv_len].double()
+            col = torch.zeros(kv_len, dtype=torch.float64, device=query.device)
+            col[:min(kv_len, bias.numel())] = bias[:kv_len].to(device=query.device, dtype=torch.float64)
             rows = (q_pos >= arm.q_start)[:, None]
-            logits = logits + torch.where(rows, col[None, :], torch.zeros(1, dtype=torch.float64))
+            logits = logits + torch.where(rows, col[None, :], torch.zeros_like(col[:1]))
         w = torch.softmax(logits, dim=-1)
         if layer == q.n_layers - 1 and "row" not in captured:      # first forward = the prompt
             captured["row"] = w[0].mean(dim=0)[-1].float().cpu()
