@@ -1,13 +1,13 @@
 {
   "snapshot_date": "2026-10-19 Asia/Shanghai",
   "single_file_limit_bytes": 104857600,
-  "included_files": 18542,
-  "published_bytes": 807884933,
+  "included_files": 18547,
+  "published_bytes": 815783009,
   "status_counts": {
-    "included": 16882,
-    "excluded_media_or_partial_media": 1273,
+    "included": 16887,
     "excluded_temporary_or_cache": 1,
     "included_gzip": 1243,
+    "excluded_media_or_partial_media": 1268,
     "excluded_at_least_100_MiB": 29,
     "excluded_model_or_tensor_or_binary_cache": 1,
     "excluded_nested_git_control_file": 2,
