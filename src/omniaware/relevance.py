@@ -61,12 +61,17 @@ class CLIP:
         self.model = CLIPModel.from_pretrained(paths.CLIP).to(self.device).eval()
 
     @torch.no_grad()
-    def encode_text(self, texts: list[str]) -> np.ndarray:
-        enc = self.proc.tokenizer(texts, padding=True, truncation=True, max_length=77,
-                                  return_tensors="pt").to(self.device)
-        f = self.model.get_text_features(**enc)
-        f = f if isinstance(f, torch.Tensor) else f.pooler_output
-        return torch.nn.functional.normalize(f.float(), dim=-1).cpu().numpy()
+    def encode_text(self, texts: list[str], batch: int = 128) -> np.ndarray:
+        if batch < 1:
+            raise ValueError("batch must be positive")
+        out = []
+        for i in range(0, len(texts), batch):
+            enc = self.proc.tokenizer(texts[i:i + batch], padding=True, truncation=True, max_length=77,
+                                      return_tensors="pt").to(self.device)
+            f = self.model.get_text_features(**enc)
+            f = f if isinstance(f, torch.Tensor) else f.pooler_output
+            out.append(torch.nn.functional.normalize(f.float(), dim=-1).cpu().numpy())
+        return np.concatenate(out) if out else np.zeros((0, self.model.config.projection_dim), dtype=np.float32)
 
     @torch.no_grad()
     def encode_images(self, image_paths: list[str], batch: int = 16) -> np.ndarray:
