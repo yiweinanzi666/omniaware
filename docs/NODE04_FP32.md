@@ -7,6 +7,8 @@ Existing BF16 calibration files are preserved. Changing dtype while resuming an 
 Use the existing environment controls to isolate **all** caches, answer directories, scores and decisions.
 Export them before invoking the stage script: child processes inherit them, and the stage's generated paths use the same roots.
 
+The GS-112K retrieval candidate dataset also lives under LOCAL_CACHE in the current loader. Before the OK-VQA run, populate `okvqa_gs112k/candidates_full.jsonl` inside the new cache root from the already accepted server dataset, verify its SHA-256, and make the new copy read-only. This immutable input is not a model calibration cache. For this run both copies had SHA-256 `a394b1e7bbbbb0db1247c9430ac58bf8a395660b9af893dd2ee8a03c64facede`. No old U/SeaKR calibration was copied. The first missing-input failure is retained in the run log.
+
 ```bash
 export OMNIAWARE_RUNS=/home/user/Futaoran/omniaware_v2_selfcheck_20261018/runs/fp32_20261018
 export OMNIAWARE_CACHE=/home/user/Futaoran/omniaware_v2_cache_fp32_20261018
