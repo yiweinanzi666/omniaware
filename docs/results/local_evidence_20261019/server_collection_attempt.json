@@ -1,0 +1,11 @@
+{
+  "attempt_date": "2026-10-19 Asia/Shanghai",
+  "operation": "read-only collection of saved experiment evidence from node04",
+  "authentication_method": "existing local SSH key via existing jump-host helper",
+  "status": "authentication_failed_at_jump_host",
+  "exception_class": "paramiko.ssh_exception.AuthenticationException",
+  "downloaded_files": 0,
+  "remote_commands_started": false,
+  "remote_files_modified": false,
+  "scope_limit": "Only locally available evidence and existing GitHub result branches are archived; live server completeness has not been verified."
+}
