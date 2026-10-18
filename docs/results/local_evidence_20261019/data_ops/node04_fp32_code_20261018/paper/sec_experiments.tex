@@ -1,0 +1,319 @@
+%% ===============================================================
+\section{Experiments}
+\label{sec:experiments}
+The v2 evaluation has not been run.
+Every new experimental number below is \ph{}.
+Numbers copied from the root-cause report dated 13~October~2026 are marked as such.
+They were computed on the previous pipeline and are not v2 results.
+Exploratory outputs of \texttt{offline\_v2} are from that old pipeline, contain known bugs, and are not the main table.
+The section is a measurement study, a main table, ablations, and analysis.
+No cell has been filled from a v2 run.
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+\textit{Splits.}
+WebQA calibration is at least 500 questions and the development split is 256 questions.
+Both are drawn from the training split, they are disjoint, and neither is drawn from the validation split.
+The test split is all 4{,}966 validation questions.
+The previous statement that calibration came from the validation split, while the reported set was the entire validation split, is withdrawn.
+OK-VQA uses 500 calibration questions, 256 development questions, and the remainder of the validation split as the test set.
+The three OK-VQA splits are pairwise disjoint.
+An empty test split is an error.
+When the validation split has 5{,}046 questions, the remainder is 4{,}290.
+MMQA and video are generalization settings whose sizes follow the available assets.
+The current command interface does not include them, and their scores are \ph{}.
+
+\textit{Settings and metrics.}
+The primary WebQA setting is the distractor pool (\texttt{webqa\_full}), in which each question brings its own candidates.
+Open retrieval (\texttt{webqa\_open\_*}; the current interface generates \texttt{webqa\_open\_img} at stage~s2) is the second setting.
+OK-VQA is scored with official VQA accuracy only.
+WebQA's primary metric is acc$_{\mathrm{approx}}$.
+Normalized BART and QA$_{\mathrm{approx}}$ are reported as well, on the full set and on the image and text subsets.
+The image subset has 2{,}511 questions and the text subset has 2{,}455.
+Loose lexical WebQA scores are not placed next to acc$_{\mathrm{approx}}$.
+
+\textit{Actions and the strong baseline.}
+The decoded actions are \texttt{direct}, \texttt{static\_text}, \texttt{static\_image}, \texttt{static\_mixed}, and \texttt{rerank\_static}.
+Adaptive comparators are an NTE trigger, SeaKR, the previous $\Uomni$ gate (v1), and UniversalRAG routing.
+They are not eligible to be the strong baseline.
+The strong baseline is the single action with the best calibration-set score.
+Primary relative gain uses that score as the denominator.
+The tables also report gain versus \texttt{static\_mixed}.
+The oracle is the per-question best action in the same set.
+Evidence Attention Bias is not a main-method arm.
+All actions in a run share one prompt, one budget, and one candidate pool.
+The prompt is fixed before any model run.
+The test split is scored once, after the frozen decision file \texttt{runs/v2\_decisions/} is written.
+Grids are not selected on the test split.
+The operating point previously taken from a test-set grid (Table~20 in the audited draft) is withdrawn.
+
+\textit{Statistics.}
+Uncertainty is a paired bootstrap 95\% confidence interval over questions.
+Multiple comparisons use Holm correction.
+Decoding is greedy, so a configuration is deterministic given its inputs.
+This draft does not report a seed standard deviation under greedy decoding.
+The risk-control claim is reported as the mean paired gap to the strong baseline, with its bootstrap interval.
+A score below \texttt{direct} is not described as better than no retrieval.
+
+\textit{Development gates.}
+Two gates, written down before any GPU run of the repaired pipeline, are criteria, not results, and this draft does not claim that either has passed.
+After the pipeline fixes, the development-set per-question oracle is compared with the strongest single action against a relative gap of 8\%.
+A selector is eligible for the frozen test run when, on the development split, its relative gain over that baseline is at least 5\%, and the lower end of its paired interval is positive.
+The test split is not used to make those choices.
+
+\textit{Figures withdrawn by the root-cause report.}
+The following numbers are copied from the root-cause report of 13~October~2026.
+They come from the legacy pipeline, which has known prompt and format problems; they motivate the protocol and are not results of the method. They are not v2 results, and they are not written into Tables~\ref{tab:webqa}--\ref{tab:cost}.
+Relative gains of +33\% on WebQA (official QA score 18.1 to 24.2 on the 4{,}966 validation questions) and +15\% on OK-VQA compared against historical cached baselines produced under different prompts, budgets, and retrieval scores. On one 512-question batch the cached static score was 17.9 where static retrieval decoded in the same run scored 23.4, a gap of 5.5 points from the protocol alone.
+The same report withdraws a trained controller's +8.43\% and a +14.4\% chosen on a 32-question development set.
+On a 256-question OK-VQA development slice, official VQA accuracy was 61.5 for direct answering, 36.3 for static retrieval, 48.1 for the gated static arm, and 36.3 for EAB.
+Direct answering won 82 questions and lost 10 against static retrieval.
+The per-question maximum of direct and static on that slice was 64.4, which is 2.9 points above direct answering (about +4.7\% relative).
+The gated arm and EAB are both below direct answering, so the report does not call that slice an improvement over no retrieval.
+On 512 WebQA questions, static retrieval scored 59.1 acc$_{\mathrm{approx}}$, 27.4 normalized BART, and 23.4 QA.
+Image questions scored 63.2 acc$_{\mathrm{approx}}$ and 13.8 QA.
+Text questions scored 55.0 acc$_{\mathrm{approx}}$ and 33.0 QA.
+Over 2{,}560 items, a loose WebQA scorer and official acc$_{\mathrm{approx}}$ differed by 10.5 points on average (0.699 versus 0.594).
+On one static OK-VQA batch, a loose scorer gave 65.8 where official VQA accuracy was about 47.9.
+A greedy-decoding figure of $\pm 0.2$ is smaller than the sampling standard error of about 0.66 points that 5{,}046 OK-VQA questions imply, and it is not a confidence interval.
+The v2 measurement that replaces these comparisons is the placeholder tables below.
+
+\subsection{Measurement Study}
+\label{sec:measure}
+The measurement reserves three quantities.
+The gap between the best single action and the per-question oracle is \ph{}.
+Image questions and text questions are separate columns in Tables~\ref{tab:webqa} and~\ref{tab:okvqa}, and every column is \ph{}.
+The size of the normalized BART factor, reported beside acc$_{\mathrm{approx}}$, is \ph{}.
+A 50-question image-evidence diagnostic is specified, and its conclusion is \ph{}.
+The audit's 256-question and 512-question figures above are the motive for these tables.
+They are not substitutes for the cells.
+
+\begin{table*}[t]
+\caption{WebQA distractor test split (\texttt{webqa\_full}): placeholder measurement.
+acc$_{\mathrm{approx}}$ is primary.
+Normalized BART and QA$_{\mathrm{approx}}$ are secondary.
+Image and text are subsets of the same run.
+The strong baseline is whichever single action scores highest on the calibration split; its identity is frozen before test and is not chosen on this table.
+The oracle is the per-question best action.
+Every entry is \ph{}.
+The v2 run has not been executed.}
+\label{tab:webqa}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lccccccccc@{}}
+\toprule
+Action & \multicolumn{3}{c}{acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{norm.\ BART} & \multicolumn{3}{c}{QA$_{\mathrm{approx}}$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(l){8-10}
+ & All & Image & Text & All & Image & Text & All & Image & Text \\
+\midrule
+\texttt{direct} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+Strong baseline & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+Oracle & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\caption{OK-VQA test split: official VQA accuracy only.
+Placeholder measurement.
+The same action definitions as Table~\ref{tab:webqa}.
+Every entry is \ph{}.}
+\label{tab:okvqa}
+\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Action & VQA accuracy \\
+\midrule
+\texttt{direct} & \ph{} \\
+\texttt{static\_text} & \ph{} \\
+\texttt{static\_image} & \ph{} \\
+\texttt{static\_mixed} & \ph{} \\
+\texttt{rerank\_static} & \ph{} \\
+Strong baseline & \ph{} \\
+Oracle & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Main Results}
+\label{sec:main}
+Table~\ref{tab:main} is the main comparison.
+Relative gain versus the strong baseline is the primary column.
+Gain versus \texttt{static\_mixed} is secondary.
+Each gain cell is a point estimate and a paired bootstrap 95\% interval; both are \ph{}, so the cell is written \ph{} [\ph{},\,\ph{}].
+The gap column is the mean paired score difference to the strong baseline, with its interval.
+No row is marked significant, because no test has been run.
+A filled row that sits below \texttt{direct} will not be described as better than no retrieval.
+
+\begin{table*}[t]
+\caption{Main results on the frozen test splits.
+WebQA uses acc$_{\mathrm{approx}}$ in the distractor setting.
+OK-VQA uses official VQA accuracy.
+``Versus strong'' uses the calibration-set best single action as the denominator.
+``Versus static'' uses \texttt{static\_mixed}.
+Brackets are paired bootstrap 95\% intervals.
+Gap is the mean paired score difference to the strong baseline.
+All entries are \ph{}.
+EAB is omitted.}
+\label{tab:main}
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Method & \multicolumn{3}{c}{WebQA acc$_{\mathrm{approx}}$} & \multicolumn{3}{c}{OK-VQA} & Gap \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ & Score & vs.\ strong & vs.\ static & Score & vs.\ strong & vs.\ static & \\
+\midrule
+\texttt{direct} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+NTE trigger & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+SeaKR & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v1 $\Uomni$ gate & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+UniversalRAG & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v2-Rule & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+v2-Cal & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+Oracle & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} & \ph{} [\ph{},\,\ph{}] & \ph{} [\ph{},\,\ph{}] & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Ablations}
+\label{sec:ablation}
+Table~\ref{tab:ablation} removes one v2-Cal feature at a time, compares v2-Rule with v2-Cal, and leaves a row for the fixed $\delta=0.10$ and $\epsilon=1.0$.
+The $\delta$ row is a development-split description.
+It is not a point selected on the test set.
+Refitting uses the calibration split only.
+Every entry is \ph{}.
+
+\begin{table}[t]
+\caption{Ablations on the frozen test metrics after calibration-split refits.
+WebQA is acc$_{\mathrm{approx}}$.
+OK-VQA is official VQA accuracy.
+Utility is the mean paired gap to the strong baseline on the calibration split (Section~\ref{sec:risk}), and is not an accuracy.
+Every entry is \ph{}.
+The last row is not used to pick the test operating point.}
+\label{tab:ablation}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Variant & WebQA & OK-VQA & Utility \\
+\midrule
+v2-Cal, six features & \ph{} & \ph{} & \ph{} \\
+Without direct margin & \ph{} & \ph{} & \ph{} \\
+Without $a^{\star}$ margin & \ph{} & \ph{} & \ph{} \\
+Without margin gap & \ph{} & \ph{} & \ph{} \\
+Without token F1 to $a^{\star}$ & \ph{} & \ph{} & \ph{} \\
+Without KL vs.\ direct & \ph{} & \ph{} & \ph{} \\
+Without retriever top-1 & \ph{} & \ph{} & \ph{} \\
+v2-Rule & \ph{} & \ph{} & \ph{} \\
+Development $\delta=0.10$, $\epsilon=1.0$ & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Open Retrieval, Generalization, and Cost}
+\label{sec:extra}
+Table~\ref{tab:open} is the open-retrieval image setting.
+The current interface builds it with stage~s2, not with a frozen stage-s4 test, so the table is not a test result.
+Generalization to MMQA and to video is \ph{} and has no command in that interface.
+Table~\ref{tab:cost} reserves mean generator calls, input tokens, and latency.
+Planning estimates of GPU time are not entered here.
+
+\begin{table}[t]
+\caption{Open-retrieval WebQA image setting (\texttt{webqa\_open\_img}), stage~s2 interface only.
+Not a frozen test.
+Primary metric acc$_{\mathrm{approx}}$, plus normalized BART and QA$_{\mathrm{approx}}$.
+Every entry is \ph{}.}
+\label{tab:open}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Action & acc$_{\mathrm{approx}}$ & norm.\ BART & QA$_{\mathrm{approx}}$ \\
+\midrule
+\texttt{direct} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_text} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_image} & \ph{} & \ph{} & \ph{} \\
+\texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
+\texttt{rerank\_static} & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\caption{Cost placeholders on the stage-s4 runs.
+Calls, input tokens, and latency are \ph{}. The deployment row prefills only what the frozen rule reads and decodes the chosen action (Section~
+ef{sec:cost}).}
+\label{tab:cost}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+System & Calls & Input tokens & Latency \\
+\midrule
+\texttt{direct} only & \ph{} & \ph{} & \ph{} \\
+Always \texttt{static\_mixed} & \ph{} & \ph{} & \ph{} \\
+SeaKR & \ph{} & \ph{} & \ph{} \\
+v2, all actions decoded & \ph{} & \ph{} & \ph{} \\
+v2-Rule, deployment path & \ph{} & \ph{} & \ph{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Soft control: attention steering moves attention, not answers}
+\label{sec:steer}
+This subsection is the evidence for choosing hard control (Section~\ref{sec:softhard}).
+Every number in this subsection is copied from the root-cause report dated 13~October~2026.
+The measurements come from the legacy pipeline, which has known prompt and format problems; they motivate the analysis and are not results of the method.
+They are not v2 results, and they are not taken from \texttt{offline\_v2}.
+
+On a 64-question probe, the L1 distance of attention toward the supporting block moved from 0.77 to 0.26, and the answer flipped on 2 of 64 questions.
+On the 38 questions in that probe where the gate was on, the median gap between the top-1 and top-2 first-token logits was about 3.4--3.5, and the median largest logit displacement caused by the bias was about 2.0.
+On 29 of those 38 questions the gap exceeded the displacement.
+The two flips had gaps of 0 and 0.75.
+First-token predictive entropy was about 0.01--0.02, and on 65\% of questions $h_{\mathrm{sem}}<0.01$.
+Before the bias, about 59\% of the attention already lay on the supporting evidence.
+The bias raised that absolute mass by 0.011 on average.
+The largest bias was about 1.2 nats (median of the per-question maximum 0.78, 90th percentile 1.07).
+Among 306 gated-on questions, the median attention odds between the best and worst chunk were 1.185, against the propositional upper bound $e^{1.2}=3.32$ at $U=1$ and a full relevance gap.
+The same gap is why a uniform span bias in the style of PASTA, or a positional recalibration in the style of Found-in-the-Middle, has little room to change an answer the first token has already determined.
+This draft does not report a new PASTA or Found-in-the-Middle run.
+
+On 512 questions decoded under one protocol on CUDA, the first token changed on 14 questions.
+EAB-P versus static retrieval changed official QA by +1.30\%, with a 95\% interval of $[-0.11,+0.87]$ points, which includes zero.
+The same comparison on MPS was +1.20\% and also includes zero.
+Of a +0.304 point QA difference, two questions contributed +0.195 and +0.122, and the other 510 questions summed to $-0.013$.
+Replacing CUDA with MPS and adding no bias changed 62 of 512 answers.
+EAB-P changed 55--64 answers.
+
+The bias formula applies on rows $a\ge\tend$ (implementation name \texttt{ans1}).
+A previous default applied the bias only on decode rows (\texttt{ans2}) and was labeled as the paper form.
+That label is withdrawn.
+The gate in those runs read $U_{\mathrm{post}}$, not the retrieval-time uncertainty named in the text.
+Appendix~\ref{app:dca} records the local algebra of this retired bias.
+It is not an accuracy result.
+
+\subsection{Failure Cases and Format Sensitivity}
+\label{sec:cases}
+Failure counts for missing evidence, wrong modality, and format mismatch are \ph{}.
+No case is filled in, because the v2 runs have not been executed.
+Format sensitivity uses the single frozen prompt from Section~\ref{sec:setup}.
+A comparison across prompt variants, if it is run, is a development-split description and is \ph{} here.
+It is not a search over prompts on the test split.
+
+%% ===============================================================
+\section{Conclusion}
+We describe \method{} v2, a per-question choice among direct answering, static text, static image, static mixed evidence, and static evidence reranked by a cross-encoder.
+v2-Rule fits no weights.
+v2-Cal is one small ridge regression per evidence action.
+Fixed-sequence one-sided paired tests at $\delta=0.10$ and $\epsilon=1.0$ supply the expected-score guarantee in Section~\ref{sec:risk}.
+The primary comparison uses the strongest single action on the calibration split as the denominator.
+The measurement, the main table, and the ablations have not been run, and their numbers are \ph{}.
+The attention-steering subsection quotes the 13~October~2026 root-cause report: attention moves, and answers do not.
+Appendix~\ref{app:limitations} states the limitations.

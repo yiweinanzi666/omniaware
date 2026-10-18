@@ -1,0 +1,27 @@
+{
+  "id": "TrEewdX_90w",
+  "source_url": "https://www.youtube.com/watch?v=TrEewdX_90w",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\TrEewdX_90w.log",
+  "filename": "TrEewdX_90w.mp4",
+  "bytes": 34428466,
+  "sha256": "6b9eb7c32fad25fd60615d41a227d0b80f5d33b7321fb8982cfd7cbd2aff3f33",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "538.029569"
+    }
+  }
+}

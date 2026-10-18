@@ -1,0 +1,8 @@
+{
+  "repo": "Qwen/Qwen3-VL-8B-Instruct",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "file": "model-00004-of-00004.safetensors",
+  "bytes": 2716270024,
+  "sha256": "0a88b98e9f96270973f567e6a2c103ede6ccdf915ca3075e21c755604d0377a5",
+  "verified_at": "2026-10-17T06:15:19+0800"
+}

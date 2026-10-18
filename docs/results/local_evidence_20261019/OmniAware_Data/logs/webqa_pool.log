@@ -1,0 +1,2 @@
+[pool] 545820 text documents, 389750 images from ['WebQA_train_val.json', 'WebQA_test.json'] -> D:\OmniAware_Data\assets\webqa_open
+[pool] statistics written to D:\OmniAware_Data\assets\webqa_open\pool_stats.json (the source of the pool numbers in the paper)

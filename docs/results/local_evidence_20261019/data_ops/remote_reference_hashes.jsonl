@@ -1,0 +1,3 @@
+{"object":"WebQA_train_val.json","source":"remote node04","bytes":661922314,"sha256":"7ff6ba4aae749dbdd6400c69251e97a785e689039206d91d7541bec15eab3dbe","status":"local_verified"}
+{"object":"WebQA_test.json","source":"remote node04","bytes":116724654,"sha256":"a15cea11c0fbd49c425fcf9a01fc47da4f5f2674e7481751261160fd88b233db","status":"local_verified"}
+{"object":"imgs.lineidx","source":"remote node04","bytes":4616775,"sha256":"1772b8ac88563953f36da85c52c390db90d25c128c7593643a97c8ac7468d46f","status":"local_verified"}

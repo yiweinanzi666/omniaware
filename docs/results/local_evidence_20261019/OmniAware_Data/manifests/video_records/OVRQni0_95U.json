@@ -1,0 +1,27 @@
+{
+  "id": "OVRQni0_95U",
+  "source_url": "https://www.youtube.com/watch?v=OVRQni0_95U",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\OVRQni0_95U.log",
+  "filename": "OVRQni0_95U.mp4",
+  "bytes": 91057973,
+  "sha256": "e65ed001d460d28dd2abd6d5908208ff778068cd90b9000ed78e1343f0ce1e71",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1170.610794"
+    }
+  }
+}

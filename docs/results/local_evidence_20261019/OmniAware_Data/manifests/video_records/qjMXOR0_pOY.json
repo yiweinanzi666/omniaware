@@ -1,0 +1,8 @@
+{
+  "id": "qjMXOR0_pOY",
+  "source_url": "https://www.youtube.com/watch?v=qjMXOR0_pOY",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\qjMXOR0_pOY.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=qjMXOR0_pOY\n[youtube] qjMXOR0_pOY: Downloading webpage\n[youtube] qjMXOR0_pOY: Downloading visionos player API JSON\nERROR: [youtube] qjMXOR0_pOY: This video is unavailable\n[youtube] Extracting URL: https://www.youtube.com/watch?v=qjMXOR0_pOY\n[youtube] qjMXOR0_pOY: Downloading webpage\n[youtube] qjMXOR0_pOY: Downloading visionos player API JSON\nERROR: [youtube] qjMXOR0_pOY: This video is unavailable\n[youtube] Extracting URL: https://www.youtube.com/watch?v=qjMXOR0_pOY\n[youtube] qjMXOR0_pOY: Downloading webpage\nWARNING: [youtube] qjMXOR0_pOY: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] qjMXOR0_pOY: Downloading initial data API JSON\n[youtube] qjMXOR0_pOY: Downloading visionos player API JSON\n[youtube] qjMXOR0_pOY: Downloading iframe API JS\n[youtube] qjMXOR0_pOY: Downloading player 21090930-main\n[youtube] qjMXOR0_pOY: Downloading web player API JSON\nERROR: [youtube] qjMXOR0_pOY: Video unavailable\n"
+}

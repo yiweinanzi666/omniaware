@@ -1,0 +1,27 @@
+{
+  "id": "zbx16L0gSSE",
+  "source_url": "https://www.youtube.com/watch?v=zbx16L0gSSE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zbx16L0gSSE.log",
+  "filename": "zbx16L0gSSE.mp4",
+  "bytes": 22767038,
+  "sha256": "f93e0954bafa930a6d93004a383fc996af44367ec46c7e62805363f3a565bd30",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "336.944762"
+    }
+  }
+}

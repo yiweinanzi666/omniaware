@@ -1,0 +1,27 @@
+{
+  "id": "LIEN1ogmkuo",
+  "source_url": "https://www.youtube.com/watch?v=LIEN1ogmkuo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\LIEN1ogmkuo.log",
+  "filename": "LIEN1ogmkuo.mp4",
+  "bytes": 6039279,
+  "sha256": "ea1d2087669fd53e2c7ed065799b3f322e7dfa9f14f6be4ee81904a04c34164a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "106.556372"
+    }
+  }
+}

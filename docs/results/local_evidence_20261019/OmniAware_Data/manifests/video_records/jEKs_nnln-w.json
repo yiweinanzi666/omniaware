@@ -1,0 +1,27 @@
+{
+  "id": "jEKs_nnln-w",
+  "source_url": "https://www.youtube.com/watch?v=jEKs_nnln-w",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\jEKs_nnln-w.log",
+  "filename": "jEKs_nnln-w.mp4",
+  "bytes": 23422493,
+  "sha256": "52999afe6783710c285385ec30900d72dce847c1fe5a83c7cbd457bcb619894a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 848,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "202.013605"
+    }
+  }
+}

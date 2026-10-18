@@ -1,0 +1,27 @@
+{
+  "id": "SoyT4DVUbOc",
+  "source_url": "https://www.youtube.com/watch?v=SoyT4DVUbOc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SoyT4DVUbOc.log",
+  "filename": "SoyT4DVUbOc.mp4",
+  "bytes": 24741069,
+  "sha256": "f77ba9653dc90b24e42e32471c329cba3a75717874f9d5ea2a72ffa43368fbc8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "258.716735"
+    }
+  }
+}

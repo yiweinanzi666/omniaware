@@ -1,0 +1,27 @@
+{
+  "id": "TF2NKtbpPCc",
+  "source_url": "https://www.youtube.com/watch?v=TF2NKtbpPCc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\TF2NKtbpPCc.log",
+  "filename": "TF2NKtbpPCc.mp4",
+  "bytes": 26060894,
+  "sha256": "dfc2e46ed72516867509e8a3bc5e9e5980ab2252aa3ae6eafd7ca2ec7d837fcb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "394.855329"
+    }
+  }
+}

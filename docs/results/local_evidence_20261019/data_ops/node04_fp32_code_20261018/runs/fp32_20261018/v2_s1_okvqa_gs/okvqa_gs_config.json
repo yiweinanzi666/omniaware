@@ -1,0 +1,128 @@
+{
+ "dataset": "okvqa_gs",
+ "model": "8b",
+ "dtype": "float32",
+ "max_patches": 1,
+ "split": "dev",
+ "n_calib": 500,
+ "calib_source": "heldout",
+ "n_dev": 256,
+ "split_seed": 2027,
+ "allow_missing_assets": false,
+ "offset": 0,
+ "n_eval": 50,
+ "k": 5,
+ "min_per_modality": 0,
+ "modality_routing": false,
+ "route_rule": "mh",
+ "query_routes": null,
+ "first_round_routing": false,
+ "order": "rank",
+ "replication_gamma": null,
+ "seed": 0,
+ "selector": "relevance",
+ "universalrag_top": 5,
+ "universalrag_modalities": null,
+ "intervention": null,
+ "relevance_noise": 0.0,
+ "noise_draw": 0,
+ "relevance_norm": "ecdf",
+ "norm_from": null,
+ "no_calibration": false,
+ "image_mode": "mix",
+ "beta": 0.3,
+ "tau": 0.35,
+ "tau_bias": 0.4,
+ "eab_uncertainty": "pre",
+ "answer_style": "default",
+ "variants": [],
+ "analysis_eab": false,
+ "probe_uncertainty": false,
+ "u_combine": "sum",
+ "attn_layer": "last",
+ "max_pixels": 262144,
+ "max_new_tokens": 30,
+ "seakr_samples": 0,
+ "seakr_max_new_tokens": 100,
+ "seakr_threshold": null,
+ "fitm": false,
+ "m2rag": false,
+ "tag": "v2_s1_okvqa_gs",
+ "v2": true,
+ "v2_reranker": true,
+ "decisions": null,
+ "decisions_sha256": null,
+ "norm_pre": {
+  "median": 0.8113195812790225,
+  "iqr": 0.053606496071164855
+ },
+ "norm_post": {
+  "median": 0.9200296266299266,
+  "iqr": 0.03228429283873324
+ },
+ "norm_probe": null,
+ "comb_pre": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "comb_post": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "model_path": "/home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/qwen3-vl-8b-instruct",
+ "seakr_threshold_used": null,
+ "seakr_missing_calibration": null,
+ "intervention_entity_types": null,
+ "nte_threshold": 0.01084233416690961,
+ "nte_norm": {
+  "median": 0.007657923417013258,
+  "iqr": 0.019800719728021686
+ },
+ "u_retrieval_rate_calibration": 0.612,
+ "evaluation_questions": 50,
+ "candidate_sha256": "53254ec12dc0869fcf4eec7f3871d8ebacf90e0f5b7ddfa792d78ac1919ce0c4",
+ "split_sizes": {
+  "universe": 5046,
+  "calib": 500,
+  "dev": 256,
+  "test": 4290
+ },
+ "dropped_for_missing_assets": {
+  "universe": {}
+ },
+ "candidate_shortfall": {
+  "k": 5,
+  "fewer_than_k": {
+   "count": 0,
+   "qids": []
+  },
+  "without_modality": {}
+ },
+ "evaluation_qids_sha256": "171dd22e795ea2f378804f627ae78b00b8e14d955b710e71242e23f424f6e42d",
+ "split_qids_sha256": {
+  "calib": "41c2c01862ec7c27358c32dd617ba322e941d61cf489f8c9d15b8a162b0ef3a1",
+  "dev": "a20cbf4c77b910ab4091b1bbca996c8e40bda66851a684f57bc459e1c9a98e6a",
+  "test": "8aaa962f20983e1d9719795754439c04097e79981f6564e38e3db62a201d7a41"
+ },
+ "instruction": "Answer the question using a single word or phrase.",
+ "instruction_sha256": "c0525726b5f8551852d97e2e9914c289cf81dc22d8b31a5b1cac0e747b2c34fe",
+ "instruction_exceptions": {},
+ "answer_format": "plain",
+ "cache_fingerprints": {
+  "relevance": "dcee8f083bb1817e734fc7c2e23bdb0f2a0965c494518d1f44210f3be99844fa",
+  "ce": "06ff1974866564ca82c29d23229e5b739cbff9c39c144c4690ace7951417877a",
+  "ucal": "4ea80bcedeb7697a9ebfa531e4916e71a8f1835e0e5af425f0eb6f4d4c80272b",
+  "seakr": null
+ },
+ "protocol_differences": {
+  "m2rag.summarizer": "The official M2RAG single-stage summarizer writes an intermediate document (at most 384 tokens) from the chunks before the answer extractor reads it. Every other arm reads the chunks directly. This is the M2RAG protocol and is kept.",
+  "m2rag.extractor_prompt": "The extractor's own constraints (EXTRACTOR_INSTRUCTION) follow the run's shared answer instruction. The official constraints are kept.",
+  "m2rag.chat_template": "The official flat-content user message through LocalQwenVLM, not the ChatML prompt of the other arms.",
+  "m2rag.video": "M2-RAG accepts no video evidence, so it is not run on VideoRAG-Synth.",
+  "fitm": "None: Found-in-the-Middle reads the joint input with the run's prompt and pixel budget."
+ }
+}

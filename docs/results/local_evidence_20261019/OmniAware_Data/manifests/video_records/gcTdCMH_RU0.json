@@ -1,0 +1,27 @@
+{
+  "id": "gcTdCMH_RU0",
+  "source_url": "https://www.youtube.com/watch?v=gcTdCMH_RU0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\gcTdCMH_RU0.log",
+  "filename": "gcTdCMH_RU0.mp4",
+  "bytes": 10210812,
+  "sha256": "a057b10f7b076b085048b9c6bd6c10afecb1703bd82dd9a594ff24864816631d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 384,
+        "height": 288
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "195.953197"
+    }
+  }
+}

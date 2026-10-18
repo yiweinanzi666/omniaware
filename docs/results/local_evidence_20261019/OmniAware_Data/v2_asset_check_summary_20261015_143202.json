@@ -1,0 +1,266 @@
+{
+  "recorded_at": "2026-10-15T14:32:02.262811+08:00",
+  "timezone": "Asia/Taipei",
+  "overall_status": "BLOCKED_NO_LINUX_GPU_TARGET_EXISTS",
+  "stop_condition": "Do not execute step 2 before step 1 has passed; stop on any missing WebQA asset or model.",
+  "step_0": {
+    "status": "COMPLETE",
+    "stop_record": "E:\\OmniAware_Data\\manifests\\videorag_stopped_20261015_142952.json",
+    "time": "2026-10-15T14:29:52.272841+08:00",
+    "reason": "v2 正式实验不用视频",
+    "progress": {
+      "complete": 1199,
+      "target": 1725
+    },
+    "task_download_processes_running": false,
+    "existing_videos_or_manifests_deleted_or_moved": false,
+    "existing_root_json_manifests_verified_unchanged": 15,
+    "failure_reason_correction": {
+      "source": "User supplied final-error classification on 2026-10-15",
+      "youtube_bot_verification": 1482,
+      "videos_unavailable": 73,
+      "permanently_deleted_evaluation_video_ids": [
+        "D6JOjFCNUyU",
+        "s4UvmPov9dY"
+      ],
+      "note": "Counts are supplemental user-provided classifications, not a rewrite of the original raw error records."
+    },
+    "original_failed_record_count": 1578,
+    "other_records_not_classified_by_supplied_counts": 23
+  },
+  "step_1": {
+    "status": "NOT_RUN_NO_LINUX_GPU_TARGET",
+    "reason": "User confirmed that no Linux GPU machine exists. No Linux target can be inspected; Windows assets are not substituted for the requested Linux checks.",
+    "target_host": null,
+    "target_os": null,
+    "OMNIAWARE_ASSETS": null,
+    "OMNIAWARE_CACHE": null,
+    "OMNIAWARE_WEBQA_OPEN_DIR": null,
+    "resolved_webqa_open": null,
+    "open_dir_resolution_rule": "Use OMNIAWARE_WEBQA_OPEN_DIR when explicitly set, otherwise $OMNIAWARE_ASSETS/webqa_open. Legacy runs directory is not automatically selected.",
+    "items": [
+      {
+        "group": "a",
+        "path_relative_to_assets_or_resolved_open_dir": "data/WebQA_train_val.json",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "b",
+        "path_relative_to_assets_or_resolved_open_dir": "cache/webqa_full4966_images/images/",
+        "kind": "directory",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/pool_stats.json",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/text_documents.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/image_corpus.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/faiss_clip_full/plan.json",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/dense_top5_full/webqa_val/bge/rankings.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/dense_top5_full/webqa_val/clip/rankings.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/dense_top5_full/webqa_train/bge/rankings.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "c",
+        "path_relative_to_assets_or_resolved_open_dir": "<resolved_webqa_open>/dense_top5_full/webqa_train/clip/rankings.jsonl",
+        "kind": "file",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "d",
+        "path_relative_to_assets_or_resolved_open_dir": "cache/qwen3-vl-8b-instruct",
+        "kind": "directory",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "d",
+        "path_relative_to_assets_or_resolved_open_dir": "cache/bge-large-en-v1.5",
+        "kind": "directory",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "d",
+        "path_relative_to_assets_or_resolved_open_dir": "cache/clip-vit-large-patch14",
+        "kind": "directory",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      },
+      {
+        "group": "d",
+        "path_relative_to_assets_or_resolved_open_dir": "cache/bge-reranker-v2-m3",
+        "kind": "directory",
+        "status": "NOT_CHECKED_NO_LINUX_GPU_TARGET",
+        "exists": null,
+        "bytes": null,
+        "line_or_file_count": null,
+        "sha256": null
+      }
+    ],
+    "webqa_val_expected_questions": 4966,
+    "webqa_val_actual_questions": null,
+    "required_val_image_ids_count": null,
+    "missing_val_images_count": null,
+    "missing_val_image_ids": null,
+    "webqa_data_downloaded": false,
+    "legacy_image_directory_generated": false
+  },
+  "step_2": {
+    "status": "NOT_RUN_STEP_1_NOT_COMPLETED_AND_NO_LINUX_GPU_TARGET",
+    "commands": [
+      {
+        "command": "python -m scripts.setup.prepare_okvqa --coco-dir <COCO_val2014> (only if prerequisite inputs are missing)",
+        "status": "NOT_RUN",
+        "exit_code": null,
+        "elapsed_seconds": null
+      },
+      {
+        "command": "python -m omniaware.okvqa_dense --corpus gs112k prepare --csv <csv_path>/okvqa_train_corpus.csv",
+        "status": "NOT_RUN",
+        "exit_code": null,
+        "elapsed_seconds": null
+      },
+      {
+        "command": "python -m omniaware.okvqa_dense --corpus gs112k encode --batch 128",
+        "status": "NOT_RUN",
+        "exit_code": null,
+        "elapsed_seconds": null
+      },
+      {
+        "command": "python -m omniaware.okvqa_dense --corpus gs112k search --k 20",
+        "status": "NOT_RUN",
+        "exit_code": null,
+        "elapsed_seconds": null
+      },
+      {
+        "command": "omniaware.data.load_okvqa_gs()",
+        "status": "NOT_RUN",
+        "exit_code": null,
+        "elapsed_seconds": null
+      }
+    ],
+    "corpus_jsonl": {
+      "target_status": "NOT_CHECKED",
+      "rows": null,
+      "sha256": null,
+      "windows_reference_source": "Previously recorded manifests/gs_corpora.json; not a new Linux result",
+      "windows_reference_rows": 112724,
+      "windows_reference_sha256": "c89fa9c4954753d9d769acd34320469bf7975b0429578afb1bf8662d40260ca3",
+      "windows_reference_prepared_path": "cache\\okvqa_gs112k\\corpus.jsonl",
+      "hash_difference_explanation": null
+    },
+    "candidates_full_jsonl": {
+      "status": "NOT_GENERATED_BY_THIS_TASK",
+      "target_rows": null,
+      "sha256": null,
+      "required_questions": 5046,
+      "required_candidates_per_question": 20,
+      "actual_questions": null,
+      "candidate_count_validation": null
+    },
+    "loader": {
+      "status": "NOT_RUN",
+      "questions": null,
+      "dropped": null
+    },
+    "gs168k_full_or_wiki3m_executed": false
+  },
+  "git": {
+    "local_windows_repository": "E:\\OmniAware_Data\\omniaware",
+    "local_windows_commit": "bbead8049741d0c9a541cd896ed846a64a45d706",
+    "target_linux_repository": null,
+    "target_linux_commit": null
+  },
+  "connection_information_needed": [],
+  "notes": [
+    "Unknown values are null, not MISSING. No claim is made about Linux asset existence.",
+    "No YouTube downloads, cookies or logged-in retries were started.",
+    "Existing videos and manifests were retained. Only the requested additive stop record was created in manifests."
+  ],
+  "updated_at": "2026-10-15T14:34:18.670046+08:00",
+  "user_correction": "没有Linux gpu，之前搞错了",
+  "next_decision": "Choose an execution environment before resuming. No environment installation, model download, asset transfer, WebQA generation, YouTube retry or GPU retrieval was started."
+}

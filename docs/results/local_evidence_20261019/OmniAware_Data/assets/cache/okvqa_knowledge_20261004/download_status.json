@@ -1,0 +1,24 @@
+{
+  "url": "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
+  "expected_bytes": 4694541059,
+  "expected_etag": "\"7ccd39b61360f246b8258e0eb08f1376-299\"",
+  "expected_md5": "612fe66e0b6b41ee28f806140226c563",
+  "started_utc": "2026-10-15T04:30:28.715232+00:00",
+  "initial_bytes": 0,
+  "status": "COMPLETE",
+  "downloaded_bytes": 4694541059,
+  "attempts": [
+    {
+      "attempt": 1,
+      "offset": 0,
+      "status": 206,
+      "content_range": "bytes 0-4694541058/4694541059"
+    }
+  ],
+  "elapsed_seconds": 620.8694779999787,
+  "MiB_per_second": 7.30191978772503,
+  "finished_utc": "2026-10-15T04:40:49.584671+00:00",
+  "path": "E:\\OmniAware_Data\\assets\\cache\\okvqa_knowledge_20261004\\psgs_w100.tsv.gz",
+  "sha256": "c39b020c855a2b5c25ffef3abe4a3b6f9b829ad7dbc14ec3d163d34d7c53ea8d",
+  "md5": "612fe66e0b6b41ee28f806140226c563"
+}

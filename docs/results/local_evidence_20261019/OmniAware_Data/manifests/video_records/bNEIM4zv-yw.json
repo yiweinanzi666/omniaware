@@ -1,0 +1,27 @@
+{
+  "id": "bNEIM4zv-yw",
+  "source_url": "https://www.youtube.com/watch?v=bNEIM4zv-yw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\bNEIM4zv-yw.log",
+  "filename": "bNEIM4zv-yw.mp4",
+  "bytes": 17236680,
+  "sha256": "89741fefbc0402e6363279292701d70a2c4fe8469debe27f84bbd3a851d339c5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "279.498594"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "kaIzjfmRhec",
+  "source_url": "https://www.youtube.com/watch?v=kaIzjfmRhec",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\kaIzjfmRhec.log",
+  "filename": "kaIzjfmRhec.mp4",
+  "bytes": 17909916,
+  "sha256": "a0f529800d0bb172fa362e9c20a66cb366de4cffd0ad1257adf87797d8fd0122",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "304.692245"
+    }
+  }
+}

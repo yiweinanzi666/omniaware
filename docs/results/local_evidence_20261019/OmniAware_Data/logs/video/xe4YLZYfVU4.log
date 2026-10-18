@@ -1,0 +1,34 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=xe4YLZYfVU4
+[youtube] xe4YLZYfVU4: Downloading webpage
+[youtube] xe4YLZYfVU4: Downloading visionos player API JSON
+[youtube] xe4YLZYfVU4: Downloading m3u8 information
+[info] xe4YLZYfVU4: Downloading 1 format(s): 134+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.f134.mp4
+[youtube] Extracting URL: https://www.youtube.com/watch?v=xe4YLZYfVU4
+[youtube] xe4YLZYfVU4: Downloading webpage
+[youtube] xe4YLZYfVU4: Downloading visionos player API JSON
+[youtube] xe4YLZYfVU4: Downloading m3u8 information
+[info] xe4YLZYfVU4: Downloading 1 format(s): 134+140
+[info] Video metadata is already present
+[download] Resuming download at byte 10010074
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+
+[automatic retry] public HLS format after direct HTTP 403
+[youtube] Extracting URL: https://www.youtube.com/watch?v=xe4YLZYfVU4
+[youtube] xe4YLZYfVU4: Downloading webpage
+[youtube] xe4YLZYfVU4: Downloading visionos player API JSON
+[youtube] xe4YLZYfVU4: Downloading m3u8 information
+[info] xe4YLZYfVU4: Downloading 1 format(s): 605+234
+[info] Video metadata is already present
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 59
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.f605.mp4
+[download] Download completed
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 59
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.f234.mp4
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.f605.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\xe4YLZYfVU4.f234.mp4 (pass -k to keep)

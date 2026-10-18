@@ -1,0 +1,27 @@
+{
+  "id": "RWndawcoxM0",
+  "source_url": "https://www.youtube.com/watch?v=RWndawcoxM0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\RWndawcoxM0.log",
+  "filename": "RWndawcoxM0.mp4",
+  "bytes": 40326027,
+  "sha256": "a01e7ca83426f70b3f84fa722c8c18e1b0be2e78253d01ae78abab4c7f13f21f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "494.747574"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "9_yANJMl2do",
+  "source_url": "https://www.youtube.com/watch?v=9_yANJMl2do",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\9_yANJMl2do.log",
+  "filename": "9_yANJMl2do.mp4",
+  "bytes": 2006949,
+  "sha256": "f6a83a4d30481cce65baa5cbe559934f3b9bc8d9775f4fa7071719450bf435ea",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "35.038912"
+    }
+  }
+}

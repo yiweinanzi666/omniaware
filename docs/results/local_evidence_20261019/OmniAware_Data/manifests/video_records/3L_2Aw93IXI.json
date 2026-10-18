@@ -1,0 +1,27 @@
+{
+  "id": "3L_2Aw93IXI",
+  "source_url": "https://www.youtube.com/watch?v=3L_2Aw93IXI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\3L_2Aw93IXI.log",
+  "filename": "3L_2Aw93IXI.mp4",
+  "bytes": 21691132,
+  "sha256": "292b7d582f9490d8c85b2bb84b18130c867df4bca72de3d22e198eb1bfab3409",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "140.596825"
+    }
+  }
+}

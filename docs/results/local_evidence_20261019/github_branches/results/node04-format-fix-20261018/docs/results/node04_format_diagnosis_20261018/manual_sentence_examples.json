@@ -1,0 +1,258 @@
+{
+  "scope": "14 explicitly identified full-sentence first-line examples in fixed first20 WebQA; not an exhaustive semantic classifier or new pass threshold",
+  "examples": [
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?",
+      "raw": "The \"Red Fox Battalion\" came first.  \nThe \"Red Fox Battalion\" predates the British military officer later known as the \"Red Fox.\"",
+      "parsed": {
+        "answer": "The \"Red Fox Battalion\" predates the British military officer later known as the \"Red Fox.\"",
+        "short": "The \"Red Fox Battalion\" came first.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 6
+    },
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "first20": true,
+      "question": "Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?",
+      "raw": "The \"Red Fox Battalion\" came first.\n\nThe \"Red Fox Battalion\" was formed in 1917, while the British officer known as \"Red Fox\" (Lieutenant Albert Michael Sinclair) was active during World War II, which began in 1939.",
+      "parsed": {
+        "answer": "The \"Red Fox Battalion\" was formed in 1917, while the British officer known as \"Red Fox\" (Lieutenant Albert Michael Sinclair) was active during World War II, which began in 1939.",
+        "short": "The \"Red Fox Battalion\" came first.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 6
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "first20": true,
+      "question": "What type of ship building technique might have been used to make quadriremes?",
+      "raw": "The shipbuilding technique used to make quadriremes likely involved the use of a frame-first construction method, where a wooden frame was built first and then the hull was planked around it.\nThe shipbuilding technique used to make quadriremes likely involved the use of a frame-first construction method.",
+      "parsed": {
+        "answer": "The shipbuilding technique used to make quadriremes likely involved the use of a frame-first construction method.",
+        "short": "The shipbuilding technique used to make quadriremes likely involved the use of a frame-first construction method, where a wooden frame was built first and then the hull was planked around it.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": false
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 31
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "What part of the Limestone Massif of northwestern Syria are part of the four ethnic mountains of western Syria?",
+      "raw": "The Limestone Massif of northwestern Syria is not part of the four ethnic mountains of western Syria.\n\nThe Limestone Massif of northwestern Syria is not included among the four ethnic mountains of western Syria.",
+      "parsed": {
+        "answer": "The Limestone Massif of northwestern Syria is not included among the four ethnic mountains of western Syria.",
+        "short": "The Limestone Massif of northwestern Syria is not part of the four ethnic mountains of western Syria.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 17
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "How are the statues positioned in the stairs at the west entrance of Sha Tin?",
+      "raw": "The statues are positioned facing outward, ascending the stairs.  \nThe statues at the west entrance of Sha Tin are arranged to face outward as they ascend the stairs.",
+      "parsed": {
+        "answer": "The statues at the west entrance of Sha Tin are arranged to face outward as they ascend the stairs.",
+        "short": "The statues are positioned facing outward, ascending the stairs.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 9
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "first20": true,
+      "question": "How are the statues positioned in the stairs at the west entrance of Sha Tin?",
+      "raw": "They are seated on red platforms along both sides of the stairs.\nThe statues are positioned seated on red platforms along both sides of the stairs at the west entrance of Sha Tin.",
+      "parsed": {
+        "answer": "The statues are positioned seated on red platforms along both sides of the stairs at the west entrance of Sha Tin.",
+        "short": "They are seated on red platforms along both sides of the stairs.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 12
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "first20": true,
+      "question": "How are the statues positioned in the stairs at the west entrance of Sha Tin?",
+      "raw": "The statues are positioned along both sides of the stairs, with some seated on red platforms and others standing, flanking the pathway.\nThe statues at the west entrance stairs in Sha Tin are arranged along both sides of the staircase, seated on red platforms or standing, lining the path.",
+      "parsed": {
+        "answer": "The statues at the west entrance stairs in Sha Tin are arranged along both sides of the staircase, seated on red platforms or standing, lining the path.",
+        "short": "The statues are positioned along both sides of the stairs, with some seated on red platforms and others standing, flanking the pathway.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 22
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "first20": true,
+      "question": "Between Union Square in NYC and Union Square in San Francisco, do either or both have palm trees?",
+      "raw": "Union Square in San Francisco has palm trees, but Union Square in NYC does not.\nUnion Square in San Francisco features palm trees, while Union Square in New York City does not.",
+      "parsed": {
+        "answer": "Union Square in San Francisco features palm trees, while Union Square in New York City does not.",
+        "short": "Union Square in San Francisco has palm trees, but Union Square in NYC does not.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 15
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "first20": true,
+      "question": "Between Union Square in NYC and Union Square in San Francisco, do either or both have palm trees?",
+      "raw": "Union Square in San Francisco has palm trees; Union Square in NYC does not.\nUnion Square in San Francisco features palm trees, while Union Square in New York City does not.",
+      "parsed": {
+        "answer": "Union Square in San Francisco features palm trees, while Union Square in New York City does not.",
+        "short": "Union Square in San Francisco has palm trees; Union Square in NYC does not.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 14
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "Which purple flowers have the most petals?",
+      "raw": "There is no single purple flower with the most petals, as petal counts vary widely by species and even individual blooms.\n\nPurple flowers do not universally have the most petals; petal numbers depend on the specific species and can range from a few to hundreds.",
+      "parsed": {
+        "answer": "Purple flowers do not universally have the most petals; petal numbers depend on the specific species and can range from a few to hundreds.",
+        "short": "There is no single purple flower with the most petals, as petal counts vary widely by species and even individual blooms.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 21
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "first20": true,
+      "question": "Which purple flowers have the most petals?",
+      "raw": "The purple flowers with the most petals are the daisy-like flowers in image E1.\nThe purple flowers with the most petals are the daisy-like flowers in image E1.",
+      "parsed": {
+        "answer": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+        "short": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 14
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "first20": true,
+      "question": "Which purple flowers have the most petals?",
+      "raw": "The purple flowers with the most petals are the daisy-like flowers in image E1.\nThe purple flowers with the most petals are the daisy-like flowers in image E1.",
+      "parsed": {
+        "answer": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+        "short": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": true
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 14
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "How much closer is Gainesville Regional Airport to Gainesville than Winchester Airport is to Winchester, Ontario, Canada?",
+      "raw": "Gainesville Regional Airport is approximately 1.5 miles from Gainesville, while Winchester Airport is about 10 miles from Winchester, Ontario — making Gainesville Regional Airport roughly 8.5 miles closer.  \nGainesville Regional Airport is significantly closer to its namesake city than Winchester Airport is to Winchester, Ontario.",
+      "parsed": {
+        "answer": "Gainesville Regional Airport is significantly closer to its namesake city than Winchester Airport is to Winchester, Ontario.",
+        "short": "Gainesville Regional Airport is approximately 1.5 miles from Gainesville, while Winchester Airport is about 10 miles from Winchester, Ontario — making Gainesville Regional Airport roughly 8.5 miles closer.",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": false
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 28
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "direct",
+      "first20": true,
+      "question": "What is the name for the type of person that is prejudiced against the victims of the attack that Philo of Alexandria describes as occurring in 38 CE and resulting in thousands of deaths?",
+      "raw": "Philo of Alexandria describes the victims as being targeted by “haters” or “enemies of the Jews,” but the specific term for the prejudiced group he refers to is “anti-Jewish persecutors” or “persecutors of the Jewish people.”\n\nThe type of person Philo describes as prejudiced against the victims of the 38 CE attack is an anti-Jewish persecutor.",
+      "parsed": {
+        "answer": "The type of person Philo describes as prejudiced against the victims of the 38 CE attack is an anti-Jewish persecutor.",
+        "short": "Philo of Alexandria describes the victims as being targeted by “haters” or “enemies of the Jews,” but the specific term for the prejudiced group he refers to is “anti-Jewish persecutors” or “persecutors of the Jewish people.”",
+        "answer_empty": false,
+        "citation_only": false,
+        "refusal": false,
+        "answer_first_ok": false
+      },
+      "differences": {},
+      "hit_token_cap": false,
+      "short_words": 36
+    }
+  ],
+  "automatic_true": 11
+}

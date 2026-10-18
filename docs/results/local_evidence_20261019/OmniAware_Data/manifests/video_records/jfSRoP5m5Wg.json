@@ -1,0 +1,8 @@
+{
+  "id": "jfSRoP5m5Wg",
+  "source_url": "https://www.youtube.com/watch?v=jfSRoP5m5Wg",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\jfSRoP5m5Wg.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=jfSRoP5m5Wg\n[youtube] jfSRoP5m5Wg: Downloading webpage\nWARNING: [youtube] jfSRoP5m5Wg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] jfSRoP5m5Wg: Downloading initial data API JSON\n[youtube] jfSRoP5m5Wg: Downloading visionos player API JSON\n[youtube] jfSRoP5m5Wg: Downloading iframe API JS\n[youtube] jfSRoP5m5Wg: Downloading player 0229cd64-main\n[youtube] jfSRoP5m5Wg: Downloading web player API JSON\nERROR: [youtube] jfSRoP5m5Wg: Video unavailable. This video is no longer available because the YouTube account associated with this video has been terminated.\n"
+}

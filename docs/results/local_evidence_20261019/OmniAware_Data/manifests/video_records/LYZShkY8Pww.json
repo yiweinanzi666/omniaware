@@ -1,0 +1,27 @@
+{
+  "id": "LYZShkY8Pww",
+  "source_url": "https://www.youtube.com/watch?v=LYZShkY8Pww",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\LYZShkY8Pww.log",
+  "filename": "LYZShkY8Pww.mp4",
+  "bytes": 13665194,
+  "sha256": "9a30d6ab38cebef212ccb92e79b846de56689871092e0db7f43641e63e037d39",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "192.888163"
+    }
+  }
+}

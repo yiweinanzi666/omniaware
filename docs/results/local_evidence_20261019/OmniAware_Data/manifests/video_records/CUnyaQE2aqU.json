@@ -1,0 +1,27 @@
+{
+  "id": "CUnyaQE2aqU",
+  "source_url": "https://www.youtube.com/watch?v=CUnyaQE2aqU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CUnyaQE2aqU.log",
+  "filename": "CUnyaQE2aqU.mp4",
+  "bytes": 20697570,
+  "sha256": "119c2817fc2c9b8e37652bd3642d23e8ca1b2ce9784e3c0ee9a6c1ac09959742",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "425.234000"
+    }
+  }
+}

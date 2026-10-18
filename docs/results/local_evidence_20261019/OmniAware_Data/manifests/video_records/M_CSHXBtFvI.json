@@ -1,0 +1,27 @@
+{
+  "id": "M_CSHXBtFvI",
+  "source_url": "https://www.youtube.com/watch?v=M_CSHXBtFvI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\M_CSHXBtFvI.log",
+  "filename": "M_CSHXBtFvI.mp4",
+  "bytes": 31093274,
+  "sha256": "1dd652a59bcc18cc752c3ed27cd3e3e9053eba085d7a99b889ba1bae1730a9a0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "343.933968"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "5P1-SV9cHAI",
+  "source_url": "https://www.youtube.com/watch?v=5P1-SV9cHAI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\5P1-SV9cHAI.log",
+  "filename": "5P1-SV9cHAI.mp4",
+  "bytes": 23355383,
+  "sha256": "80d04230922c6a441fc3203a3a034f3e1a6df24043b0a182b18917c97e412599",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "409.019501"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "BKd96VtPEyA",
+  "source_url": "https://www.youtube.com/watch?v=BKd96VtPEyA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\BKd96VtPEyA.log",
+  "filename": "BKd96VtPEyA.mp4",
+  "bytes": 117458553,
+  "sha256": "3fb7ba2e4a1c0265c398a9d6d25c60552889701bc35063e6c3aa108df8fe7af2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "733.471927"
+    }
+  }
+}

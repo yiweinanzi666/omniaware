@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_runtime_20261013/bin/python",
+    "-m",
+    "pip",
+    "install",
+    "-e",
+    ".[all]"
+  ],
+  "cwd": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013",
+  "start": "2026-10-13T01:13:11.833436-07:00",
+  "end": "2026-10-13T01:14:11.643876-07:00",
+  "exit_code": 0
+}

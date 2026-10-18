@@ -1,0 +1,27 @@
+{
+  "id": "lfOTEbQ-T6I",
+  "source_url": "https://www.youtube.com/watch?v=lfOTEbQ-T6I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\lfOTEbQ-T6I.log",
+  "filename": "lfOTEbQ-T6I.mp4",
+  "bytes": 19547439,
+  "sha256": "204ced80f6c13deae882dd56f8e6b9af52bfc361bbfa7f0380a7186e912b48a4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "161.355465"
+    }
+  }
+}

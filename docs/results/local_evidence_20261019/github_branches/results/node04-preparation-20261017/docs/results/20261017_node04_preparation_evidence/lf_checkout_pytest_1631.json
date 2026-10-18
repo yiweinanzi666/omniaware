@@ -1,0 +1,47 @@
+{
+  "start": "2026-10-17T16:20:55.228073+08:00",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "-c",
+        "core.autocrlf=false",
+        "worktree",
+        "add",
+        "--detach",
+        "/home/user/Futaoran/omniaware_v2_exec_lf",
+        "7ccf676e9804b2dfdf571d5b94fe8c9aba843acb"
+      ],
+      "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+      "start": "2026-10-17T16:20:55.275607+08:00",
+      "log": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/lf_checkout_1631.log",
+      "exit_code": 0,
+      "end": "2026-10-17T16:20:58.571220+08:00",
+      "log_sha256": "0d973a263e1aa02b65604c4707fcfb092c91ac86795b4eab847c7768050d7e14"
+    },
+    {
+      "command": [
+        "/home/user/Futaoran/omniaware_v2_python311/bin/python",
+        "-m",
+        "pytest",
+        "-p",
+        "no:warnings"
+      ],
+      "cwd": "/home/user/Futaoran/omniaware_v2_exec_lf",
+      "start": "2026-10-17T16:20:58.616444+08:00",
+      "log": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/pytest_resume_lf_1631.log",
+      "exit_code": 0,
+      "end": "2026-10-17T16:23:51.328182+08:00",
+      "log_sha256": "4903441300a87da080b38a2877ca7b3f1d0fc66266b30c4f4466214f41752a8a"
+    }
+  ],
+  "original_checkout_preserved": true,
+  "observed_original_head": "da416a2266a0f3f01e0c394674d0e7b0ad0e5722",
+  "official_source_hashes": {
+    "eval_1022.py": "6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c",
+    "eval_webqa.md": "c6dfcb9a7f8aed27c393e3d1296e038f37f10483de66b771963770482fea1ab3"
+  },
+  "commit": "7ccf676e9804b2dfdf571d5b94fe8c9aba843acb",
+  "ok": true,
+  "end": "2026-10-17T16:23:51.335357+08:00"
+}

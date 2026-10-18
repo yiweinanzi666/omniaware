@@ -1,0 +1,27 @@
+{
+  "id": "vMkD7XLOkiE",
+  "source_url": "https://www.youtube.com/watch?v=vMkD7XLOkiE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\vMkD7XLOkiE.log",
+  "filename": "vMkD7XLOkiE.mp4",
+  "bytes": 3751142,
+  "sha256": "8b12d6009439afbc16bc7134435860ba812f2797631182357bd24fca9859e7fd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 270,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "73.584036"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+ "text_documents": 545820,
+ "image_corpus": 389750,
+ "sources": {
+  "WebQA_train_val.json": "7ff6ba4aae749dbdd6400c69251e97a785e689039206d91d7541bec15eab3dbe",
+  "WebQA_test.json": "a15cea11c0fbd49c425fcf9a01fc47da4f5f2674e7481751261160fd88b233db"
+ },
+ "text_key": "cleaned title + ': ' + cleaned fact (title omitted when empty), deduplicated on that string"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "sUC5sDWINe8",
+  "source_url": "https://www.youtube.com/watch?v=sUC5sDWINe8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\sUC5sDWINe8.log",
+  "filename": "sUC5sDWINe8.mp4",
+  "bytes": 18512502,
+  "sha256": "09eefdd701a49e2815b7cfecf4828f38b4fc594cd533d0ff1abbf819b9895120",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "295.497143"
+    }
+  }
+}

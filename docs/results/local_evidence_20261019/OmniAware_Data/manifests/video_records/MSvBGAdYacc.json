@@ -1,0 +1,27 @@
+{
+  "id": "MSvBGAdYacc",
+  "source_url": "https://www.youtube.com/watch?v=MSvBGAdYacc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MSvBGAdYacc.log",
+  "filename": "MSvBGAdYacc.mp4",
+  "bytes": 6247884,
+  "sha256": "9c57f74ffe004bd111b9d146d44fe761f552d8f99ecf6fc547fa0b8561ac3d9f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "107.369070"
+    }
+  }
+}

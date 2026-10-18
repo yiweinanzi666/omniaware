@@ -1,0 +1,138 @@
+{
+ "dataset": "webqa_full",
+ "model": "8b",
+ "max_patches": 1,
+ "split": "dev",
+ "n_calib": 500,
+ "calib_source": "train",
+ "n_dev": 256,
+ "split_seed": 2027,
+ "allow_missing_assets": false,
+ "offset": 0,
+ "n_eval": 50,
+ "k": 5,
+ "min_per_modality": 0,
+ "modality_routing": false,
+ "route_rule": "mh",
+ "query_routes": null,
+ "first_round_routing": false,
+ "order": "rank",
+ "replication_gamma": null,
+ "seed": 0,
+ "selector": "relevance",
+ "universalrag_top": 5,
+ "universalrag_modalities": null,
+ "intervention": null,
+ "relevance_noise": 0.0,
+ "noise_draw": 0,
+ "relevance_norm": "ecdf",
+ "norm_from": null,
+ "no_calibration": false,
+ "image_mode": "mix",
+ "beta": 0.3,
+ "tau": 0.35,
+ "tau_bias": 0.4,
+ "eab_uncertainty": "pre",
+ "answer_style": "default",
+ "variants": [],
+ "analysis_eab": false,
+ "probe_uncertainty": false,
+ "u_combine": "sum",
+ "attn_layer": "last",
+ "max_pixels": 262144,
+ "max_new_tokens": 384,
+ "seakr_samples": 0,
+ "seakr_max_new_tokens": 100,
+ "seakr_threshold": null,
+ "fitm": false,
+ "m2rag": false,
+ "tag": "v2_s1_webqa_full",
+ "v2": true,
+ "v2_reranker": true,
+ "decisions": null,
+ "decisions_sha256": null,
+ "norm_pre": {
+  "median": 0.00822149967545582,
+  "iqr": 0.022840530877174046
+ },
+ "norm_post": {
+  "median": 0.8698700512016642,
+  "iqr": 0.05042833370697841
+ },
+ "norm_probe": null,
+ "comb_pre": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "comb_post": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "model_path": "/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct",
+ "seakr_threshold_used": null,
+ "seakr_missing_calibration": null,
+ "intervention_entity_types": null,
+ "nte_threshold": 0.009938541526985529,
+ "nte_norm": {
+  "median": 0.00822149967545582,
+  "iqr": 0.022840530877174046
+ },
+ "u_retrieval_rate_calibration": 0.618,
+ "evaluation_questions": 50,
+ "candidate_sha256": "22722a292705c074197c8ce368a01826a1400b53664d05b20844ff3f1ef2d031",
+ "split_sizes": {
+  "universe": 4966,
+  "calib": 500,
+  "dev": 256,
+  "test": 4966
+ },
+ "dropped_for_missing_assets": {
+  "universe": {},
+  "calibration_pool": {}
+ },
+ "candidate_shortfall": {
+  "k": 5,
+  "fewer_than_k": {
+   "count": 0,
+   "qids": []
+  },
+  "without_modality": {
+   "image": {
+    "count": 4,
+    "qids": [
+     "d5de3ca40dba11ecb1e81171463288e9",
+     "d5dd357a0dba11ecb1e81171463288e9",
+     "d5dac7860dba11ecb1e81171463288e9",
+     "d5d5b9120dba11ecb1e81171463288e9"
+    ]
+   }
+  }
+ },
+ "evaluation_qids_sha256": "c45ad5e50859f5f72543180bb3be252f03b76a18e50bde19eeb4401776905515",
+ "split_qids_sha256": {
+  "calib": "1dd2a2d4c7c7cb3882150a0c51bd5f15de7fd7f10c67c0265432362c5010f6c0",
+  "dev": "804f5532d836a0830ab734873f30f36d306d01a90f95dd2afff812d00be3eee0",
+  "test": "5dcec09794c3f9db9f7f6e44b863fb90933dc9521766c875adbc8fd8a96871d3"
+ },
+ "instruction": "Write the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.",
+ "instruction_sha256": "96ab014fdc0d606af7428816ea74c7ff9bb36dac968d0ac92b6beed0d5502d7f",
+ "instruction_exceptions": {},
+ "answer_format": "answer_first",
+ "cache_fingerprints": {
+  "relevance": "1a9a1074adb6951e4815ce3f511310499261519145963d88f837ea4e057e7444",
+  "ce": "de007720d7781374454a4bb28f9aa9f6724111b1e0c343c778a222ad180ec561",
+  "ucal": "a8a2853b570ccb72f139b8525930ad73f371c814cd9e23823d2ee8f222fb4555",
+  "seakr": null
+ },
+ "protocol_differences": {
+  "m2rag.summarizer": "The official M2RAG single-stage summarizer writes an intermediate document (at most 384 tokens) from the chunks before the answer extractor reads it. Every other arm reads the chunks directly. This is the M2RAG protocol and is kept.",
+  "m2rag.extractor_prompt": "The extractor's own constraints (EXTRACTOR_INSTRUCTION) follow the run's shared answer instruction. The official constraints are kept.",
+  "m2rag.chat_template": "The official flat-content user message through LocalQwenVLM, not the ChatML prompt of the other arms.",
+  "m2rag.video": "M2-RAG accepts no video evidence, so it is not run on VideoRAG-Synth.",
+  "fitm": "None: Found-in-the-Middle reads the joint input with the run's prompt and pixel budget."
+ }
+}

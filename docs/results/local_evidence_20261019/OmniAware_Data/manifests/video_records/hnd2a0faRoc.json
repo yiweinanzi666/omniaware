@@ -1,0 +1,27 @@
+{
+  "id": "hnd2a0faRoc",
+  "source_url": "https://www.youtube.com/watch?v=hnd2a0faRoc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hnd2a0faRoc.log",
+  "filename": "hnd2a0faRoc.mp4",
+  "bytes": 4742953,
+  "sha256": "ff91d286ab35261f77fe90502dfc824b8edf48441591cc2d7b69d2e26c7e0819",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 352
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "85.704853"
+    }
+  }
+}

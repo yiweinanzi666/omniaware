@@ -1,0 +1,27 @@
+{
+  "id": "l5cnRWZerro",
+  "source_url": "https://www.youtube.com/watch?v=l5cnRWZerro",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\l5cnRWZerro.log",
+  "filename": "l5cnRWZerro.mp4",
+  "bytes": 18918546,
+  "sha256": "f5a70a532c93cd35036bea7876c2125742efde7c72a2db6b56c9f0cb00e8b5f9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "279.568254"
+    }
+  }
+}

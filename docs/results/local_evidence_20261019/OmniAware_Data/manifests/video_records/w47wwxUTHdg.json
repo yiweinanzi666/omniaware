@@ -1,0 +1,8 @@
+{
+  "id": "w47wwxUTHdg",
+  "source_url": "https://www.youtube.com/watch?v=w47wwxUTHdg",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\w47wwxUTHdg.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=w47wwxUTHdg\n[youtube] w47wwxUTHdg: Downloading webpage\nWARNING: [youtube] w47wwxUTHdg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] w47wwxUTHdg: Downloading initial data API JSON\n[youtube] w47wwxUTHdg: Downloading visionos player API JSON\n[youtube] w47wwxUTHdg: Downloading iframe API JS\n[youtube] w47wwxUTHdg: Downloading player 21090930-main\n[youtube] w47wwxUTHdg: Downloading web player API JSON\nERROR: [youtube] w47wwxUTHdg: This video has been removed for violating YouTube's Terms of Service\n[youtube] Extracting URL: https://www.youtube.com/watch?v=w47wwxUTHdg\n[youtube] w47wwxUTHdg: Downloading webpage\nWARNING: [youtube] w47wwxUTHdg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] w47wwxUTHdg: Downloading initial data API JSON\n[youtube] w47wwxUTHdg: Downloading visionos player API JSON\n[youtube] w47wwxUTHdg: Downloading iframe API JS\n[youtube] w47wwxUTHdg: Downloading player 0229cd64-main\n[youtube] w47wwxUTHdg: Downloading web player API JSON\nERROR: [youtube] w47wwxUTHdg: This video has been removed for violating YouTube's Terms of Service\n"
+}

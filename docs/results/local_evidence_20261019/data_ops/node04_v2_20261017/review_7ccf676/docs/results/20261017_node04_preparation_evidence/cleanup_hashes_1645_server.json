@@ -1,0 +1,12 @@
+{
+  "start": "2026-10-17T16:41:19.486777+08:00",
+  "end": "2026-10-17T17:14:53.543118+08:00",
+  "files": 394890,
+  "bytes": 225972742325,
+  "errors": 26,
+  "reused_records": 30377,
+  "source_partial_sha256": "6e1829bfa6f3ee6550af2086cfab667ab2fd0be774eada2c2135917315621c65",
+  "sha256": "38a28aa41ebb8e06413dd1077a27fe8d6672dcd16b403f765c253767cb2dce7f",
+  "plan_sha256": "c13c70161fb15c3c23a32ff76324f0649f16575cfec68ae9dafa7b96ef745966",
+  "deletion_performed": false
+}

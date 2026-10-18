@@ -1,0 +1,27 @@
+{
+  "id": "ofgSvFs-M18",
+  "source_url": "https://www.youtube.com/watch?v=ofgSvFs-M18",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ofgSvFs-M18.log",
+  "filename": "ofgSvFs-M18.mp4",
+  "bytes": 4318062,
+  "sha256": "9a370b92cabfc439b1f3796f81ceae4b0df2de06a14449c2ef1c8eddae5b7960",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "76.068571"
+    }
+  }
+}

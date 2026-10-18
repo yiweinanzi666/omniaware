@@ -1,0 +1,35 @@
+{
+  "source_commit": "a11e234fc2741fc122eb0a7bb6b5d7cd6f9f2ee8",
+  "scope": "First 20 saved S1 questions per dataset, every available action; format review only, not blinded semantic annotation.",
+  "webqa_full": {
+    "gate": "FAIL",
+    "reason": "Full explanatory sentences remain in short fields.",
+    "examples": [
+      {
+        "qid": "d5d034e20dba11ecb1e81171463288e9",
+        "action": "static_image"
+      },
+      {
+        "qid": "d5c50c840dba11ecb1e81171463288e9",
+        "action": "direct"
+      },
+      {
+        "qid": "d5de89020dba11ecb1e81171463288e9",
+        "action": "direct"
+      }
+    ]
+  },
+  "okvqa_gs": {
+    "gate": "NOT_CLEARLY_PASSED",
+    "reason": "All sampled outputs are words/phrases, but the stricter minimal-answer requirement is not clearly satisfied: rerank_static gives in a bakery rather than the bare location. This exact pattern is documented in the repository as an exact-match concern. Incorrect entities alone are not format failures.",
+    "examples": [
+      {
+        "qid": "2022015",
+        "action": "rerank_static",
+        "answer": "in a bakery"
+      }
+    ],
+    "parser_limitation": "For qid2022015 static_text/static_mixed say not specified but refusal=false. Reported zero refusal is parser-defined, not absence of all semantic abstentions."
+  },
+  "decision": "No new FP32 S2 on either dataset; no S4. Frozen prompts, parsing, thresholds and answers remain unchanged."
+}

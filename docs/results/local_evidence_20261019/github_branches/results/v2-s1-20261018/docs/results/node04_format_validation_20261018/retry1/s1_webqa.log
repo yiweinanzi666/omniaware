@@ -1,0 +1,118 @@
+[data] webqa_full: 4966 total, calib 500 (train), dev 256, dev 50
+[data] candidates: 0 questions with fewer than k=5; image: 4 without
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 16117.35it/s]
+[1mBertModel LOAD REPORT[0m from: /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/bge-large-en-v1.5
+Key                     | Status     |  | 
+------------------------+------------+--+-
+embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]Loading weights: 100%|██████████| 590/590 [00:00<00:00, 17815.21it/s]
+[1mCLIPModel LOAD REPORT[0m from: /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/clip-vit-large-patch14
+Key                                  | Status     |  | 
+-------------------------------------+------------+--+-
+text_model.embeddings.position_ids   | UNEXPECTED |  | 
+vision_model.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[relevance] scored 550 examples in 257.3s
+Loading weights:   0%|          | 0/393 [00:00<?, ?it/s]Loading weights: 100%|██████████| 393/393 [00:00<00:00, 20209.67it/s]
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights:   0%|          | 1/750 [00:00<07:15,  1.72it/s]Loading weights:   0%|          | 2/750 [00:00<04:00,  3.11it/s]Loading weights:   9%|▉         | 70/750 [00:00<00:04, 139.54it/s]Loading weights:  13%|█▎        | 98/750 [00:01<00:04, 132.93it/s]Loading weights:  16%|█▌        | 120/750 [00:01<00:04, 133.00it/s]Loading weights:  19%|█▊        | 139/750 [00:01<00:04, 122.71it/s]Loading weights:  21%|██        | 155/750 [00:01<00:04, 125.21it/s]Loading weights:  23%|██▎       | 170/750 [00:01<00:04, 119.30it/s]Loading weights:  25%|██▍       | 184/750 [00:01<00:04, 123.26it/s]Loading weights:  26%|██▋       | 198/750 [00:01<00:04, 123.42it/s]Loading weights:  29%|██▊       | 215/750 [00:01<00:03, 133.92it/s]Loading weights:  31%|███       | 230/750 [00:02<00:04, 123.10it/s]Loading weights:  33%|███▎      | 246/750 [00:02<00:04, 124.27it/s]Loading weights:  35%|███▍      | 259/750 [00:02<00:04, 99.79it/s] Loading weights:  36%|███▌      | 270/750 [00:02<00:04, 101.10it/s]Loading weights:  37%|███▋      | 281/750 [00:02<00:05, 93.03it/s] Loading weights:  39%|███▉      | 291/750 [00:02<00:05, 85.22it/s]Loading weights:  40%|████      | 301/750 [00:03<00:05, 79.69it/s]Loading weights:  42%|████▏     | 312/750 [00:03<00:05, 86.52it/s]Loading weights:  43%|████▎     | 323/750 [00:03<00:04, 88.68it/s]Loading weights:  45%|████▍     | 334/750 [00:03<00:04, 86.24it/s]Loading weights:  46%|████▌     | 345/750 [00:03<00:04, 88.82it/s]Loading weights:  47%|████▋     | 356/750 [00:03<00:04, 87.09it/s]Loading weights:  51%|█████     | 380/750 [00:03<00:02, 124.74it/s]Loading weights:  53%|█████▎    | 394/750 [00:03<00:03, 118.40it/s]Loading weights:  66%|██████▌   | 492/750 [00:03<00:00, 339.83it/s]Loading weights:  71%|███████   | 531/750 [00:04<00:00, 344.49it/s]Loading weights:  78%|███████▊  | 585/750 [00:04<00:00, 393.29it/s]Loading weights:  84%|████████▍ | 633/750 [00:04<00:00, 402.84it/s]Loading weights:  92%|█████████▏| 693/750 [00:04<00:00, 445.11it/s]Loading weights:  99%|█████████▊| 739/750 [00:04<00:00, 397.06it/s]Loading weights: 100%|██████████| 750/750 [00:04<00:00, 164.83it/s]
+[model] 8b loaded on cuda in 12.3s, 36 layers
+[env] commit 318ab6c59a9bba7d379e166d119074443bb68892 dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.float32 gpus ['NVIDIA L20']
+[ucal] 500 calibration examples in 596.9s
+[1/50] d5d3d7f00dba 13.13s P=804 U_pre=0.28 retrieve=False
+[2/50] d5d5742a0dba 8.9s P=1019 U_pre=0.91 retrieve=True
+[3/50] d5d034e20dba 10.98s P=1097 U_pre=1.00 retrieve=True
+[4/50] d5db7faa0dba 11.49s P=695 U_pre=0.56 retrieve=True
+[5/50] d5c128c60dba 9.99s P=1345 U_pre=0.79 retrieve=True
+[6/50] d5db03fe0dba 12.34s P=1086 U_pre=1.00 retrieve=True
+[7/50] d5d331920dba 8.73s P=691 U_pre=0.20 retrieve=False
+[8/50] d5cc8e640dba 10.42s P=1248 U_pre=0.28 retrieve=False
+[9/50] d5cb69580dba 9.79s P=1063 U_pre=0.89 retrieve=True
+[10/50] d5df71780dba 10.82s P=1248 U_pre=0.21 retrieve=False
+[11/50] d5c272c60dba 12.26s P=1248 U_pre=0.20 retrieve=False
+[12/50] d5da29fc0dba 17.22s P=955 U_pre=0.27 retrieve=False
+[13/50] d5ccc8fc0dba 9.2s P=1099 U_pre=0.68 retrieve=True
+[14/50] d5c617e60dba 9.75s P=903 U_pre=0.22 retrieve=False
+[15/50] d5c5b92c0dba 7.9s P=695 U_pre=0.20 retrieve=False
+[16/50] d5c50c840dba 11.48s P=1067 U_pre=1.00 retrieve=True
+[17/50] d5ce9d120dba 12.19s P=1317 U_pre=0.64 retrieve=True
+[18/50] d5d76de80dba 11.92s P=949 U_pre=1.00 retrieve=True
+[19/50] d5de89020dba 8.87s P=469 U_pre=0.30 retrieve=False
+[20/50] d5dce9300dba 12.7s P=872 U_pre=1.00 retrieve=True
+[21/50] d5c0f8d80dba 9.24s P=1532 U_pre=0.53 retrieve=True
+[22/50] d5c638980dba 11.8s P=900 U_pre=0.24 retrieve=False
+[23/50] d5ce8c460dba 10.77s P=889 U_pre=1.00 retrieve=True
+[24/50] d5d8972c0dba 14.76s P=581 U_pre=0.21 retrieve=False
+[25/50] d5daefae0dba 10.98s P=1011 U_pre=0.32 retrieve=False
+[26/50] d5cae5aa0dba 10.1s P=1025 U_pre=1.00 retrieve=True
+[27/50] d5d7ef5c0dba 11.3s P=1069 U_pre=0.78 retrieve=True
+[28/50] d5c703c20dba 9.67s P=788 U_pre=0.38 retrieve=True
+[29/50] d5df37ee0dba 12.14s P=1079 U_pre=0.47 retrieve=True
+[30/50] d5cd7c3e0dba 13.17s P=897 U_pre=0.21 retrieve=False
+[31/50] d5d880f20dba 12.9s P=1029 U_pre=0.20 retrieve=False
+[32/50] d5d0bb9c0dba 9.98s P=504 U_pre=0.20 retrieve=False
+[33/50] d5db372a0dba 9.11s P=1096 U_pre=0.22 retrieve=False
+[34/50] d5d6773a0dba 14.41s P=1117 U_pre=0.22 retrieve=False
+[35/50] d5c569e00dba 10.14s P=880 U_pre=0.79 retrieve=True
+[36/50] d5c8e0de0dba 9.17s P=1766 U_pre=1.00 retrieve=True
+[37/50] d5bfc29c0dba 8.97s P=1507 U_pre=0.29 retrieve=False
+[38/50] d5d9c4b20dba 12.83s P=815 U_pre=0.20 retrieve=False
+[39/50] d5c747560dba 15.32s P=1084 U_pre=0.25 retrieve=False
+[40/50] d5d7d0080dba 12.43s P=653 U_pre=1.00 retrieve=True
+[41/50] d5d5b9120dba 5.87s P=412 U_pre=1.00 retrieve=True
+[42/50] d5df295c0dba 12.95s P=1289 U_pre=0.20 retrieve=False
+[43/50] d5d562aa0dba 10.05s P=832 U_pre=1.00 retrieve=True
+[44/50] d5d44fa00dba 11.96s P=708 U_pre=1.00 retrieve=True
+[45/50] d5c981a60dba 8.55s P=1520 U_pre=0.64 retrieve=True
+[46/50] d5d318420dba 6.1s P=495 U_pre=0.41 retrieve=True
+[47/50] d5cd51960dba 8.76s P=714 U_pre=1.00 retrieve=True
+[48/50] d5c987320dba 9.65s P=1534 U_pre=0.89 retrieve=True
+[49/50] d5d106560dba 12.46s P=1074 U_pre=1.00 retrieve=True
+[50/50] d5d5b9da0dba 9.79s P=934 U_pre=0.25 retrieve=False
+[done] webqa_full 50 in 545.6s -> /home/user/Futaoran/omniaware_v2_format_20261018/runs/fp32_format_20261018/v2_s1_webqa_full/webqa_full.jsonl; empty_answer_rate 0.000000; refusal_rate 0.001821; peak_gpu_memory_gib 34.28
+{
+  "answer_format": "answer_first",
+  "questions": 50,
+  "actions": {
+    "direct": {
+      "questions": 50,
+      "answer_first_ok": 1.0,
+      "answer_token_is_first": 0.98,
+      "template_start": 0.1
+    },
+    "static_text": {
+      "questions": 50,
+      "answer_first_ok": 1.0,
+      "answer_token_is_first": 0.86,
+      "template_start": 0.22
+    },
+    "static_image": {
+      "questions": 49,
+      "answer_first_ok": 1.0,
+      "answer_token_is_first": 0.9591836734693877,
+      "template_start": 0.1836734693877551
+    },
+    "static_mixed": {
+      "questions": 50,
+      "answer_first_ok": 1.0,
+      "answer_token_is_first": 0.96,
+      "template_start": 0.16
+    },
+    "rerank_static": {
+      "questions": 50,
+      "answer_first_ok": 1.0,
+      "answer_token_is_first": 0.94,
+      "template_start": 0.16
+    }
+  },
+  "min_answer_first": 0.9,
+  "passed": true,
+  "below": []
+}
+/home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --dtype float32 --tag v2_s1_webqa_full --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_format_20261018/scripts/analysis/answer_slot.py format --run /home/user/Futaoran/omniaware_v2_format_20261018/runs/fp32_format_20261018/v2_s1_webqa_full/webqa_full.jsonl --min-answer-first 0.9
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_format_20261018/scripts/analysis/image_evidence_check.py --n 50

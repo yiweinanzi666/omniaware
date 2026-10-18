@@ -1,0 +1,27 @@
+{
+  "id": "ycv2tSPANT4",
+  "source_url": "https://www.youtube.com/watch?v=ycv2tSPANT4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ycv2tSPANT4.log",
+  "filename": "ycv2tSPANT4.mp4",
+  "bytes": 41712061,
+  "sha256": "fe6f8e18cefdb9076b94f6fa28be6569955acd3bba9405d4450a07509fe0fd42",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "648.347574"
+    }
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "start": "2026-10-17T06:54:20.994838+08:00",
+  "gpu_gate": "STOP: pytest failures; no real-weight verification, S1, S2 or S4",
+  "source_modified": false,
+  "cached_root": "/home/user/Futaoran/omniaware/assets/cache/official_m2rag",
+  "official_root": "/home/user/Futaoran/omniaware_v2_exec/external/M2RAG",
+  "git": {
+    "legacy": {
+      "head": {
+        "command": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware/assets/cache/official_m2rag",
+        "exit_code": 0,
+        "stdout": "7ccf676e9804b2dfdf571d5b94fe8c9aba843acb\n",
+        "stderr": ""
+      },
+      "toplevel": {
+        "command": [
+          "git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware/assets/cache/official_m2rag",
+        "exit_code": 0,
+        "stdout": "/home/user/Futaoran/omniaware\n",
+        "stderr": ""
+      },
+      "status": {
+        "command": [
+          "git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware/assets/cache/official_m2rag",
+        "exit_code": 0,
+        "stdout": " M scripts/verify_real_model.py\n M src/omniaware/relevance.py\n?? logs/\n?? tests/test_clip_text_batching.py\n",
+        "stderr": ""
+      }
+    },
+    "official": {
+      "head": {
+        "command": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec/external/M2RAG",
+        "exit_code": 0,
+        "stdout": "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22\n",
+        "stderr": ""
+      },
+      "toplevel": {
+        "command": [
+          "git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec/external/M2RAG",
+        "exit_code": 0,
+        "stdout": "/home/user/Futaoran/omniaware_v2_exec/external/M2RAG\n",
+        "stderr": ""
+      },
+      "status": {
+        "command": [
+          "git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec/external/M2RAG",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    "experiment": {
+      "head": {
+        "command": [
+          "git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+        "exit_code": 0,
+        "stdout": "7ccf676e9804b2dfdf571d5b94fe8c9aba843acb\n",
+        "stderr": ""
+      },
+      "toplevel": {
+        "command": [
+          "git",
+          "rev-parse",
+          "--show-toplevel"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+        "exit_code": 0,
+        "stdout": "/home/user/Futaoran/omniaware_v2_exec\n",
+        "stderr": ""
+      },
+      "status": {
+        "command": [
+          "git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    }
+  },
+  "source_comparisons": [
+    {
+      "relative_path": "src/utils/registry.py",
+      "legacy": {
+        "exists": true,
+        "bytes": 3488,
+        "sha256": "547a63f89c702cb255caf93ad0033369d39e9e869321daae592f48d82918b860"
+      },
+      "official": {
+        "exists": true,
+        "bytes": 3488,
+        "sha256": "547a63f89c702cb255caf93ad0033369d39e9e869321daae592f48d82918b860"
+      },
+      "same_sha256": true
+    },
+    {
+      "relative_path": "src/summarizer/base.py",
+      "legacy": {
+        "exists": true,
+        "bytes": 13273,
+        "sha256": "6883e6c4b30a58bd1d5d4f325dc0094753bd928e2f6b19f9a41884bf619f18ff"
+      },
+      "official": {
+        "exists": true,
+        "bytes": 13273,
+        "sha256": "6883e6c4b30a58bd1d5d4f325dc0094753bd928e2f6b19f9a41884bf619f18ff"
+      },
+      "same_sha256": true
+    },
+    {
+      "relative_path": "src/summarizer/multi_modal/base.py",
+      "legacy": {
+        "exists": true,
+        "bytes": 6000,
+        "sha256": "3ba6ce44c591aaf91972bb3a88e547cc47570aac94cdf0fabe50077496facbac"
+      },
+      "official": {
+        "exists": true,
+        "bytes": 6000,
+        "sha256": "3ba6ce44c591aaf91972bb3a88e547cc47570aac94cdf0fabe50077496facbac"
+      },
+      "same_sha256": true
+    },
+    {
+      "relative_path": "src/summarizer/multi_modal/end_to_end.py",
+      "legacy": {
+        "exists": true,
+        "bytes": 43543,
+        "sha256": "3cb176ea281b8bce903cac0ed25c9c3e1c7e9efe7a721276b0a92198f5d698ef"
+      },
+      "official": {
+        "exists": true,
+        "bytes": 43543,
+        "sha256": "3cb176ea281b8bce903cac0ed25c9c3e1c7e9efe7a721276b0a92198f5d698ef"
+      },
+      "same_sha256": true
+    }
+  ],
+  "loopback_proxy_probe": {
+    "url": "http://127.0.0.1:34777/probe",
+    "proxy_bypass": false,
+    "preparation_environment": {
+      "error": "RemoteDisconnected",
+      "message": "Remote end closed connection without response"
+    },
+    "local_direct": {
+      "status": 200,
+      "body": "local-probe"
+    }
+  },
+  "end": "2026-10-17T06:54:23.312405+08:00"
+}

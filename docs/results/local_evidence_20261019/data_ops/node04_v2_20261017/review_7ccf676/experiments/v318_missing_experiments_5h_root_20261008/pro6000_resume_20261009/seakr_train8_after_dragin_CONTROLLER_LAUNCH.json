@@ -1,0 +1,17 @@
+{
+  "pid": 96842,
+  "command": [
+    "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/cache/runtime/bin/python",
+    "-B",
+    "-u",
+    "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/seakr_train8_after_dragin.py",
+    "run",
+    "--plan",
+    "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/seakr_train8_after_dragin_PLAN.json"
+  ],
+  "caffeinate_pid": 96843,
+  "started_utc": "2026-10-09T06:36:39.201297+00:00",
+  "plan_sha256": "8a8025006e35f36595d1000e04f637dabd8ce39cd4adcffc4ad90a9e23db81e6",
+  "recovery_archive": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/continuation_repair_20261009/before",
+  "scientific_protocol_unchanged": true
+}

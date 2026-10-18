@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "diagnostic_only": true,
+  "selection": "longest recorded multi-image S1 prompt",
+  "qid": "d5c8e0de0dba11ecb1e81171463288e9",
+  "action": "static_mixed",
+  "dtype": "torch.float32",
+  "input": {
+    "prompt_tokens": 1706,
+    "prompt_sha256": "6b33c5d0e88c22cc559035dd6e9677c5650272687981aebcfcf70e068e03fd23",
+    "n_images": 5,
+    "image_tokens": [
+      247,
+      256,
+      247,
+      231,
+      247
+    ]
+  },
+  "max_pixels": 262144,
+  "max_new_tokens": 384,
+  "generated_tokens": 23,
+  "text": "uvex\nMultiple FIS Ski Jumping World Cup Ladies 2017 participants used uvex goggles.",
+  "peak_allocated_gib": 34.20823526382446,
+  "peak_reserved_gib": 34.423828125,
+  "total_seconds": 17.731349729932845
+}

@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-10-17T20:45:00+08:00",
+  "source": "Read-only app inspection of recorded command outputs, not fresh SSH",
+  "thread_id": "01a145fa-ad3a-7d72-953a-9191ae3064bd",
+  "thread_updated_at": 1792240965,
+  "observations": [
+    {
+      "probe": "cmd_image_check_summary.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "mode webqa questions 50\r\nsummary\r\nstatic_image {'questions': 50, 'questions_with_image_in_input': 50, 'images': 250, 'unreadable_images': 0, 'images_over_budget': 249, 'images_resized_to_budget': 249, 'visual_tokens_total': 78388, 'images_with_pairing_error': 0, 'images_with_id_mismatch': 0, 'gold_image_selected': 50, 'gold_image_positions': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5]}\r\nstatic_mixed {'questions': 50, 'questions_with_image_in_input': 50, 'images': 167, 'unreadable_images': 0, 'images_over_budget': 167, 'images_resized_to_budget': 167, 'visual_tokens_total': 52375, 'images_with_pairing_error': 0, 'images_with_id_mismatch': 0, 'gold_image_selected': 48, 'gold_image_positions': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 5, 5]}\r\nfindings\r\n- static_image: 50 of 50 questions send at least one image (250 images in all, 78388 visual tokens estimated).\r\n- static_image: 249 image(s) are larger than the --max-pixels budget and are resized to it (249 of them to within the budget).\r\n- static_mixed: 50 of 50 questions send at least one image (167 images in all, 52375 visual tokens estimated).\r\n- static_mixed: 167 image(s) are larger than the --max-pixels budget and are resized to it (167 of them to within the budget).\r\n- static_mixed selects a gold image on 48 of the 50 questions that have one.\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_commit_s1_webqa.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "warning: LF will be replaced by CRLF in runs/image_evidence_check.json.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full.answer_format.json.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full.env.ndjson.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full.jsonl.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full.merged.json.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full.prompts.ndjson.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/v2_s1_webqa_full/webqa_full_config.json.\r\nThe file will have its original line endings in your working directory\r\n[fix/verify-real-model-cuda-device 5cb10f3] run: complete WebQA v2 S1 smoke\r\n 8 files changed, 9892 insertions(+)\r\n create mode 100644 runs/image_evidence_check.json\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.answer_format.json\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.env.ndjson\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.jsonl\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.log\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.merged.json\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full.prompts.ndjson\r\n create mode 100644 runs/v2_s1_webqa_full/webqa_full_config.json\r\n5cb10f3 run: complete WebQA v2 S1 smoke\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_s1_okvqa_start.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "PID=2414972\r\n",
+        "truncated": false
+      }
+    }
+  ],
+  "bf16_new_pass_found": false,
+  "s2_launch_found": false
+}

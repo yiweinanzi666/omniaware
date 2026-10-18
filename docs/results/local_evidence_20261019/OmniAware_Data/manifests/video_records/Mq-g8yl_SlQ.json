@@ -1,0 +1,27 @@
+{
+  "id": "Mq-g8yl_SlQ",
+  "source_url": "https://www.youtube.com/watch?v=Mq-g8yl_SlQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Mq-g8yl_SlQ.log",
+  "filename": "Mq-g8yl_SlQ.mp4",
+  "bytes": 70849439,
+  "sha256": "5d9924812b1a39e1ac9d06214dc40bed7113f8b4935a33336cf1fb46d463d20d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1048.706032"
+    }
+  }
+}

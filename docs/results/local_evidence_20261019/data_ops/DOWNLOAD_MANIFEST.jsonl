@@ -1,0 +1,4 @@
+{"dataset":"WebQA","object":"WebQA_train_val.json.gz","source":"node04 existing remote copy","bytes":128814166,"status":"local_verified","sha256":"pending_remote_manifest_match"}
+{"dataset":"WebQA","object":"WebQA_test.json.gz","source":"node04 existing remote copy","bytes":23139479,"status":"local_verified","sha256":"pending_remote_manifest_match"}
+{"dataset":"WebQA","object":"imgs.lineidx","source":"node04 existing remote copy","bytes":4616775,"status":"local_verified","sha256":"pending_remote_manifest_match"}
+{"dataset":"WebQA","object":"imgs.7z.001-051","source":"official Google Drive folder 19ApkbD5w0I5sV1IeQ9EofJRyAjKnA7tb","bytes":null,"status":"source_inventory_only"}

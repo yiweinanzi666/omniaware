@@ -1,0 +1,27 @@
+{
+  "id": "mZPFjDgT74I",
+  "source_url": "https://www.youtube.com/watch?v=mZPFjDgT74I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\mZPFjDgT74I.log",
+  "filename": "mZPFjDgT74I.mp4",
+  "bytes": 4442111,
+  "sha256": "c2e692f18375a6843cab7381ce5508bdeda54b37b31bcecb885631a576508394",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "130.519365"
+    }
+  }
+}

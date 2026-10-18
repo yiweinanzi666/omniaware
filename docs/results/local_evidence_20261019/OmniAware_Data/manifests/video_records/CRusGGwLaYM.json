@@ -1,0 +1,27 @@
+{
+  "id": "CRusGGwLaYM",
+  "source_url": "https://www.youtube.com/watch?v=CRusGGwLaYM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CRusGGwLaYM.log",
+  "filename": "CRusGGwLaYM.mp4",
+  "bytes": 52874649,
+  "sha256": "9ebc0007e48e0f4f909fceaea07c11fb194818c39861a9f65135cf35171fb2cb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "438.764263"
+    }
+  }
+}

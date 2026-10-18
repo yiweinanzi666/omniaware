@@ -1,0 +1,27 @@
+{
+  "id": "nx-QFLIEGdk",
+  "source_url": "https://www.youtube.com/watch?v=nx-QFLIEGdk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\nx-QFLIEGdk.log",
+  "filename": "nx-QFLIEGdk.mp4",
+  "bytes": 24942335,
+  "sha256": "882ba4a3a1b79311baf81ad06e9a7ed4c27721279a0de1fd779ae2a0baadbe7e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "404.956009"
+    }
+  }
+}

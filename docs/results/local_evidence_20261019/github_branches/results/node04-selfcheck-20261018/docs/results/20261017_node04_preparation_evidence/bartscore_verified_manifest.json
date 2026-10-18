@@ -1,0 +1,74 @@
+[
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart-large-cnn-config/config.json",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart-large-cnn-config/config.json",
+    "bytes": 1585,
+    "sha256": "c6cb642aec929b65f514ee0ec7c04f9de19f705c143491577ecd8b7cc923c6ed"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart-large-cnn-config/merges.txt",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart-large-cnn-config/merges.txt",
+    "bytes": 456318,
+    "sha256": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart-large-cnn-config/tokenizer.json",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart-large-cnn-config/tokenizer.json",
+    "bytes": 1355863,
+    "sha256": "847bbeab6174d66a88898f729d52fa8d355fafe1bea101cf960dd404581df70e"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart-large-cnn-config/vocab.json",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart-large-cnn-config/vocab.json",
+    "bytes": 898823,
+    "sha256": "9e7f63c2d15d666b52e21d250d2e513b87c9b713cfa6987a82ed89e5e6e50655"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart_score.pth",
+    "bytes": 1625565295,
+    "sha256": "4c076ee386795a831e0021788148becf57136127d6512ca350c7973f36c0e573"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth.upload_20261017_1",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart_score.pth.upload_20261017_1",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth.upload_20261017_2",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart_score.pth.upload_20261017_2",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth.upload_20261017_3",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart_score.pth.upload_20261017_3",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth.upload_20261017_4",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/bart_score.pth.upload_20261017_4",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/official_source/bart_score.py",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/official_source/bart_score.py",
+    "bytes": 4221,
+    "sha256": "f5b9c037ab527028875f529085d5ea134e00b0a7ec6ffce10de039bc23d51087"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/source_provenance.json",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/source_provenance.json",
+    "bytes": 428,
+    "sha256": "14a2a874b263fe8aff6074688333001ac9317d26d363baca78b5dc5bf7c75263"
+  },
+  {
+    "source": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/weights_provenance.json",
+    "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore/weights_provenance.json",
+    "bytes": 150,
+    "sha256": "84492669f3f03331915567d782484f0bcf5928de31adde9e4f0170d1c0e76731"
+  }
+]

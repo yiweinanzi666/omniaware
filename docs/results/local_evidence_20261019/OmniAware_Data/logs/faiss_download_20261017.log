@@ -1,0 +1,116 @@
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=60)
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(391584 bytes read, 656992 more expected)', IncompleteRead(391584
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(162208 bytes read, 886368 more expected)', IncompleteRead(162208
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(0 bytes read, 1048576 more expected)', IncompleteRead(0 bytes re
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(899488 bytes read, 149088 more expected)', IncompleteRead(899488
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(114688 bytes read, 933888 more expected)', IncompleteRead(114688
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+1048576/27471791
+2097152/27471791
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(0 bytes read, 1048576 more expected)', IncompleteRead(0 bytes re
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(65536 bytes read, 983040 more expected)', IncompleteRead(65536 b
+3145728/27471791
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(622252 bytes read, 426324 more expected)', IncompleteRead(622252
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(131072 bytes read, 917504 more expected)', IncompleteRead(131072
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(130732 bytes read, 917844 more expected)', IncompleteRead(130732
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(212652 bytes read, 835924 more expected)', IncompleteRead(212652
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(638636 bytes read, 409940 more expected)', IncompleteRead(638636
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(39962 bytes read, 1008614 more expected)', IncompleteRead(39962 
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(196268 bytes read, 852308 more expected)', IncompleteRead(196268
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry ConnectionError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out.
+retry SSLError HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Max retries exceeded with url: /packag
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(556716 bytes read, 491860 more expected)', IncompleteRead(556716
+retry ChunkedEncodingError ('Connection broken: IncompleteRead(229036 bytes read, 819540 more expected)', IncompleteRead(229036
+4194304/27471791
+5242880/27471791
+6291456/27471791
+7340032/27471791
+8388608/27471791
+9437184/27471791
+10485760/27471791
+11534336/27471791
+12582912/27471791
+13631488/27471791
+14680064/27471791
+15728640/27471791
+16777216/27471791
+17825792/27471791
+18874368/27471791
+19922944/27471791
+20971520/27471791
+22020096/27471791
+23068672/27471791
+retry ReadTimeout HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. (read timeout=15)
+24117248/27471791
+25165824/27471791
+26214400/27471791
+27262976/27471791
+27471791/27471791
+sha256 d4a499aa20b00266c78b9768de962e6a8dd2e2b2eb3d02aa4c41af4c6913eeba

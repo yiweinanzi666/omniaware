@@ -1,0 +1,27 @@
+{
+  "id": "tr1QIH2Edpo",
+  "source_url": "https://www.youtube.com/watch?v=tr1QIH2Edpo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\tr1QIH2Edpo.log",
+  "filename": "tr1QIH2Edpo.mp4",
+  "bytes": 4135298,
+  "sha256": "e44f5fa5e418f39434302ce622465ff53191cff4daee12cd1fd472f24d2f753e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "92.183220"
+    }
+  }
+}

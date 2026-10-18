@@ -1,0 +1,27 @@
+{
+  "id": "DDyrnLfMI2c",
+  "source_url": "https://www.youtube.com/watch?v=DDyrnLfMI2c",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DDyrnLfMI2c.log",
+  "filename": "DDyrnLfMI2c.mp4",
+  "bytes": 5663104,
+  "sha256": "27b88cefe951f8c2edfcc66e20ffea40e2897bfbc3ec278f10142d4c27ba3095",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "89.954104"
+    }
+  }
+}

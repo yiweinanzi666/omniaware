@@ -1,0 +1,27 @@
+{
+  "id": "cP-dIYZ511c",
+  "source_url": "https://www.youtube.com/watch?v=cP-dIYZ511c",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\cP-dIYZ511c.log",
+  "filename": "cP-dIYZ511c.mp4",
+  "bytes": 19086523,
+  "sha256": "88b4a2a10a8d0db9af36a85c1db8d3606259f5c7c0c9257b825d6c4e6036579c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "291.781950"
+    }
+  }
+}

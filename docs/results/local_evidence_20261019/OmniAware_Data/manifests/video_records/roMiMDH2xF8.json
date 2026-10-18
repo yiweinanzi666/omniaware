@@ -1,0 +1,27 @@
+{
+  "id": "roMiMDH2xF8",
+  "source_url": "https://www.youtube.com/watch?v=roMiMDH2xF8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\roMiMDH2xF8.log",
+  "filename": "roMiMDH2xF8.mp4",
+  "bytes": 4278573,
+  "sha256": "ed13784b93ee90294bef1ce843f11bcbc95c6b74cf1d8c141f6de5cc8def7dc2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "70.588662"
+    }
+  }
+}

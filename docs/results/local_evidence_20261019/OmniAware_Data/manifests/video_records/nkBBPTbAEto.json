@@ -1,0 +1,27 @@
+{
+  "id": "nkBBPTbAEto",
+  "source_url": "https://www.youtube.com/watch?v=nkBBPTbAEto",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\nkBBPTbAEto.log",
+  "filename": "nkBBPTbAEto.mp4",
+  "bytes": 7561110,
+  "sha256": "e361e24e1f5190d4ad148933d443d77355245de04549d82a81ec942105ce19e3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "187.756553"
+    }
+  }
+}

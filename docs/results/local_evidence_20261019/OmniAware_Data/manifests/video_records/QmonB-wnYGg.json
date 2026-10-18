@@ -1,0 +1,27 @@
+{
+  "id": "QmonB-wnYGg",
+  "source_url": "https://www.youtube.com/watch?v=QmonB-wnYGg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\QmonB-wnYGg.log",
+  "filename": "QmonB-wnYGg.mp4",
+  "bytes": 25532275,
+  "sha256": "328527696ccb1d91c09de1f74f6ae492cf30e433f3efc1cd7adc0ea6f9b922cc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "420.048980"
+    }
+  }
+}

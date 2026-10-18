@@ -1,0 +1,27 @@
+{
+  "id": "KFlWNi90mUM",
+  "source_url": "https://www.youtube.com/watch?v=KFlWNi90mUM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\KFlWNi90mUM.log",
+  "filename": "KFlWNi90mUM.mp4",
+  "bytes": 10235573,
+  "sha256": "e725fb4a29fbe6aeabae2dd8dea4424107f1717b2d53af050c4374b1b7f3c45e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "170.643447"
+    }
+  }
+}

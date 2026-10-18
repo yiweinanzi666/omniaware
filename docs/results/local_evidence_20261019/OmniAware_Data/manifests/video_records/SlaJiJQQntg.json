@@ -1,0 +1,27 @@
+{
+  "id": "SlaJiJQQntg",
+  "source_url": "https://www.youtube.com/watch?v=SlaJiJQQntg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SlaJiJQQntg.log",
+  "filename": "SlaJiJQQntg.mp4",
+  "bytes": 41788263,
+  "sha256": "1cdc8505fec0826a1bce659c4981c578553d2295518de41fdd878d6ac86660a6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "729.988934"
+    }
+  }
+}

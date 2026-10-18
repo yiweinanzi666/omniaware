@@ -1,0 +1,974 @@
+{
+  "time": "2026-10-17T16:15:37.681316+08:00",
+  "root": "D:\\WWW2027",
+  "scope": "Task data/cache only; preserve code/reports/other files. No deletion performed.",
+  "groups": {
+    "OmniAware_Data/assets/webqa_open": {
+      "files": 389747,
+      "bytes": 75975270735
+    },
+    "WebQA/imgs.tsv": {
+      "files": 1,
+      "bytes": 72234224104
+    },
+    "WebQA/chunks": {
+      "files": 156,
+      "bytes": 62943975617
+    },
+    "OmniAware_Data/omniaware/external": {
+      "files": 11584,
+      "bytes": 33539986396
+    },
+    "OmniAware_Data/transfer/models": {
+      "files": 109,
+      "bytes": 20371861530
+    },
+    "OmniAware_Data/transfer": {
+      "files": 15,
+      "bytes": 10773872637
+    },
+    "OmniAware_Data/assets/data": {
+      "files": 14051,
+      "bytes": 5444234020
+    },
+    "OmniAware_Data/assets/cache": {
+      "files": 2,
+      "bytes": 4694541944
+    },
+    "OmniAware_Data/transfer/okvqa_parts2": {
+      "files": 24,
+      "bytes": 2454410752
+    },
+    "data_ops/node04_v2_20261017": {
+      "files": 323,
+      "bytes": 1629975796
+    },
+    "WebQA/WebQA_train_val.json": {
+      "files": 1,
+      "bytes": 661922314
+    },
+    "OmniAware_Data/sources": {
+      "files": 2,
+      "bytes": 211523593
+    },
+    "WebQA/WebQA_train_val.json.gz": {
+      "files": 1,
+      "bytes": 128814166
+    },
+    "WebQA/WebQA_test.json": {
+      "files": 1,
+      "bytes": 116724654
+    },
+    "OmniAware_Data/tools/pyarrow": {
+      "files": 857,
+      "bytes": 91487757
+    },
+    "data_ops/subsets": {
+      "files": 505,
+      "bytes": 83492299
+    },
+    "OmniAware_Data/sources/HybridQA": {
+      "files": 19,
+      "bytes": 80707866
+    },
+    "OmniAware_Data/cache/okvqa_gs168k_full": {
+      "files": 1,
+      "bytes": 63971652
+    },
+    "OmniAware_Data/tools/pandas": {
+      "files": 2982,
+      "bytes": 62292635
+    },
+    "OmniAware_Data/cache/okvqa_gs112k": {
+      "files": 1,
+      "bytes": 43613003
+    },
+    "OmniAware_Data/tools/numpy": {
+      "files": 1328,
+      "bytes": 32385821
+    },
+    "WebQA/WebQA_test.json.gz": {
+      "files": 1,
+      "bytes": 23139479
+    },
+    "OmniAware_Data/omniaware/assets": {
+      "files": 1175,
+      "bytes": 21585470
+    },
+    "OmniAware_Data/tools/numpy.libs": {
+      "files": 2,
+      "bytes": 21164112
+    },
+    "OmniAware_Data/tools/yt_dlp": {
+      "files": 2095,
+      "bytes": 20933999
+    },
+    "webqa-reference/baseline_output_files": {
+      "files": 9,
+      "bytes": 14252619
+    },
+    "OmniAware_Data/manifests": {
+      "files": 17,
+      "bytes": 10752810
+    },
+    "OmniAware_Data/transfer/okvqa50": {
+      "files": 51,
+      "bytes": 8522464
+    },
+    "WebQA/imgs.lineidx": {
+      "files": 1,
+      "bytes": 4616775
+    },
+    "data_ops/hf_range_ps.bin": {
+      "files": 1,
+      "bytes": 4194304
+    },
+    "OmniAware_Data/logs/video": {
+      "files": 2777,
+      "bytes": 3506605
+    },
+    "OmniAware_Data/manifests/video_records": {
+      "files": 2777,
+      "bytes": 3182261
+    },
+    "OmniAware_Data/omniaware/paper": {
+      "files": 27,
+      "bytes": 1583904
+    },
+    "omniaware-reference/paper": {
+      "files": 27,
+      "bytes": 1578811
+    },
+    "data_ops/WEBQA_RANGE_SERVER.stderr.log": {
+      "files": 1,
+      "bytes": 1087134
+    },
+    "OmniAware_Data/tools/filelock": {
+      "files": 47,
+      "bytes": 986835
+    },
+    "OmniAware_Data/tools/urllib3": {
+      "files": 74,
+      "bytes": 915345
+    },
+    "OmniAware_Data/sources/WikiTables-WithLinks": {
+      "files": 5,
+      "bytes": 881967
+    },
+    "OmniAware_Data/tools/bs4": {
+      "files": 31,
+      "bytes": 769420
+    },
+    "OmniAware_Data/tools/bin": {
+      "files": 7,
+      "bytes": 758561
+    },
+    "OmniAware_Data/tools/dateutil": {
+      "files": 37,
+      "bytes": 728680
+    },
+    "OmniAware_Data/tools/charset_normalizer": {
+      "files": 27,
+      "bytes": 700368
+    },
+    "data_ops/WEBQA_RANGE_SERVER.stdout.log": {
+      "files": 1,
+      "bytes": 629238
+    },
+    "data_ops/tools": {
+      "files": 1,
+      "bytes": 602624
+    },
+    "OmniAware_Data/tools/pyarrow.libs": {
+      "files": 2,
+      "bytes": 587112
+    },
+    "OmniAware_Data/tools/pandas.libs": {
+      "files": 1,
+      "bytes": 575056
+    },
+    "OmniAware_Data/omniaware/scripts": {
+      "files": 52,
+      "bytes": 557576
+    },
+    "OmniAware_Data/tools/tzdata": {
+      "files": 649,
+      "bytes": 518224
+    },
+    "OmniAware_Data/tools/idna": {
+      "files": 21,
+      "bytes": 507291
+    },
+    "OmniAware_Data/omniaware/src": {
+      "files": 46,
+      "bytes": 470893
+    },
+    "omniaware-reference/scripts": {
+      "files": 46,
+      "bytes": 462458
+    },
+    "OmniAware_Data/tools/requests": {
+      "files": 39,
+      "bytes": 459545
+    },
+    "OmniAware_Data/omniaware/tests": {
+      "files": 59,
+      "bytes": 457224
+    },
+    "omniaware-reference/tests": {
+      "files": 56,
+      "bytes": 407383
+    },
+    "omniaware-reference/src": {
+      "files": 42,
+      "bytes": 394516
+    },
+    "OmniAware_Data/tools/share": {
+      "files": 5,
+      "bytes": 393711
+    },
+    "OmniAware_Data/tools/tqdm": {
+      "files": 64,
+      "bytes": 384868
+    },
+    "OmniAware_Data/tools/gdown": {
+      "files": 25,
+      "bytes": 336574
+    },
+    "OmniAware_Data/tools/yt_dlp-2026.8.19.dist-info": {
+      "files": 7,
+      "bytes": 335977
+    },
+    "OmniAware_Data/tools/soupsieve": {
+      "files": 15,
+      "bytes": 331777
+    },
+    "omniaware-reference/review_2026-10-10": {
+      "files": 36,
+      "bytes": 331528
+    },
+    "OmniAware_Data/omniaware/review_2026-10-10": {
+      "files": 36,
+      "bytes": 331528
+    },
+    "omniaware-reference/experiments": {
+      "files": 9,
+      "bytes": 304262
+    },
+    "OmniAware_Data/omniaware/experiments": {
+      "files": 9,
+      "bytes": 304262
+    },
+    "OmniAware_Data/tools/pandas-3.0.6.dist-info": {
+      "files": 8,
+      "bytes": 271391
+    },
+    "OmniAware_Data/logs": {
+      "files": 13,
+      "bytes": 252653
+    },
+    "OmniAware_Data/tools/certifi": {
+      "files": 12,
+      "bytes": 249146
+    },
+    "OmniAware_Data/tools/__pycache__": {
+      "files": 4,
+      "bytes": 249131
+    },
+    "OmniAware_Data/tools": {
+      "files": 4,
+      "bytes": 234767
+    },
+    "OmniAware_Data/tools/numpy-2.5.4.dist-info": {
+      "files": 23,
+      "bytes": 213093
+    },
+    "OmniAware_Data/omniaware/docs": {
+      "files": 17,
+      "bytes": 210070
+    },
+    "OmniAware_Data/omniaware": {
+      "files": 9,
+      "bytes": 200506
+    },
+    "OmniAware_Data/tools/pyarrow-26.0.0.dist-info": {
+      "files": 8,
+      "bytes": 197638
+    },
+    "webqa-reference/demo": {
+      "files": 3,
+      "bytes": 178306
+    },
+    "omniaware-reference/docs": {
+      "files": 14,
+      "bytes": 163594
+    },
+    "OmniAware_Data/tools/yt_dlp_ejs": {
+      "files": 10,
+      "bytes": 162035
+    },
+    "OmniAware_Data/tools/colorama": {
+      "files": 26,
+      "bytes": 149100
+    },
+    "data_ops/v2_preflight_20261017": {
+      "files": 25,
+      "bytes": 133462
+    },
+    "omniaware-reference/REVIEW_2026-10-10.md": {
+      "files": 1,
+      "bytes": 79239
+    },
+    "OmniAware_Data/tools/tzdata-2026.5.dist-info": {
+      "files": 7,
+      "bytes": 70288
+    },
+    "data_ops/__pycache__": {
+      "files": 5,
+      "bytes": 68003
+    },
+    "OmniAware_Data/tools/tqdm-4.70.1.dist-info": {
+      "files": 7,
+      "bytes": 64037
+    },
+    "omniaware-reference/third_party": {
+      "files": 8,
+      "bytes": 61914
+    },
+    "OmniAware_Data/omniaware/third_party": {
+      "files": 8,
+      "bytes": 61914
+    },
+    "OmniAware_Data/tools/charset_normalizer-3.5.2.dist-info": {
+      "files": 7,
+      "bytes": 51333
+    },
+    "omniaware-reference/runs": {
+      "files": 2,
+      "bytes": 46487
+    },
+    "OmniAware_Data/omniaware/runs": {
+      "files": 2,
+      "bytes": 46487
+    },
+    "omniaware-reference/README.md": {
+      "files": 1,
+      "bytes": 37078
+    },
+    "omniaware-reference/MIGRATION_SOURCES.json": {
+      "files": 1,
+      "bytes": 29825
+    },
+    "omniaware-reference/DELIVERY_v2.md": {
+      "files": 1,
+      "bytes": 25195
+    },
+    "OmniAware_Data/tools/colorama-0.4.6.dist-info": {
+      "files": 5,
+      "bytes": 20932
+    },
+    "data_ops/WEBQA_DRIVE_MANIFEST.json": {
+      "files": 1,
+      "bytes": 20726
+    },
+    "OmniAware_Data/tools/requests-2.34.2.dist-info": {
+      "files": 7,
+      "bytes": 18153
+    },
+    "OmniAware_Data/tools/typing_extensions-4.16.0.dist-info": {
+      "files": 5,
+      "bytes": 17912
+    },
+    "data_ops/webqa_drive_downloader.py": {
+      "files": 1,
+      "bytes": 17204
+    },
+    "data_ops/webqa_drive_downloader.before_parallel_ranges.py": {
+      "files": 1,
+      "bytes": 16446
+    },
+    "OmniAware_Data/tools/PySocks-1.7.1.dist-info": {
+      "files": 6,
+      "bytes": 15452
+    },
+    "data_ops/WEBQA_HF_MANIFEST.json": {
+      "files": 1,
+      "bytes": 15220
+    },
+    "OmniAware_Data/tools/gdown-6.4.2.dist-info": {
+      "files": 7,
+      "bytes": 14731
+    },
+    "OmniAware_Data/tools/python_dateutil-2.9.0.post0.dist-info": {
+      "files": 7,
+      "bytes": 14492
+    },
+    "OmniAware_Data/tools/urllib3-2.8.0.dist-info": {
+      "files": 5,
+      "bytes": 14101
+    },
+    "OmniAware_Data/finalize_downloads.py": {
+      "files": 1,
+      "bytes": 13507
+    },
+    "data_ops/WEBQA_PARALLEL_TAKEOVER.json": {
+      "files": 1,
+      "bytes": 13035
+    },
+    "data_ops/WEBQA_HF_PROGRESS.jsonl": {
+      "files": 1,
+      "bytes": 12199
+    },
+    "data_ops/webqa_range_resume.py": {
+      "files": 1,
+      "bytes": 12155
+    },
+    "data_ops/WEBQA_COMPLETED_HASHES.json": {
+      "files": 1,
+      "bytes": 11311
+    },
+    "data_ops/WEBQA_DRIVE_PROGRESS.jsonl": {
+      "files": 1,
+      "bytes": 10963
+    },
+    "OmniAware_Data/tools/idna-3.20.dist-info": {
+      "files": 6,
+      "bytes": 10660
+    },
+    "OmniAware_Data/download_videorag.py": {
+      "files": 1,
+      "bytes": 10554
+    },
+    "data_ops/prepare_okvqa_subset.py": {
+      "files": 1,
+      "bytes": 10144
+    },
+    "OmniAware_Data/tools/beautifulsoup4-4.15.0.dist-info": {
+      "files": 6,
+      "bytes": 9978
+    },
+    "OmniAware_Data/v2_asset_check_summary_20261015_143202.json": {
+      "files": 1,
+      "bytes": 9835
+    },
+    "OmniAware_Data/transfer/__pycache__": {
+      "files": 1,
+      "bytes": 8158
+    },
+    "data_ops/WEBQA_HF_HASHES.json": {
+      "files": 1,
+      "bytes": 7945
+    },
+    "webqa-reference/LICENSE": {
+      "files": 1,
+      "bytes": 7169
+    },
+    "OmniAware_Data/tools/soupsieve-3.0.3.dist-info": {
+      "files": 5,
+      "bytes": 6959
+    },
+    "pelican-bike.html": {
+      "files": 1,
+      "bytes": 6744
+    },
+    "OmniAware_Data/tools/filelock-4.2.0.dist-info": {
+      "files": 5,
+      "bytes": 6638
+    },
+    "data_ops/measure_webqa.ps1": {
+      "files": 1,
+      "bytes": 6491
+    },
+    "omniaware-reference/CONVENTIONS.md": {
+      "files": 1,
+      "bytes": 6010
+    },
+    "OmniAware_Data/tools/yt_dlp_ejs-0.8.0.dist-info": {
+      "files": 6,
+      "bytes": 5999
+    },
+    "data_ops.zip": {
+      "files": 1,
+      "bytes": 5953
+    },
+    "OmniAware_Data/hf_cache": {
+      "files": 1,
+      "bytes": 5778
+    },
+    "data_ops/webqa_parallel_pull.py": {
+      "files": 1,
+      "bytes": 5608
+    },
+    "omniaware-reference/COLLABORATION.md": {
+      "files": 1,
+      "bytes": 5543
+    },
+    "UniversalRAG-ref2/dataset": {
+      "files": 3,
+      "bytes": 5530
+    },
+    "data_ops/WEBQA_RESUME.md": {
+      "files": 1,
+      "bytes": 5522
+    },
+    "data_ops/webqa_transfer_all.py": {
+      "files": 1,
+      "bytes": 5511
+    },
+    "data_ops/test_webqa_range_resume.py": {
+      "files": 1,
+      "bytes": 4970
+    },
+    "OmniAware_Data/tools/certifi-2026.7.22.dist-info": {
+      "files": 6,
+      "bytes": 4867
+    },
+    "data_ops/WEBQA_MEASUREMENTS.jsonl": {
+      "files": 1,
+      "bytes": 4666
+    },
+    "UniversalRAG-ref2/README.md": {
+      "files": 1,
+      "bytes": 3852
+    },
+    "OmniAware_Data/hf_cache/xet": {
+      "files": 1,
+      "bytes": 3664
+    },
+    "data_ops/WEBQA_HF_RUN_CURRENT.stdout.log": {
+      "files": 1,
+      "bytes": 3422
+    },
+    "OmniAware_Data/tools/six-1.17.0.dist-info": {
+      "files": 6,
+      "bytes": 3402
+    },
+    "data_ops/node04_readonly_audit.py": {
+      "files": 1,
+      "bytes": 3363
+    },
+    "data_ops/download_url.py": {
+      "files": 1,
+      "bytes": 3082
+    },
+    "OmniAware_Data/resume_dpr_build.py": {
+      "files": 1,
+      "bytes": 3025
+    },
+    "data_ops/DATA_REQUIREMENTS.md": {
+      "files": 1,
+      "bytes": 3016
+    },
+    "data_ops/WEBQA_PARALLEL_48_120.stdout.log": {
+      "files": 1,
+      "bytes": 3001
+    },
+    "data_ops/webqa_range_server.py": {
+      "files": 1,
+      "bytes": 2946
+    },
+    "OmniAware_Data/下载报告.md": {
+      "files": 1,
+      "bytes": 2766
+    },
+    "webqa-reference/eval_webqa.md": {
+      "files": 1,
+      "bytes": 2189
+    },
+    "data_ops/TASK_STATE.json": {
+      "files": 1,
+      "bytes": 2146
+    },
+    "OmniAware_Data/download_okvqa.py": {
+      "files": 1,
+      "bytes": 2094
+    },
+    "omniaware-reference/pyproject.toml": {
+      "files": 1,
+      "bytes": 1722
+    },
+    "data_ops/WEBQA_HF_TUNING.json": {
+      "files": 1,
+      "bytes": 1697
+    },
+    "data_ops/node04_asset_validation_20261017.sh": {
+      "files": 1,
+      "bytes": 1539
+    },
+    "omniaware-reference/.gitignore": {
+      "files": 1,
+      "bytes": 1510
+    },
+    "OmniAware_Data/download_hybridqa.py": {
+      "files": 1,
+      "bytes": 1481
+    },
+    "data_ops/FINAL_DATA_REPORT.md": {
+      "files": 1,
+      "bytes": 1476
+    },
+    "data_ops/WEBQA_VERIFICATION_REPORT.md": {
+      "files": 1,
+      "bytes": 1459
+    },
+    "data_ops/node04_start_cpu_preflight_20261017.sh": {
+      "files": 1,
+      "bytes": 1453
+    },
+    "webqa-reference/README.md": {
+      "files": 1,
+      "bytes": 1414
+    },
+    "data_ops/node04_cpu_preflight_status_20261017.sh": {
+      "files": 1,
+      "bytes": 1372
+    },
+    "data_ops/node04_preflight_detail_20261017.sh": {
+      "files": 1,
+      "bytes": 1334
+    },
+    "data_ops/node04_final_evidence_20261017.sh": {
+      "files": 1,
+      "bytes": 1267
+    },
+    "OmniAware_Data/resume_all.ps1": {
+      "files": 1,
+      "bytes": 1188
+    },
+    "data_ops/node04_audit_20261017.sh": {
+      "files": 1,
+      "bytes": 1186
+    },
+    "data_ops/_set_clash_node.ps1": {
+      "files": 1,
+      "bytes": 1148
+    },
+    "data_ops/node04_targeted_preflight_20261017.sh": {
+      "files": 1,
+      "bytes": 1143
+    },
+    "OmniAware_Data/run_batches.py": {
+      "files": 1,
+      "bytes": 1066
+    },
+    "data_ops/node04_apply_verify_fix_and_test_20261017.sh": {
+      "files": 1,
+      "bytes": 1059
+    },
+    "data_ops/_webqa_proxy_probe.py": {
+      "files": 1,
+      "bytes": 992
+    },
+    "data_ops/test_urls.py": {
+      "files": 1,
+      "bytes": 973
+    },
+    "data_ops/node04_run_fix_test_tmux_20261017.sh": {
+      "files": 1,
+      "bytes": 902
+    },
+    "data_ops/node04_real_verify_fixed_20261017.sh": {
+      "files": 1,
+      "bytes": 900
+    },
+    "OmniAware_Data/cache/yt-dlp": {
+      "files": 2,
+      "bytes": 896
+    },
+    "data_ops/BUDGET_PLAN.json": {
+      "files": 1,
+      "bytes": 879
+    },
+    "data_ops/inspect_zip_tail.py": {
+      "files": 1,
+      "bytes": 875
+    },
+    "data_ops/test_parallel_files.py": {
+      "files": 1,
+      "bytes": 829
+    },
+    "data_ops/node04_failure_details_20261017.sh": {
+      "files": 1,
+      "bytes": 822
+    },
+    "data_ops/test_parallel.py": {
+      "files": 1,
+      "bytes": 818
+    },
+    "data_ops/compare_sources.py": {
+      "files": 1,
+      "bytes": 811
+    },
+    "data_ops/RAW_READABILITY_REPORT.json": {
+      "files": 1,
+      "bytes": 779
+    },
+    "data_ops/test_hf_mirror.py": {
+      "files": 1,
+      "bytes": 760
+    },
+    "data_ops/WEBQA_DOWNLOAD_STATUS.json": {
+      "files": 1,
+      "bytes": 751
+    },
+    "data_ops/WEBQA_PARALLEL_RUN.stdout.log": {
+      "files": 1,
+      "bytes": 747
+    },
+    "OmniAware_Data/download_gs.py": {
+      "files": 1,
+      "bytes": 736
+    },
+    "data_ops/DOWNLOAD_MANIFEST.jsonl": {
+      "files": 1,
+      "bytes": 686
+    },
+    "data_ops/node04_collect_evidence_20261017.sh": {
+      "files": 1,
+      "bytes": 605
+    },
+    "data_ops/WEBQA_PARALLEL_24.stdout.log": {
+      "files": 1,
+      "bytes": 579
+    },
+    "WebQA/extract_imgs.stdout.log": {
+      "files": 1,
+      "bytes": 559
+    },
+    "data_ops/WEBQA_7Z_TEST.stdout.log": {
+      "files": 1,
+      "bytes": 556
+    },
+    "data_ops/test_coco.py": {
+      "files": 1,
+      "bytes": 547
+    },
+    "server.cjs": {
+      "files": 1,
+      "bytes": 528
+    },
+    "data_ops/remote_reference_hashes.jsonl": {
+      "files": 1,
+      "bytes": 523
+    },
+    "data_ops/SHA256SUMS.local.txt": {
+      "files": 1,
+      "bytes": 473
+    },
+    "data_ops/test_range.py": {
+      "files": 1,
+      "bytes": 468
+    },
+    "webqa-reference/download_imgs(deprecated).sh": {
+      "files": 1,
+      "bytes": 453
+    },
+    "data_ops/node04_check_recovery_inputs_20261017.sh": {
+      "files": 1,
+      "bytes": 450
+    },
+    "data_ops/test_hf_range.py": {
+      "files": 1,
+      "bytes": 449
+    },
+    "data_ops/TRANSFER_MANIFEST.jsonl": {
+      "files": 1,
+      "bytes": 441
+    },
+    "data_ops/node04_preflight_collect_20261017.sh": {
+      "files": 1,
+      "bytes": 416
+    },
+    "data_ops/env_data.sh": {
+      "files": 1,
+      "bytes": 347
+    },
+    "data_ops/test_coco_s3.py": {
+      "files": 1,
+      "bytes": 345
+    },
+    "data_ops/node04_poll_real_verify_20261017.sh": {
+      "files": 1,
+      "bytes": 343
+    },
+    "OmniAware_Data/download_dpr.py": {
+      "files": 1,
+      "bytes": 335
+    },
+    "data_ops/node04_poll_fix_test_20261017.sh": {
+      "files": 1,
+      "bytes": 274
+    },
+    "data_ops/node04_poll_fix_tmux_20261017.sh": {
+      "files": 1,
+      "bytes": 239
+    },
+    "data_ops/WEBQA_LOCAL_HTTP.stderr.log": {
+      "files": 1,
+      "bytes": 148
+    },
+    "data_ops/WEBQA_HF_RUN_32_RESTORED.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_2M_TEST.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_8M_TEST.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL_SG03.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL_TUNED.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_HK04_TEST.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_PROXY_STRICT.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_PROXY_STRICT_V2.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_RESTORED.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_48_STRICT.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_64.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_64_DOWNLOADNODE.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "data_ops/WEBQA_HF_RUN_FINAL.stdout.log": {
+      "files": 1,
+      "bytes": 104
+    },
+    "OmniAware_Data/okvqa_image_failures.json": {
+      "files": 1,
+      "bytes": 2
+    },
+    "data_ops/WEBQA_7Z_TEST.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_32_RESTORED.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_2M_TEST.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_8M_TEST.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL_SG03.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_FINAL_TUNED.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_HK04_TEST.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_PROXY_STRICT.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_PROXY_STRICT_V2.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_RESTORED.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_48_STRICT.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_64.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_64_DOWNLOADNODE.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_CURRENT.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_HF_RUN_FINAL.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_LOCAL_HTTP.stdout.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_PARALLEL_24.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_PARALLEL_48_120.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "data_ops/WEBQA_PARALLEL_RUN.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "OmniAware_Data/finalize_batch.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "OmniAware_Data/video_batch.log": {
+      "files": 1,
+      "bytes": 0
+    },
+    "WebQA/extract_imgs.stderr.log": {
+      "files": 1,
+      "bytes": 0
+    }
+  },
+  "errors": [
+    "[WinError 3] 系统找不到指定的路径。: 'D:\\\\WWW2027\\\\OmniAware_Data\\\\assets\\\\downloads\\\\webqa'"
+  ]
+}

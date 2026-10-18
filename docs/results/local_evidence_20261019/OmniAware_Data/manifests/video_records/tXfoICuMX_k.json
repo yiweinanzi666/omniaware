@@ -1,0 +1,27 @@
+{
+  "id": "tXfoICuMX_k",
+  "source_url": "https://www.youtube.com/watch?v=tXfoICuMX_k",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\tXfoICuMX_k.log",
+  "filename": "tXfoICuMX_k.mp4",
+  "bytes": 59566058,
+  "sha256": "180e10408683cc1cab041ae679b8c35a613da3ad950b308fce0b09acb58aafdd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "648.068934"
+    }
+  }
+}

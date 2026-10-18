@@ -1,0 +1,57 @@
+{
+  "start": "2026-10-17T06:55:39.719730+08:00",
+  "corpus": {
+    "path": "/home/user/Futaoran/omniaware/cache/okvqa_gs112k/corpus.jsonl",
+    "physical_lines": 113019,
+    "json_rows": 113018,
+    "blank_lines": 0,
+    "parse_errors": [
+      {
+        "line": 112725,
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    ],
+    "unique_ids": 112724,
+    "first_id": 0,
+    "last_id": 112723,
+    "required_rows": 112724,
+    "pass": false
+  },
+  "missing_webqa_val_images": [
+    {
+      "qid": "d5d27f720dba11ecb1e81171463288e9",
+      "fact_kind": "img_negFacts",
+      "image_id": 30278219,
+      "path": "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30278219.jpg"
+    },
+    {
+      "qid": "d5d570a60dba11ecb1e81171463288e9",
+      "fact_kind": "img_negFacts",
+      "image_id": 30045608,
+      "path": "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30045608.jpg"
+    },
+    {
+      "qid": "d5d5ec0c0dba11ecb1e81171463288e9",
+      "fact_kind": "img_negFacts",
+      "image_id": 30278219,
+      "path": "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30278219.jpg"
+    },
+    {
+      "qid": "d5d8eeca0dba11ecb1e81171463288e9",
+      "fact_kind": "img_negFacts",
+      "image_id": 30172755,
+      "path": "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30172755.jpg"
+    }
+  ],
+  "csv_files": [
+    {
+      "path": "/home/user/Futaoran/omniaware/assets/downloads/okvqa_gs/okvqa_train_corpus.csv",
+      "exists": false
+    },
+    {
+      "path": "/home/user/Futaoran/omniaware/assets/downloads/okvqa_gs/okvqa_full_corpus.csv",
+      "exists": false
+    }
+  ],
+  "end": "2026-10-17T06:55:43.683149+08:00"
+}

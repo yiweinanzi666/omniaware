@@ -1,0 +1,27 @@
+{
+  "id": "gvocf_PnR28",
+  "source_url": "https://www.youtube.com/watch?v=gvocf_PnR28",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\gvocf_PnR28.log",
+  "filename": "gvocf_PnR28.mp4",
+  "bytes": 50736796,
+  "sha256": "85b6dcfaac2905ef894a62b9cfbddada43e98802d6d013262f0182c15b85c41e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "329.491156"
+    }
+  }
+}

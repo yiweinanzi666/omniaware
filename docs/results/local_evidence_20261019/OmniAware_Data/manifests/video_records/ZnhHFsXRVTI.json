@@ -1,0 +1,27 @@
+{
+  "id": "ZnhHFsXRVTI",
+  "source_url": "https://www.youtube.com/watch?v=ZnhHFsXRVTI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ZnhHFsXRVTI.log",
+  "filename": "ZnhHFsXRVTI.mp4",
+  "bytes": 9937304,
+  "sha256": "08c3ee5f965f42bbf2397e5a24bb3cbc6c0ea1af83647ffdbaca9f4fd63dffb6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "177.795193"
+    }
+  }
+}

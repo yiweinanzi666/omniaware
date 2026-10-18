@@ -1,0 +1,27 @@
+{
+  "id": "yrEY9F-Keyg",
+  "source_url": "https://www.youtube.com/watch?v=yrEY9F-Keyg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\yrEY9F-Keyg.log",
+  "filename": "yrEY9F-Keyg.mp4",
+  "bytes": 65594024,
+  "sha256": "ac6a14c8c4ea3cce97322273844c3cd603643b7d97cf8e18c2b5d73d549b6013",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "938.620227"
+    }
+  }
+}

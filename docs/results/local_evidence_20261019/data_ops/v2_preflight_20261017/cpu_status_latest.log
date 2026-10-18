@@ -1,0 +1,116 @@
+2026-10-17T02:46:19+08:00
+start.txt
+2026-10-17T02:42:32+08:00
+commit.txt
+7ccf676e9804b2dfdf571d5b94fe8c9aba843acb
+git_status.txt
+........................................................................ [ 13%]
+........................................................................ [ 26%]
+...s......F............................................................. [ 40%]
+..............F        _, heads, q_len, _ = query.shape
+
+        kv_len = key.shape[2]
+
+        rep = heads // key.shape[1]
+
+        k = key.repeat_interleave(rep, dim=1).double()
+
+        v = value.repeat_interleave(rep, dim=1).double()
+
+        s = scaling if scaling is not None else module.scaling
+
+        logits = (query.double() @ k.transpose(-1, -2)) * s
+
+        q_pos = torch.arange(kv_len - q_len, kv_len)
+
+        k_pos = torch.arange(kv_len)
+
+        logits = logits.masked_fill((k_pos[None, :] > q_pos[:, None])[None, None], float("-inf"))
+
+        if arm is not None and (arm.layers is None or layer in arm.layers):
+
+            # Keys after the prompt (generated tokens) carry no bias, as in the hook.
+
+            col = torch.zeros(kv_len, dtype=torch.float64)
+
+            col[:min(kv_len, bias.numel())] = bias[:kv_len].double()
+
+            rows = (q_pos >= arm.q_start)[:, None]
+
+            logits = logits + torch.where(rows, col[None, :], torch.zeros(1, dtype=torch.float64))
+
+        w = torch.softmax(logits, dim=-1)
+
+        if layer == q.n_layers - 1 and "row" not in captured:      # first forward = the prompt
+
+PYTHON 3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:27:36) [GCC 11.2.0]
+VERSION torch 2.14.0+cu130
+VERSION transformers 5.17.0
+VERSION pytest 7.4.4
+MISSING_PACKAGE spacy
+MISSING_PACKAGE faiss-cpu
+VERSION pyflakes 3.2.0
+MODEL qwen3-vl-8b-instruct [('.gitattributes', 1519), ('config.json', 1474), ('chat_template.json', 5499), ('README.md', 7133), ('generation_config.json', 269), ('tokenizer_config.json', 10868)]
+MODEL bge-reranker-v2-m3 [('config.json', 795), ('tokenizer_config.json', 1173), ('tokenizer.json', 17098273), ('sentencepiece.bpe.model', 5069051), ('special_tokens_map.json', 964), ('model.safetensors', 17924096)]
+MODEL bartscore []
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/emb/text.manifest.json 423
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/emb/image.manifest.json 424
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/bge/rankings.jsonl 3398706
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/clip/rankings.jsonl 1859312
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/bge/rankings.jsonl 25162332
+ARTIFACT /home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/clip/rankings.jsonl 13766094
+FALLBACK_SMOKE_MARKER {
+ "dataset": "okvqa_gs",
+ "questions": 50,
+ "output": "okvqa_gs.jsonl",
+ "output_sha256": "3182fd7e7fc58e5846a91c07bca46212a6252c14173829d0d67ee46b48cc2a1a",
+ "config": "okvqa_gs_config.json",
+ "config_sha256": "cb7db5ad4818abdac5a39cb55c6563e43b70a92c61d6f82d74e7a34e955f9555",
+ "written_utc": "2026-10-16T07:15:15.347511+00:00",
+ "empty_answer_rate": 0.0,
+ "refusal_rate": 0.0,
+ "n_answers": 300,
+ "n_empty": 0,
+ "n_blank": 0,
+ "n_citation_only": 0,
+ "n_refusal": 0,
+ "empty_by_arm": {
+  "direct": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "static_joint": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "gated:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "nte_trigger:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "nte_shared:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  }
+ }
+}
+

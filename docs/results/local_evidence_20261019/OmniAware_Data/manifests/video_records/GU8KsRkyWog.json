@@ -1,0 +1,27 @@
+{
+  "id": "GU8KsRkyWog",
+  "source_url": "https://www.youtube.com/watch?v=GU8KsRkyWog",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\GU8KsRkyWog.log",
+  "filename": "GU8KsRkyWog.mp4",
+  "bytes": 84221110,
+  "sha256": "3186fb9b30eabe76a7ee0c0736e7d1f2fbce9133694ee957a3faf7ef2a5c3186",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "724.230385"
+    }
+  }
+}

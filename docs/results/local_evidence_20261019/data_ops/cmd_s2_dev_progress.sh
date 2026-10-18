@@ -1,0 +1,1 @@
+for d in /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev; do echo DIR=$d; ls -lh "$d" 2>/dev/null | head -20; if [ -f "$d"/*.jsonl ]; then wc -l "$d"/*.jsonl; fi; done

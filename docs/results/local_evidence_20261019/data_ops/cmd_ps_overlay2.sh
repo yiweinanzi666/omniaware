@@ -1,0 +1,1 @@
+ps -o pid,ppid,stat,etime,cmd -p 2284911; pgrep -P 2284911 -a || true

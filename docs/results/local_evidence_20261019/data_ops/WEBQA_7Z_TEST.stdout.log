@@ -1,0 +1,29 @@
+
+7-Zip (r) 26.04 (x86) : Igor Pavlov : Public domain : 2026-10-05
+
+Scanning the drive for archives:
+1 file, 1073741824 bytes (1024 MiB)
+
+Testing archive: D:\WebQA\chunks\imgs.7z.001
+--
+Path = D:\WebQA\chunks\imgs.7z.001
+Type = Split
+Physical Size = 1073741824
+Volumes = 51
+Total Physical Size = 54445524319
+----
+Path = imgs.7z
+Size = 54445524319
+--
+Path = imgs.7z
+Type = 7z
+Physical Size = 54445524319
+Headers Size = 122
+Method = LZMA2:24
+Solid = -
+Blocks = 1
+
+Everything is Ok
+
+Size:       72234224104
+Compressed: 54445524319

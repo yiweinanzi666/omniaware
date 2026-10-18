@@ -1,0 +1,27 @@
+{
+  "id": "eurYGbi3Mow",
+  "source_url": "https://www.youtube.com/watch?v=eurYGbi3Mow",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\eurYGbi3Mow.log",
+  "filename": "eurYGbi3Mow.mp4",
+  "bytes": 31849881,
+  "sha256": "045842c0e0b7b7a9de8c1c0d58ab5848ab77b404764dea7d8421418b111def76",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "847.667664"
+    }
+  }
+}

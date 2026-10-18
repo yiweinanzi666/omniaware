@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_runtime_20261013/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "cwd": "/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013",
+  "asset_environment": {
+    "OMNIAWARE_ASSETS": "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token"
+  },
+  "start": "2026-10-13T01:19:41.050559-07:00",
+  "end": "2026-10-13T01:19:57.805995-07:00",
+  "exit_code": 1,
+  "reason_for_repeat": "Resolve missing model processor path using documented asset environment; no source or protocol changes."
+}

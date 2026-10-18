@@ -1,0 +1,27 @@
+{
+  "id": "ezxwa2Rckvs",
+  "source_url": "https://www.youtube.com/watch?v=ezxwa2Rckvs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ezxwa2Rckvs.log",
+  "filename": "ezxwa2Rckvs.mp4",
+  "bytes": 12174284,
+  "sha256": "8f1477058128e9a65024db1d2dd4f140c59953aaa06fcb84232f1c0414fdf3bc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "165.883356"
+    }
+  }
+}

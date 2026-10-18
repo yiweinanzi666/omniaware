@@ -1,0 +1,62 @@
+{
+  "start": "2026-10-17T07:52:01.961848+08:00",
+  "command": [
+    "/home/user/Futaoran/omniaware_v2_python311/bin/python",
+    "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/verify_bart_asset_0750.py"
+  ],
+  "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+  "purpose": "CPU-only BARTScore asset integrity and strict weight loading; no experiment inference",
+  "metadata": {
+    "bartscore_commit": "248f511cb34ae3753fc81f7d7a945de5bfe33458",
+    "bart_config_revision": "37f520fa929c961707657b28798b30c003dd100b",
+    "weights": {
+      "source": "https://drive.google.com/uc?id=1_7JfF7KOInb7ZrxKHIigTMR4ChVET01m",
+      "description": "BARTScore trained on ParaBank2 (BARTScore README)",
+      "bytes": 1625565295,
+      "sha256": "4c076ee386795a831e0021788148becf57136127d6512ca350c7973f36c0e573"
+    },
+    "strict_state_dict_missing_keys": [],
+    "strict_state_dict_unexpected_keys": [],
+    "parameter_count": 406290432,
+    "device": "cpu",
+    "dtype": "torch.float32",
+    "attention_implementation": "eager",
+    "max_length": 1024,
+    "torch_version": "2.11.0+cu128",
+    "transformers_version": "5.5.3",
+    "source_provenance": {
+      "bartscore_commit": "248f511cb34ae3753fc81f7d7a945de5bfe33458",
+      "bart_config_revision": "37f520fa929c961707657b28798b30c003dd100b",
+      "files": [
+        {
+          "file": "official_source/bart_score.py",
+          "bytes": 4221,
+          "sha256": "f5b9c037ab527028875f529085d5ea134e00b0a7ec6ffce10de039bc23d51087"
+        },
+        {
+          "file": "bart-large-cnn-config/config.json",
+          "bytes": 1585,
+          "sha256": "c6cb642aec929b65f514ee0ec7c04f9de19f705c143491577ecd8b7cc923c6ed"
+        },
+        {
+          "file": "bart-large-cnn-config/merges.txt",
+          "bytes": 456318,
+          "sha256": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5"
+        },
+        {
+          "file": "bart-large-cnn-config/tokenizer.json",
+          "bytes": 1355863,
+          "sha256": "847bbeab6174d66a88898f729d52fa8d355fafe1bea101cf960dd404581df70e"
+        },
+        {
+          "file": "bart-large-cnn-config/vocab.json",
+          "bytes": 898823,
+          "sha256": "9e7f63c2d15d666b52e21d250d2e513b87c9b713cfa6987a82ed89e5e6e50655"
+        }
+      ]
+    }
+  },
+  "ok": true,
+  "exit_code": 0,
+  "end": "2026-10-17T07:52:53.180718+08:00"
+}

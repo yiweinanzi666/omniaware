@@ -1,0 +1,27 @@
+{
+  "id": "rocRSfC-FVo",
+  "source_url": "https://www.youtube.com/watch?v=rocRSfC-FVo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rocRSfC-FVo.log",
+  "filename": "rocRSfC-FVo.mp4",
+  "bytes": 10232360,
+  "sha256": "368726c608311af7f930e1924262822b1165145ce6f1f517a90a24b2fdff3fcf",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "141.200544"
+    }
+  }
+}

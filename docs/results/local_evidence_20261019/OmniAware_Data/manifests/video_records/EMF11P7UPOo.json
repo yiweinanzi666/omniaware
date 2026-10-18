@@ -1,0 +1,27 @@
+{
+  "id": "EMF11P7UPOo",
+  "source_url": "https://www.youtube.com/watch?v=EMF11P7UPOo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\EMF11P7UPOo.log",
+  "filename": "EMF11P7UPOo.mp4",
+  "bytes": 9930760,
+  "sha256": "d2e5b143ab126d351e163b7c58b8b763b09d77d110a8d86befaa794d2fa453d7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "141.850703"
+    }
+  }
+}

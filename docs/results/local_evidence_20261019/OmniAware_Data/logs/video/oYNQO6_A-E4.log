@@ -1,0 +1,20 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=oYNQO6_A-E4
+[youtube] oYNQO6_A-E4: Downloading webpage
+WARNING: [youtube] unable to extract yt initial data; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+WARNING: [youtube] Incomplete data received in embedded initial data; re-fetching using API.
+[youtube] oYNQO6_A-E4: Downloading initial data API JSON
+[youtube] oYNQO6_A-E4: Downloading visionos player API JSON
+ERROR: [youtube] oYNQO6_A-E4: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=oYNQO6_A-E4
+[youtube] oYNQO6_A-E4: Downloading webpage
+[youtube] oYNQO6_A-E4: Downloading visionos player API JSON
+ERROR: [youtube] oYNQO6_A-E4: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=oYNQO6_A-E4
+[youtube] oYNQO6_A-E4: Downloading webpage
+WARNING: [youtube] oYNQO6_A-E4: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] oYNQO6_A-E4: Downloading initial data API JSON
+[youtube] oYNQO6_A-E4: Downloading visionos player API JSON
+[youtube] oYNQO6_A-E4: Downloading iframe API JS
+[youtube] oYNQO6_A-E4: Downloading player 21090930-main
+[youtube] oYNQO6_A-E4: Downloading web player API JSON
+ERROR: [youtube] oYNQO6_A-E4: Video unavailable. This video has been removed by the uploader

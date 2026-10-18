@@ -1,0 +1,27 @@
+{
+  "id": "LuIPEkDY74M",
+  "source_url": "https://www.youtube.com/watch?v=LuIPEkDY74M",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\LuIPEkDY74M.log",
+  "filename": "LuIPEkDY74M.mp4",
+  "bytes": 41919734,
+  "sha256": "b97808700744c299f50b48dd3e9abe76b7d589bac193413132a08bacd934af91",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "514.832834"
+    }
+  }
+}

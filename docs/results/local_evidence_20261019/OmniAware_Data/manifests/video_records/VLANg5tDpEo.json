@@ -1,0 +1,27 @@
+{
+  "id": "VLANg5tDpEo",
+  "source_url": "https://www.youtube.com/watch?v=VLANg5tDpEo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VLANg5tDpEo.log",
+  "filename": "VLANg5tDpEo.mp4",
+  "bytes": 11473981,
+  "sha256": "67a539c70f3bbe98eead4fc2e74d389b33eb542bb07d14c03a183865222917d5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "289.343855"
+    }
+  }
+}

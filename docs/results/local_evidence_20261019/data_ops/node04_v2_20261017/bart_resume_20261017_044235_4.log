@@ -1,0 +1,8 @@
+Error:
+
+	HTTPSConnectionPool(host='drive.google.com', port=443): Max retries
+	exceeded with url: /uc?id=1_7JfF7KOInb7ZrxKHIigTMR4ChVET01m (Caused by
+	SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF
+	occurred in violation of protocol (_ssl.c:1010)')))
+
+To report issues, please visit https://github.com/wkentaro/gdown/issues.

@@ -1,0 +1,56 @@
+{
+  "checked_at": "2026-10-17T19:46:00+08:00",
+  "source": "Read-only inspection of recorded outputs in existing experiment chat; no fresh SSH probe",
+  "thread_id": "01a145fa-ad3a-7d72-953a-9191ae3064bd",
+  "thread_updated_at": 1792237436,
+  "observations": [
+    {
+      "probe": "cmd_s1_webqa_result.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "ls: cannot access '/home/user/Futaoran/omniaware/runs/v2_s1_webqa_full': No such file or directory\r\n[14/50] d5c617e60dba 6.45s P=843 U_pre=0.30 retrieve=False\r\n[15/50] d5c5b92c0dba 5.92s P=635 U_pre=0.31 retrieve=False\r\n[16/50] d5c50c840dba 10.3s P=1007 U_pre=1.00 retrieve=True\r\n[17/50] d5ce9d120dba 9.69s P=1257 U_pre=0.65 retrieve=True\r\n[18/50] d5d76de80dba 9.68s P=889 U_pre=1.00 retrieve=True\r\n[19/50] d5de89020dba 10.62s P=409 U_pre=0.29 retrieve=False\r\n[20/50] d5dce9300dba 13.8s P=812 U_pre=1.00 retrieve=True\r\n[21/50] d5c0f8d80dba 10.52s P=1472 U_pre=0.31 retrieve=False\r\n[22/50] d5c638980dba 8.6s P=840 U_pre=0.30 retrieve=False\r\n[23/50] d5ce8c460dba 11.45s P=829 U_pre=0.68 retrieve=True\r\n[24/50] d5d8972c0dba 20.05s P=521 U_pre=0.49 retrieve=True\r\n[25/50] d5daefae0dba 9.29s P=951 U_pre=0.43 retrieve=True\r\n[26/50] d5cae5aa0dba 8.76s P=965 U_pre=0.97 retrieve=True\r\n[27/50] d5d7ef5c0dba 8.32s P=1009 U_pre=0.67 retrieve=True\r\n[28/50] d5c703c20dba 9.34s P=728 U_pre=0.97 retrieve=True\r\n[29/50] d5df37ee0dba 9.87s P=1019 U_pre=0.35 retrieve=False\r\n[30/50] d5cd7c3e0dba 6.7s P=837 U_pre=0.27 retrieve=False\r\n[31/50] d5d880f20dba 9.83s P=969 U_pre=0.26 retrieve=False\r\n[32/50] d5d0bb9c0dba 8.9s P=444 U_pre=0.26 retrieve=False\r\n[33/50] d5db372a0dba 6.92s P=1036 U_pre=0.27 retrieve=False\r\n[34/50] d5d6773a0dba 12.23s P=1057 U_pre=0.26 retrieve=False\r\n[35/50] d5c569e00dba 8.35s P=820 U_pre=0.49 retrieve=True\r\n[36/50] d5c8e0de0dba 7.2s P=1706 U_pre=1.00 retrieve=True\r\n[37/50] d5bfc29c0dba 8.6s P=1447 U_pre=0.29 retrieve=False\r\n[38/50] d5d9c4b20dba 11.24s P=755 U_pre=0.41 retrieve=True\r\n[39/50] d5c747560dba 12.75s P=1024 U_pre=0.26 retrieve=False\r\n[40/50] d5d7d0080dba 11.06s P=593 U_pre=1.00 retrieve=True\r\n[41/50] d5d5b9120dba 5.85s P=352 U_pre=0.58 retrieve=True\r\n[42/50] d5df295c0dba 8.58s P=1229 U_pre=0.27 retrieve=False\r\n[43/50] d5d562aa0dba 8.95s P=772 U_pre=1.00 retrieve=True\r\n[44/50] d5d44fa00dba 10.27s P=648 U_pre=1.00 retrieve=True\r\n[45/50] d5c981a60dba 8.21s P=1460 U_pre=0.90 retrieve=True\r\n[46/50] d5d318420dba 4.15s P=435 U_pre=0.33 retrieve=False\r\n[47/50] d5cd51960dba 8.62s P=654 U_pre=1.00 retrieve=True\r\n[48/50] d5c987320dba 8.7s P=1474 U_pre=0.33 retrieve=False\r\n[49/50] d5d106560dba 10.74s P=1014 U_pre=1.00 retrieve=True\r\n[50/50] d5d5b9da0dba 9.46s P=874 U_pre=0.34 retrieve=False\r\n[done] webqa_full 50 in 477.1s -> /home/user/Futaoran/omniaware_v2_exec/runs/v2_s1_webqa_full/webqa_full.jsonl; empty_answer_rate 0.000000; refusal_rate 0.007286; peak_gpu_memory_gib 16.84\r\n{\r\n  \"answer_format\": \"answer_first\",\r\n  \"questions\": 50,\r\n  \"actions\": {\r\n    \"direct\": {\r\n      \"questions\": 50,\r\n      \"answer_first_ok\": 0.94,\r\n      \"answer_token_is_first\": 0.82,\r\n      \"template_start\": 0.22\r\n    },\r\n    \"static_text\": {\r\n      \"questions\": 50,\r\n      \"answer_first_ok\": 0.9583333333333334,\r\n      \"answer_token_is_first\": 0.76,\r\n      \"template_start\": 0.34\r\n    },\r\n    \"static_image\": {\r\n      \"questions\": 49,\r\n      \"answer_first_ok\": 1.0,\r\n      \"answer_token_is_first\": 0.8571428571428571,\r\n      \"template_start\": 0.2653061224489796\r\n    },\r\n    \"static_mixed\": {\r\n      \"questions\": 50,\r\n      \"answer_first_ok\": 0.98,\r\n      \"answer_token_is_first\": 0.82,\r\n      \"template_start\": 0.28\r\n    },\r\n    \"rerank_static\": {\r\n      \"questions\": 50,\r\n      \"answer_first_ok\": 0.9795918367346939,\r\n      \"answer_token_is_first\": 0.86,\r\n      \"template_start\": 0.24\r\n    }\r\n  },\r\n  \"min_answer_first\": 0.9,\r\n  \"passed\": true,\r\n  \"below\": []\r\n}\r\n/home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s1_webqa_full --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005\r\n/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_exec/scripts/analysis/answer_slot.py format --run /home/user/Futaoran/omniaware_v2_exec/runs/v2_s1_webqa_full/webqa_full.jsonl --min-answer-first 0.9\r\n/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_exec/scripts/analysis/image_evidence_check.py --n 50\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_paths_runtime.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "test_file=0\r\ntest_dir=0\r\n/home/user/Futaoran/omniaware/assets\r\n/home/user/Futaoran/omniaware/assets/data/WebQA_train_val.json True\r\n/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images True\r\n/home/user/Futaoran/omniaware/cache False\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_find_relevance.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "/home/user/Futaoran/omniaware_v2_exec/cache/relevance_webqa_full.json 1029361\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_image_check_real3_ps.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "-rw-rw-r-- 1 user user 181 Oct 17 19:15 /tmp/image_check2.out\r\n/home/user/Futaoran/omniaware_v2_exec/cache/relevance_webqa_full.json has no current relevance entry for d5bbc7c80dba11ecb1e81171463288e9; produce it with the command printed above\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_image_calibrate_poll.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "    PID     ELAPSED STAT CMD\r\n              [--model {2b,8b,internvl3.5-8b}] [--max-patches MAX_PATCHES]\r\n              --split {calib,dev,test} [--n-calib N_CALIB]\r\n              [--calib-source {train,heldout}] [--n-dev N_DEV]\r\n              [--split-seed SPLIT_SEED] [--allow-missing-assets]\r\n              [--offset OFFSET] [--n-eval N_EVAL] [--k K]\r\n              [--min-per-modality MIN_PER_MODALITY] [--modality-routing]\r\n              [--route-rule {mh,mass,entropy,retriever,all,oracle,query}]\r\n              [--query-routes QUERY_ROUTES] [--first-round-routing]\r\n              [--order ORDER] [--replication-gamma REPLICATION_GAMMA]\r\n              [--seed SEED] [--selector {relevance,ce,ce_calibrated}]\r\n              [--universalrag-top UNIVERSALRAG_TOP]\r\n              [--universalrag-modalities {paragraph,document,table,image,video,clip} [{paragraph,document,table,image,video,clip} ...]]\r\n              [--intervention {mask,cf,random_edit,rerun,distractors,inject_answer,inject_instruction} [{mask,cf,random_edit,rerun,distractors,inject_answer,inject_instruction} ...]]\r\n              [--relevance-noise RELEVANCE_NOISE] [--noise-draw NOISE_DRAW]\r\n              [--relevance-norm {ecdf,raw,minmax}] [--norm-from NORM_FROM]\r\n              [--no-calibration] [--image-mode {mix,clip,caption}]\r\n              [--beta BETA] [--tau TAU] [--tau-bias TAU_BIAS]\r\n              [--eab-uncertainty {pre,post}]\r\n              [--answer-style {default,short,cite,sentence}]\r\n              [--variants VARIANTS] [--analysis-eab] [--probe-uncertainty]\r\n              [--u-combine {sum,zsum}] [--attn-layer {last,mid}]\r\n              [--max-pixels MAX_PIXELS] [--max-new-tokens MAX_NEW_TOKENS]\r\n              [--seakr-samples SEAKR_SAMPLES]\r\n              [--seakr-max-new-tokens SEAKR_MAX_NEW_TOKENS]\r\n              [--seakr-threshold SEAKR_THRESHOLD] [--fitm] [--m2rag]\r\n              [--num-shards NUM_SHARDS] [--shard-id SHARD_ID]\r\n              [--calibrate-only] --tag TAG [--v2] [--v2-reranker]\r\n              [--decisions DECISIONS] [--trace-prompts TRACE_PROMPTS]\r\n              [--max-empty-rate MAX_EMPTY_RATE]\r\nrun.py: error: --v2 needs cross-encoder logits for rerank_static: add --v2-reranker\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_image_calibrate2.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "PID=2409910\r\n",
+        "truncated": false
+      }
+    }
+  ]
+}

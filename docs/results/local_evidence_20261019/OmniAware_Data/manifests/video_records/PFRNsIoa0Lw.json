@@ -1,0 +1,27 @@
+{
+  "id": "PFRNsIoa0Lw",
+  "source_url": "https://www.youtube.com/watch?v=PFRNsIoa0Lw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PFRNsIoa0Lw.log",
+  "filename": "PFRNsIoa0Lw.mp4",
+  "bytes": 9717800,
+  "sha256": "eb62d35d6fe986c441ef2d0c91d5c90b234ff1ce466c46759e335d79fddc8d9b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "145.147937"
+    }
+  }
+}

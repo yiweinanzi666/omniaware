@@ -1,0 +1,27 @@
+{
+  "id": "CplVJw-x0OM",
+  "source_url": "https://www.youtube.com/watch?v=CplVJw-x0OM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CplVJw-x0OM.log",
+  "filename": "CplVJw-x0OM.mp4",
+  "bytes": 10824574,
+  "sha256": "4e82691ccfbb0701f08a86761e0fc50d54613b6d3384dc339cc412fd91aada3c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "141.341200"
+    }
+  }
+}

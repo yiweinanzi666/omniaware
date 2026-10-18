@@ -1,0 +1,27 @@
+{
+  "id": "AjZw-FfLRFI",
+  "source_url": "https://www.youtube.com/watch?v=AjZw-FfLRFI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\AjZw-FfLRFI.log",
+  "filename": "AjZw-FfLRFI.mp4",
+  "bytes": 19797814,
+  "sha256": "1b436be439328e2480b6d667d5d75bbafafcd6e33dbb4d8cfeb2bb071981cdb6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "283.306667"
+    }
+  }
+}

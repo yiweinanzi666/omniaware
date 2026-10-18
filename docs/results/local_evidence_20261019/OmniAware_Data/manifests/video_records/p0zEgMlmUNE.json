@@ -1,0 +1,27 @@
+{
+  "id": "p0zEgMlmUNE",
+  "source_url": "https://www.youtube.com/watch?v=p0zEgMlmUNE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\p0zEgMlmUNE.log",
+  "filename": "p0zEgMlmUNE.mp4",
+  "bytes": 101543746,
+  "sha256": "649e15261d30623451e389817c0c2c4ca9794d025d45e13a7fed889c558d371f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1329.110204"
+    }
+  }
+}

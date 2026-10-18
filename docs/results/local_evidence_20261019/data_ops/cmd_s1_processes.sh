@@ -1,0 +1,1 @@
+ps -ef | grep -E 'v2_runs|omniaware.run|python.*run' | grep -v grep | tail -20

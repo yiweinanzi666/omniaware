@@ -1,0 +1,27 @@
+{
+  "id": "NnnF4K_CN2Q",
+  "source_url": "https://www.youtube.com/watch?v=NnnF4K_CN2Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\NnnF4K_CN2Q.log",
+  "filename": "NnnF4K_CN2Q.mp4",
+  "bytes": 9771076,
+  "sha256": "444f2158681cd7bb9821b00c8dae22c17f5375af22b78ca6fb51320e9a517d1e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "167.067574"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "F7-A_kgbBhM",
+  "source_url": "https://www.youtube.com/watch?v=F7-A_kgbBhM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\F7-A_kgbBhM.log",
+  "filename": "F7-A_kgbBhM.mp4",
+  "bytes": 45850086,
+  "sha256": "738c64a0a82fc60a62c3e43da69bde1105148da2aa2b523012efd2e4d806b7c8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "481.488980"
+    }
+  }
+}

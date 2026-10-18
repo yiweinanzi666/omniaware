@@ -1,0 +1,27 @@
+{
+  "id": "XD_XZ_np_QQ",
+  "source_url": "https://www.youtube.com/watch?v=XD_XZ_np_QQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\XD_XZ_np_QQ.log",
+  "filename": "XD_XZ_np_QQ.mp4",
+  "bytes": 6776890,
+  "sha256": "5db035e2e9025edecadab429fc54853383073696ca242fc7795823400baff84a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 240,
+        "height": 426
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "221.262948"
+    }
+  }
+}

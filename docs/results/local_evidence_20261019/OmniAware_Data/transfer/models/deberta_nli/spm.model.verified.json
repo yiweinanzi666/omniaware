@@ -1,0 +1,8 @@
+{
+  "repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+  "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+  "file": "spm.model",
+  "bytes": 2464616,
+  "sha256": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd",
+  "verified_at": "2026-10-17T03:47:08+0800"
+}

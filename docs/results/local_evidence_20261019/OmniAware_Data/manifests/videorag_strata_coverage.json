@@ -1,0 +1,222 @@
+{
+  "automotive|length0": {
+    "population": 67,
+    "downloaded": 12,
+    "coverage": 0.1791044776119403
+  },
+  "automotive|length1": {
+    "population": 65,
+    "downloaded": 14,
+    "coverage": 0.2153846153846154
+  },
+  "automotive|length2": {
+    "population": 68,
+    "downloaded": 13,
+    "coverage": 0.19117647058823528
+  },
+  "automotive|length3": {
+    "population": 96,
+    "downloaded": 18,
+    "coverage": 0.1875
+  },
+  "beauty|length0": {
+    "population": 44,
+    "downloaded": 9,
+    "coverage": 0.20454545454545456
+  },
+  "beauty|length1": {
+    "population": 54,
+    "downloaded": 10,
+    "coverage": 0.18518518518518517
+  },
+  "beauty|length2": {
+    "population": 79,
+    "downloaded": 14,
+    "coverage": 0.17721518987341772
+  },
+  "beauty|length3": {
+    "population": 69,
+    "downloaded": 13,
+    "coverage": 0.18840579710144928
+  },
+  "crafts|length0": {
+    "population": 200,
+    "downloaded": 37,
+    "coverage": 0.185
+  },
+  "crafts|length1": {
+    "population": 229,
+    "downloaded": 41,
+    "coverage": 0.17903930131004367
+  },
+  "crafts|length2": {
+    "population": 274,
+    "downloaded": 48,
+    "coverage": 0.17518248175182483
+  },
+  "crafts|length3": {
+    "population": 391,
+    "downloaded": 73,
+    "coverage": 0.1867007672634271
+  },
+  "education|length0": {
+    "population": 6,
+    "downloaded": 1,
+    "coverage": 0.16666666666666666
+  },
+  "education|length1": {
+    "population": 7,
+    "downloaded": 1,
+    "coverage": 0.14285714285714285
+  },
+  "education|length2": {
+    "population": 10,
+    "downloaded": 2,
+    "coverage": 0.2
+  },
+  "education|length3": {
+    "population": 6,
+    "downloaded": 1,
+    "coverage": 0.16666666666666666
+  },
+  "fitness|length0": {
+    "population": 32,
+    "downloaded": 8,
+    "coverage": 0.25
+  },
+  "fitness|length1": {
+    "population": 37,
+    "downloaded": 7,
+    "coverage": 0.1891891891891892
+  },
+  "fitness|length2": {
+    "population": 48,
+    "downloaded": 10,
+    "coverage": 0.20833333333333334
+  },
+  "fitness|length3": {
+    "population": 56,
+    "downloaded": 11,
+    "coverage": 0.19642857142857142
+  },
+  "food|length0": {
+    "population": 635,
+    "downloaded": 121,
+    "coverage": 0.19055118110236222
+  },
+  "food|length1": {
+    "population": 831,
+    "downloaded": 159,
+    "coverage": 0.19133574007220217
+  },
+  "food|length2": {
+    "population": 856,
+    "downloaded": 160,
+    "coverage": 0.18691588785046728
+  },
+  "food|length3": {
+    "population": 852,
+    "downloaded": 157,
+    "coverage": 0.18427230046948356
+  },
+  "garden|length0": {
+    "population": 169,
+    "downloaded": 32,
+    "coverage": 0.1893491124260355
+  },
+  "garden|length1": {
+    "population": 213,
+    "downloaded": 42,
+    "coverage": 0.19718309859154928
+  },
+  "garden|length2": {
+    "population": 217,
+    "downloaded": 42,
+    "coverage": 0.1935483870967742
+  },
+  "garden|length3": {
+    "population": 204,
+    "downloaded": 34,
+    "coverage": 0.16666666666666666
+  },
+  "home|length0": {
+    "population": 318,
+    "downloaded": 57,
+    "coverage": 0.1792452830188679
+  },
+  "home|length1": {
+    "population": 310,
+    "downloaded": 3,
+    "coverage": 0.00967741935483871
+  },
+  "home|length2": {
+    "population": 361,
+    "downloaded": 9,
+    "coverage": 0.024930747922437674
+  },
+  "home|length3": {
+    "population": 411,
+    "downloaded": 10,
+    "coverage": 0.024330900243309004
+  },
+  "music|length0": {
+    "population": 203,
+    "downloaded": 7,
+    "coverage": 0.034482758620689655
+  },
+  "music|length1": {
+    "population": 191,
+    "downloaded": 4,
+    "coverage": 0.020942408376963352
+  },
+  "music|length2": {
+    "population": 143,
+    "downloaded": 3,
+    "coverage": 0.02097902097902098
+  },
+  "music|length3": {
+    "population": 122,
+    "downloaded": 0,
+    "coverage": 0.0
+  },
+  "other|length0": {
+    "population": 384,
+    "downloaded": 7,
+    "coverage": 0.018229166666666668
+  },
+  "other|length1": {
+    "population": 127,
+    "downloaded": 2,
+    "coverage": 0.015748031496062992
+  },
+  "other|length2": {
+    "population": 74,
+    "downloaded": 4,
+    "coverage": 0.05405405405405406
+  },
+  "other|length3": {
+    "population": 28,
+    "downloaded": 0,
+    "coverage": 0.0
+  },
+  "technology|length0": {
+    "population": 23,
+    "downloaded": 0,
+    "coverage": 0.0
+  },
+  "technology|length1": {
+    "population": 30,
+    "downloaded": 0,
+    "coverage": 0.0
+  },
+  "technology|length2": {
+    "population": 29,
+    "downloaded": 1,
+    "coverage": 0.034482758620689655
+  },
+  "technology|length3": {
+    "population": 52,
+    "downloaded": 2,
+    "coverage": 0.038461538461538464
+  }
+}

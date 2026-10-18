@@ -1,0 +1,1 @@
+ps -ef | grep -E 'image_evidence_check|cmd_image_check_real' | grep -v grep | tail -10

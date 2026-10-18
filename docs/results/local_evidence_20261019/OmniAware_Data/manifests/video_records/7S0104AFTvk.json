@@ -1,0 +1,27 @@
+{
+  "id": "7S0104AFTvk",
+  "source_url": "https://www.youtube.com/watch?v=7S0104AFTvk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\7S0104AFTvk.log",
+  "filename": "7S0104AFTvk.mp4",
+  "bytes": 44785110,
+  "sha256": "44e4876f0d8776980d18f27890b569ed00353acd9b8f79fee1053aade1531a4a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "818.131882"
+    }
+  }
+}

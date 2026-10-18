@@ -1,0 +1,1 @@
+ps -ef | grep 'cmd_cache_presence2' | grep -v grep || true

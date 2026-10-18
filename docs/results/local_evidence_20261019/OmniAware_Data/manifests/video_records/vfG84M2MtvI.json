@@ -1,0 +1,27 @@
+{
+  "id": "vfG84M2MtvI",
+  "source_url": "https://www.youtube.com/watch?v=vfG84M2MtvI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\vfG84M2MtvI.log",
+  "filename": "vfG84M2MtvI.mp4",
+  "bytes": 15602634,
+  "sha256": "6d25be3cb607fbafc43d7a01a3570f4fee86c7d38d12e103903eae44283359ac",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "387.239184"
+    }
+  }
+}

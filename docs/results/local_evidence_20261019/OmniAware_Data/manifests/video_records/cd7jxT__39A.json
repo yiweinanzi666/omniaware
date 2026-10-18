@@ -1,0 +1,27 @@
+{
+  "id": "cd7jxT__39A",
+  "source_url": "https://www.youtube.com/watch?v=cd7jxT__39A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\cd7jxT__39A.log",
+  "filename": "cd7jxT__39A.mp4",
+  "bytes": 16933720,
+  "sha256": "1330db448c94391e94ae9751d01a7ce769521e1e3d776b5740cbae5e4cb22280",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "482.487438"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "WZHLXdWS14A",
+  "source_url": "https://www.youtube.com/watch?v=WZHLXdWS14A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WZHLXdWS14A.log",
+  "filename": "WZHLXdWS14A.mp4",
+  "bytes": 19708266,
+  "sha256": "5f1473b9d1d1943ac035ef3d7d7a54ba01f90efbfaa2b3d356d3c4362da14b5a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "375.420227"
+    }
+  }
+}

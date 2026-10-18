@@ -1,0 +1,27 @@
+{
+  "id": "lsw8pO1L-tg",
+  "source_url": "https://www.youtube.com/watch?v=lsw8pO1L-tg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\lsw8pO1L-tg.log",
+  "filename": "lsw8pO1L-tg.mp4",
+  "bytes": 45349459,
+  "sha256": "e4cd298a598aa7e000ada1ca1596915c91b5aad4cbb08548b2458be1caaf9734",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "882.961995"
+    }
+  }
+}

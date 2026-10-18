@@ -1,0 +1,27 @@
+{
+  "id": "yy1NeGiRi_I",
+  "source_url": "https://www.youtube.com/watch?v=yy1NeGiRi_I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\yy1NeGiRi_I.log",
+  "filename": "yy1NeGiRi_I.mp4",
+  "bytes": 17236038,
+  "sha256": "a9069aeca206f2af65bbb8a930ad9122f41726c4bd0d679aa937e07983e4fdd4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "299.235556"
+    }
+  }
+}

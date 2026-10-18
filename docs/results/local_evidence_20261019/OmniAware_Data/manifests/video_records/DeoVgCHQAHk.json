@@ -1,0 +1,27 @@
+{
+  "id": "DeoVgCHQAHk",
+  "source_url": "https://www.youtube.com/watch?v=DeoVgCHQAHk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DeoVgCHQAHk.log",
+  "filename": "DeoVgCHQAHk.mp4",
+  "bytes": 47940640,
+  "sha256": "0ba658655f12736a3313f3896ca1c10c5567587cf3d7f825c91d88e4de8bdbe7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "880.779320"
+    }
+  }
+}

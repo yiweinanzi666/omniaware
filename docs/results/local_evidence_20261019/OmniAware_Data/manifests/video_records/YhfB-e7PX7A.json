@@ -1,0 +1,27 @@
+{
+  "id": "YhfB-e7PX7A",
+  "source_url": "https://www.youtube.com/watch?v=YhfB-e7PX7A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YhfB-e7PX7A.log",
+  "filename": "YhfB-e7PX7A.mp4",
+  "bytes": 34547496,
+  "sha256": "ff0192b5e89873a61df5ab28dffc2b3d57e645b47fb6a997195374dc6083e33d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "512.998458"
+    }
+  }
+}

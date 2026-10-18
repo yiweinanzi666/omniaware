@@ -1,0 +1,27 @@
+{
+  "id": "R2DX-QitQzo",
+  "source_url": "https://www.youtube.com/watch?v=R2DX-QitQzo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\R2DX-QitQzo.log",
+  "filename": "R2DX-QitQzo.mp4",
+  "bytes": 14444013,
+  "sha256": "d5f0b221e2aee78bea79ff1a55e4dd8660de91698330c482d1d9d4c0089e5170",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "252.517007"
+    }
+  }
+}

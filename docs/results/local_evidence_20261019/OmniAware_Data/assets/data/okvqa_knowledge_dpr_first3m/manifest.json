@@ -1,0 +1,20 @@
+{
+  "status": "CORPUS_COMPLETE_INDEX_PENDING",
+  "documents": 3000000,
+  "input_rows": 3000000,
+  "skipped_empty": 0,
+  "corpus_bytes": 2215790437,
+  "corpus_sha256": "cb016937456b94ac91505ef7eb93fbb1f20b9cbedb889b4e3dbef6233598a8bf",
+  "source_url": "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
+  "compressed_source_sha256": "c39b020c855a2b5c25ffef3abe4a3b6f9b829ad7dbc14ec3d163d34d7c53ea8d",
+  "legacy_rule_source": null,
+  "legacy_rule_source_sha256": null,
+  "rule": "First 3,000,000 TSV data rows in source order; strip title/text; skip empty; zero-based row ID; title + newline + text",
+  "historical_byte_identity": "Unverified: historical TSV/corpus checksum unavailable",
+  "annotation_answers_read": false,
+  "model_calls": 0,
+  "elapsed_seconds": 63.08173060417175,
+  "finished_utc": "2026-10-15T05:16:55.169568+00:00",
+  "io_optimization": "Resumed only complete JSONL lines, exact original transformation, 8 MiB sequential buffers",
+  "resumed_rows": 1800000
+}

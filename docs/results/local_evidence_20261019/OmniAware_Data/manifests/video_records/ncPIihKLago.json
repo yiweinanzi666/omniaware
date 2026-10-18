@@ -1,0 +1,27 @@
+{
+  "id": "ncPIihKLago",
+  "source_url": "https://www.youtube.com/watch?v=ncPIihKLago",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ncPIihKLago.log",
+  "filename": "ncPIihKLago.mp4",
+  "bytes": 60382247,
+  "sha256": "9a04938387d2978ee988e3be7463d2effaed71ad41c89467322f62771a065033",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "870.446440"
+    }
+  }
+}

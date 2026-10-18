@@ -1,0 +1,187 @@
+{
+  "started": "2026-10-18T02:16:00.565205+08:00",
+  "diagnostic_only": true,
+  "modes": [
+    {
+      "mode": "bf16_fp32_linear",
+      "segmented": {
+        "ok": false,
+        "max_abs_diff": 0.328125,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": false,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0012194514274597168,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0012194514274597168,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0009832978248596191,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "seconds": 1.3049349784851074
+    },
+    {
+      "mode": "fp32_model",
+      "segmented": {
+        "ok": true,
+        "max_abs_diff": 7.62939453125e-05,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": true,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": true,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 7.62939453125e-05,
+            "t_end_attention_max_abs_diff": 5.960464477539063e-08,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": true,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 7.62939453125e-05,
+            "t_end_attention_max_abs_diff": 5.960464477539063e-08,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": true,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 6.580352783203125e-05,
+            "t_end_attention_max_abs_diff": 1.1920928955078125e-07,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "seconds": 0.754981517791748
+    }
+  ],
+  "first_layer_differences": {
+    "model.language_model.embed_tokens": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        4096
+      ]
+    },
+    "model.language_model.layers.0.self_attn.q_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        4096
+      ]
+    },
+    "model.language_model.layers.0.self_attn.k_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        1024
+      ]
+    },
+    "model.language_model.layers.0.self_attn.v_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        1024
+      ]
+    },
+    "model.language_model.layers.0.self_attn.o_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        4096
+      ]
+    },
+    "model.language_model.layers.0.mlp.gate_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        12288
+      ]
+    },
+    "model.language_model.layers.0.mlp.up_proj": {
+      "max_diff": 0.0,
+      "different_values": 0,
+      "shape": [
+        1,
+        63,
+        12288
+      ]
+    },
+    "model.language_model.layers.0.mlp.down_proj": {
+      "max_diff": 0.00390625,
+      "different_values": 457,
+      "shape": [
+        1,
+        63,
+        4096
+      ]
+    }
+  },
+  "ended": "2026-10-18T02:16:03.959151+08:00"
+}

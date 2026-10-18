@@ -1,0 +1,20 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=FbzpB8W1vrs
+[youtube] FbzpB8W1vrs: Downloading webpage
+WARNING: [youtube] unable to extract yt initial data; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+WARNING: [youtube] Incomplete data received in embedded initial data; re-fetching using API.
+[youtube] FbzpB8W1vrs: Downloading initial data API JSON
+[youtube] FbzpB8W1vrs: Downloading visionos player API JSON
+ERROR: [youtube] FbzpB8W1vrs: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=FbzpB8W1vrs
+[youtube] FbzpB8W1vrs: Downloading webpage
+[youtube] FbzpB8W1vrs: Downloading visionos player API JSON
+ERROR: [youtube] FbzpB8W1vrs: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=FbzpB8W1vrs
+[youtube] FbzpB8W1vrs: Downloading webpage
+WARNING: [youtube] FbzpB8W1vrs: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] FbzpB8W1vrs: Downloading initial data API JSON
+[youtube] FbzpB8W1vrs: Downloading visionos player API JSON
+[youtube] FbzpB8W1vrs: Downloading iframe API JS
+[youtube] FbzpB8W1vrs: Downloading player 21090930-main
+[youtube] FbzpB8W1vrs: Downloading web player API JSON
+ERROR: [youtube] FbzpB8W1vrs: Video unavailable. It was removed following a copyright removal request by STAR-K Kosher Certification

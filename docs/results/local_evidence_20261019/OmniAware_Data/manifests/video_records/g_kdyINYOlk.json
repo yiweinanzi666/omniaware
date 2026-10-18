@@ -1,0 +1,27 @@
+{
+  "id": "g_kdyINYOlk",
+  "source_url": "https://www.youtube.com/watch?v=g_kdyINYOlk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\g_kdyINYOlk.log",
+  "filename": "g_kdyINYOlk.mp4",
+  "bytes": 10202745,
+  "sha256": "b58c6e62e2b9f09bb5f7d18ee549ada0057f1fc4c4767902c518d745647c7a59",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "184.296780"
+    }
+  }
+}

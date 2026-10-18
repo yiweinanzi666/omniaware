@@ -1,0 +1,27 @@
+{
+  "id": "qgsVHizmvao",
+  "source_url": "https://www.youtube.com/watch?v=qgsVHizmvao",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\qgsVHizmvao.log",
+  "filename": "qgsVHizmvao.mp4",
+  "bytes": 7069905,
+  "sha256": "c8af45a4e7a408a67db93f14e7b34fb67952df3bc197332bbb38fc430c473670",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "124.946576"
+    }
+  }
+}

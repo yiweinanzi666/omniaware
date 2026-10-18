@@ -1,0 +1,10 @@
+{"state": "waiting_for_gdown_atomic_completion", "local": "D:\\WWW2027\\data_ops\\node04_v2_20261017\\bart_score.pth", "time": "2026-10-16T19:11:54.468430+00:00"}
+{"state": "local_complete", "bytes": 1625565295, "sha256": "4c076ee386795a831e0021788148becf57136127d6512ca350c7973f36c0e573", "time": "2026-10-16T22:58:58.856505+00:00"}
+{"state": "transfer_failed", "attempt": 1, "error": "File not open for writing", "time": "2026-10-16T22:58:59.496814+00:00"}
+{"state": "transfer_failed", "attempt": 2, "error": "File not open for writing", "time": "2026-10-16T22:59:30.115948+00:00"}
+{"state": "transfer_failed", "attempt": 3, "error": "File not open for writing", "time": "2026-10-16T23:00:00.740287+00:00"}
+{"state": "transfer_failed", "attempt": 4, "error": "File not open for writing", "time": "2026-10-16T23:00:31.303198+00:00"}
+{"state": "waiting_for_gdown_atomic_completion", "local": "D:\\WWW2027\\data_ops\\node04_v2_20261017\\bart_score.pth", "time": "2026-10-16T23:01:14.481817+00:00"}
+{"state": "local_complete", "bytes": 1625565295, "sha256": "4c076ee386795a831e0021788148becf57136127d6512ca350c7973f36c0e573", "time": "2026-10-16T23:01:17.748485+00:00"}
+{"state": "uploaded_verified", "remote": "/home/user/Futaoran/omniaware_v2_download_20261017/cache/bartscore/bart_score.pth", "bytes": 1625565295, "sha256": "4c076ee386795a831e0021788148becf57136127d6512ca350c7973f36c0e573", "time": "2026-10-16T23:48:44.271573+00:00"}
+{"command": "tmux new-window -d -t v2-prep-20261017 -n bartscore-finish \"bash -c 'export PYTHONPATH=/home/user/Futaoran/omniaware_v2_bootstrap_20261017; /home/user/anaconda3/bin/python -u /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/prepare_v3.py bartscore > /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/bartscore_finish.log 2>&1'\"", "exit_code": 0, "stderr": "", "time": "2026-10-16T23:48:44.441520+00:00"}

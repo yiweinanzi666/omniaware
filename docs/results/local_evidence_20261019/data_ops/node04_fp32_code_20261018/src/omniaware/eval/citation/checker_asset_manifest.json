@@ -1,0 +1,73 @@
+{
+  "status": "ASSETS_VERIFIED_NO_MODEL_LOADED",
+  "downloaded_utc": "2026-10-05T01:29:28.149766+00:00",
+  "model": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+  "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+  "directory": "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 7580,
+      "sha256": "216c3ac9ea77beec4e35a347c8b4edc47fbb3465e7c2a00dc923ae7b975cf346",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/README.md",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "config.json",
+      "bytes": 1056,
+      "sha256": "7f9d420b616691c5b575bab8839719aefbddc656d8e1316519414b097ce43e3d",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/config.json",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "tokenizer_config.json",
+      "bytes": 395,
+      "sha256": "556a192d83e3edb45a09a6207095dd9295c3b2279062e5cc430feac4cb7a0817",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer_config.json",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "special_tokens_map.json",
+      "bytes": 156,
+      "sha256": "fcfbeb4e25cd37fb5b8030406394253b245230fd3b552750092bab7d24d827da",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/special_tokens_map.json",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "added_tokens.json",
+      "bytes": 18,
+      "sha256": "cd0141b19e809eb963a8f8244fad72530233f729e1f6960d281e1fbb3537b2fb",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/added_tokens.json",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "tokenizer.json",
+      "bytes": 8648889,
+      "sha256": "7aa118770f066a74530d161c7d0b994d0629cc0ff3a0df213f184192773f960a",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/tokenizer.json",
+      "upstream_verification": "Git blob SHA1"
+    },
+    {
+      "file": "spm.model",
+      "bytes": 2464616,
+      "sha256": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/spm.model",
+      "upstream_verification": "LFS SHA256"
+    },
+    {
+      "file": "model.safetensors",
+      "bytes": 870182606,
+      "sha256": "c03cd208bf920b4fbbb182a0535859a566e8acc3477d2b536bf87b769978524b",
+      "url": "https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7/model.safetensors",
+      "upstream_verification": "LFS SHA256"
+    }
+  ],
+  "id2label": {
+    "0": "entailment",
+    "1": "neutral",
+    "2": "contradiction"
+  },
+  "decision": "argmax(logits) == 0",
+  "model_loads": 0,
+  "historical_table5_checker_identity_claimed": false
+}

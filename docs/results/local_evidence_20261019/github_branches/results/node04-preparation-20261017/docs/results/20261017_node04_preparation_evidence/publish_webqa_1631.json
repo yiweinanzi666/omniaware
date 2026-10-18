@@ -1,0 +1,177 @@
+{
+  "start": "2026-10-17T16:25:01.335677+08:00",
+  "command": [
+    "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/publish_webqa_1631.py"
+  ],
+  "authorization": "User explicitly approved official LOAD_TRUNCATED_IMAGES=True decoding for these 10 images; preserve sources and record handling.",
+  "published": [
+    {
+      "image_id": "30278219",
+      "source_sha256": "c20abd196b6e0f645dd71a7273e3144d4957d5a3f2f56b7762fe8e8328a5cb6c",
+      "ok": true,
+      "size": [
+        627,
+        553
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30278219.jpg",
+      "bytes": 91580,
+      "sha256": "43be9f779d64dc05f4c11acea1c16e92f57013beb7d6f018dbc7e56224fdb955",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30278219.jpg"
+    },
+    {
+      "image_id": "30045608",
+      "source_sha256": "5464553142e4313341b7d452a6d5c3a42418ce20f41650892f72e38e9ae9cb2d",
+      "ok": true,
+      "size": [
+        719,
+        592
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30045608.jpg",
+      "bytes": 95736,
+      "sha256": "d8bfef8e79562060d0e3a81cefb522b6fd0552625304cbb5534e1ec99c291264",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30045608.jpg"
+    },
+    {
+      "image_id": "30366390",
+      "source_sha256": "d69940905e24cca24ee6501027ea121d446a964ca61b24ee187c84442b5fccc5",
+      "ok": true,
+      "size": [
+        800,
+        532
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30366390.jpg",
+      "bytes": 114344,
+      "sha256": "13bd4643db3e80e5a9b5e49026bf4d8879b7b4d1b031864d059718677ecdd4e6",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30366390.jpg"
+    },
+    {
+      "image_id": "30298493",
+      "source_sha256": "dbf43328613bc9176904843bd47865e192595fe554f54de0174e19540af8034e",
+      "ok": true,
+      "size": [
+        350,
+        250
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30298493.jpg",
+      "bytes": 36570,
+      "sha256": "4bcf425fd2b8148ba64a35d49801d406bbeb7060ac2e51954ebcbdb2658db6ad",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30298493.jpg"
+    },
+    {
+      "image_id": "30014375",
+      "source_sha256": "f2f58b585aa38eae81f1cb3801d81503a808524ed126532d71ccf5680d1f7650",
+      "ok": true,
+      "size": [
+        369,
+        359
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30014375.jpg",
+      "bytes": 25710,
+      "sha256": "cc574cdc2ccbb25e039976e13190c7f2ddecc32bee6cf9c83a5a9f99fd3c0a1c",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30014375.jpg"
+    },
+    {
+      "image_id": "30039288",
+      "source_sha256": "bcfbf74cefa510bb535bb3f44e4edde895ff39309b93484d346f51b97350b0e1",
+      "ok": true,
+      "size": [
+        648,
+        486
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30039288.jpg",
+      "bytes": 170284,
+      "sha256": "58d554673e3c34be99a8c888a68abb5250dd76c0bb15685cd09c705a8b978727",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30039288.jpg"
+    },
+    {
+      "image_id": "30233625",
+      "source_sha256": "700322df6af437d1b0d02eb7e1ce36fb3fcc2a6cdc369bd8cb02ed66b726a755",
+      "ok": true,
+      "size": [
+        387,
+        218
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30233625.jpg",
+      "bytes": 22807,
+      "sha256": "ed122fd9da818af981100013e54923a1e6de907633aa222227d0eaefdabf93d7",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30233625.jpg"
+    },
+    {
+      "image_id": "30161353",
+      "source_sha256": "f5c84da6b5523d5f018a0775a86324c3c192e37af69e6215730de80bb5abe1ef",
+      "ok": true,
+      "size": [
+        600,
+        400
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30161353.jpg",
+      "bytes": 113641,
+      "sha256": "2e6244162f53ce11b192894209ba566a18823d1e8fcd21a992cf78e0aa618fe1",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30161353.jpg"
+    },
+    {
+      "image_id": "30172755",
+      "source_sha256": "b75dcb38cb7febf1ff7b453fcbe10bff16f17e58ed47a72e395ce151afb09729",
+      "ok": true,
+      "size": [
+        231,
+        324
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30172755.jpg",
+      "bytes": 55636,
+      "sha256": "c67e5d3dfa8145443a22005d0bdd6b4deed3e7d22a5d20b75f165493e05d5075",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30172755.jpg"
+    },
+    {
+      "image_id": "30039112",
+      "source_sha256": "5e12567bdb20839517a3fd130a53e3b56ac3a1c6e21d20c0e4aac88d2faf2674",
+      "ok": true,
+      "size": [
+        640,
+        438
+      ],
+      "path": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/webqa_official_decode_trial_1620/30039112.jpg",
+      "bytes": 66835,
+      "sha256": "8678b2bb2a4960be35c1c8c96bdc165a05a43aea0ef9592ee59598a54e8eb3f4",
+      "destination": "/home/user/Futaoran/omniaware/assets/webqa_open/images/30039112.jpg"
+    }
+  ],
+  "loaders": {
+    "webqa_full": {
+      "universe": "webqa_full",
+      "count": 4966,
+      "meta": {
+        "dropped": {}
+      },
+      "train_count": 36766,
+      "train_meta": {
+        "dropped": {}
+      }
+    },
+    "webqa_open_img": {
+      "universe": "webqa_open_full",
+      "count": 4966,
+      "meta": {
+        "dropped": {}
+      },
+      "train_count": 36766,
+      "train_meta": {
+        "dropped": {}
+      }
+    },
+    "okvqa_gs": {
+      "universe": "okvqa_gs",
+      "count": 5046,
+      "meta": {
+        "dropped": {}
+      }
+    }
+  },
+  "image_fact_closure": {
+    "checked_facts": 606932,
+    "missing": []
+  },
+  "retrieval_note": "Existing open-retrieval rankings and embeddings preserved; the previously undecodable images were excluded by the original indexing process. This repair fills distractor image facts and does not regenerate frozen retrieval caches.",
+  "ok": true,
+  "end": "2026-10-17T16:41:51.618313+08:00"
+}

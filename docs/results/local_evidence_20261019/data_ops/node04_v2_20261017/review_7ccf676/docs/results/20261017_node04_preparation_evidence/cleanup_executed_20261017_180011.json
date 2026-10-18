@@ -1,0 +1,16 @@
+{
+  "start": "2026-10-17T18:00:11.928735+08:00",
+  "end": "2026-10-17T18:04:13.475400+08:00",
+  "execute": true,
+  "eligible_files_checked": 394864,
+  "deleted_files": 394864,
+  "deleted_logical_bytes": 225657120356,
+  "retained_after_verification": 0,
+  "unmatched_files_preserved": 26,
+  "free_bytes_before": 65547550720,
+  "free_bytes_after": 291957661696,
+  "journal": "D:\\WWW2027\\data_ops\\node04_v2_20261017\\cleanup_executed_20261017_180011.jsonl",
+  "directories_deleted": 0,
+  "code_and_reports_preserved": true,
+  "eligible_manifest_sha256": "8093880f2ceb112a8202a0982f5416ec82d3086c05a6870b084c97e231467086"
+}

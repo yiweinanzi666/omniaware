@@ -1,0 +1,10 @@
+2026-10-17T02:56:20+08:00
+targeted_start.txt 2026-10-17T02:51:20+08:00
+targeted_end.txt 2026-10-17T02:53:06+08:00
+targeted_exit_code.txt 0
+....                                                                     [100%]
+- generated xml file: /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted.xml -
+4 passed in 2.43s
+13237 /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/pytest.log
+80993 /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/pytest.xml
+94230 total

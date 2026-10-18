@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "E:\OmniAware_Data\resume_dpr_build.py", line 27, in <module>
+    if seen%100000==0:save(D/'preparation_status.json',dict(status='BUILDING',input_rows=seen,documents=kept,skipped_empty=skipped,resumed_rows=resume,elapsed_seconds=time.time()-start))
+                      ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\OmniAware_Data\resume_dpr_build.py", line 7, in save
+    t=p.with_suffix(p.suffix+'.tmp');t.write_text(json.dumps(x,indent=2));t.replace(p)
+                                                                          ~~~~~~~~~^^^
+  File "C:\Users\mengguai\AppData\Local\Programs\Python\Python313\Lib\pathlib\_local.py", line 780, in replace
+    os.replace(self, target)
+    ~~~~~~~~~~^^^^^^^^^^^^^^
+PermissionError: [WinError 5] �ܾ����ʡ�: 'E:\\OmniAware_Data\\assets\\data\\okvqa_knowledge_dpr_first3m\\preparation_status.json.tmp' -> 'E:\\OmniAware_Data\\assets\\data\\okvqa_knowledge_dpr_first3m\\preparation_status.json'

@@ -1,0 +1,27 @@
+{
+  "id": "gspp7ag2zsE",
+  "source_url": "https://www.youtube.com/watch?v=gspp7ag2zsE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\gspp7ag2zsE.log",
+  "filename": "gspp7ag2zsE.mp4",
+  "bytes": 14090806,
+  "sha256": "a947375c4e9c46a1a8ab863e576348f5b98423430e99152884d75388ff029376",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "189.544490"
+    }
+  }
+}

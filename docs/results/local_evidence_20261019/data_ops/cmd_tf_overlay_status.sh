@@ -1,0 +1,1 @@
+ps -p 2284911 -o pid,etime,stat,cmd || true; find /home/user/Futaoran/omniaware_transformers55_overlay/lib/python3.12/site-packages/transformers -maxdepth 1 -type f 2>/dev/null | wc -l

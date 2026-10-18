@@ -1,0 +1,27 @@
+{
+  "id": "VpiDe_0I1Gs",
+  "source_url": "https://www.youtube.com/watch?v=VpiDe_0I1Gs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VpiDe_0I1Gs.log",
+  "filename": "VpiDe_0I1Gs.mp4",
+  "bytes": 10772390,
+  "sha256": "8aa97f2b7f44044936f26ccffc2a2925921b79c8def3b68780bc1da1cbfea9eb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "248.755374"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+cd /home/user/Futaoran/omniaware_v2_exec; /home/user/Futaoran/omniaware_v2_python311/bin/python -m scripts.verify_real_model --help | head -80

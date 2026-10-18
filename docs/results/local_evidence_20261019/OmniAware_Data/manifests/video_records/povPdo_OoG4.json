@@ -1,0 +1,27 @@
+{
+  "id": "povPdo_OoG4",
+  "source_url": "https://www.youtube.com/watch?v=povPdo_OoG4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\povPdo_OoG4.log",
+  "filename": "povPdo_OoG4.mp4",
+  "bytes": 16162565,
+  "sha256": "650da6d95fd3fe2a51d64194d291cd5cde1f031961c19643aea6ac9771d1a391",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "246.201179"
+    }
+  }
+}

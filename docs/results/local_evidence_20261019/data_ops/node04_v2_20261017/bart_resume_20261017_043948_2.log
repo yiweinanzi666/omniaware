@@ -1,0 +1,9 @@
+Failed to use proxy:
+
+	HTTPSConnectionPool(host='drive.google.com', port=443): Max retries
+	exceeded with url: /uc?id=1_7JfF7KOInb7ZrxKHIigTMR4ChVET01m&confirm=t&
+	uuid=9c2335c1-6bf8-411e-b1a3-128c2e247e78 (Caused by
+	ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote
+	end closed connection without response')))
+
+Please check your proxy settings.

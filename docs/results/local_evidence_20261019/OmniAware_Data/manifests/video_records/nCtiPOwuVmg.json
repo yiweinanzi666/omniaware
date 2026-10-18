@@ -1,0 +1,27 @@
+{
+  "id": "nCtiPOwuVmg",
+  "source_url": "https://www.youtube.com/watch?v=nCtiPOwuVmg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\nCtiPOwuVmg.log",
+  "filename": "nCtiPOwuVmg.mp4",
+  "bytes": 5911936,
+  "sha256": "490ef5cdfe383e894582d17f18ef41e082359bb0b342eb512bb9940990ae572c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "96.827211"
+    }
+  }
+}

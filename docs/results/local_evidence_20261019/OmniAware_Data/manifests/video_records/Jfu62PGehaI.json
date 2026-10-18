@@ -1,0 +1,27 @@
+{
+  "id": "Jfu62PGehaI",
+  "source_url": "https://www.youtube.com/watch?v=Jfu62PGehaI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Jfu62PGehaI.log",
+  "filename": "Jfu62PGehaI.mp4",
+  "bytes": 22327374,
+  "sha256": "559e2050a813864480f3338fcdb849ccc30388ab0c6242a91bc24d833a38dbbe",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "296.634921"
+    }
+  }
+}

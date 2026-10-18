@@ -1,0 +1,27 @@
+{
+  "id": "RHVX_7o8OMk",
+  "source_url": "https://www.youtube.com/watch?v=RHVX_7o8OMk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\RHVX_7o8OMk.log",
+  "filename": "RHVX_7o8OMk.mp4",
+  "bytes": 30235420,
+  "sha256": "e0f5550f82d7d1898aab555eb109003597882b96ee9886a230d0425cb04a3b3e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "509.051066"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "i1VIwM3C_IQ",
+  "source_url": "https://www.youtube.com/watch?v=i1VIwM3C_IQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\i1VIwM3C_IQ.log",
+  "filename": "i1VIwM3C_IQ.mp4",
+  "bytes": 61941900,
+  "sha256": "3a1106b52b6959e43cea216b71b562976388d4c80419251387f1c60903e9b38e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 360,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "665.692880"
+    }
+  }
+}

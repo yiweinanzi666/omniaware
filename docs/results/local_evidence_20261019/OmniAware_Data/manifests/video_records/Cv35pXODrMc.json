@@ -1,0 +1,27 @@
+{
+  "id": "Cv35pXODrMc",
+  "source_url": "https://www.youtube.com/watch?v=Cv35pXODrMc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Cv35pXODrMc.log",
+  "filename": "Cv35pXODrMc.mp4",
+  "bytes": 4984210,
+  "sha256": "aa08aeb658c314a3275c39833db71509faf1ff55cd8af6ef6f1e805552de1bb6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "120.836644"
+    }
+  }
+}

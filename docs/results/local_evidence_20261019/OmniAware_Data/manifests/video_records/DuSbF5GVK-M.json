@@ -1,0 +1,27 @@
+{
+  "id": "DuSbF5GVK-M",
+  "source_url": "https://www.youtube.com/watch?v=DuSbF5GVK-M",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DuSbF5GVK-M.log",
+  "filename": "DuSbF5GVK-M.mp4",
+  "bytes": 7232432,
+  "sha256": "7a1129e9ac377bbcbfeb781e26affc2cd1e3290cfc2e171b889d3d2130f5f0a3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "173.011882"
+    }
+  }
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/command.sh",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\command.sh",
+    "bytes": 1016,
+    "sha256": "0950af6e297d0c19ff8479553c0c64417efd197bc8d347232821bb813b8abb59"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/command.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\command.txt",
+    "bytes": 117,
+    "sha256": "e094adf54b5ec4528b5c3515d85dd123f59947f9d58f687d8ae174f96dcc76a3"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/start.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\start.txt",
+    "bytes": 26,
+    "sha256": "63999f61b07e881475c47e743f03ce2313c0cc86c91dad7f991ce4a23e653bf0"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/end.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\end.txt",
+    "bytes": 26,
+    "sha256": "69827566785c64472ce58eb033179f06c77f0cb3185c7e286262ef2c9a1c9139"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/commit.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\commit.txt",
+    "bytes": 41,
+    "sha256": "27b8ef9b13ac302f5b1e9f36306039bbb7eb89b13796cc161dc81e4c9ba6562c"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/git_status.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\git_status.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/exit_code.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\exit_code.txt",
+    "bytes": 2,
+    "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/pytest.log",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\pytest.log",
+    "bytes": 13237,
+    "sha256": "fd73a32d86f99ba298d013bbdf04eafdc78e801ccc45b573695a0174078cd570"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/pytest.xml",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\pytest.xml",
+    "bytes": 80993,
+    "sha256": "3b0575d06ca380e2b73e3d3192adc5e6c54967c8927afd995ebf1386d5f1934e"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted.sh",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted.sh",
+    "bytes": 871,
+    "sha256": "e4bd0a7a63fdd834311fbd02379bab539c7f53b2299e3cfe80c6e98be2b3ba0e"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted_start.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted_start.txt",
+    "bytes": 26,
+    "sha256": "b3de46bab3b36edf8e53c5601e584cc82f523e1469fbe803fb6c122b533b313f"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted_end.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted_end.txt",
+    "bytes": 26,
+    "sha256": "6aaf6010f58e4b3290fd023ae0bf2ff53a029d437ac73aaffe8a33a898a7c238"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted_exit_code.txt",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted_exit_code.txt",
+    "bytes": 2,
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted.log",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted.log",
+    "bytes": 213,
+    "sha256": "5fe937739f72d9af61d528a2724998c59314510af4d0a643899684b485adabb8"
+  },
+  {
+    "remote": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/preflight_0242/targeted.xml",
+    "local": "D:\\WWW2027\\data_ops\\v2_preflight_20261017\\remote_evidence\\targeted.xml",
+    "bytes": 697,
+    "sha256": "c893978fff6d87196675deb18434994efd4495feb644bd7b2e0e2d03bf51d4f4"
+  }
+]

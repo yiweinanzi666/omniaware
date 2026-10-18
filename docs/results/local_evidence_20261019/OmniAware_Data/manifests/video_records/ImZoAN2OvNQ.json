@@ -1,0 +1,27 @@
+{
+  "id": "ImZoAN2OvNQ",
+  "source_url": "https://www.youtube.com/watch?v=ImZoAN2OvNQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ImZoAN2OvNQ.log",
+  "filename": "ImZoAN2OvNQ.mp4",
+  "bytes": 20037143,
+  "sha256": "22d7609418c82558b5b892cdbcaa1d5747dee4bcf7f5e382a73a48dbe447ef13",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "331.418413"
+    }
+  }
+}

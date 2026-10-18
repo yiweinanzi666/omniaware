@@ -1,0 +1,27 @@
+{
+  "id": "F-X45F0ocdU",
+  "source_url": "https://www.youtube.com/watch?v=F-X45F0ocdU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\F-X45F0ocdU.log",
+  "filename": "F-X45F0ocdU.mp4",
+  "bytes": 9094283,
+  "sha256": "2db85f46981b033ca32038cbcbb90fe047164cc3b5b52f05e7e298a77a9a8f3f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "106.672472"
+    }
+  }
+}

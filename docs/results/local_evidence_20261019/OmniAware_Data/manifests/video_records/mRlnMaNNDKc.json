@@ -1,0 +1,27 @@
+{
+  "id": "mRlnMaNNDKc",
+  "source_url": "https://www.youtube.com/watch?v=mRlnMaNNDKc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\mRlnMaNNDKc.log",
+  "filename": "mRlnMaNNDKc.mp4",
+  "bytes": 14122840,
+  "sha256": "17195728ef2157c63ad5ffabf5c1de63c0e3690ba12c0ad69d46d8603e3e9f67",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 848,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "148.863129"
+    }
+  }
+}

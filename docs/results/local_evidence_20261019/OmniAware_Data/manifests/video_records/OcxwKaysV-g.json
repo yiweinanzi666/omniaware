@@ -1,0 +1,27 @@
+{
+  "id": "OcxwKaysV-g",
+  "source_url": "https://www.youtube.com/watch?v=OcxwKaysV-g",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\OcxwKaysV-g.log",
+  "filename": "OcxwKaysV-g.mp4",
+  "bytes": 62505984,
+  "sha256": "f5543d74872fe9e8bce2ed090997cbca315510982805245d6f7f5103cf70369f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "989.309388"
+    }
+  }
+}

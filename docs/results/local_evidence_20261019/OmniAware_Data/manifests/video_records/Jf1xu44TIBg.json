@@ -1,0 +1,27 @@
+{
+  "id": "Jf1xu44TIBg",
+  "source_url": "https://www.youtube.com/watch?v=Jf1xu44TIBg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Jf1xu44TIBg.log",
+  "filename": "Jf1xu44TIBg.mp4",
+  "bytes": 11218047,
+  "sha256": "54a5a313d65b08b32a5f544ddfc398361bc5d5009d33ff9ec4afc446c8074a7d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "198.135873"
+    }
+  }
+}

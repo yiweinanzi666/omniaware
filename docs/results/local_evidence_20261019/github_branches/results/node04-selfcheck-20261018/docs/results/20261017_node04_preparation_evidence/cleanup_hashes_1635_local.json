@@ -1,0 +1,63 @@
+{
+  "start": "2026-10-17T16:29:55.073620+08:00",
+  "end": "2026-10-17T16:39:13.888433+08:00",
+  "side": "local",
+  "files": 394890,
+  "bytes": 225973716961,
+  "errors": 0,
+  "sha256": "ed8e2d572fb1179b093dc9e7a6a07ba77c77d4fc85d853a579417392fd1f1efc",
+  "groups": [
+    [
+      "WebQA",
+      "WebQA",
+      "raw"
+    ],
+    [
+      "WebQA/chunks",
+      "WebQA",
+      "chunks"
+    ],
+    [
+      "OmniAware_Data/assets/webqa_open",
+      "omniaware/assets/webqa_open",
+      "open"
+    ],
+    [
+      "OmniAware_Data/assets/data/coco/val2014",
+      "omniaware/assets/data/coco/val2014",
+      "jpg"
+    ],
+    [
+      "OmniAware_Data/assets/data/okvqa_local/original",
+      "omniaware/assets/data/okvqa_local/original",
+      "data"
+    ],
+    [
+      "OmniAware_Data/assets/data/okvqa_gs",
+      "omniaware/assets/downloads/okvqa_gs",
+      "csv"
+    ],
+    [
+      "OmniAware_Data/transfer/models/qwen3-vl-8b-instruct",
+      "omniaware/assets/cache/qwen3-vl-8b-instruct",
+      "model"
+    ],
+    [
+      "OmniAware_Data/transfer/models/bge-reranker-v2-m3",
+      "omniaware/assets/cache/bge-reranker-v2-m3",
+      "model"
+    ],
+    [
+      "OmniAware_Data/transfer/models/deberta_nli",
+      "omniaware/assets/cache/e5_citation_support/deberta_nli/b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+      "model"
+    ],
+    [
+      "data_ops/node04_v2_20261017",
+      "omniaware/assets/cache/bartscore",
+      "bart"
+    ]
+  ],
+  "plan_sha256": "c13c70161fb15c3c23a32ff76324f0649f16575cfec68ae9dafa7b96ef745966",
+  "deletion_performed": false
+}

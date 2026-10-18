@@ -1,0 +1,27 @@
+{
+  "id": "lES-e-47FZs",
+  "source_url": "https://www.youtube.com/watch?v=lES-e-47FZs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\lES-e-47FZs.log",
+  "filename": "lES-e-47FZs.mp4",
+  "bytes": 25509350,
+  "sha256": "fa5e0998288e00862be01d3c89e65e72b45c48cd29ef74e505ad23f147a572c7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "285.559002"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "y7-8oL_1MzU",
+  "source_url": "https://www.youtube.com/watch?v=y7-8oL_1MzU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\y7-8oL_1MzU.log",
+  "filename": "y7-8oL_1MzU.mp4",
+  "bytes": 20672768,
+  "sha256": "88540268aa8c6c350d4f9d1ad409b931dbac83491a71d9a6641f2265baaa8887",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "269.096054"
+    }
+  }
+}

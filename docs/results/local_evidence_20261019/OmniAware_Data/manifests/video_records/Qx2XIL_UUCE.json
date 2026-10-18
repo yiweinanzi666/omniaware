@@ -1,0 +1,27 @@
+{
+  "id": "Qx2XIL_UUCE",
+  "source_url": "https://www.youtube.com/watch?v=Qx2XIL_UUCE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Qx2XIL_UUCE.log",
+  "filename": "Qx2XIL_UUCE.mp4",
+  "bytes": 36807482,
+  "sha256": "98feec11a7c04e705e1ef923d0504829786982909aca340bf7a97a20f6b05787",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "466.651429"
+    }
+  }
+}

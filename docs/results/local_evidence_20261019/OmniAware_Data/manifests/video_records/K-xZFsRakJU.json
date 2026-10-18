@@ -1,0 +1,27 @@
+{
+  "id": "K-xZFsRakJU",
+  "source_url": "https://www.youtube.com/watch?v=K-xZFsRakJU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\K-xZFsRakJU.log",
+  "filename": "K-xZFsRakJU.mp4",
+  "bytes": 14289545,
+  "sha256": "1a293dbc86928e54b243274f0df9789389b5f7ae63519ac105534291726d2963",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "122.299501"
+    }
+  }
+}

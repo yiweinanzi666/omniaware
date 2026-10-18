@@ -1,0 +1,27 @@
+{
+  "id": "dvgitAUyOZE",
+  "source_url": "https://www.youtube.com/watch?v=dvgitAUyOZE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\dvgitAUyOZE.log",
+  "filename": "dvgitAUyOZE.mp4",
+  "bytes": 5626085,
+  "sha256": "f0e15a8d034aa13aaa29c3a6c985c23f22c2d16dcee1ee5e324575e747bb427e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "122.415601"
+    }
+  }
+}

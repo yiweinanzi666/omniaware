@@ -1,0 +1,27 @@
+{
+  "id": "PAN3R2S02Nc",
+  "source_url": "https://www.youtube.com/watch?v=PAN3R2S02Nc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PAN3R2S02Nc.log",
+  "filename": "PAN3R2S02Nc.mp4",
+  "bytes": 23534706,
+  "sha256": "872dc2a0064baf65521b3a4f4e6d9c3035c80f711d5d4e6451553d1062d4d1c1",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "299.467755"
+    }
+  }
+}

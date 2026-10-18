@@ -1,0 +1,27 @@
+{
+  "id": "eZ-C72FckDQ",
+  "source_url": "https://www.youtube.com/watch?v=eZ-C72FckDQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\eZ-C72FckDQ.log",
+  "filename": "eZ-C72FckDQ.mp4",
+  "bytes": 15553366,
+  "sha256": "69c6360c076bdf485d3edc9a94986bd13febfc905d4c52a7a27116c260251ef9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "209.327891"
+    }
+  }
+}

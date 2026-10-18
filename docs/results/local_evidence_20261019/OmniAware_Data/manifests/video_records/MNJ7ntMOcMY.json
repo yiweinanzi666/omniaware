@@ -1,0 +1,27 @@
+{
+  "id": "MNJ7ntMOcMY",
+  "source_url": "https://www.youtube.com/watch?v=MNJ7ntMOcMY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MNJ7ntMOcMY.log",
+  "filename": "MNJ7ntMOcMY.mp4",
+  "bytes": 11817297,
+  "sha256": "bd2e23fed1b15c55b21b725460931e7b05f641a8ca3c937abf019d634ddff2cf",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "191.518186"
+    }
+  }
+}

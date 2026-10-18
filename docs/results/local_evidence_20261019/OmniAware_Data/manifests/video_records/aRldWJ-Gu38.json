@@ -1,0 +1,27 @@
+{
+  "id": "aRldWJ-Gu38",
+  "source_url": "https://www.youtube.com/watch?v=aRldWJ-Gu38",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\aRldWJ-Gu38.log",
+  "filename": "aRldWJ-Gu38.mp4",
+  "bytes": 16027145,
+  "sha256": "282777e0718bdf68214eb3e45a2bd4e51ba29ac9b01be30bb63cce412d875b24",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 840,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "134.118458"
+    }
+  }
+}

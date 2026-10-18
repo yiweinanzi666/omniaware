@@ -1,0 +1,27 @@
+{
+  "id": "DtcJstJBnAU",
+  "source_url": "https://www.youtube.com/watch?v=DtcJstJBnAU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DtcJstJBnAU.log",
+  "filename": "DtcJstJBnAU.mp4",
+  "bytes": 19667571,
+  "sha256": "4148fa7c88c0b14b5792d521cbb438dc70a688b9c925a16d011a976616bb674b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "320.174000"
+    }
+  }
+}

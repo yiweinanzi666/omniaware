@@ -1,0 +1,8 @@
+{
+  "measured_at":"2026-10-13",
+  "webqa_train_val":{"path":"D:\\WebQA\\WebQA_train_val.json","records":41732,"sha256":"7ff6ba4aae749dbdd6400c69251e97a785e689039206d91d7541bec15eab3dbe","valid_json":true},
+  "webqa_test":{"path":"D:\\WebQA\\WebQA_test.json","records":7540,"sha256":"a15cea11c0fbd49c425fcf9a01fc47da4f5f2674e7481751261160fd88b233db","valid_json":true},
+  "imgs_lineidx":{"path":"D:\\WebQA\\imgs.lineidx","bytes":4616775,"sha256":"1772b8ac88563953f36da85c52c390db90d25c128c7593643a97c8ac7468d46f","validity":"byte/hash checked; full mapping awaits imgs.tsv"},
+  "imgs_tsv":{"present":false,"decode_check":"NOT_RUN"},
+  "archive":{"local_parts_verified":0,"remote_full_size_parts":3,"remote_partial_parts":9,"remote_missing_parts":39,"seven_zip_test":"NOT_RUN"}
+}

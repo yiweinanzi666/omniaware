@@ -1,0 +1,39 @@
+{
+  "answer_format": "answer_first",
+  "questions": 50,
+  "actions": {
+    "direct": {
+      "questions": 50,
+      "answer_first_ok": 0.94,
+      "answer_token_is_first": 0.84,
+      "template_start": 0.24
+    },
+    "static_text": {
+      "questions": 50,
+      "answer_first_ok": 0.9583333333333334,
+      "answer_token_is_first": 0.76,
+      "template_start": 0.32
+    },
+    "static_image": {
+      "questions": 49,
+      "answer_first_ok": 0.9791666666666666,
+      "answer_token_is_first": 0.8367346938775511,
+      "template_start": 0.2857142857142857
+    },
+    "static_mixed": {
+      "questions": 50,
+      "answer_first_ok": 0.98,
+      "answer_token_is_first": 0.82,
+      "template_start": 0.28
+    },
+    "rerank_static": {
+      "questions": 50,
+      "answer_first_ok": 0.9795918367346939,
+      "answer_token_is_first": 0.86,
+      "template_start": 0.24
+    }
+  },
+  "min_answer_first": 0.9,
+  "passed": true,
+  "below": []
+}

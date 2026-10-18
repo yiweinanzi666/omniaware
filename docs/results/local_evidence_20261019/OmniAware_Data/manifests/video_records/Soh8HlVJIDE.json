@@ -1,0 +1,27 @@
+{
+  "id": "Soh8HlVJIDE",
+  "source_url": "https://www.youtube.com/watch?v=Soh8HlVJIDE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Soh8HlVJIDE.log",
+  "filename": "Soh8HlVJIDE.mp4",
+  "bytes": 7417528,
+  "sha256": "46908170b06c5a18a7e0620f36138d5147332a8ca17e4d0b8eff36e93e18aec8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "164.974000"
+    }
+  }
+}

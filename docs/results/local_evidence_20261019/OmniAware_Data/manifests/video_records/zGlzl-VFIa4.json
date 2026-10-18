@@ -1,0 +1,27 @@
+{
+  "id": "zGlzl-VFIa4",
+  "source_url": "https://www.youtube.com/watch?v=zGlzl-VFIa4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zGlzl-VFIa4.log",
+  "filename": "zGlzl-VFIa4.mp4",
+  "bytes": 2486355,
+  "sha256": "9665ffee419de3b75420f732d67300a0e27526ce8711a868f2b2dcce5b365108",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "51.943039"
+    }
+  }
+}

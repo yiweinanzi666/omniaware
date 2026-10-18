@@ -1,0 +1,27 @@
+{
+  "id": "GgRJEH2NtDA",
+  "source_url": "https://www.youtube.com/watch?v=GgRJEH2NtDA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\GgRJEH2NtDA.log",
+  "filename": "GgRJEH2NtDA.mp4",
+  "bytes": 19354232,
+  "sha256": "9f519dcdb8077961deeb203ca709c4b1fc8319b5f0e11d0d96f4df1d4bf14252",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 848,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "169.064490"
+    }
+  }
+}

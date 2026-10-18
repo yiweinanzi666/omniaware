@@ -1,0 +1,27 @@
+{
+  "id": "l4_FOH18Beo",
+  "source_url": "https://www.youtube.com/watch?v=l4_FOH18Beo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\l4_FOH18Beo.log",
+  "filename": "l4_FOH18Beo.mp4",
+  "bytes": 19402450,
+  "sha256": "c24d474974d3212907ae1f56577b7e5108ce8b83b3b12cb9077ad560205ad94e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "333.833288"
+    }
+  }
+}

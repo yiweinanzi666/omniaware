@@ -1,0 +1,27 @@
+{
+  "id": "TG_IFH_cjiI",
+  "source_url": "https://www.youtube.com/watch?v=TG_IFH_cjiI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\TG_IFH_cjiI.log",
+  "filename": "TG_IFH_cjiI.mp4",
+  "bytes": 30400260,
+  "sha256": "13075d5e5227fd545b810611ebafc170b38cc23232f7fa125d16da3ed90634e7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "365.691066"
+    }
+  }
+}

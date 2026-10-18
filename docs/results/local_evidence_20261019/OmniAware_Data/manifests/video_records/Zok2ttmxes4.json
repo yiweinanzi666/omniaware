@@ -1,0 +1,27 @@
+{
+  "id": "Zok2ttmxes4",
+  "source_url": "https://www.youtube.com/watch?v=Zok2ttmxes4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Zok2ttmxes4.log",
+  "filename": "Zok2ttmxes4.mp4",
+  "bytes": 37667800,
+  "sha256": "838ceb69e49e9b971ec28d393c87d743dba276bddd436ec8b05514db5cf6aa30",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "306.015782"
+    }
+  }
+}

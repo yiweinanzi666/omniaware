@@ -1,0 +1,24 @@
+{
+  "record_type": "user_requested_stop",
+  "recorded_at": "2026-10-15T14:29:52.272841+08:00",
+  "timezone": "Asia/Taipei",
+  "reason": "v2 正式实验不用视频",
+  "progress": {
+    "complete": 1199,
+    "target": 1725
+  },
+  "youtube_downloads_permitted": false,
+  "cookies_or_logged_in_retries_permitted": false,
+  "preservation": "All existing videos and manifests retained in place, unchanged. This is an additional record only.",
+  "failure_reason_correction": {
+    "source": "User supplied final-error classification on 2026-10-15",
+    "youtube_bot_verification": 1482,
+    "videos_unavailable": 73,
+    "permanently_deleted_evaluation_video_ids": [
+      "D6JOjFCNUyU",
+      "s4UvmPov9dY"
+    ],
+    "note": "Counts are supplemental user-provided classifications, not a rewrite of the original raw error records."
+  },
+  "existing_results_manifest_sha256": "07c15900a5073fca75d01e6c27f0124085e3cdf22123f322f6940ad6883541bb"
+}

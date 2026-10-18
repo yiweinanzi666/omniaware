@@ -1,0 +1,16 @@
+
+===== 2026-10-13T08:22:33.374696+00:00 pid 25643 =====
+omniaware.run --dataset okvqa --split test --n-calib 6 --calib-source heldout --n-dev 2 --tag iv --tau=-1e9 --tau-bias=-1e9 --variants eab:g1.2:ans1:pos:gate --relevance-noise 0.1 --intervention mask cf random_edit rerun distractors inject_answer inject_instruction
+[data] --n-dev 2 differs from the protocol size 256: the test set changes
+[data] okvqa: 16 total, calib 6 (heldout), dev 2, test 8
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 162115ecea8cdd9b2d1503f2d304e3066f4adb8c dirty=False torch 2.14.1 transformers 5.5.3 attn None dtype None gpus []
+[1/8] q006 0.0s P=382 U_pre=0.19 retrieve=True
+[2/8] q005 0.0s P=384 U_pre=0.00 retrieve=True
+[3/8] q010 0.0s P=389 U_pre=0.88 retrieve=True
+[4/8] q000 0.0s P=383 U_pre=0.23 retrieve=True
+[5/8] q001 0.0s P=382 U_pre=0.23 retrieve=True
+[6/8] q007 0.0s P=384 U_pre=0.00 retrieve=True
+[7/8] q014 0.0s P=387 U_pre=0.79 retrieve=True
+[8/8] q003 0.0s P=384 U_pre=0.05 retrieve=True
+[done] okvqa 8 in 0.0s -> /private/var/folders/vk/rrdjcnjd48d6d10xp5tf37k00000gn/T/pytest-of-futaoran/pytest-4/test_interventions_and_relevan0/runs/iv/okvqa.jsonl; empty_answer_rate 0.000000

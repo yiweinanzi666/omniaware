@@ -1,0 +1,27 @@
+{
+  "id": "Dedb-aUy85Q",
+  "source_url": "https://www.youtube.com/watch?v=Dedb-aUy85Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Dedb-aUy85Q.log",
+  "filename": "Dedb-aUy85Q.mp4",
+  "bytes": 6319918,
+  "sha256": "8234a33858345b1ff901d11fedb01db545003fbbe108e7b470d16e3dc2e201b6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "165.163537"
+    }
+  }
+}

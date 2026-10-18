@@ -1,0 +1,27 @@
+{
+  "id": "ZaoSsVsl6YE",
+  "source_url": "https://www.youtube.com/watch?v=ZaoSsVsl6YE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ZaoSsVsl6YE.log",
+  "filename": "ZaoSsVsl6YE.mp4",
+  "bytes": 8578293,
+  "sha256": "bbaee83434f5e17ee297430ecfbf4e4be82e4c307d9893fad3ca68c8cd6f8949",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "134.257778"
+    }
+  }
+}

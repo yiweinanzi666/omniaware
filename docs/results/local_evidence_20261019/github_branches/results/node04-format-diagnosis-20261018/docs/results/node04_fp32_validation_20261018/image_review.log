@@ -1,0 +1,18 @@
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 32819.15it/s]
+[1mBertModel LOAD REPORT[0m from: /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/bge-large-en-v1.5
+Key                     | Status     |  | 
+------------------------+------------+--+-
+embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]Loading weights: 100%|██████████| 590/590 [00:00<00:00, 26039.24it/s]
+[1mCLIPModel LOAD REPORT[0m from: /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/clip-vit-large-patch14
+Key                                  | Status     |  | 
+-------------------------------------+------------+--+-
+vision_model.embeddings.position_ids | UNEXPECTED |  | 
+text_model.embeddings.position_ids   | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[relevance] scored 50 examples in 27.9s

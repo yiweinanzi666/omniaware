@@ -1,0 +1,27 @@
+{
+  "id": "4MhzKI4q5FE",
+  "source_url": "https://www.youtube.com/watch?v=4MhzKI4q5FE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\4MhzKI4q5FE.log",
+  "filename": "4MhzKI4q5FE.mp4",
+  "bytes": 6092766,
+  "sha256": "bd21ee233102731d99cbc8df0424ddda4f5669c72bd0853e24eef2fe24c16158",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "121.334000"
+    }
+  }
+}

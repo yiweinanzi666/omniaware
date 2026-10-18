@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\site-packages\paramiko\channel.py", line 697, in recv
+    out = self.in_buffer.read(nbytes, self.timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\site-packages\paramiko\buffered_pipe.py", line 154, in read
+    raise PipeTimeout()
+paramiko.buffered_pipe.PipeTimeout
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WWW2027\data_ops\node04_readonly_audit.py", line 40, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\WWW2027\data_ops\node04_readonly_audit.py", line 30, in main
+    sys.stdout.write(stdout.read().decode("utf-8", "replace"))
+                     ^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\site-packages\paramiko\file.py", line 184, in read
+    new_data = self._read(self._DEFAULT_BUFSIZE)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\site-packages\paramiko\channel.py", line 1359, in _read
+    return self.channel.recv(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\site-packages\paramiko\channel.py", line 699, in recv
+    raise socket.timeout()
+TimeoutError

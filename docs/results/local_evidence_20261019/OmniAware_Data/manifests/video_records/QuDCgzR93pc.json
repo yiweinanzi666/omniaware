@@ -1,0 +1,27 @@
+{
+  "id": "QuDCgzR93pc",
+  "source_url": "https://www.youtube.com/watch?v=QuDCgzR93pc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\QuDCgzR93pc.log",
+  "filename": "QuDCgzR93pc.mp4",
+  "bytes": 30526446,
+  "sha256": "9cdae0c5fa9dc65305b4a7ba5afae1eb4e5df69a29fcd4be01fdc44d0e9a9d62",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "461.217959"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "wi2EHnHIbEI",
+  "source_url": "https://www.youtube.com/watch?v=wi2EHnHIbEI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\wi2EHnHIbEI.log",
+  "filename": "wi2EHnHIbEI.mp4",
+  "bytes": 21013979,
+  "sha256": "a072abcac666861860def0fa7cd83cd417fc45affe8131ca5f65d8de6714322b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "161.982268"
+    }
+  }
+}
