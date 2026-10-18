@@ -1,0 +1,27 @@
+{
+  "id": "Ruiz-LbLrBw",
+  "source_url": "https://www.youtube.com/watch?v=Ruiz-LbLrBw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ruiz-LbLrBw.log",
+  "filename": "Ruiz-LbLrBw.mp4",
+  "bytes": 9180870,
+  "sha256": "3b3350b9d2ce95dee442dd30d2ec04de9c45e0290271702f2649331b01063e96",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "236.123719"
+    }
+  }
+}

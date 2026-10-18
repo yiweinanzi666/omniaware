@@ -1,0 +1,15 @@
+{
+  "start": "2026-10-17T16:12:42.867050+08:00",
+  "command": [
+    "/home/user/Futaoran/omniaware_v2_python311/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "cwd": "/home/user/Futaoran/omniaware_v2_exec",
+  "source_commit": "da416a2266a0f3f01e0c394674d0e7b0ad0e5722",
+  "exit_code": 1,
+  "end": "2026-10-17T16:15:53.217211+08:00",
+  "log_sha256": "0ae63b4f5d3d2a18eef5758e778a9a48ed63c7737454b7edf57e8aec32d0025e"
+}

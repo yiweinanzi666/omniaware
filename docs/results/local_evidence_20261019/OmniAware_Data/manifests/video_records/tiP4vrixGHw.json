@@ -1,0 +1,27 @@
+{
+  "id": "tiP4vrixGHw",
+  "source_url": "https://www.youtube.com/watch?v=tiP4vrixGHw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\tiP4vrixGHw.log",
+  "filename": "tiP4vrixGHw.mp4",
+  "bytes": 43186830,
+  "sha256": "9f8f81f39271aa7df9cee5838b3e164e5c248537d948c8eb47d22b3c6de2888f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "580.754286"
+    }
+  }
+}

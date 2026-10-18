@@ -1,0 +1,27 @@
+{
+  "id": "rLAB2AKBOwo",
+  "source_url": "https://www.youtube.com/watch?v=rLAB2AKBOwo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rLAB2AKBOwo.log",
+  "filename": "rLAB2AKBOwo.mp4",
+  "bytes": 39199622,
+  "sha256": "547952016271abe4253fb49d716ee35b5ab308c1fdb2c1a6e400586d12110dc0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "647.952834"
+    }
+  }
+}

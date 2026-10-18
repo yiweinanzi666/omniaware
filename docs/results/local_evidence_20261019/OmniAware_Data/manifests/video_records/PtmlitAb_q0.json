@@ -1,0 +1,27 @@
+{
+  "id": "PtmlitAb_q0",
+  "source_url": "https://www.youtube.com/watch?v=PtmlitAb_q0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PtmlitAb_q0.log",
+  "filename": "PtmlitAb_q0.mp4",
+  "bytes": 17002944,
+  "sha256": "815b4a0710b8393f0b4804cefd88f6a1cf9aa6568d1fc20ca7d2623e3b0f92ce",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "227.787755"
+    }
+  }
+}

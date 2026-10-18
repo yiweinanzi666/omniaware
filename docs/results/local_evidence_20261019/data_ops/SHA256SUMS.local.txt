@@ -1,0 +1,5 @@
+1772b8ac88563953f36da85c52c390db90d25c128c7593643a97c8ac7468d46f  D:\WebQA\imgs.lineidx
+a15cea11c0fbd49c425fcf9a01fc47da4f5f2674e7481751261160fd88b233db  D:\WebQA\WebQA_test.json
+5c400224d43a6729b57ce8458a8ffefa5a7f0c493e79a87784b35e72f69484bf  D:\WebQA\WebQA_test.json.gz
+7ff6ba4aae749dbdd6400c69251e97a785e689039206d91d7541bec15eab3dbe  D:\WebQA\WebQA_train_val.json
+b173d47f9ec8f40e2f9a18f3bb3f575947bb50dbaaa3f51c353434e849727f1a  D:\WebQA\WebQA_train_val.json.gz

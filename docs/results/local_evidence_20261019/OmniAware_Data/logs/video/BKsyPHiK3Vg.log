@@ -1,0 +1,44 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=BKsyPHiK3Vg
+[youtube] BKsyPHiK3Vg: Downloading webpage
+[youtube] BKsyPHiK3Vg: Downloading visionos player API JSON
+[youtube] BKsyPHiK3Vg: Downloading m3u8 information
+[info] BKsyPHiK3Vg: Downloading 1 format(s): 135+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\BKsyPHiK3Vg.info.json
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+
+[automatic retry] public HLS format after direct HTTP 403
+[youtube] Extracting URL: https://www.youtube.com/watch?v=BKsyPHiK3Vg
+[youtube] BKsyPHiK3Vg: Downloading webpage
+[youtube] BKsyPHiK3Vg: Downloading visionos player API JSON
+[youtube] BKsyPHiK3Vg: Downloading m3u8 information
+[info] BKsyPHiK3Vg: Downloading 1 format(s): 231+234
+[info] Video metadata is already present
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 48
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\BKsyPHiK3Vg.f231.mp4
+[download] Download completed
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 48
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\BKsyPHiK3Vg.f234.mp4
+[youtube] Extracting URL: https://www.youtube.com/watch?v=BKsyPHiK3Vg
+[youtube] BKsyPHiK3Vg: Downloading webpage
+WARNING: [youtube] BKsyPHiK3Vg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] BKsyPHiK3Vg: Downloading initial data API JSON
+[youtube] BKsyPHiK3Vg: Downloading visionos player API JSON
+[youtube] BKsyPHiK3Vg: Downloading iframe API JS
+[youtube] BKsyPHiK3Vg: Downloading player 21090930-main
+[youtube] BKsyPHiK3Vg: Downloading web player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] BKsyPHiK3Vg: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+
+[automatic retry] public HLS format after direct HTTP 403
+[youtube] Extracting URL: https://www.youtube.com/watch?v=BKsyPHiK3Vg
+[youtube] BKsyPHiK3Vg: Downloading webpage
+WARNING: [youtube] BKsyPHiK3Vg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] BKsyPHiK3Vg: Downloading initial data API JSON
+[youtube] BKsyPHiK3Vg: Downloading visionos player API JSON
+[youtube] BKsyPHiK3Vg: Downloading iframe API JS
+[youtube] BKsyPHiK3Vg: Downloading player 21090930-main
+[youtube] BKsyPHiK3Vg: Downloading web player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] BKsyPHiK3Vg: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

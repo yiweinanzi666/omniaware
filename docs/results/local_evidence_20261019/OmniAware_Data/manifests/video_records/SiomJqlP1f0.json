@@ -1,0 +1,27 @@
+{
+  "id": "SiomJqlP1f0",
+  "source_url": "https://www.youtube.com/watch?v=SiomJqlP1f0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SiomJqlP1f0.log",
+  "filename": "SiomJqlP1f0.mp4",
+  "bytes": 29212688,
+  "sha256": "a376af72cb00e9ffc5fc807397f5e2596919ab9c77527de925304f47555c8abc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "258.809615"
+    }
+  }
+}

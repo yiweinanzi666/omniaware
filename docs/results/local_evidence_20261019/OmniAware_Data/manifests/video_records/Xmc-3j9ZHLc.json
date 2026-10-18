@@ -1,0 +1,27 @@
+{
+  "id": "Xmc-3j9ZHLc",
+  "source_url": "https://www.youtube.com/watch?v=Xmc-3j9ZHLc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Xmc-3j9ZHLc.log",
+  "filename": "Xmc-3j9ZHLc.mp4",
+  "bytes": 8564665,
+  "sha256": "76bf2e8d0b7bfe7e8845f616325d86e29b2325d55faacb14b520eb6f6d1a7b6b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "154.064399"
+    }
+  }
+}

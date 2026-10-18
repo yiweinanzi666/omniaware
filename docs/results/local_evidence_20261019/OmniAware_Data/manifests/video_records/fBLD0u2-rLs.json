@@ -1,0 +1,27 @@
+{
+  "id": "fBLD0u2-rLs",
+  "source_url": "https://www.youtube.com/watch?v=fBLD0u2-rLs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\fBLD0u2-rLs.log",
+  "filename": "fBLD0u2-rLs.mp4",
+  "bytes": 72042233,
+  "sha256": "f4f2bb9793347868db5e244b850a48814584b5a9c44f7d6e82229d7409a4d8a5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "598.726531"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "b44ISc3Poso",
+  "source_url": "https://www.youtube.com/watch?v=b44ISc3Poso",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\b44ISc3Poso.log",
+  "filename": "b44ISc3Poso.mp4",
+  "bytes": 45059299,
+  "sha256": "6eccb3e18ab7bc34e71e3c96bcd0df1bfd2b8989a42c58dcf153cccbc1732af7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "529.577506"
+    }
+  }
+}

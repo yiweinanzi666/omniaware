@@ -1,0 +1,27 @@
+{
+  "id": "dj-MMmonqz4",
+  "source_url": "https://www.youtube.com/watch?v=dj-MMmonqz4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\dj-MMmonqz4.log",
+  "filename": "dj-MMmonqz4.mp4",
+  "bytes": 8191495,
+  "sha256": "92edab0253b021ff8102d22c23c1c5f8617e6655f1786081f4ed52abfdd37d67",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "180.813787"
+    }
+  }
+}

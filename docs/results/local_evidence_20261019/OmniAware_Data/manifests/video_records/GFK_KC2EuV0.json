@@ -1,0 +1,27 @@
+{
+  "id": "GFK_KC2EuV0",
+  "source_url": "https://www.youtube.com/watch?v=GFK_KC2EuV0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\GFK_KC2EuV0.log",
+  "filename": "GFK_KC2EuV0.mp4",
+  "bytes": 47324361,
+  "sha256": "d337d09a5aa95e8752be7c2cc45cc6cda4717f16db50b2744ae52dee2afb4b2f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "923.634000"
+    }
+  }
+}

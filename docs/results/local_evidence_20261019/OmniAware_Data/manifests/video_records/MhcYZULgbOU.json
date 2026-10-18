@@ -1,0 +1,27 @@
+{
+  "id": "MhcYZULgbOU",
+  "source_url": "https://www.youtube.com/watch?v=MhcYZULgbOU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MhcYZULgbOU.log",
+  "filename": "MhcYZULgbOU.mp4",
+  "bytes": 14031090,
+  "sha256": "9c201fee7c01e49eaa7aebf6c0b0ac71da01efa6069333a076fa00f36e31fb71",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "168.066032"
+    }
+  }
+}

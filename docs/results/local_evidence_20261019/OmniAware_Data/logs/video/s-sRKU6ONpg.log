@@ -1,0 +1,18 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=s-sRKU6ONpg
+[youtube] s-sRKU6ONpg: Downloading webpage
+WARNING: [youtube] s-sRKU6ONpg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] s-sRKU6ONpg: Downloading initial data API JSON
+[youtube] s-sRKU6ONpg: Downloading visionos player API JSON
+[youtube] s-sRKU6ONpg: Downloading iframe API JS
+[youtube] s-sRKU6ONpg: Downloading player 21090930-main
+[youtube] s-sRKU6ONpg: Downloading web player API JSON
+ERROR: [youtube] s-sRKU6ONpg: Please sign in. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+[youtube] Extracting URL: https://www.youtube.com/watch?v=s-sRKU6ONpg
+[youtube] s-sRKU6ONpg: Downloading webpage
+WARNING: [youtube] s-sRKU6ONpg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] s-sRKU6ONpg: Downloading initial data API JSON
+[youtube] s-sRKU6ONpg: Downloading visionos player API JSON
+[youtube] s-sRKU6ONpg: Downloading iframe API JS
+[youtube] s-sRKU6ONpg: Downloading player 0229cd64-main
+[youtube] s-sRKU6ONpg: Downloading web player API JSON
+ERROR: [youtube] s-sRKU6ONpg: Please sign in. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

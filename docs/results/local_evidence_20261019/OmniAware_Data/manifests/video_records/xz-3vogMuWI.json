@@ -1,0 +1,27 @@
+{
+  "id": "xz-3vogMuWI",
+  "source_url": "https://www.youtube.com/watch?v=xz-3vogMuWI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\xz-3vogMuWI.log",
+  "filename": "xz-3vogMuWI.mp4",
+  "bytes": 25528676,
+  "sha256": "a148c6bf8e2422964d8b2934ad021032a35dd91ac02c0ead1abcc79345d3977a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "391.418776"
+    }
+  }
+}

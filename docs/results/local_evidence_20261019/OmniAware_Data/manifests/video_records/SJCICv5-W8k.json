@@ -1,0 +1,27 @@
+{
+  "id": "SJCICv5-W8k",
+  "source_url": "https://www.youtube.com/watch?v=SJCICv5-W8k",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SJCICv5-W8k.log",
+  "filename": "SJCICv5-W8k.mp4",
+  "bytes": 19007066,
+  "sha256": "4b2be7638fe3072312f00529ef04d88ec863742b5ba20c6ef2a23f6b341cf306",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "295.822222"
+    }
+  }
+}

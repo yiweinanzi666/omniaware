@@ -1,0 +1,13 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=7YxLL1qOElw
+[youtube] 7YxLL1qOElw: Downloading webpage
+[youtube] 7YxLL1qOElw: Downloading visionos player API JSON
+ERROR: [youtube] 7YxLL1qOElw: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=7YxLL1qOElw
+[youtube] 7YxLL1qOElw: Downloading webpage
+WARNING: [youtube] 7YxLL1qOElw: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] 7YxLL1qOElw: Downloading initial data API JSON
+[youtube] 7YxLL1qOElw: Downloading visionos player API JSON
+[youtube] 7YxLL1qOElw: Downloading iframe API JS
+[youtube] 7YxLL1qOElw: Downloading player 21090930-main
+[youtube] 7YxLL1qOElw: Downloading web player API JSON
+ERROR: [youtube] 7YxLL1qOElw: Video unavailable. This video is no longer available because the YouTube account associated with this video has been terminated.

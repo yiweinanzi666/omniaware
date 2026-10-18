@@ -1,0 +1,27 @@
+{
+  "id": "tXkbOdyTjeI",
+  "source_url": "https://www.youtube.com/watch?v=tXkbOdyTjeI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\tXkbOdyTjeI.log",
+  "filename": "tXkbOdyTjeI.mp4",
+  "bytes": 51095252,
+  "sha256": "fe86625e924908c4b84911a8bce35a4c14c8f3b15ad22a56e8c3ad2ce45b7e46",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "483.648435"
+    }
+  }
+}

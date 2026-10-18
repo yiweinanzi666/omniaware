@@ -1,0 +1,224 @@
+........................................................................ [ 13%]
+.................................................................. [ 25%]
+.........s......F..................................................... [ 38%]
+.............................FFF........................................ [ 51%]
+...........................................
+=================================== FAILURES ===================================
+__ OfficialM2RAGTests.test_vendor_commit_clean_and_loaded_source_is_official ___
+
+self = <test_m2rag_official.OfficialM2RAGTests testMethod=test_vendor_commit_clean_and_loaded_source_is_official>
+
+    def test_vendor_commit_clean_and_loaded_source_is_official(self):
+>       self.assertEqual(subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=OFFICIAL_ROOT, text=True).strip(), OFFICIAL_COMMIT)
+E       AssertionError: '7ccf676e9804b2dfdf571d5b94fe8c9aba843acb' != 'ea6b9977f5a153215b38cd9a6aa3e4702ffbda22'
+E       - 7ccf676e9804b2dfdf571d5b94fe8c9aba843acb
+E       + ea6b9977f5a153215b38cd9a6aa3e4702ffbda22
+
+tests/test_m2rag_official.py:61: AssertionError
+_________________ test_partial_download_is_resumed_with_range __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-user/pytest-4/test_partial_download_is_resum0')
+
+    def test_partial_download_is_resumed_with_range(tmp_path):
+        srv, url, _ = _server()
+        try:
+            target = tmp_path / "val.zip"
+            part = tmp_path / "val.zip.part"
+            part.write_bytes(PAYLOAD[:40000])                    # an earlier run was interrupted here
+>           assert prepare_okvqa.fetch(url, target) == target
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_prepare_okvqa_fetch.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+url = 'http://127.0.0.1:35213/val.zip'
+target = PosixPath('/tmp/pytest-of-user/pytest-4/test_partial_download_is_resum0/val.zip')
+retries = 6, timeout = 60
+
+    def fetch(url: str, target: Path, retries: int = 6, timeout: int = 60) -> Path:
+        """Download ``url`` to ``target`` with a timeout, retries with backoff and resume.
+    
+        Bytes go to ``<target>.part``; after an interruption the next attempt asks for the rest with a Range request
+        (a server that ignores Range makes it start over).  The result is checked against Content-Length before the
+        part file is renamed, so a truncated download is never mistaken for a finished one."""
+        if target.exists():
+            return target
+        target.parent.mkdir(parents=True, exist_ok=True)
+        part = target.with_suffix(target.suffix + ".part")
+        print(f"[download] {url}", flush=True)
+        for attempt in range(1, retries + 1):
+            have = part.stat().st_size if part.exists() else 0
+            req = urllib.request.Request(url, headers={"Range": f"bytes={have}-"} if have else {})
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    if have and resp.status != 206:
+                        have = 0                                   # the server ignored Range: start again
+                    length = resp.headers.get("Content-Length")
+                    expected = have + int(length) if length else None
+                    with part.open("ab" if have else "wb") as out:
+                        shutil.copyfileobj(resp, out, 1 << 20)
+                size = part.stat().st_size
+                if expected is not None and size != expected:
+                    raise OSError(f"incomplete download: {size} of {expected} bytes")
+                part.replace(target)
+                return target
+            except urllib.error.HTTPError as exc:
+                if exc.code == 416 and part.exists():             # the part file already holds every byte
+                    part.replace(target)
+                    return target
+                print(f"[retry {attempt}/{retries}] HTTP {exc.code}", flush=True)
+            except (OSError, TimeoutError) as exc:
+                print(f"[retry {attempt}/{retries}] {exc}", flush=True)
+            if attempt < retries:
+                time.sleep(min(60, 2 ** attempt))
+>       raise SystemExit(f"download of {url} failed after {retries} attempts; rerun the command to resume from {part}")
+E       SystemExit: download of http://127.0.0.1:35213/val.zip failed after 6 attempts; rerun the command to resume from /tmp/pytest-of-user/pytest-4/test_partial_download_is_resum0/val.zip.part
+
+scripts/setup/prepare_okvqa.py:70: SystemExit
+----------------------------- Captured stdout call -----------------------------
+[download] http://127.0.0.1:35213/val.zip
+[retry 1/6] HTTP 405
+[retry 2/6] HTTP 405
+[retry 3/6] HTTP 405
+[retry 4/6] HTTP 405
+[retry 5/6] HTTP 405
+[retry 6/6] HTTP 405
+_______________ test_server_ignoring_range_restarts_the_download _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-user/pytest-4/test_server_ignoring_range_res0')
+
+    def test_server_ignoring_range_restarts_the_download(tmp_path):
+        srv, url, _ = _server(ignore_range=True)
+        try:
+            target = tmp_path / "val.zip"
+            (tmp_path / "val.zip.part").write_bytes(PAYLOAD[:1000])
+>           prepare_okvqa.fetch(url, target)
+
+tests/test_prepare_okvqa_fetch.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+url = 'http://127.0.0.1:34709/val.zip'
+target = PosixPath('/tmp/pytest-of-user/pytest-4/test_server_ignoring_range_res0/val.zip')
+retries = 6, timeout = 60
+
+    def fetch(url: str, target: Path, retries: int = 6, timeout: int = 60) -> Path:
+        """Download ``url`` to ``target`` with a timeout, retries with backoff and resume.
+    
+        Bytes go to ``<target>.part``; after an interruption the next attempt asks for the rest with a Range request
+        (a server that ignores Range makes it start over).  The result is checked against Content-Length before the
+        part file is renamed, so a truncated download is never mistaken for a finished one."""
+        if target.exists():
+            return target
+        target.parent.mkdir(parents=True, exist_ok=True)
+        part = target.with_suffix(target.suffix + ".part")
+        print(f"[download] {url}", flush=True)
+        for attempt in range(1, retries + 1):
+            have = part.stat().st_size if part.exists() else 0
+            req = urllib.request.Request(url, headers={"Range": f"bytes={have}-"} if have else {})
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    if have and resp.status != 206:
+                        have = 0                                   # the server ignored Range: start again
+                    length = resp.headers.get("Content-Length")
+                    expected = have + int(length) if length else None
+                    with part.open("ab" if have else "wb") as out:
+                        shutil.copyfileobj(resp, out, 1 << 20)
+                size = part.stat().st_size
+                if expected is not None and size != expected:
+                    raise OSError(f"incomplete download: {size} of {expected} bytes")
+                part.replace(target)
+                return target
+            except urllib.error.HTTPError as exc:
+                if exc.code == 416 and part.exists():             # the part file already holds every byte
+                    part.replace(target)
+                    return target
+                print(f"[retry {attempt}/{retries}] HTTP {exc.code}", flush=True)
+            except (OSError, TimeoutError) as exc:
+                print(f"[retry {attempt}/{retries}] {exc}", flush=True)
+            if attempt < retries:
+                time.sleep(min(60, 2 ** attempt))
+>       raise SystemExit(f"download of {url} failed after {retries} attempts; rerun the command to resume from {part}")
+E       SystemExit: download of http://127.0.0.1:34709/val.zip failed after 6 attempts; rerun the command to resume from /tmp/pytest-of-user/pytest-4/test_server_ignoring_range_res0/val.zip.part
+
+scripts/setup/prepare_okvqa.py:70: SystemExit
+----------------------------- Captured stdout call -----------------------------
+[download] http://127.0.0.1:34709/val.zip
+[retry 1/6] HTTP 405
+[retry 2/6] HTTP 405
+[retry 3/6] HTTP 405
+[retry 4/6] HTTP 405
+[retry 5/6] HTTP 405
+[retry 6/6] HTTP 405
+____________________ test_transient_server_error_is_retried ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-user/pytest-4/test_transient_server_error_is0')
+no_sleep = None
+
+    def test_transient_server_error_is_retried(tmp_path, no_sleep):
+        srv, url, state = _server(fail_first=1)
+        try:
+            target = tmp_path / "val.zip"
+>           prepare_okvqa.fetch(url, target, retries=3)
+
+tests/test_prepare_okvqa_fetch.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+url = 'http://127.0.0.1:41471/val.zip'
+target = PosixPath('/tmp/pytest-of-user/pytest-4/test_transient_server_error_is0/val.zip')
+retries = 3, timeout = 60
+
+    def fetch(url: str, target: Path, retries: int = 6, timeout: int = 60) -> Path:
+        """Download ``url`` to ``target`` with a timeout, retries with backoff and resume.
+    
+        Bytes go to ``<target>.part``; after an interruption the next attempt asks for the rest with a Range request
+        (a server that ignores Range makes it start over).  The result is checked against Content-Length before the
+        part file is renamed, so a truncated download is never mistaken for a finished one."""
+        if target.exists():
+            return target
+        target.parent.mkdir(parents=True, exist_ok=True)
+        part = target.with_suffix(target.suffix + ".part")
+        print(f"[download] {url}", flush=True)
+        for attempt in range(1, retries + 1):
+            have = part.stat().st_size if part.exists() else 0
+            req = urllib.request.Request(url, headers={"Range": f"bytes={have}-"} if have else {})
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    if have and resp.status != 206:
+                        have = 0                                   # the server ignored Range: start again
+                    length = resp.headers.get("Content-Length")
+                    expected = have + int(length) if length else None
+                    with part.open("ab" if have else "wb") as out:
+                        shutil.copyfileobj(resp, out, 1 << 20)
+                size = part.stat().st_size
+                if expected is not None and size != expected:
+                    raise OSError(f"incomplete download: {size} of {expected} bytes")
+                part.replace(target)
+                return target
+            except urllib.error.HTTPError as exc:
+                if exc.code == 416 and part.exists():             # the part file already holds every byte
+                    part.replace(target)
+                    return target
+                print(f"[retry {attempt}/{retries}] HTTP {exc.code}", flush=True)
+            except (OSError, TimeoutError) as exc:
+                print(f"[retry {attempt}/{retries}] {exc}", flush=True)
+            if attempt < retries:
+                time.sleep(min(60, 2 ** attempt))
+>       raise SystemExit(f"download of {url} failed after {retries} attempts; rerun the command to resume from {part}")
+E       SystemExit: download of http://127.0.0.1:41471/val.zip failed after 3 attempts; rerun the command to resume from /tmp/pytest-of-user/pytest-4/test_transient_server_error_is0/val.zip.part
+
+scripts/setup/prepare_okvqa.py:70: SystemExit
+----------------------------- Captured stdout call -----------------------------
+[download] http://127.0.0.1:41471/val.zip
+[retry 1/3] HTTP 405
+[retry 2/3] HTTP 405
+[retry 3/3] HTTP 405
+=========================== short test summary info ============================
+FAILED tests/test_m2rag_official.py::OfficialM2RAGTests::test_vendor_commit_clean_and_loaded_source_is_official
+FAILED tests/test_prepare_okvqa_fetch.py::test_partial_download_is_resumed_with_range
+FAILED tests/test_prepare_okvqa_fetch.py::test_server_ignoring_range_restarts_the_download
+FAILED tests/test_prepare_okvqa_fetch.py::test_transient_server_error_is_retried
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/integrations/sdpa_attention.py:92: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+4 failed, 318 passed, 1 skipped, 8 subtests passed in 214.18s (0:03:34)

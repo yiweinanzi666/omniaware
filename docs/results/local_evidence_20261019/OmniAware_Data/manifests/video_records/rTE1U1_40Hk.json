@@ -1,0 +1,27 @@
+{
+  "id": "rTE1U1_40Hk",
+  "source_url": "https://www.youtube.com/watch?v=rTE1U1_40Hk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rTE1U1_40Hk.log",
+  "filename": "rTE1U1_40Hk.mp4",
+  "bytes": 29445578,
+  "sha256": "d670325a3b64c0f9e7b774548d0d7efacd70276ced2ea393c92557e542b697b6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "487.015329"
+    }
+  }
+}

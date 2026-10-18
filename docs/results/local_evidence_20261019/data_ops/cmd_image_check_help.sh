@@ -1,0 +1,1 @@
+cd /home/user/Futaoran/omniaware_v2_exec; /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/analysis/image_evidence_check.py --help

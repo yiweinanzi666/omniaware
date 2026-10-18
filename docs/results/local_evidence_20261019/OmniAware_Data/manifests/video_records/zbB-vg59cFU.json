@@ -1,0 +1,27 @@
+{
+  "id": "zbB-vg59cFU",
+  "source_url": "https://www.youtube.com/watch?v=zbB-vg59cFU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zbB-vg59cFU.log",
+  "filename": "zbB-vg59cFU.mp4",
+  "bytes": 36002935,
+  "sha256": "5624ecc4665c2e56fd3745c6bc0a686ccd82d766555846ca15ccee51323fbe92",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 848,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "300.744853"
+    }
+  }
+}

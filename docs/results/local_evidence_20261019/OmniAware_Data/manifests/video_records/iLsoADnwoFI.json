@@ -1,0 +1,27 @@
+{
+  "id": "iLsoADnwoFI",
+  "source_url": "https://www.youtube.com/watch?v=iLsoADnwoFI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\iLsoADnwoFI.log",
+  "filename": "iLsoADnwoFI.mp4",
+  "bytes": 21261749,
+  "sha256": "e8205bd161fcb6b108fd31eea83574860fd9192a42b42247772be962c0b353d8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "135.302676"
+    }
+  }
+}

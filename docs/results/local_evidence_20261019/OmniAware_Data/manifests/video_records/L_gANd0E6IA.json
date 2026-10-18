@@ -1,0 +1,27 @@
+{
+  "id": "L_gANd0E6IA",
+  "source_url": "https://www.youtube.com/watch?v=L_gANd0E6IA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\L_gANd0E6IA.log",
+  "filename": "L_gANd0E6IA.mp4",
+  "bytes": 22856543,
+  "sha256": "0f5af119dc938b9d8ea3acc42bf2f51fe2571f13aac19c8fa277e67e3c3949cc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "195.604898"
+    }
+  }
+}

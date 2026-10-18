@@ -1,0 +1,18 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=w47wwxUTHdg
+[youtube] w47wwxUTHdg: Downloading webpage
+WARNING: [youtube] w47wwxUTHdg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] w47wwxUTHdg: Downloading initial data API JSON
+[youtube] w47wwxUTHdg: Downloading visionos player API JSON
+[youtube] w47wwxUTHdg: Downloading iframe API JS
+[youtube] w47wwxUTHdg: Downloading player 21090930-main
+[youtube] w47wwxUTHdg: Downloading web player API JSON
+ERROR: [youtube] w47wwxUTHdg: This video has been removed for violating YouTube's Terms of Service
+[youtube] Extracting URL: https://www.youtube.com/watch?v=w47wwxUTHdg
+[youtube] w47wwxUTHdg: Downloading webpage
+WARNING: [youtube] w47wwxUTHdg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] w47wwxUTHdg: Downloading initial data API JSON
+[youtube] w47wwxUTHdg: Downloading visionos player API JSON
+[youtube] w47wwxUTHdg: Downloading iframe API JS
+[youtube] w47wwxUTHdg: Downloading player 0229cd64-main
+[youtube] w47wwxUTHdg: Downloading web player API JSON
+ERROR: [youtube] w47wwxUTHdg: This video has been removed for violating YouTube's Terms of Service

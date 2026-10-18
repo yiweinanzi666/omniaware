@@ -1,0 +1,27 @@
+{
+  "id": "iweKrV-NcMw",
+  "source_url": "https://www.youtube.com/watch?v=iweKrV-NcMw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\iweKrV-NcMw.log",
+  "filename": "iweKrV-NcMw.mp4",
+  "bytes": 31445063,
+  "sha256": "d7073ee6acbe3196d76f0cdd31f418778edbae154f5f20ce9da37e48cf75b7cb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "358.167800"
+    }
+  }
+}

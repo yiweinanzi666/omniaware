@@ -1,0 +1,27 @@
+{
+  "id": "OTIPpX7lKoo",
+  "source_url": "https://www.youtube.com/watch?v=OTIPpX7lKoo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\OTIPpX7lKoo.log",
+  "filename": "OTIPpX7lKoo.mp4",
+  "bytes": 6639889,
+  "sha256": "7e4f77d778bce78acb46bbdd09da2ff4220fb7cbd2d36f764ef87f79e88ea163",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 426,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "147.121633"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "Pv5gTgA3OpM",
+  "source_url": "https://www.youtube.com/watch?v=Pv5gTgA3OpM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Pv5gTgA3OpM.log",
+  "filename": "Pv5gTgA3OpM.mp4",
+  "bytes": 11731158,
+  "sha256": "c0ef7b0c5fff3a5d14def4987e130fcb83856a09002f11a0309c0eb861ddd8ce",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "312.749569"
+    }
+  }
+}

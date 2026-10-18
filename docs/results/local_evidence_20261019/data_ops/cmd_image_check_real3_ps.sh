@@ -1,0 +1,1 @@
+ps -ef | grep -E 'image_evidence_check|cmd_image_check_real3' | grep -v grep | tail -10; ls -lh /tmp/image_check2.out 2>/dev/null || true; tail -20 /tmp/image_check2.out 2>/dev/null || true

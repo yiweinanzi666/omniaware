@@ -1,0 +1,27 @@
+{
+  "id": "4644t-PXba0",
+  "source_url": "https://www.youtube.com/watch?v=4644t-PXba0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\4644t-PXba0.log",
+  "filename": "4644t-PXba0.mp4",
+  "bytes": 19710720,
+  "sha256": "e7a50c791c0035a79091a59fba000917574e529a5fe95aecc65a24dd2cc3dd9d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "505.939592"
+    }
+  }
+}

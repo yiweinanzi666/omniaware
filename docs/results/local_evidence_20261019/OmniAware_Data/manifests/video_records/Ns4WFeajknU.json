@@ -1,0 +1,27 @@
+{
+  "id": "Ns4WFeajknU",
+  "source_url": "https://www.youtube.com/watch?v=Ns4WFeajknU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ns4WFeajknU.log",
+  "filename": "Ns4WFeajknU.mp4",
+  "bytes": 24639890,
+  "sha256": "5444a126e3aab16eacfa49c60d8e0e620976fd2412154ceb915cc949e519df98",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "766.839002"
+    }
+  }
+}

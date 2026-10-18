@@ -1,0 +1,27 @@
+{
+  "id": "IE7_3MFcBcw",
+  "source_url": "https://www.youtube.com/watch?v=IE7_3MFcBcw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\IE7_3MFcBcw.log",
+  "filename": "IE7_3MFcBcw.mp4",
+  "bytes": 46934704,
+  "sha256": "6a4ee09335383d3e33b9f01ea158a258263f758ff5a16b2871488201b2da24a3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "585.282177"
+    }
+  }
+}

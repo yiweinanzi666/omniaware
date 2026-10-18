@@ -1,0 +1,27 @@
+{
+  "id": "rtTTS79Q_-8",
+  "source_url": "https://www.youtube.com/watch?v=rtTTS79Q_-8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rtTTS79Q_-8.log",
+  "filename": "rtTTS79Q_-8.mp4",
+  "bytes": 34763130,
+  "sha256": "8f2899477303532a78295f355e36c926a9d0da15bf7615027d026ee53e166ae6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "439.437642"
+    }
+  }
+}

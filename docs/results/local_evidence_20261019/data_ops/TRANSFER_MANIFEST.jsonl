@@ -1,0 +1,3 @@
+{"object":"WebQA_train_val.json.gz","from":"node04:/home/user/Futaoran/WebQA","to":"D:\\WebQA","transport":"scp via 172.30.0.6","status":"transferred"}
+{"object":"WebQA_test.json.gz","from":"node04:/home/user/Futaoran/WebQA","to":"D:\\WebQA","transport":"scp via 172.30.0.6","status":"transferred"}
+{"object":"imgs.lineidx","from":"node04:/home/user/Futaoran/WebQA","to":"D:\\WebQA","transport":"scp via 172.30.0.6","status":"transferred"}

@@ -1,0 +1,27 @@
+{
+  "id": "RECK46wRXEw",
+  "source_url": "https://www.youtube.com/watch?v=RECK46wRXEw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\RECK46wRXEw.log",
+  "filename": "RECK46wRXEw.mp4",
+  "bytes": 43717207,
+  "sha256": "3a8376b7eb1e4a220579411ecf414bbfd22360f263e32190b72b123584acdade",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "613.331882"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+[data] okvqa_gs: 5046 total, calib 500 (heldout), dev 256, dev 50
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 39577.50it/s]
+[1mBertModel LOAD REPORT[0m from: /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/bge-large-en-v1.5
+Key                     | Status     |  | 
+------------------------+------------+--+-
+embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[relevance] scored 550 examples in 104.5s
+Loading weights:   0%|          | 0/393 [00:00<?, ?it/s]Loading weights: 100%|██████████| 393/393 [00:00<00:00, 33557.85it/s]
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights:   0%|          | 1/750 [00:00<08:34,  1.46it/s]Loading weights:   6%|▋         | 48/750 [00:00<00:09, 74.70it/s]Loading weights:   9%|▉         | 66/750 [00:01<00:08, 83.55it/s]Loading weights:  11%|█         | 81/750 [00:01<00:07, 90.47it/s]Loading weights:  13%|█▎        | 95/750 [00:01<00:07, 83.04it/s]Loading weights:  15%|█▍        | 112/750 [00:01<00:06, 98.65it/s]Loading weights:  17%|█▋        | 125/750 [00:01<00:08, 73.34it/s]Loading weights:  18%|█▊        | 138/750 [00:01<00:07, 81.98it/s]Loading weights:  20%|██        | 150/750 [00:01<00:06, 88.45it/s]Loading weights:  21%|██▏       | 161/750 [00:02<00:07, 83.02it/s]Loading weights:  23%|██▎       | 172/750 [00:02<00:06, 86.04it/s]Loading weights:  25%|██▌       | 191/750 [00:02<00:06, 91.35it/s]Loading weights:  27%|██▋       | 205/750 [00:02<00:05, 97.44it/s]Loading weights:  30%|███       | 225/750 [00:02<00:04, 116.06it/s]Loading weights:  32%|███▏      | 238/750 [00:02<00:05, 99.30it/s] Loading weights:  35%|███▍      | 259/750 [00:02<00:03, 123.36it/s]Loading weights:  36%|███▋      | 273/750 [00:03<00:04, 104.54it/s]Loading weights:  38%|███▊      | 287/750 [00:03<00:04, 107.01it/s]Loading weights:  40%|████      | 301/750 [00:03<00:03, 114.51it/s]Loading weights:  42%|████▏     | 314/750 [00:03<00:04, 108.36it/s]Loading weights:  44%|████▍     | 331/750 [00:03<00:03, 123.14it/s]Loading weights:  46%|████▌     | 345/750 [00:03<00:03, 102.99it/s]Loading weights:  49%|████▊     | 364/750 [00:03<00:03, 121.40it/s]Loading weights:  50%|█████     | 378/750 [00:04<00:03, 119.50it/s]Loading weights:  52%|█████▏    | 391/750 [00:04<00:03, 101.62it/s]Loading weights:  58%|█████▊    | 433/750 [00:04<00:01, 171.62it/s]Loading weights:  62%|██████▏   | 463/750 [00:04<00:01, 198.06it/s]Loading weights:  68%|██████▊   | 513/750 [00:04<00:00, 253.26it/s]Loading weights:  73%|███████▎  | 547/750 [00:04<00:00, 256.99it/s]Loading weights:  79%|███████▉  | 593/750 [00:04<00:00, 301.81it/s]Loading weights:  83%|████████▎ | 625/750 [00:04<00:00, 277.68it/s]Loading weights:  87%|████████▋ | 654/750 [00:05<00:00, 271.84it/s]Loading weights:  91%|█████████ | 682/750 [00:05<00:00, 258.89it/s]Loading weights:  95%|█████████▍| 709/750 [00:05<00:00, 235.54it/s]Loading weights:  98%|█████████▊| 734/750 [00:05<00:00, 173.97it/s]Loading weights: 100%|██████████| 750/750 [00:05<00:00, 133.83it/s]
+[model] 8b loaded on cuda in 13.7s, 36 layers
+[env] commit 318ab6c59a9bba7d379e166d119074443bb68892 dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.float32 gpus ['NVIDIA L20']
+[ucal] 500 calibration examples in 608.8s
+[1/50] 3296875 3.87s P=848 U_pre=0.01 retrieve=False
+[2/50] 4703135 2.83s P=939 U_pre=0.48 retrieve=True
+[3/50] 5789675 3.32s P=945 U_pre=0.00 retrieve=False
+[4/50] 1736935 3.34s P=959 U_pre=0.54 retrieve=True
+[5/50] 236715 2.22s P=1020 U_pre=0.30 retrieve=False
+[6/50] 1987175 1.97s P=816 U_pre=0.86 retrieve=True
+[7/50] 532295 2.49s P=780 U_pre=1.00 retrieve=True
+[8/50] 2031105 3.73s P=1030 U_pre=0.36 retrieve=True
+[9/50] 4400005 2.79s P=735 U_pre=0.23 retrieve=False
+[10/50] 2018255 2.91s P=650 U_pre=0.12 retrieve=False
+[11/50] 1546075 3.1s P=936 U_pre=0.77 retrieve=True
+[12/50] 5427825 2.6s P=605 U_pre=0.00 retrieve=False
+[13/50] 1974995 3.02s P=627 U_pre=0.13 retrieve=False
+[14/50] 293465 3.02s P=709 U_pre=0.94 retrieve=True
+[15/50] 4812675 3.13s P=569 U_pre=1.00 retrieve=True
+[16/50] 5528425 2.44s P=733 U_pre=0.70 retrieve=True
+[17/50] 1187415 3.02s P=1090 U_pre=0.88 retrieve=True
+[18/50] 2984405 3.75s P=778 U_pre=0.39 retrieve=True
+[19/50] 2022015 3.41s P=972 U_pre=0.55 retrieve=True
+[20/50] 1863225 2.33s P=801 U_pre=0.74 retrieve=True
+[21/50] 5127295 1.69s P=611 U_pre=0.85 retrieve=True
+[22/50] 2910485 2.07s P=1006 U_pre=0.21 retrieve=False
+[23/50] 5100805 1.84s P=547 U_pre=0.55 retrieve=True
+[24/50] 760295 2.49s P=1048 U_pre=0.01 retrieve=False
+[25/50] 1538325 2.73s P=1053 U_pre=0.47 retrieve=True
+[26/50] 4222125 2.12s P=681 U_pre=0.59 retrieve=True
+[27/50] 1744575 2.2s P=811 U_pre=0.52 retrieve=True
+[28/50] 4741645 1.74s P=820 U_pre=0.13 retrieve=False
+[29/50] 5813945 1.64s P=604 U_pre=1.00 retrieve=True
+[30/50] 802195 1.81s P=746 U_pre=1.00 retrieve=True
+[31/50] 2600205 1.91s P=851 U_pre=0.78 retrieve=True
+[32/50] 1413345 1.93s P=616 U_pre=0.54 retrieve=True
+[33/50] 780325 1.96s P=621 U_pre=0.43 retrieve=True
+[34/50] 2517525 4.16s P=1126 U_pre=0.10 retrieve=False
+[35/50] 4246685 1.76s P=630 U_pre=0.22 retrieve=False
+[36/50] 2804135 1.73s P=520 U_pre=0.00 retrieve=False
+[37/50] 1576015 2.25s P=976 U_pre=0.62 retrieve=True
+[38/50] 4751845 3.69s P=638 U_pre=0.52 retrieve=True
+[39/50] 4273765 1.97s P=825 U_pre=0.76 retrieve=True
+[40/50] 2689665 2.38s P=793 U_pre=0.77 retrieve=True
+[41/50] 2907005 2.11s P=707 U_pre=0.70 retrieve=True
+[42/50] 2248505 2.08s P=758 U_pre=0.69 retrieve=True
+[43/50] 3294945 3.33s P=1114 U_pre=0.00 retrieve=False
+[44/50] 5348455 1.92s P=749 U_pre=0.50 retrieve=True
+[45/50] 5197165 2.23s P=956 U_pre=0.59 retrieve=True
+[46/50] 3686485 2.0s P=889 U_pre=0.00 retrieve=False
+[47/50] 5603325 1.73s P=521 U_pre=1.00 retrieve=True
+[48/50] 2608085 2.79s P=1032 U_pre=0.69 retrieve=True
+[49/50] 2162545 2.4s P=832 U_pre=0.66 retrieve=True
+[50/50] 3249795 1.76s P=584 U_pre=0.41 retrieve=True
+[done] okvqa_gs 50 in 125.9s -> /home/user/Futaoran/omniaware_v2_format_20261018/runs/fp32_format_20261018/v2_s1_okvqa_gs/okvqa_gs.jsonl; empty_answer_rate 0.000000; refusal_rate 0.000000; peak_gpu_memory_gib 34.10
+{
+  "answer_format": "plain",
+  "questions": 50,
+  "actions": {
+    "direct": {
+      "questions": 50,
+      "answer_first_ok": null,
+      "answer_token_is_first": 0.98,
+      "template_start": 0.04
+    },
+    "static_text": {
+      "questions": 50,
+      "answer_first_ok": null,
+      "answer_token_is_first": 0.94,
+      "template_start": 0.08
+    },
+    "static_mixed": {
+      "questions": 50,
+      "answer_first_ok": null,
+      "answer_token_is_first": 0.94,
+      "template_start": 0.08
+    },
+    "rerank_static": {
+      "questions": 50,
+      "answer_first_ok": null,
+      "answer_token_is_first": 0.96,
+      "template_start": 0.06
+    }
+  },
+  "min_answer_first": 0.9,
+  "passed": true,
+  "below": []
+}
+/home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --dtype float32 --tag v2_s1_okvqa_gs --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_format_20261018/scripts/analysis/answer_slot.py format --run /home/user/Futaoran/omniaware_v2_format_20261018/runs/fp32_format_20261018/v2_s1_okvqa_gs/okvqa_gs.jsonl --min-answer-first 0.9
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_format_20261018/scripts/analysis/image_evidence_check.py --n 50

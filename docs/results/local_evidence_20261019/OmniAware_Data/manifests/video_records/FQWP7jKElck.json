@@ -1,0 +1,27 @@
+{
+  "id": "FQWP7jKElck",
+  "source_url": "https://www.youtube.com/watch?v=FQWP7jKElck",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\FQWP7jKElck.log",
+  "filename": "FQWP7jKElck.mp4",
+  "bytes": 5369241,
+  "sha256": "9cf545318be00c053b0ee44fc53ca534b5d3b6d4679e05c638db6bdc6ca9b318",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "99.869025"
+    }
+  }
+}

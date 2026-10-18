@@ -1,0 +1,229 @@
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights:   0%|          | 1/750 [00:00<04:56,  2.53it/s]Loading weights:   0%|          | 2/750 [00:00<05:00,  2.49it/s]Loading weights:  15%|█▌        | 114/750 [00:00<00:03, 180.13it/s]Loading weights:  20%|█▉        | 149/750 [00:01<00:04, 145.72it/s]Loading weights:  23%|██▎       | 174/750 [00:01<00:04, 140.51it/s]Loading weights:  26%|██▌       | 195/750 [00:01<00:04, 137.40it/s]Loading weights:  28%|██▊       | 213/750 [00:01<00:03, 139.86it/s]Loading weights:  31%|███       | 230/750 [00:01<00:03, 143.23it/s]Loading weights:  33%|███▎      | 247/750 [00:02<00:03, 130.00it/s]Loading weights:  36%|███▌      | 268/750 [00:02<00:03, 144.02it/s]Loading weights:  39%|███▊      | 289/750 [00:02<00:02, 155.76it/s]Loading weights:  42%|████▏     | 312/750 [00:02<00:02, 161.48it/s]Loading weights:  45%|████▍     | 334/750 [00:02<00:02, 167.67it/s]Loading weights:  47%|████▋     | 356/750 [00:02<00:02, 178.90it/s]Loading weights:  50%|█████     | 378/750 [00:02<00:02, 175.66it/s]Loading weights:  53%|█████▎    | 397/750 [00:02<00:02, 169.44it/s]Loading weights:  62%|██████▏   | 467/750 [00:03<00:00, 287.30it/s]Loading weights:  69%|██████▉   | 517/750 [00:03<00:00, 328.71it/s]Loading weights:  75%|███████▌  | 563/750 [00:03<00:00, 361.82it/s]Loading weights:  83%|████████▎ | 619/750 [00:03<00:00, 408.91it/s]Loading weights:  91%|█████████ | 679/750 [00:03<00:00, 443.05it/s]Loading weights:  97%|█████████▋| 724/750 [00:03<00:00, 417.37it/s]Loading weights: 100%|██████████| 750/750 [00:03<00:00, 204.64it/s]
+{
+ "model": "/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct",
+ "kind": "qwen3_vl",
+ "layers": 36,
+ "dtype": "float32",
+ "max_pixels": 262144,
+ "checks": {
+  "template": {
+   "text": {
+    "ok": true,
+    "len_ours": 27,
+    "len_theirs": 27,
+    "first_mismatch": null,
+    "ours_token": null,
+    "theirs_token": null,
+    "image_runs_equal": true,
+    "image_runs_ours": [],
+    "image_runs_theirs": []
+   },
+   "image": {
+    "ok": true,
+    "len_ours": 264,
+    "len_theirs": 330,
+    "first_mismatch": null,
+    "ours_token": null,
+    "theirs_token": null,
+    "image_runs_equal": false,
+    "image_runs_ours": [
+     234
+    ],
+    "image_runs_theirs": [
+     300
+    ]
+   },
+   "ok": true
+  },
+  "segmented": {
+   "text": {
+    "ok": true,
+    "max_abs_diff": 7.05718994140625e-05,
+    "argmax_equal": true,
+    "prompt_tokens": 63,
+    "split": 39
+   },
+   "image": {
+    "ok": true,
+    "max_abs_diff": 6.961822509765625e-05,
+    "argmax_equal": true,
+    "prompt_tokens": 287,
+    "split": 263
+   },
+   "ok": true
+  },
+  "reference": {
+   "text": {
+    "ok": true,
+    "prompt_tokens": 63,
+    "arms": {
+     "static": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 6.866455078125e-05,
+      "t_end_attention_max_abs_diff": 1.1920928955078125e-07,
+      "tokens": [
+       23780
+      ],
+      "reference_tokens": [
+       23780
+      ]
+     },
+     "ans2": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 6.866455078125e-05,
+      "t_end_attention_max_abs_diff": 1.1920928955078125e-07,
+      "tokens": [
+       23780
+      ],
+      "reference_tokens": [
+       23780
+      ]
+     },
+     "ans1": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 7.82012939453125e-05,
+      "t_end_attention_max_abs_diff": 1.1920928955078125e-07,
+      "tokens": [
+       2623,
+       3322,
+       1995
+      ],
+      "reference_tokens": [
+       2623,
+       3322,
+       1995
+      ]
+     }
+    }
+   },
+   "image": {
+    "ok": true,
+    "prompt_tokens": 287,
+    "arms": {
+     "static": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 0.000125885009765625,
+      "t_end_attention_max_abs_diff": 1.4309771358966827e-06,
+      "tokens": [
+       927,
+       7072
+      ],
+      "reference_tokens": [
+       927,
+       7072
+      ]
+     },
+     "ans2": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 0.000125885009765625,
+      "t_end_attention_max_abs_diff": 1.4309771358966827e-06,
+      "tokens": [
+       927,
+       7072
+      ],
+      "reference_tokens": [
+       927,
+       7072
+      ]
+     },
+     "ans1": {
+      "ok": true,
+      "tokens_match": true,
+      "first_logits_max_abs_diff": 0.00013399124145507812,
+      "t_end_attention_max_abs_diff": 1.439359039068222e-06,
+      "tokens": [
+       18457
+      ],
+      "reference_tokens": [
+       18457
+      ]
+     }
+    }
+   },
+   "ok": true
+  }
+ },
+ "statistics": {
+  "questions": 1,
+  "per_modality_H": {
+   "image": {
+    "n": 1,
+    "mean": 0.8631981372537609,
+    "p10": 0.8631981372537609,
+    "p50": 0.8631981372537609,
+    "p90": 0.8631981372537609
+   },
+   "text": {
+    "n": 1,
+    "mean": 0.9619542898624908,
+    "p10": 0.9619542898624908,
+    "p50": 0.9619542898624908,
+    "p90": 0.9619542898624908
+   }
+  },
+  "per_modality_M": {
+   "image": {
+    "n": 1,
+    "mean": 0.7921729684995725,
+    "p10": 0.7921729684995725,
+    "p50": 0.7921729684995725,
+    "p90": 0.7921729684995725
+   },
+   "text": {
+    "n": 1,
+    "mean": 0.20782703150042744,
+    "p10": 0.20782703150042744,
+    "p50": 0.20782703150042744,
+    "p90": 0.20782703150042744
+   }
+  },
+  "h_grd": {
+   "n": 1,
+   "mean": 0.8620131546012346,
+   "p10": 0.8620131546012346,
+   "p50": 0.8620131546012346,
+   "p90": 0.8620131546012346
+  },
+  "h_pred": {
+   "n": 1,
+   "mean": 0.005103368396975543,
+   "p10": 0.005103368396975543,
+   "p50": 0.005103368396975543,
+   "p90": 0.005103368396975543
+  },
+  "group0_mass_static": {
+   "n": 1,
+   "mean": 0.8990147709846497,
+   "p10": 0.8990147709846497,
+   "p50": 0.8990147709846497,
+   "p90": 0.8990147709846497
+  },
+  "group0_mass_eab": {
+   "n": 1,
+   "mean": 0.7571595311164856,
+   "p10": 0.7571595311164856,
+   "p50": 0.7571595311164856,
+   "p90": 0.7571595311164856
+  },
+  "group0_mass_change": {
+   "n": 1,
+   "mean": -0.14185523986816406,
+   "p10": -0.14185523986816406,
+   "p50": -0.14185523986816406,
+   "p90": -0.14185523986816406
+  },
+  "sink_mass_change": {
+   "n": 1,
+   "mean": -0.05651283264160156,
+   "p10": -0.05651283264160156,
+   "p50": -0.05651283264160156,
+   "p90": -0.05651283264160156
+  }
+ },
+ "ok": true
+}

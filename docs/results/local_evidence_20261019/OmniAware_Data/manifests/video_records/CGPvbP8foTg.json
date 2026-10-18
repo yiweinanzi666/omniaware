@@ -1,0 +1,27 @@
+{
+  "id": "CGPvbP8foTg",
+  "source_url": "https://www.youtube.com/watch?v=CGPvbP8foTg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CGPvbP8foTg.log",
+  "filename": "CGPvbP8foTg.mp4",
+  "bytes": 30080090,
+  "sha256": "774b2d7a6ec04a9678aa5f3e7eaca352bc5effa7b6b6e75a8f74d565cec2b127",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "326.611882"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=zvRomPRS1PE
+[youtube] zvRomPRS1PE: Downloading webpage
+[youtube] zvRomPRS1PE: Downloading visionos player API JSON
+[youtube] zvRomPRS1PE: Downloading m3u8 information
+[info] zvRomPRS1PE: Downloading 1 format(s): 244+251
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.f244.webm
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.f251.webm
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.f244.webm (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\zvRomPRS1PE.f251.webm (pass -k to keep)

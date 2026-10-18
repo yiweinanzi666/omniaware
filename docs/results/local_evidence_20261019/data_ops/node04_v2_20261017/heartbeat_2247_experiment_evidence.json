@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-10-17T22:47:00+08:00",
+  "source": "Read-only app inspection of recorded outputs, no fresh SSH probe",
+  "thread_id": "01a145fa-ad3a-7d72-953a-9191ae3064bd",
+  "thread_updated_at": 1792248501,
+  "observations": [
+    {
+      "probe": "cmd_s2_both_poll2.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "user     2417240       1  0 21:05 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset webqa_full\r\nuser     2417253 2417240 99 21:05 ?        06:42:29 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split calib --model 8b --tag v2_s2_webqa_full_calib --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker\r\nuser     2419637       1  0 21:49 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset okvqa_gs\r\nuser     2419650 2419637 99 21:49 ?        04:38:22 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split calib --model 8b --tag v2_s2_okvqa_gs_calib --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker\r\nWEBQA:\r\n[341/500] d5c420440dba 8.04s P=575 U_pre=0.31 retrieve=False\r\n[342/500] d5dbb7900dba 11.48s P=845 U_pre=1.00 retrieve=True\r\n[343/500] d5dd960a0dba 10.81s P=1057 U_pre=0.26 retrieve=False\r\n[344/500] d5d8d8360dba 10.27s P=1074 U_pre=0.28 retrieve=False\r\n[345/500] d5c47bc00dba 9.18s P=1210 U_pre=0.77 retrieve=True\r\nOKVQA:\r\n[497/500] 2956935 2.34s P=625 U_pre=0.01 retrieve=False\r\n[498/500] 3531805 1.36s P=558 U_pre=1.00 retrieve=True\r\n[499/500] 921345 1.85s P=761 U_pre=0.41 retrieve=True\r\n[500/500] 1323165 1.88s P=784 U_pre=1.00 retrieve=True\r\n[done] okvqa_gs 500 in 842.6s -> /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_calib/okvqa_gs.jsonl; empty_answer_rate 0.000000; refusal_rate 0.002800; peak_gpu_memory_gib 16.79\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_s2_both_poll3.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "user     2417240       1  0 21:05 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset webqa_full\r\nuser     2419637       1  0 21:49 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset okvqa_gs\r\nuser     2420983 2419637 99 22:05 ?        13:38:20 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --tag v2_s2_okvqa_gs_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab\r\nuser     2422384 2417240 40 22:28 ?        00:00:17 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s2_webqa_full_dev --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab\r\nWEBQA:\r\n[496/500] d5c3ef020dba 10.07s P=769 U_pre=0.44 retrieve=True\r\n[497/500] d5bffbb80dba 11.59s P=1315 U_pre=0.36 retrieve=True\r\n[498/500] d5d540680dba 10.97s P=1198 U_pre=0.44 retrieve=True\r\n[499/500] d5c8236a0dba 7.43s P=1341 U_pre=0.47 retrieve=True\r\n[500/500] d5cfe33e0dba 6.68s P=383 U_pre=0.65 retrieve=True\r\n[done] webqa_full 500 in 4515.9s -> /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_calib/webqa_full.jsonl; empty_answer_rate 0.000000; refusal_rate 0.001455; peak_gpu_memory_gib 16.85\r\nOKVQA:\r\n\r\nNotes:\r\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\r\n[relevance] scored 206 examples in 38.4s\r\n\rLoading weights:   0%|          | 0/393 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 393/393 [00:00<00:00, 30120.81it/s]\r\n\rLoading weights:   0%|          | 0/750 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 750/750 [00:00<00:00, 31516.85it/s]\r\n[model] 8b loaded on cuda in 5.3s, 36 layers\r\n[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_s2_both_poll4.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "user     2417240       1  0 21:05 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset webqa_full\r\nuser     2419637       1  0 21:49 ?        00:00:00 /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset okvqa_gs\r\nuser     2420983 2419637 99 22:05 ?        21:34:19 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --tag v2_s2_okvqa_gs_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab\r\nuser     2422384 2417240 99 22:28 ?        04:40:36 /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s2_webqa_full_dev --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab\r\n0, 18678 MiB, 0 %\r\n1, 17590 MiB, 15 %\r\nWEBQA:\r\nNotes:\r\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\r\nThe channel dimension is ambiguous. Got image shape torch.Size([3, 1, 1]). Assuming channels are the first dimension. Use the [input_data_format](https://huggingface.co/docs/transformers/main/internal/image_processing_utils#transformers.image_transforms.rescale.input_data_format) parameter to assign the channel dimension.\r\n[relevance] scored 206 examples in 371.1s\r\n\rLoading weights:   0%|          | 0/393 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 393/393 [00:00<00:00, 25323.56it/s]\r\n\rLoading weights:   0%|          | 0/750 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 750/750 [00:00<00:00, 38517.55it/s]\r\n[model] 8b loaded on cuda in 4.6s, 36 layers\r\n[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']\r\nOKVQA:\r\n\r\nNotes:\r\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\r\n[relevance] scored 206 examples in 38.4s\r\n\rLoading weights:   0%|          | 0/393 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 393/393 [00:00<00:00, 30120.81it/s]\r\n\rLoading weights:   0%|          | 0/750 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 750/750 [00:00<00:00, 31516.85it/s]\r\n[model] 8b loaded on cuda in 5.3s, 36 layers\r\n[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_s2_dev_progress.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "DIR=/home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev\r\ntotal 12K\r\n-rw-rw-r-- 1 user user 1.1K Oct 17 22:38 webqa_full.env.ndjson\r\n-rwxrwxr-x 1 user user    8 Oct 17 22:27 webqa_full.lock\r\n-rw-rw-r-- 1 user user 1.3K Oct 17 22:38 webqa_full.log\r\nDIR=/home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev\r\ntotal 12K\r\n-rw-rw-r-- 1 user user 1.1K Oct 17 22:06 okvqa_gs.env.ndjson\r\n-rwxrwxr-x 1 user user    8 Oct 17 22:05 okvqa_gs.lock\r\n-rw-rw-r-- 1 user user 1.1K Oct 17 22:06 okvqa_gs.log\r\n",
+        "truncated": false
+      }
+    }
+  ]
+}

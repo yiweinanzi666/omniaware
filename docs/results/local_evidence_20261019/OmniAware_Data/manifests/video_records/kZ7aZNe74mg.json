@@ -1,0 +1,27 @@
+{
+  "id": "kZ7aZNe74mg",
+  "source_url": "https://www.youtube.com/watch?v=kZ7aZNe74mg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\kZ7aZNe74mg.log",
+  "filename": "kZ7aZNe74mg.mp4",
+  "bytes": 41324008,
+  "sha256": "5f434fecbac4aba34957100032d6eb3b30140c3f181b84f661abee35b29f5f17",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "624.175601"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "Ovok2WYMNxU",
+  "source_url": "https://www.youtube.com/watch?v=Ovok2WYMNxU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ovok2WYMNxU.log",
+  "filename": "Ovok2WYMNxU.mp4",
+  "bytes": 18233886,
+  "sha256": "b5b4593fc302b7da054b121214b91d173b0bcb366feaec6e7a0c9635241bdfb4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "476.937868"
+    }
+  }
+}

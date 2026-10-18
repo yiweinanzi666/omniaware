@@ -1,0 +1,27 @@
+{
+  "id": "YCT322gDybY",
+  "source_url": "https://www.youtube.com/watch?v=YCT322gDybY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YCT322gDybY.log",
+  "filename": "YCT322gDybY.mp4",
+  "bytes": 24984656,
+  "sha256": "e0d8f53fbca7970d78991ae2ff6c4227a6ddcf1641b3b323512661f93d290f73",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "394.065850"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "Iy-F7iSIopA",
+  "source_url": "https://www.youtube.com/watch?v=Iy-F7iSIopA",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\Iy-F7iSIopA.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=Iy-F7iSIopA\n[youtube] Iy-F7iSIopA: Downloading webpage\nWARNING: [youtube] Iy-F7iSIopA: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] Iy-F7iSIopA: Downloading initial data API JSON\n[youtube] Iy-F7iSIopA: Downloading visionos player API JSON\n[youtube] Iy-F7iSIopA: Downloading iframe API JS\n[youtube] Iy-F7iSIopA: Downloading player 21090930-main\n[youtube] Iy-F7iSIopA: Downloading web player API JSON\nWARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing\nERROR: [youtube] Iy-F7iSIopA: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies\n"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "amsUNARAwQE",
+  "source_url": "https://www.youtube.com/watch?v=amsUNARAwQE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\amsUNARAwQE.log",
+  "filename": "amsUNARAwQE.mp4",
+  "bytes": 47667065,
+  "sha256": "2aa82ac381da67e084b32e63bd4336b511b85c6c11b795692f1be363dd6f25b3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "597.658413"
+    }
+  }
+}

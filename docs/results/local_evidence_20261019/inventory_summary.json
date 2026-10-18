@@ -1,0 +1,84 @@
+{
+  "snapshot_date": "2026-10-19 Asia/Shanghai",
+  "single_file_limit_bytes": 104857600,
+  "included_files": 18542,
+  "published_bytes": 807884933,
+  "status_counts": {
+    "included": 16882,
+    "excluded_media_or_partial_media": 1273,
+    "excluded_temporary_or_cache": 1,
+    "included_gzip": 1243,
+    "excluded_at_least_100_MiB": 29,
+    "excluded_model_or_tensor_or_binary_cache": 1,
+    "excluded_nested_git_control_file": 2,
+    "excluded_bulk_media_directory": 7,
+    "included_remote_evidence": 417
+  },
+  "redacted_files": {},
+  "github_result_branches": [
+    {
+      "branch": "results/node04-format-diagnosis-20261018",
+      "commit": "f14dfc8a5e3969f157015372fcaaa7c543994197",
+      "evidence_files": 76
+    },
+    {
+      "branch": "results/node04-format-fix-20261018",
+      "commit": "318ab6c59a9bba7d379e166d119074443bb68892",
+      "evidence_files": 76
+    },
+    {
+      "branch": "results/node04-fp32-fix-20261018",
+      "commit": "a11e234fc2741fc122eb0a7bb6b5d7cd6f9f2ee8",
+      "evidence_files": 19
+    },
+    {
+      "branch": "results/node04-preparation-20261017",
+      "commit": "24d177e9f377cebcaf69ff1c67e0436650c66bf0",
+      "evidence_files": 29
+    },
+    {
+      "branch": "results/node04-selfcheck-20261018",
+      "commit": "32accfcaf91e3338f2ad9aa5f6ef86c8dbb830e4",
+      "evidence_files": 55
+    },
+    {
+      "branch": "results/v2-s1-20261013",
+      "commit": "aa08b5973a8015f5bddf6d624a886874113193cd",
+      "evidence_files": 24
+    },
+    {
+      "branch": "results/v2-s1-20261018",
+      "commit": "08f02888b1ef951657f738d1854de30c39e4734a",
+      "evidence_files": 136
+    },
+    {
+      "branch": "runs/s2-s4-analysis-eab",
+      "commit": "319396f76ee82d1e87ee3c839454caea388327e2",
+      "evidence_files": 2
+    }
+  ],
+  "external_source_versions": [
+    {
+      "path": "external/BARTScore",
+      "commit": "248f511cb34ae3753fc81f7d7a945de5bfe33458",
+      "origin": "https://github.com/neulab/BARTScore",
+      "modified_files": []
+    },
+    {
+      "path": "external/M2RAG",
+      "commit": "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22",
+      "origin": "https://github.com/maziao/M2RAG",
+      "modified_files": []
+    },
+    {
+      "path": "external/UniversalRAG",
+      "commit": "d29ab3acaebfbaebdc7f095457076585bec88065",
+      "origin": "https://github.com/wgcyeo/UniversalRAG",
+      "modified_files": [
+        "M dataset/clip.parquet",
+        " M dataset/video.parquet"
+      ]
+    }
+  ],
+  "scope": "Local files in the main checkout, data_ops, and OmniAware_Data sibling evidence directories; existing GitHub results/runs branches. No live SSH state or unfinished experiment success is asserted."
+}

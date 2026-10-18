@@ -1,0 +1,27 @@
+{
+  "id": "VN2FigTY_E8",
+  "source_url": "https://www.youtube.com/watch?v=VN2FigTY_E8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VN2FigTY_E8.log",
+  "filename": "VN2FigTY_E8.mp4",
+  "bytes": 28275033,
+  "sha256": "157b51b3dc1f014f99ed1af3f8de89f23737f19ec69f6d5d1a3cd56dfab1addd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "308.337778"
+    }
+  }
+}

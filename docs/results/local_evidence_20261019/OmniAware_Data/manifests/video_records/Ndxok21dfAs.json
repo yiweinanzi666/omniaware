@@ -1,0 +1,27 @@
+{
+  "id": "Ndxok21dfAs",
+  "source_url": "https://www.youtube.com/watch?v=Ndxok21dfAs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ndxok21dfAs.log",
+  "filename": "Ndxok21dfAs.mp4",
+  "bytes": 18379476,
+  "sha256": "1b76876d248ef077bf51aa04cd34499caa668680863c2fe68205e3dd0f5c26fb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "250.984490"
+    }
+  }
+}

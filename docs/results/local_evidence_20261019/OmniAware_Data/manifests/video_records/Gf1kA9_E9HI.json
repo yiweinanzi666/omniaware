@@ -1,0 +1,27 @@
+{
+  "id": "Gf1kA9_E9HI",
+  "source_url": "https://www.youtube.com/watch?v=Gf1kA9_E9HI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Gf1kA9_E9HI.log",
+  "filename": "Gf1kA9_E9HI.mp4",
+  "bytes": 30702459,
+  "sha256": "f42a3707eb0a8431af22f1e65ff34e824999154f4a178b068a1c934aac855b1f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "478.005986"
+    }
+  }
+}

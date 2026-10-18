@@ -1,0 +1,27 @@
+{
+  "id": "syrzwCh_Ue0",
+  "source_url": "https://www.youtube.com/watch?v=syrzwCh_Ue0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\syrzwCh_Ue0.log",
+  "filename": "syrzwCh_Ue0.mp4",
+  "bytes": 4250396,
+  "sha256": "551476a3f5e82346b52f5fcf829a64450279b3c3dbe0fc294534136d150aaff7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "91.416961"
+    }
+  }
+}

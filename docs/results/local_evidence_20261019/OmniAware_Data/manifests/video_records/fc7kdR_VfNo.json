@@ -1,0 +1,27 @@
+{
+  "id": "fc7kdR_VfNo",
+  "source_url": "https://www.youtube.com/watch?v=fc7kdR_VfNo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\fc7kdR_VfNo.log",
+  "filename": "fc7kdR_VfNo.mp4",
+  "bytes": 9468014,
+  "sha256": "37fa66fc5e2430814e50ca6444727466df2c5f4774d6d631f2b321063668bca4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "117.841270"
+    }
+  }
+}

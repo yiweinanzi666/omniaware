@@ -1,0 +1,27 @@
+{
+  "id": "BarlCsn0kn0",
+  "source_url": "https://www.youtube.com/watch?v=BarlCsn0kn0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\BarlCsn0kn0.log",
+  "filename": "BarlCsn0kn0.mp4",
+  "bytes": 59272699,
+  "sha256": "c60a7d0c9906baaff9c28fdd09010dc989c6e5fa42c430244027e93580fa6da8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1219.047619"
+    }
+  }
+}

@@ -1,0 +1,2 @@
+for f in /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev/webqa_full.log /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev/webqa_full.jsonl /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev/webqa_full.prompts.ndjson; do echo FILE=$f; [ -f "$f" ] && { tail -20 "$f" 2>/dev/null; stat -c '%s %y' "$f"; }; done
+ps -T -p 2422384 -o tid,pcpu,stat,wchan:20,comm | sort -k2 -nr | head -15

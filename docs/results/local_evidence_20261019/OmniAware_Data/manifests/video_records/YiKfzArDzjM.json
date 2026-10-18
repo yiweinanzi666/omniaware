@@ -1,0 +1,27 @@
+{
+  "id": "YiKfzArDzjM",
+  "source_url": "https://www.youtube.com/watch?v=YiKfzArDzjM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YiKfzArDzjM.log",
+  "filename": "YiKfzArDzjM.mp4",
+  "bytes": 18891378,
+  "sha256": "b3c5579d89272ffa34c49485659fd092c941ca618c4f8e737580613772262a9e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 848,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "165.697596"
+    }
+  }
+}

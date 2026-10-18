@@ -1,0 +1,20 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=XaDvvyz1TNg
+[youtube] XaDvvyz1TNg: Downloading webpage
+WARNING: [youtube] XaDvvyz1TNg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] XaDvvyz1TNg: Downloading initial data API JSON
+[youtube] XaDvvyz1TNg: Downloading visionos player API JSON
+[youtube] XaDvvyz1TNg: Downloading iframe API JS
+[youtube] XaDvvyz1TNg: Downloading player 21090930-main
+[youtube] XaDvvyz1TNg: Downloading web player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] XaDvvyz1TNg: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+[youtube] Extracting URL: https://www.youtube.com/watch?v=XaDvvyz1TNg
+[youtube] XaDvvyz1TNg: Downloading webpage
+WARNING: [youtube] XaDvvyz1TNg: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] XaDvvyz1TNg: Downloading initial data API JSON
+[youtube] XaDvvyz1TNg: Downloading visionos player API JSON
+[youtube] XaDvvyz1TNg: Downloading iframe API JS
+[youtube] XaDvvyz1TNg: Downloading player 21090930-main
+[youtube] XaDvvyz1TNg: Downloading web player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] XaDvvyz1TNg: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

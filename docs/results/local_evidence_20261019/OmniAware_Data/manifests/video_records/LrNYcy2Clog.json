@@ -1,0 +1,27 @@
+{
+  "id": "LrNYcy2Clog",
+  "source_url": "https://www.youtube.com/watch?v=LrNYcy2Clog",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\LrNYcy2Clog.log",
+  "filename": "LrNYcy2Clog.mp4",
+  "bytes": 36329296,
+  "sha256": "8fd325d185b1b6648a8d253f0f5f498fa9c4908cbe00116f3d0ea5856ceb56b9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "589.252789"
+    }
+  }
+}

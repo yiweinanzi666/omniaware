@@ -1,0 +1,8 @@
+{
+  "repo": "Qwen/Qwen3-VL-8B-Instruct",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "file": "tokenizer_config.json",
+  "bytes": 10868,
+  "sha256": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+  "verified_at": "2026-10-17T02:41:52+0800"
+}

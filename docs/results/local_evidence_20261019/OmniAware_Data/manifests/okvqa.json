@@ -1,0 +1,21 @@
+{
+  "splits": {
+    "train2014": {
+      "questions": 9009,
+      "annotations": 9009,
+      "images_expected": 8998
+    },
+    "val2014": {
+      "questions": 5046,
+      "annotations": 5046,
+      "images_expected": 5033
+    }
+  },
+  "images_complete": 14031,
+  "images_expected": 14031,
+  "bytes": 2314513084,
+  "failures": [],
+  "question_coverage": 1.0,
+  "source": "https://okvqa.allenai.org/download.html",
+  "image_selection": "All unique COCO images referenced by official OK-VQA train and val questions; unrelated COCO images omitted. No question subsampling."
+}

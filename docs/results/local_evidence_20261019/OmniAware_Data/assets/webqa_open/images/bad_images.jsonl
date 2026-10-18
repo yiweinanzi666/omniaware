@@ -1,0 +1,10 @@
+{"image_id": "30278219", "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x0000021656CC6FC0>"}
+{"image_id": "30045608", "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x0000026DAA7595D0>"}
+{"image_id": "30366390", "error": "ValueError: Decompressed data too large for PngImagePlugin.MAX_TEXT_CHUNK"}
+{"image_id": "30298493", "error": "OSError: image file is truncated (78 bytes not processed)"}
+{"image_id": "30014375", "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x0000022C45509760>"}
+{"image_id": "30039288", "error": "OSError: image file is truncated (19 bytes not processed)"}
+{"image_id": "30233625", "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x0000022C4556E2A0>"}
+{"image_id": "30161353", "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x000001CD2274A610>"}
+{"image_id": "30172755", "error": "OSError: image file is truncated (2 bytes not processed)"}
+{"image_id": "30039112", "error": "OSError: image file is truncated (12 bytes not processed)"}

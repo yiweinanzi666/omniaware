@@ -1,0 +1,27 @@
+{
+  "id": "BuuFv-6V6xc",
+  "source_url": "https://www.youtube.com/watch?v=BuuFv-6V6xc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\BuuFv-6V6xc.log",
+  "filename": "BuuFv-6V6xc.mp4",
+  "bytes": 6494477,
+  "sha256": "171117f3ea73ee5f9bbd1d9f591b76e252190874f31deb6d6b09c1b064d3e248",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "162.562902"
+    }
+  }
+}

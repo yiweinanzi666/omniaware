@@ -1,0 +1,27 @@
+{
+  "id": "mseguDJ6veo",
+  "source_url": "https://www.youtube.com/watch?v=mseguDJ6veo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\mseguDJ6veo.log",
+  "filename": "mseguDJ6veo.mp4",
+  "bytes": 33466785,
+  "sha256": "bf9e976e1ba4a3bcf5e6496939955ecf59a05f6f25cf891c54bb5aaf9c4b3938",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "356.565624"
+    }
+  }
+}

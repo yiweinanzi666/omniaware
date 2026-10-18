@@ -1,0 +1,27 @@
+{
+  "id": "zw5LT-Ewo8g",
+  "source_url": "https://www.youtube.com/watch?v=zw5LT-Ewo8g",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zw5LT-Ewo8g.log",
+  "filename": "zw5LT-Ewo8g.mp4",
+  "bytes": 8303200,
+  "sha256": "c91ff43eccc317dc918d60046dfc167ce92e396accb60e2bf17290013c10eb18",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "154.877098"
+    }
+  }
+}

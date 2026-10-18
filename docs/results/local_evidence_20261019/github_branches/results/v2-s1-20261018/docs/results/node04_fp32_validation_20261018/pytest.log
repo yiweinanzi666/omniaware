@@ -1,0 +1,119 @@
+........................................................................ [ 13%]
+.................................................................. [ 25%]
+.........s............................................................ [ 37%]
+.............................F.......................................... [ 50%]
+........................................................................ [ 63%]
+........................................................................ [ 76%]
+........................................................................ [ 90%]
+.......................................................     [100%]
+=================================== FAILURES ===================================
+_________ test_dtype_reaches_model_and_isolates_calibration_and_resume _________
+
+tmp_path = PosixPath('/tmp/pytest-of-user/pytest-10/test_dtype_reaches_model_and_i0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x14bd95f76e90>
+
+    def test_dtype_reaches_model_and_isolates_calibration_and_resume(tmp_path, monkeypatch):
+        _setup(tmp_path, monkeypatch)
+        loaded, scored = [], []
+    
+        class Model(FakeQwen):
+            def __init__(self, model_path, **kw):
+                super().__init__(model_path, **kw)
+                loaded.append(kw["dtype"])
+                self.model = SimpleNamespace(dtype=kw["dtype"])
+    
+        def score(qwen, enc, *args, **kw):
+            scored.append(qwen.model.dtype)
+            return float(enc.length)
+    
+        monkeypatch.setattr(run, "QwenEAB", Model)
+        monkeypatch.setattr(seakr, "score_input", score)
+        args = BASE + ["--seakr-samples", "4", "--calibrate-only"]
+        cache = tmp_path / "cache"
+        run.main(args + ["--tag", "bf16", "--dtype", "bfloat16"])
+        old = {p: p.read_bytes() for p in cache.glob("*.json")}
+        scored.clear()
+        run.main(args + ["--tag", "fp32", "--dtype", "float32"])
+        assert loaded == [torch.bfloat16, torch.float32]
+        assert scored and set(scored) == {torch.float32}  # no old SeaKR calibration hit
+        for p, content in old.items():
+            assert p.read_bytes() == content
+        for kind in ("ucal", "seakr"):
+            bf, = cache.glob(f"{kind}_*bfloat16.json")
+            fp, = cache.glob(f"{kind}_*float32.json")
+            a, b = json.loads(bf.read_text()), json.loads(fp.read_text())
+            assert a.keys() == b.keys()
+            assert all(a[q]["fingerprint"] != b[q]["fingerprint"] for q in a)
+        cfg = json.loads((tmp_path / "runs/fp32/okvqa_config.json").read_text())
+        assert cfg["dtype"] == "float32"
+        env = json.loads((tmp_path / "runs/fp32/okvqa.env.ndjson").read_text().splitlines()[0])
+        assert env["model"]["dtype"] == "torch.float32"
+    
+        run.main(BASE + ["--tag", "answers", "--n-eval", "2", "--dtype", "bfloat16"])
+        answers = tmp_path / "runs/answers/okvqa.jsonl"
+        original = answers.read_bytes()
+>       with pytest.raises(SystemExit, match="dtype"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'dtype'
+E         Actual message: '2'
+
+tests/test_precision_runtime.py:60: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[data] --n-dev 0 differs from the protocol size 256: the test set changes
+[data] okvqa: 14 total, calib 6 (heldout), dev 0, test 8
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=True torch 2.11.0+cu128 transformers 5.5.3 attn None dtype torch.bfloat16 gpus []
+[seakr] threshold 122.0000 (U retrieval rate on calibration 0.667; 0 of 6 calibration questions have no eigen score)
+[calibrate-only] caches and /tmp/pytest-of-user/pytest-10/test_dtype_reaches_model_and_i0/runs/bf16/okvqa_config.json ready
+[data] --n-dev 0 differs from the protocol size 256: the test set changes
+[data] okvqa: 14 total, calib 6 (heldout), dev 0, test 8
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=True torch 2.11.0+cu128 transformers 5.5.3 attn None dtype torch.float32 gpus []
+[seakr] threshold 122.0000 (U retrieval rate on calibration 0.667; 0 of 6 calibration questions have no eigen score)
+[calibrate-only] caches and /tmp/pytest-of-user/pytest-10/test_dtype_reaches_model_and_i0/runs/fp32/okvqa_config.json ready
+[data] --n-dev 0 differs from the protocol size 256: the test set changes
+[data] okvqa: 14 total, calib 6 (heldout), dev 0, test 2
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=True torch 2.11.0+cu128 transformers 5.5.3 attn None dtype torch.bfloat16 gpus []
+[1/2] q003 0.0s P=347 U_pre=0.00 retrieve=False
+[2/2] q002 0.0s P=347 U_pre=0.00 retrieve=False
+[done] okvqa 2 in 0.0s -> /tmp/pytest-of-user/pytest-10/test_dtype_reaches_model_and_i0/runs/answers/okvqa.jsonl; empty_answer_rate 0.000000; refusal_rate 0.000000
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --dataset
+                   {hybridqa,okvqa,okvqa_dense,okvqa_gs,okvqa_gs_full,videorag_synth,webqa_full,webqa_img,webqa_open_full,webqa_open_img}
+                   [--model {2b,8b,internvl3.5-8b}]
+                   [--dtype {bfloat16,float32}] [--max-patches MAX_PATCHES]
+                   --split {calib,dev,test} [--n-calib N_CALIB]
+                   [--calib-source {train,heldout}] [--n-dev N_DEV]
+                   [--split-seed SPLIT_SEED] [--allow-missing-assets]
+                   [--offset OFFSET] [--n-eval N_EVAL] [--k K]
+                   [--min-per-modality MIN_PER_MODALITY] [--modality-routing]
+                   [--route-rule {mh,mass,entropy,retriever,all,oracle,query}]
+                   [--query-routes QUERY_ROUTES] [--first-round-routing]
+                   [--order ORDER] [--replication-gamma REPLICATION_GAMMA]
+                   [--seed SEED] [--selector {relevance,ce,ce_calibrated}]
+                   [--universalrag-top UNIVERSALRAG_TOP]
+                   [--universalrag-modalities {paragraph,document,table,image,video,clip} [{paragraph,document,table,image,video,clip} ...]]
+                   [--intervention {mask,cf,random_edit,rerun,distractors,inject_answer,inject_instruction} [{mask,cf,random_edit,rerun,distractors,inject_answer,inject_instruction} ...]]
+                   [--relevance-noise RELEVANCE_NOISE]
+                   [--noise-draw NOISE_DRAW]
+                   [--relevance-norm {ecdf,raw,minmax}]
+                   [--norm-from NORM_FROM] [--no-calibration]
+                   [--image-mode {mix,clip,caption}] [--beta BETA] [--tau TAU]
+                   [--tau-bias TAU_BIAS] [--eab-uncertainty {pre,post}]
+                   [--answer-style {default,short,cite,sentence}]
+                   [--variants VARIANTS] [--analysis-eab]
+                   [--probe-uncertainty] [--u-combine {sum,zsum}]
+                   [--attn-layer {last,mid}] [--max-pixels MAX_PIXELS]
+                   [--max-new-tokens MAX_NEW_TOKENS]
+                   [--seakr-samples SEAKR_SAMPLES]
+                   [--seakr-max-new-tokens SEAKR_MAX_NEW_TOKENS]
+                   [--seakr-threshold SEAKR_THRESHOLD] [--fitm] [--m2rag]
+                   [--num-shards NUM_SHARDS] [--shard-id SHARD_ID]
+                   [--calibrate-only] --tag TAG [--v2] [--v2-reranker]
+                   [--decisions DECISIONS] [--trace-prompts TRACE_PROMPTS]
+                   [--max-empty-rate MAX_EMPTY_RATE]
+__main__.py: error: saved answers use different dtype; use a new --tag
+=========================== short test summary info ============================
+FAILED tests/test_precision_runtime.py::test_dtype_reaches_model_and_isolates_calibration_and_resume
+1 failed, 549 passed, 1 skipped, 21 subtests passed in 41.76s

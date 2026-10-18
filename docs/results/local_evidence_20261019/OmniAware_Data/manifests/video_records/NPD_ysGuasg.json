@@ -1,0 +1,27 @@
+{
+  "id": "NPD_ysGuasg",
+  "source_url": "https://www.youtube.com/watch?v=NPD_ysGuasg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\NPD_ysGuasg.log",
+  "filename": "NPD_ysGuasg.mp4",
+  "bytes": 25864176,
+  "sha256": "e502a98b62ecffd1670d367d1230db8b3dc51d5e8d2b4efdac5a7a6f3d834ceb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "528.253968"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "WYErtxyiXZI",
+  "source_url": "https://www.youtube.com/watch?v=WYErtxyiXZI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WYErtxyiXZI.log",
+  "filename": "WYErtxyiXZI.mp4",
+  "bytes": 39142643,
+  "sha256": "34d3a748c46ac2771505dffa04c649a8dc5eda4d2bd685647913a1b3fd2a4745",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "574.206259"
+    }
+  }
+}

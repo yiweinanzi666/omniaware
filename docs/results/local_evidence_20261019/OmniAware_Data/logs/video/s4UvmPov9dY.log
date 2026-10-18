@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=s4UvmPov9dY
+[youtube] s4UvmPov9dY: Downloading webpage
+[youtube] s4UvmPov9dY: Downloading visionos player API JSON
+ERROR: [youtube] s4UvmPov9dY: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=s4UvmPov9dY
+[youtube] s4UvmPov9dY: Downloading webpage
+[youtube] s4UvmPov9dY: Downloading visionos player API JSON
+ERROR: [youtube] s4UvmPov9dY: Video unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=s4UvmPov9dY
+[youtube] s4UvmPov9dY: Downloading webpage
+WARNING: [youtube] s4UvmPov9dY: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] s4UvmPov9dY: Downloading initial data API JSON
+[youtube] s4UvmPov9dY: Downloading visionos player API JSON
+[youtube] s4UvmPov9dY: Downloading iframe API JS
+[youtube] s4UvmPov9dY: Downloading player 21090930-main
+[youtube] s4UvmPov9dY: Downloading web player API JSON
+ERROR: [youtube] s4UvmPov9dY: Video unavailable. This video has been removed by the uploader

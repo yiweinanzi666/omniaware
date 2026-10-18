@@ -1,0 +1,27 @@
+{
+  "id": "R5DCPNltlRg",
+  "source_url": "https://www.youtube.com/watch?v=R5DCPNltlRg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\R5DCPNltlRg.log",
+  "filename": "R5DCPNltlRg.mp4",
+  "bytes": 35930006,
+  "sha256": "0ce0dc047a905dbe3c050f9d492a9656cc8030e61e301c42bde945a1a06e0bf6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "856.444807"
+    }
+  }
+}

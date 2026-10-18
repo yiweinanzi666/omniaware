@@ -1,0 +1,27 @@
+{
+  "id": "VLCVdEIIpFI",
+  "source_url": "https://www.youtube.com/watch?v=VLCVdEIIpFI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VLCVdEIIpFI.log",
+  "filename": "VLCVdEIIpFI.mp4",
+  "bytes": 14467119,
+  "sha256": "859f97b76a1faab8fe5f98df5613baab4cc5e37176ec5eb0f0e25b17fdbb112b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "176.936054"
+    }
+  }
+}

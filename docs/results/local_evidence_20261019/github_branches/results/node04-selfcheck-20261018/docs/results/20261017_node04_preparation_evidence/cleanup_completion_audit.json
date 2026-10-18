@@ -1,0 +1,31 @@
+{
+  "receipt": "cleanup_executed_20261017_180011.json",
+  "receipt_sha256": "3eac0e4c1d3f0e61497492aa0d32b413ac8921fc34af4c21b9c4317c60584774",
+  "journal_filename": "cleanup_executed_20261017_180011.jsonl",
+  "journal_sha256": "d919cbd3a1127a2e0f7885e8cf3f536421c6f9ed78fd46ad47549821b6727ebe",
+  "journal_action_counts": {
+    "deleted": 394864
+  },
+  "deleted_bytes_by_group": {
+    "0": 73169441492,
+    "1": 54445524319,
+    "2": 75632599463,
+    "3": 830594178,
+    "4": 1433136,
+    "5": 101698004,
+    "6": 17545907231,
+    "7": 2293242108,
+    "8": 11115130,
+    "9": 1625565295
+  },
+  "all_26_excluded_files_still_exist_with_original_size": true,
+  "github_pre_cleanup_gate": {
+    "branch": "results/node04-preparation-20261017",
+    "commit": "681dea00171fc21f72e85ee77007eb90a767ba94",
+    "remote_sha": "681dea00171fc21f72e85ee77007eb90a767ba94",
+    "push_exit_code": 0,
+    "remote": "https://github.com/yiweinanzi666/omniaware.git",
+    "verification": "Successful push followed by git ls-remote --heads origin refs/heads/results/node04-preparation-20261017"
+  },
+  "free_space_delta_bytes": 226410110976
+}

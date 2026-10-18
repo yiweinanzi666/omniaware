@@ -1,0 +1,27 @@
+{
+  "id": "K0vG7tri-6Q",
+  "source_url": "https://www.youtube.com/watch?v=K0vG7tri-6Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\K0vG7tri-6Q.log",
+  "filename": "K0vG7tri-6Q.mp4",
+  "bytes": 18423725,
+  "sha256": "f2bac501676d95b0fd433f8471e3529b209bb07bd9c6762ea82e01b3f20aba59",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "232.663946"
+    }
+  }
+}

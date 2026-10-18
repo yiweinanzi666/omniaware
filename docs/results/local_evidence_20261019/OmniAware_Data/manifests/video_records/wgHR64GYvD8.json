@@ -1,0 +1,27 @@
+{
+  "id": "wgHR64GYvD8",
+  "source_url": "https://www.youtube.com/watch?v=wgHR64GYvD8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\wgHR64GYvD8.log",
+  "filename": "wgHR64GYvD8.mp4",
+  "bytes": 18107170,
+  "sha256": "258f5efbbbd620f8c0d023e2b2f9c356a526a9f7441b49fd8dfcf3a60ea49260",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "188.940771"
+    }
+  }
+}

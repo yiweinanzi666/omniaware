@@ -1,0 +1,40 @@
+pause_started=2026-10-18T01:32:22+08:00
+before_processes
+    PID    PPID    PGID     SID     ELAPSED STAT CMD
+2419637       1 2419611 2419611    03:42:51 S    /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset okvqa_gs
+2420983 2419637 2419611 2419611    03:26:36 Rl   /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --tag v2_s2_okvqa_gs_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab
+before_gpu
+0, 18706 MiB, 0 %
+1, 17964 MiB, 0 %
+before_okvqa_lines
+53 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.jsonl
+signals=SIGINT parent=2419637 child=2420983
+escalate=SIGTERM child=2420983
+escalate=SIGTERM parent=2419637
+exited_after_sigterm=2
+after_processes
+    PID    PPID    PGID     SID     ELAPSED STAT CMD
+after_gpu
+0, 18706 MiB, 0 %
+1, 14 MiB, 0 %
+after_okvqa_lines
+54 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.jsonl
+pause_finished=2026-10-18T01:32:43+08:00
+immediate_stop_started=2026-10-18T12:29:02+08:00
+    PID    PPID    PGID     SID     ELAPSED STAT CMD
+2463331       1 2463299 2463299       01:27 Rl   /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --tag v2_s2_okvqa_gs_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab
+gpu_before
+0, 19154 MiB, 0 %
+1, 17768 MiB, 0 %
+okvqa_lines_before
+54 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.jsonl
+escalate=SIGTERM pid=2463331
+exited_after_sigterm=2
+after_process
+    PID    PPID    PGID     SID     ELAPSED STAT CMD
+gpu_after
+0, 19154 MiB, 13 %
+1, 14 MiB, 0 %
+okvqa_lines_after
+54 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.jsonl
+immediate_stop_finished=2026-10-18T12:29:18+08:00

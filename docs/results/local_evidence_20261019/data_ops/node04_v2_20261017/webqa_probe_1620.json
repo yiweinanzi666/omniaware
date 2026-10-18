@@ -1,0 +1,206 @@
+{
+  "time": "2026-10-17T16:13:34.089191+08:00",
+  "missing": {
+    "30278219": [
+      {
+        "qid": "d5cf46ea0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d27f720dba11ecb1e81171463288e9",
+        "split": "val",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d5a6fc0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d5ec0c0dba11ecb1e81171463288e9",
+        "split": "val",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5dccf360dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30045608": [
+      {
+        "qid": "d5cfb8500dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d570a60dba11ecb1e81171463288e9",
+        "split": "val",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30366390": [
+      {
+        "qid": "d5cff70c0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5dd9c7c0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30298493": [
+      {
+        "qid": "d5d21ad20dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d3d62e0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d41c380dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30014375": [
+      {
+        "qid": "d5d33b920dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30039288": [
+      {
+        "qid": "d5d4bdfa0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30233625": [
+      {
+        "qid": "d5d88dfe0dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d9a7f20dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5ddc5120dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5de75700dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30161353": [
+      {
+        "qid": "d5d89c360dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      },
+      {
+        "qid": "d5d9ef640dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30172755": [
+      {
+        "qid": "d5d8eeca0dba11ecb1e81171463288e9",
+        "split": "val",
+        "kind": "img_negFacts"
+      }
+    ],
+    "30039112": [
+      {
+        "qid": "d5d916980dba11ecb1e81171463288e9",
+        "split": "train",
+        "kind": "img_negFacts"
+      }
+    ]
+  },
+  "existing_image_filenames": 389743,
+  "bad_manifest": [
+    {
+      "image_id": "30278219",
+      "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f4510d37ec0>"
+    },
+    {
+      "image_id": "30045608",
+      "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f4510f1c8b0>"
+    },
+    {
+      "image_id": "30366390",
+      "error": "ValueError: Decompressed data too large for PngImagePlugin.MAX_TEXT_CHUNK"
+    },
+    {
+      "image_id": "30298493",
+      "error": "OSError: image file is truncated (78 bytes not processed)"
+    },
+    {
+      "image_id": "30014375",
+      "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f4510cfae80>"
+    },
+    {
+      "image_id": "30039288",
+      "error": "OSError: image file is truncated (19 bytes not processed)"
+    },
+    {
+      "image_id": "30233625",
+      "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f4510f1d080>"
+    },
+    {
+      "image_id": "30161353",
+      "error": "UnidentifiedImageError: cannot identify image file <_io.BytesIO object at 0x7f4510f1cc70>"
+    },
+    {
+      "image_id": "30172755",
+      "error": "OSError: image file is truncated (2 bytes not processed)"
+    },
+    {
+      "image_id": "30039112",
+      "error": "OSError: image file is truncated (12 bytes not processed)"
+    }
+  ],
+  "tsv_bytes": 72234224104,
+  "lineidx_rows": 389750,
+  "sample_ids": [
+    [
+      0,
+      "30000000"
+    ],
+    [
+      1,
+      "30000001"
+    ],
+    [
+      2,
+      "30000002"
+    ],
+    [
+      97437,
+      "30097437"
+    ],
+    [
+      194875,
+      "30194875"
+    ],
+    [
+      389749,
+      "30389749"
+    ]
+  ]
+}

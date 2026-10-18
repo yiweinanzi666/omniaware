@@ -1,0 +1,27 @@
+{
+  "id": "R786uzXOeMY",
+  "source_url": "https://www.youtube.com/watch?v=R786uzXOeMY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\R786uzXOeMY.log",
+  "filename": "R786uzXOeMY.mp4",
+  "bytes": 23874400,
+  "sha256": "71a1faa34fe9e980ce4461917a207f308d8dc7a967496471a393acf262c66f1a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "358.260680"
+    }
+  }
+}

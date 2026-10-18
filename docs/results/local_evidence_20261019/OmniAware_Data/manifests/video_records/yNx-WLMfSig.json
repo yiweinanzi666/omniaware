@@ -1,0 +1,27 @@
+{
+  "id": "yNx-WLMfSig",
+  "source_url": "https://www.youtube.com/watch?v=yNx-WLMfSig",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\yNx-WLMfSig.log",
+  "filename": "yNx-WLMfSig.mp4",
+  "bytes": 57758354,
+  "sha256": "bdd3027edad8d37263203757e9d4481d2ad6ecc1a8443ec463df3d8bc0a53f77",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1045.362358"
+    }
+  }
+}

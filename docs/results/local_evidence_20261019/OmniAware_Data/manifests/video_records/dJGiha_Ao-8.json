@@ -1,0 +1,27 @@
+{
+  "id": "dJGiha_Ao-8",
+  "source_url": "https://www.youtube.com/watch?v=dJGiha_Ao-8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\dJGiha_Ao-8.log",
+  "filename": "dJGiha_Ao-8.mp4",
+  "bytes": 65550698,
+  "sha256": "dc775ef345f2d784fb023baa6433b48d7c68c3484c36dbf05ad48ca41b91407c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "895.616871"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "9WIrr-P0RtE",
+  "source_url": "https://www.youtube.com/watch?v=9WIrr-P0RtE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\9WIrr-P0RtE.log",
+  "filename": "9WIrr-P0RtE.mp4",
+  "bytes": 32003148,
+  "sha256": "7ddd72664b18185b5b07278377260ac1366daf0d5a25573e7f66a171fe026c03",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "336.503583"
+    }
+  }
+}

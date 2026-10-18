@@ -1,0 +1,33 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=DDbBcsRAz68
+[youtube] DDbBcsRAz68: Downloading webpage
+[youtube] DDbBcsRAz68: Downloading visionos player API JSON
+[youtube] DDbBcsRAz68: Downloading m3u8 information
+[info] DDbBcsRAz68: Downloading 1 format(s): 135+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.info.json
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+[youtube] Extracting URL: https://www.youtube.com/watch?v=DDbBcsRAz68
+[youtube] DDbBcsRAz68: Downloading webpage
+[youtube] DDbBcsRAz68: Downloading visionos player API JSON
+[youtube] DDbBcsRAz68: Downloading m3u8 information
+[info] DDbBcsRAz68: Downloading 1 format(s): 135+140
+[info] Video metadata is already present
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+
+[automatic retry] public HLS format after direct HTTP 403
+[youtube] Extracting URL: https://www.youtube.com/watch?v=DDbBcsRAz68
+[youtube] DDbBcsRAz68: Downloading webpage
+[youtube] DDbBcsRAz68: Downloading visionos player API JSON
+[youtube] DDbBcsRAz68: Downloading m3u8 information
+[info] DDbBcsRAz68: Downloading 1 format(s): 231+234
+[info] Video metadata is already present
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 18
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.f231.mp4
+[download] Download completed
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 18
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.f234.mp4
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.f231.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\DDbBcsRAz68.f234.mp4 (pass -k to keep)

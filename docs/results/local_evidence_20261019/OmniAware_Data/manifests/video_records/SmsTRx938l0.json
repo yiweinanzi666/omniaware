@@ -1,0 +1,27 @@
+{
+  "id": "SmsTRx938l0",
+  "source_url": "https://www.youtube.com/watch?v=SmsTRx938l0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SmsTRx938l0.log",
+  "filename": "SmsTRx938l0.mp4",
+  "bytes": 5109935,
+  "sha256": "47bc0fb915b30d57297722d76f902622c2d679ecb0b14792ab607e551c1cf7f4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "166.417415"
+    }
+  }
+}

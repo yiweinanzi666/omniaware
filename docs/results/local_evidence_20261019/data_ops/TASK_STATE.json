@@ -1,0 +1,53 @@
+{
+  "measured_at": "2026-10-13",
+  "host": "node04",
+  "identity": "user@node04",
+  "webqa": {
+    "local_archive_complete": false,
+    "remote_archive_complete": false,
+    "remote_parts_present": "001-012 partial/incomplete; 013-051 missing",
+    "imgs_tsv_present": false
+  },
+  "webqa_data_ready": false,
+  "other_subsets_ready": false,
+  "download_budget_status": "UNRESOLVED",
+  "disk_safety_status": "PASS_AT_LAST_MEASUREMENT",
+  "all_requested_data_ready": false,
+  "formal_experiment_ready": "NOT_ASSESSED",
+  "next_action": "Finish remaining volumes 049 and 050 using the live downloader; verify their SHA-256 values; run the prepared 7zr console archive test, then continue upload and remote verification.",
+  "remote_last_observed_at": "2026-10-13",
+  "local_updated_at": "2026-10-15T08:38:24.854712+00:00",
+  "local_download": {
+    "measured_at": "2026-10-15T16:33:35.5615273+08:00",
+    "source": "hf:Ancci/webqa_large",
+    "source_manifest": "D:\\WWW2027\\data_ops\\WEBQA_HF_MANIFEST.json",
+    "chunks_total": 51,
+    "chunks_partial": 2,
+    "chunks_complete": 49,
+    "bytes_landed": 54129713623,
+    "bytes_contiguous": 53987249852,
+    "bytes_staged": 142463771,
+    "bytes_target": 54445524319,
+    "percent": 99.42,
+    "recent_rate_mib_s": 0.2436348571296137,
+    "measurement_seconds": 30.0691005,
+    "estimated_remaining_hours": 0.34,
+    "process_ids": [
+      11216
+    ],
+    "proxy_url": "http://127.0.0.1:7897",
+    "resume_mode": "continuous .part prefix plus persistent disjoint ranges",
+    "disk_free_bytes": 251572867072,
+    "other_datasets": "user downloads other datasets; current download scope is WebQA"
+  },
+  "local_mirror_hashes": {
+    "checked": 49,
+    "matching": 49,
+    "measured_at": "2026-10-15T16:34:17.4241414+08:00",
+    "authority": "mirror Git LFS SHA-256; not an official WebQA checksum"
+  },
+  "download_scope": "WebQA only; other datasets supplied separately by user",
+  "recovery_notes": "D:\\WWW2027\\data_ops\\WEBQA_RESUME.md",
+  "archive_test_tool": "D:\\WWW2027\\data_ops\\tools\\7zr.exe",
+  "local_archive_test": "NOT_RUN"
+}

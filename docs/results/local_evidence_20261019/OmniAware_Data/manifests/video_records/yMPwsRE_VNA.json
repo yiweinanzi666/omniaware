@@ -1,0 +1,27 @@
+{
+  "id": "yMPwsRE_VNA",
+  "source_url": "https://www.youtube.com/watch?v=yMPwsRE_VNA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\yMPwsRE_VNA.log",
+  "filename": "yMPwsRE_VNA.mp4",
+  "bytes": 63466217,
+  "sha256": "b35bda0c18d6ac05ded0be6aebcc9da7a5fdbbf66749ed26dce0c790616bd485",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "520.034104"
+    }
+  }
+}

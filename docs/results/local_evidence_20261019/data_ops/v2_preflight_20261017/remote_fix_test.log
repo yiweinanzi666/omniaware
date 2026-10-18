@@ -1,0 +1,9 @@
+[fix/verify-real-model-cuda-device da416a2] fix: place reference attention masks on the model device
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+COMMIT da416a2266a0f3f01e0c394674d0e7b0ad0e5722
+STATUS
+MODEL_FILES
+model-00001-of-00004.safetensors 4902275944
+model-00002-of-00004.safetensors 4915962496
+model-00003-of-00004.safetensors 4999831048
+model-00004-of-00004.safetensors 2716270024

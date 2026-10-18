@@ -1,0 +1,27 @@
+{
+  "id": "J-c_xWQoISI",
+  "source_url": "https://www.youtube.com/watch?v=J-c_xWQoISI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\J-c_xWQoISI.log",
+  "filename": "J-c_xWQoISI.mp4",
+  "bytes": 9073548,
+  "sha256": "894cf6e16ca8a315f068fc38752994838248652f3a70eb58ce7dcfd106a1e899",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "177.586213"
+    }
+  }
+}

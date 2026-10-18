@@ -1,0 +1,1 @@
+/home/user/anaconda3/bin/python -m pytest -p no:warnings --basetemp <audit>/pytest_tmp --junitxml <audit>/pytest.xml

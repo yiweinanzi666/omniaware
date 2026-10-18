@@ -1,0 +1,8 @@
+{
+  "repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+  "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7",
+  "file": "added_tokens.json",
+  "bytes": 18,
+  "sha256": "cd0141b19e809eb963a8f8244fad72530233f729e1f6960d281e1fbb3537b2fb",
+  "verified_at": "2026-10-17T03:47:08+0800"
+}

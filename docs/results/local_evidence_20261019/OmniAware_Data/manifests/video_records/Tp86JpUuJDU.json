@@ -1,0 +1,27 @@
+{
+  "id": "Tp86JpUuJDU",
+  "source_url": "https://www.youtube.com/watch?v=Tp86JpUuJDU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Tp86JpUuJDU.log",
+  "filename": "Tp86JpUuJDU.mp4",
+  "bytes": 47160922,
+  "sha256": "63ca9bcf9808039f5aa0353195f50c7c7ac9d5ca718bbe3d890c98d71d4db70f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "845.856508"
+    }
+  }
+}

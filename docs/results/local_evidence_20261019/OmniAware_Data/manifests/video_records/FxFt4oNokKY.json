@@ -1,0 +1,27 @@
+{
+  "id": "FxFt4oNokKY",
+  "source_url": "https://www.youtube.com/watch?v=FxFt4oNokKY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\FxFt4oNokKY.log",
+  "filename": "FxFt4oNokKY.mp4",
+  "bytes": 24609224,
+  "sha256": "c09bbfa148083f125ae3d0c0db1562e05383365f4da1bdb9c3a08c287dc1ef96",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "713.386667"
+    }
+  }
+}

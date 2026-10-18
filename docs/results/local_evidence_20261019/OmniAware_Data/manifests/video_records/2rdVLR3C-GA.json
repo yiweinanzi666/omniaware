@@ -1,0 +1,27 @@
+{
+  "id": "2rdVLR3C-GA",
+  "source_url": "https://www.youtube.com/watch?v=2rdVLR3C-GA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\2rdVLR3C-GA.log",
+  "filename": "2rdVLR3C-GA.mp4",
+  "bytes": 48559166,
+  "sha256": "7a34aab6ed738108769d504eb6ffdb721fd2266031f5fe7d9ce52f712a800a60",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "691.095510"
+    }
+  }
+}

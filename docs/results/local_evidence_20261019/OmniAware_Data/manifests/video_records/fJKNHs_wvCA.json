@@ -1,0 +1,27 @@
+{
+  "id": "fJKNHs_wvCA",
+  "source_url": "https://www.youtube.com/watch?v=fJKNHs_wvCA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\fJKNHs_wvCA.log",
+  "filename": "fJKNHs_wvCA.mp4",
+  "bytes": 4683550,
+  "sha256": "615b3f87b600d28e07e1946d14732c957715a971bbefb313ff150661b929e5ae",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "97.616689"
+    }
+  }
+}

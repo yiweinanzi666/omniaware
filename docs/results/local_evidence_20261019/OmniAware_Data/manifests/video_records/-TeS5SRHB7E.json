@@ -1,0 +1,27 @@
+{
+  "id": "-TeS5SRHB7E",
+  "source_url": "https://www.youtube.com/watch?v=-TeS5SRHB7E",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\-TeS5SRHB7E.log",
+  "filename": "-TeS5SRHB7E.mp4",
+  "bytes": 16664515,
+  "sha256": "07eb8e451bc2e1cdd67adc150e6d44d76651ef953f63d902f2261ede324802f0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "338.941678"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "a4RSXF2ABtA",
+  "source_url": "https://www.youtube.com/watch?v=a4RSXF2ABtA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\a4RSXF2ABtA.log",
+  "filename": "a4RSXF2ABtA.mp4",
+  "bytes": 8014505,
+  "sha256": "dc9ce42f0f62197e543e11e8e23e925560dbfe561b9ab01b87b64c2116177c2a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "142.872381"
+    }
+  }
+}

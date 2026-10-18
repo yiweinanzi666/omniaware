@@ -1,0 +1,27 @@
+{
+  "id": "99RYURnOi58",
+  "source_url": "https://www.youtube.com/watch?v=99RYURnOi58",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\99RYURnOi58.log",
+  "filename": "99RYURnOi58.mp4",
+  "bytes": 16258164,
+  "sha256": "60f244026699d3d24cd5d04df6f8ca279687035fc1cde7ac36f9e6c568f75fa6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "318.159819"
+    }
+  }
+}

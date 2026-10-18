@@ -1,0 +1,27 @@
+{
+  "id": "XDE4cavkHeM",
+  "source_url": "https://www.youtube.com/watch?v=XDE4cavkHeM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\XDE4cavkHeM.log",
+  "filename": "XDE4cavkHeM.mp4",
+  "bytes": 35335769,
+  "sha256": "f9892cf4e9ba72e58c55e480c9ada86730972fb9cb5a5b27b4ee19ba4bf25875",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "500.041723"
+    }
+  }
+}

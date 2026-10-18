@@ -1,0 +1,67 @@
+{
+  "measured_at": "2026-10-14T06:34:10.6751788+08:00",
+  "source": "hf:Ancci/webqa_large",
+  "selected_proxy": "🇸🇬 新加坡 03",
+  "selected_workers": 48,
+  "range_size_bytes": 4194304,
+  "measurements": [
+    {
+      "proxy": "🇸🇬 新加坡 02",
+      "workers": 64,
+      "seconds": 45,
+      "rate_mib_s": 0.178,
+      "remaining_hours": 60.44
+    },
+    {
+      "proxy": "🇸🇬 新加坡 02",
+      "workers": 48,
+      "seconds": 45,
+      "rate_mib_s": 0.444,
+      "remaining_hours": 23.98
+    },
+    {
+      "proxy": "🇸🇬 新加坡 11",
+      "workers": 48,
+      "seconds": 60,
+      "rate_mib_s": 0.583,
+      "remaining_hours": 18.21
+    },
+    {
+      "proxy": "🇸🇬 新加坡 11",
+      "workers": 48,
+      "seconds": 60,
+      "rate_mib_s": 0.483,
+      "remaining_hours": 21.95
+    },
+    {
+      "proxy": "🇸🇬 新加坡 11",
+      "workers": 48,
+      "seconds": 30,
+      "rate_mib_s": 0.133,
+      "remaining_hours": 79.19
+    },
+    {
+      "proxy": "🇸🇬 新加坡 03",
+      "workers": 48,
+      "seconds": 45,
+      "rate_mib_s": 0.911,
+      "remaining_hours": 11.57
+    },
+    {
+      "proxy": "🇸🇬 新加坡 03",
+      "workers": 48,
+      "seconds": 60,
+      "rate_mib_s": 0.433,
+      "remaining_hours": 24.31
+    },
+    {
+      "proxy": "🇸🇬 新加坡 05",
+      "workers": 8,
+      "seconds": 92,
+      "rate_mib_s": 0,
+      "remaining_hours": null,
+      "error": "parallel probe aborted after repeated TLS unexpected EOF"
+    }
+  ],
+  "note": "Short windows are noisy; only one downloader is active and all measurements resume existing .part files."
+}

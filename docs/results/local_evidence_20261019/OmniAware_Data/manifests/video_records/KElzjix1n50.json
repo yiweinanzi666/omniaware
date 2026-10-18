@@ -1,0 +1,27 @@
+{
+  "id": "KElzjix1n50",
+  "source_url": "https://www.youtube.com/watch?v=KElzjix1n50",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\KElzjix1n50.log",
+  "filename": "KElzjix1n50.mp4",
+  "bytes": 9209643,
+  "sha256": "a7fd7915b82737e5f53e4246fe00b3f7023bb5c18b8995ed608dc3a31676a2fa",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "173.336961"
+    }
+  }
+}

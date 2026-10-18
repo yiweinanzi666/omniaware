@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-17T18:46:00+08:00",
+  "source": "Read-only app thread command outputs; not a new direct SSH probe",
+  "thread_id": "01a145fa-ad3a-7d72-953a-9191ae3064bd",
+  "thread_title": "按 GitHub 要求推进实验",
+  "thread_updated_at": 1792233722,
+  "observations": [
+    {
+      "probe": "cmd_pytest_final2_poll2.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "    PID     ELAPSED STAT CMD\r\n........................................................................ [ 13%]\r\n........................s......................................... [ 25%]\r\n.........s.............................................................. [ 38%]\r\n........................................................................ [ 52%]\r\n........................................................................ [ 65%]\r\n........................................................................ [ 78%]\r\n........................................................................ [ 92%]\r\n........................................s.                  [100%]\r\n537 passed, 4 skipped, 19 subtests passed in 135.55s (0:02:15)\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_verify_details.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "{'text': {'ok': False,\r\n          'max_abs_diff': 0.375,\r\n          'argmax_equal': True,\r\n          'prompt_tokens': 63,\r\n          'split': 39},\r\n 'ok': False}\r\n{'text': {'ok': False,\r\n          'prompt_tokens': 63,\r\n          'arms': {'static': {'ok': False,\r\n                              'tokens_match': True,\r\n                              'first_logits_max_abs_diff': 0.404296875,\r\n                              't_end_attention_max_abs_diff': 0.0014485716819763184,\r\n                              'tokens': [23780],\r\n                              'reference_tokens': [23780]},\r\n                   'ans2': {'ok': False,\r\n                            'tokens_match': True,\r\n                            'first_logits_max_abs_diff': 0.404296875,\r\n                            't_end_attention_max_abs_diff': 0.0014485716819763184,\r\n                            'tokens': [23780],\r\n                            'reference_tokens': [23780]},\r\n                   'ans1': {'ok': False,\r\n                            'tokens_match': True,\r\n                            'first_logits_max_abs_diff': 0.5,\r\n                            't_end_attention_max_abs_diff': 0.0007995963096618652,\r\n                            'tokens': [2623, 3322, 1995],\r\n                            'reference_tokens': [2623, 3322, 1995]}}},\r\n 'ok': False}\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_verify_formal_result.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "ok True dtype float32 max_pixels 262144\r\ntemplate True\r\nsegmented True\r\nreference True\r\n{'static': 6.866455078125e-05, 'ans2': 6.866455078125e-05, 'ans1': 7.82012939453125e-05}\r\nda416a2266a0f3f01e0c394674d0e7b0ad0e5722\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_commit_verify.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "warning: LF will be replaced by CRLF in runs/verify_real_model_8b.json.\r\nThe file will have its original line endings in your working directory\r\nwarning: LF will be replaced by CRLF in runs/verify_real_model_8b_bfloat16_failed.json.\r\nThe file will have its original line endings in your working directory\r\n[fix/verify-real-model-cuda-device 2f2e1a2] verify: record real Qwen3-VL 8B preflight\r\n 2 files changed, 292 insertions(+)\r\n create mode 100644 runs/verify_real_model_8b.json\r\n create mode 100644 runs/verify_real_model_8b_bfloat16_failed.json\r\n2f2e1a2 verify: record real Qwen3-VL 8B preflight\r\n",
+        "truncated": false
+      }
+    },
+    {
+      "probe": "cmd_s1_poll3.sh",
+      "exitCode": 0,
+      "output": {
+        "text": "    PID     ELAPSED %CPU %MEM   RSS STAT CMD\r\n2402602       18:08 1815  1.7 4735332 Sl /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s1_webqa_full --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005\r\n0, 19062 MiB, 0 %\r\n1, 14 MiB, 0 %\r\n[data] webqa_full: 4966 total, calib 500 (train), dev 256, dev 50\r\n[data] candidates: 0 questions with fewer than k=5; image: 4 without\r\n\rLoading weights:   0%|          | 0/391 [00:00<?, ?it/s]\rLoading weights:  70%|��������������   | 272/391 [00:00<00:00, 2230.82it/s]\rLoading weights: 100%|��������������������| 391/391 [00:00<00:00, 2253.42it/s]\r\n\u001b[1mBertModel LOAD REPORT\u001b[0m from: /home/user/Futaoran/omniaware/assets/cache/bge-large-en-v1.5\r\nKey                     | Status     |  | \r\n------------------------+------------+--+-\r\nembeddings.position_ids | UNEXPECTED |  | \r\n\r\nNotes:\r\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\r\n\rLoading weights:   0%|          | 0/590 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 590/590 [00:00<00:00, 14204.76it/s]\r\n\u001b[1mCLIPModel LOAD REPORT\u001b[0m from: /home/user/Futaoran/omniaware/assets/cache/clip-vit-large-patch14\r\nKey                                  | Status     |  | \r\n-------------------------------------+------------+--+-\r\nvision_model.embeddings.position_ids | UNEXPECTED |  | \r\ntext_model.embeddings.position_ids   | UNEXPECTED |  | \r\n\r\nNotes:\r\n- UNEXPECTED:\tcan be ignored when loading from different task/architecture; not ok if you expect identical arch.\r\n[relevance] scored 550 examples in 586.1s\r\n\rLoading weights:   0%|          | 0/393 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 393/393 [00:00<00:00, 11301.29it/s]\r\n\rLoading weights:   0%|          | 0/750 [00:00<?, ?it/s]\rLoading weights: 100%|��������������������| 750/750 [00:00<00:00, 15573.99it/s]\r\n[model] 8b loaded on cuda in 5.5s, 36 layers\r\n[env] commit 2f2e1a2fdb666146271a69b2e691d8208ae94f21 dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']\r\n",
+        "truncated": false
+      }
+    }
+  ]
+}

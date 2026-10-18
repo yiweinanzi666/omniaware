@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=FoRSk88Qk3s
+[youtube] FoRSk88Qk3s: Downloading webpage
+[youtube] FoRSk88Qk3s: Downloading visionos player API JSON
+[youtube] FoRSk88Qk3s: Downloading tv downgraded player API JSON
+[youtube] FoRSk88Qk3s: Downloading web embedded client config
+[youtube] FoRSk88Qk3s: Downloading player 21090930-main
+[youtube] FoRSk88Qk3s: Downloading web embedded player API JSON
+ERROR: [youtube] FoRSk88Qk3s: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+[youtube] Extracting URL: https://www.youtube.com/watch?v=FoRSk88Qk3s
+[youtube] FoRSk88Qk3s: Downloading webpage
+WARNING: [youtube] FoRSk88Qk3s: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] FoRSk88Qk3s: Downloading initial data API JSON
+[youtube] FoRSk88Qk3s: Downloading visionos player API JSON
+[youtube] FoRSk88Qk3s: Downloading iframe API JS
+[youtube] FoRSk88Qk3s: Downloading player 21090930-main
+[youtube] FoRSk88Qk3s: Downloading web player API JSON
+ERROR: [youtube] FoRSk88Qk3s: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

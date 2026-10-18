@@ -1,0 +1,27 @@
+{
+  "id": "HX2ThVIT-4k",
+  "source_url": "https://www.youtube.com/watch?v=HX2ThVIT-4k",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HX2ThVIT-4k.log",
+  "filename": "HX2ThVIT-4k.mp4",
+  "bytes": 3559766,
+  "sha256": "7906d2f9f30188274c1b648acc221ee08864ab945257ad7b59ff2c99b09d3be2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "133.654059"
+    }
+  }
+}

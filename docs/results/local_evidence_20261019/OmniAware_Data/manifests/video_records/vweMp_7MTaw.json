@@ -1,0 +1,27 @@
+{
+  "id": "vweMp_7MTaw",
+  "source_url": "https://www.youtube.com/watch?v=vweMp_7MTaw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\vweMp_7MTaw.log",
+  "filename": "vweMp_7MTaw.mp4",
+  "bytes": 13129466,
+  "sha256": "86fa19212a31aff66324651d6d6389199bc2006f90e1e82df884e3d832191ebc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 568,
+        "height": 320
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "247.362177"
+    }
+  }
+}

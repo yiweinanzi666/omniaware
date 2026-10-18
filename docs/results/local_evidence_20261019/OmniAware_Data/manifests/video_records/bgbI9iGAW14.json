@@ -1,0 +1,8 @@
+{
+  "id": "bgbI9iGAW14",
+  "source_url": "https://www.youtube.com/watch?v=bgbI9iGAW14",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\bgbI9iGAW14.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=bgbI9iGAW14\n[youtube] bgbI9iGAW14: Downloading webpage\nWARNING: [youtube] bgbI9iGAW14: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] bgbI9iGAW14: Downloading initial data API JSON\n[youtube] bgbI9iGAW14: Downloading visionos player API JSON\n[youtube] bgbI9iGAW14: Downloading iframe API JS\n[youtube] bgbI9iGAW14: Downloading player 21090930-main\n[youtube] bgbI9iGAW14: Downloading web player API JSON\nERROR: [youtube] bgbI9iGAW14: Video unavailable. This video has been removed by the uploader\n"
+}

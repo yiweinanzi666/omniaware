@@ -1,0 +1,27 @@
+{
+  "id": "AfN7-ArvhkA",
+  "source_url": "https://www.youtube.com/watch?v=AfN7-ArvhkA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\AfN7-ArvhkA.log",
+  "filename": "AfN7-ArvhkA.mp4",
+  "bytes": 11497758,
+  "sha256": "9ee6de5588cdd3cb960fb34bfe866d820f60a9d9ecc3d98a66f3ef3f6dbeb36c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "241.580408"
+    }
+  }
+}

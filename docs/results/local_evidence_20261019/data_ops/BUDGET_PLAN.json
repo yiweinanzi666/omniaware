@@ -1,0 +1,14 @@
+{
+  "unit": "GiB = 1073741824 bytes",
+  "budget_bytes": 128849018880,
+  "disk_reserve_bytes": 32212254720,
+  "seed": 20261013,
+  "measured_at": "2026-10-13",
+  "plans": [
+    {"dataset":"WebQA","scope":"full raw release","source_bytes_estimate":null,"status":"blocked_incomplete_source","path_local":"D:\\WebQA","path_remote":"/home/user/Futaoran/WebQA"},
+    {"dataset":"OK-VQA","scope":"10%–50% preparatory subset","source_bytes_estimate":null,"status":"not_started"},
+    {"dataset":"HybridQA","scope":"10%–50% preparatory subset","source_bytes_estimate":null,"status":"not_started"},
+    {"dataset":"VideoRAG-Synth","scope":"10%–50% preparatory subset","source_bytes_estimate":null,"status":"not_started"}
+  ],
+  "constraint_note":"Do not count unknown objects as downloaded; resolve official manifests before large downloads. WebQA is protected as first priority."
+}

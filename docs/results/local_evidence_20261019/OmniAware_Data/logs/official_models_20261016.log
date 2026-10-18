@@ -1,0 +1,186 @@
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct chat_template.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "chat_template.json", "bytes": 5499, "sha256": "5c72a170d2a4a1a3bc5adad2e689ae28138a9700e5b8c96c0266331e86c0acce", "verified_at": "2026-10-16T15:40:24+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct config.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "config.json", "bytes": 1474, "sha256": "5cd452860dc1e9c29dd71cc3cef7f39b338b7a40793f7a260655c2d3568f3661", "verified_at": "2026-10-16T15:40:26+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct generation_config.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "generation_config.json", "bytes": 269, "sha256": "8469742d1fce0de951c8909b26a2c0c0d8490837ce476efb114da9e0cefc4d44", "verified_at": "2026-10-16T15:40:27+0800"}
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli added_tokens.json offset 0 source huggingface.co
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "added_tokens.json", "bytes": 18, "sha256": "cd0141b19e809eb963a8f8244fad72530233f729e1f6960d281e1fbb3537b2fb", "verified_at": "2026-10-16T15:40:27+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct merges.txt offset 0 source huggingface.co
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli config.json offset 0 source huggingface.co
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "config.json", "bytes": 1056, "sha256": "7f9d420b616691c5b575bab8839719aefbddc656d8e1316519414b097ce43e3d", "verified_at": "2026-10-16T15:40:28+0800"}
+REPO_FAILED BAAI/bge-reranker-v2-m3 SSLError(MaxRetryError("HTTPSConnectionPool(host='huggingface.co', port=443): Max retries exceeded with url: /api/models/BAAI/bge-reranker-v2-m3/revision/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e?blobs=true (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)')))"))
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli special_tokens_map.json offset 0 source huggingface.co
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "special_tokens_map.json", "bytes": 156, "sha256": "fcfbeb4e25cd37fb5b8030406394253b245230fd3b552750092bab7d24d827da", "verified_at": "2026-10-16T15:40:30+0800"}
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli spm.model offset 0 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct merges.txt 1048576 / 1671839 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli spm.model 1048576 / 2464616 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct merges.txt 1671839 / 1671839 MiB/s 0.02
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "merges.txt", "bytes": 1671839, "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3", "verified_at": "2026-10-16T15:41:39+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct model.safetensors.index.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "model.safetensors.index.json", "bytes": 67759, "sha256": "520b2e05079402e9468a8701d03d1154d14b2599593afb6effa7fb60c1bff070", "verified_at": "2026-10-16T15:41:41+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct preprocessor_config.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "preprocessor_config.json", "bytes": 390, "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516", "verified_at": "2026-10-16T15:41:42+0800"}
+RETRY Qwen/Qwen3-VL-8B-Instruct tokenizer.json SSLError HTTPSConnectionPool(host='huggingface.co', port=443): Max retries exceeded with url: /Qwen/Qwen3-VL-8B-Instruct/resolve/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b/tokenizer.json?down
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct tokenizer.json offset 0 source hf-mirror.com
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli spm.model 2097152 / 2464616 MiB/s 0.02
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "spm.model", "bytes": 2464616, "sha256": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd", "verified_at": "2026-10-16T15:42:22+0800"}
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json offset 0 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 1048576 / 7032403 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json 1048576 / 8648889 MiB/s 0.03
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 2097152 / 7032403 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json 3145728 / 8648889 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 3145728 / 7032403 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 4194304 / 7032403 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json 5242880 / 8648889 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 5242880 / 7032403 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json 6291456 / 8648889 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct tokenizer.json 7032403 / 7032403 MiB/s 0.02
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "tokenizer.json", "bytes": 7032403, "sha256": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7", "verified_at": "2026-10-16T15:47:30+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct tokenizer_config.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "tokenizer_config.json", "bytes": 10868, "sha256": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399", "verified_at": "2026-10-16T15:47:32+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct video_preprocessor_config.json offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "video_preprocessor_config.json", "bytes": 385, "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13", "verified_at": "2026-10-16T15:47:34+0800"}
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct vocab.json offset 0 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct vocab.json 1048576 / 2776833 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json 7340032 / 8648889 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct vocab.json 2097152 / 2776833 MiB/s 0.03
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "tokenizer.json", "bytes": 8648889, "sha256": "7aa118770f066a74530d161c7d0b994d0629cc0ff3a0df213f184192773f960a", "verified_at": "2026-10-16T15:48:44+0800"}
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer_config.json offset 0 source huggingface.co
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "tokenizer_config.json", "bytes": 395, "sha256": "556a192d83e3edb45a09a6207095dd9295c3b2279062e5cc430feac4cb7a0817", "verified_at": "2026-10-16T15:48:45+0800"}
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors SSLError HTTPSConnectionPool(host='modelscope.cn', port=443): Max retries exceeded with url: /models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensor
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 0 source huggingface.co
+COMPLETE {"repo": "Qwen/Qwen3-VL-8B-Instruct", "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "file": "vocab.json", "bytes": 2776833, "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910", "verified_at": "2026-10-16T15:48:58+0800"}
+RETRY Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors SSLError HTTPSConnectionPool(host='modelscope.cn', port=443): Max retries exceeded with url: /models/Qwen/Qwen3-VL-8B-Instruct/resolve/master/model-00001-of-00004.safetensors?download=true&
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors offset 0 source huggingface.co
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 1048576 / 870182606 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 2097152 / 870182606 MiB/s 0.03
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 2097152 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 4194304 / 870182606 MiB/s 0.04
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 3145728 / 4902275944 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 4194304 / 4902275944 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 6291456 / 870182606 MiB/s 0.03
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 6291456 / 4902275944 MiB/s 0.02
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 8388608 / 870182606 MiB/s 0.03
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(8757267 bytes read, 861425339 more expected)', IncompleteRead(8757267 bytes read, 861425339 more expected))
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 8388608 source hf-mirror.com
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 8388608 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 9437184 / 870182606 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 10485760 / 4902275944 MiB/s 0.03
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 11534336 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 10485760 / 870182606 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 13631488 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 13631488 / 870182606 MiB/s 0.04
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 17825792 / 870182606 MiB/s 0.06
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 15728640 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 19922944 / 870182606 MiB/s 0.06
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 17825792 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 22020096 / 870182606 MiB/s 0.05
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 19922944 / 4902275944 MiB/s 0.03
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 25165824 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 26214400 / 870182606 MiB/s 0.05
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 22020096 / 4902275944 MiB/s 0.03
+RETRY Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(22178243 bytes read, 4880097701 more expected)', IncompleteRead(22178243 bytes read, 4880097701 more expected))
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(18717139 bytes read, 843076859 more expected)', IncompleteRead(18717139 bytes read, 843076859 more expected))
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+RETRY Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors SSLError HTTPSConnectionPool(host='hf-mirror.com', port=443): Max retries exceeded with url: /Qwen/Qwen3-VL-8B-Instruct/resolve/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b/model-00001-of-00004
+DOWNLOADING Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors offset 22020096 source modelscope.cn
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 26214400 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 40894464 / 4902275944 MiB/s 0.58
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 58720256 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 27262976 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 76546048 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 93323264 / 4902275944 MiB/s 0.55
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 28311552 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 111149056 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 128974848 / 4902275944 MiB/s 0.54
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 29360128 / 870182606 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 146800640 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 164626432 / 4902275944 MiB/s 0.55
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 30408704 / 870182606 MiB/s 0.02
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 183500800 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 202375168 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 221249536 / 4902275944 MiB/s 0.55
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 239075328 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 31457280 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 256901120 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 274726912 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 32505856 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 293601280 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 312475648 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 33554432 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 330301440 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 349175808 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 368050176 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 34603008 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 386924544 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 405798912 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 424673280 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 35651584 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 443547648 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 461373440 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 36700160 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 480247808 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 499122176 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 37748736 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 517996544 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 536870912 / 4902275944 MiB/s 0.56
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 38797312 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 555745280 / 4902275944 MiB/s 0.56
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 574619648 / 4902275944 MiB/s 0.56
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(12884307 bytes read, 831083899 more expected)', IncompleteRead(12884307 bytes read, 831083899 more expected))
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 593494016 / 4902275944 MiB/s 0.56
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors SSLError HTTPSConnectionPool(host='us.aws.cdn.hf.co', port=443): Max retries exceeded with url: /xet-bridge-us/629e473a46b4826be2c81e93/b276a6aa43bffe4afe89e3a7e7629d7bc3fe48638bf52058d26ec
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 612368384 / 4902275944 MiB/s 0.57
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 38797312 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 631242752 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 650117120 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 668991488 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 39845888 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 687865856 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 706740224 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 725614592 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 744488960 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 40894464 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 763363328 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 782237696 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 41943040 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 800063488 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 818937856 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 837812224 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 42991616 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 856686592 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 875560960 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 894435328 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 44040192 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 913309696 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 932184064 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 950009856 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 45088768 / 870182606 MiB/s 0.01
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(6339384 bytes read, 825045910 more expected)', IncompleteRead(6339384 bytes read, 825045910 more expected))
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 968884224 / 4902275944 MiB/s 0.57
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 45088768 source hf-mirror.com
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 987758592 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1005584384 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1023410176 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 46137344 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1042284544 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1061158912 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1078984704 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1097859072 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1116733440 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1135607808 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 47185920 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1154482176 / 4902275944 MiB/s 0.57
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(2200247 bytes read, 822893591 more expected)', IncompleteRead(2200247 bytes read, 822893591 more expected))
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1173356544 / 4902275944 MiB/s 0.57
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors SSLError HTTPSConnectionPool(host='modelscope.cn', port=443): Max retries exceeded with url: /models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensor
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1192230912 / 4902275944 MiB/s 0.57
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 47185920 source huggingface.co
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1211105280 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1229979648 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1247805440 / 4902275944 MiB/s 0.57
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 48234496 / 870182606 MiB/s 0.01
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1265631232 / 4902275944 MiB/s 0.57
+PROGRESS Qwen/Qwen3-VL-8B-Instruct model-00001-of-00004.safetensors 1283457024 / 4902275944 MiB/s 0.57

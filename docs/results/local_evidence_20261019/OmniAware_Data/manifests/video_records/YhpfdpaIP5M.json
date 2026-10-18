@@ -1,0 +1,27 @@
+{
+  "id": "YhpfdpaIP5M",
+  "source_url": "https://www.youtube.com/watch?v=YhpfdpaIP5M",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YhpfdpaIP5M.log",
+  "filename": "YhpfdpaIP5M.mp4",
+  "bytes": 42682686,
+  "sha256": "46ad93e3d432bdeb3b8a031652a5089b0a6b50a34f01f841a2273cbedc655dd0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "867.358186"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "qC8LN32ep_Q",
+  "source_url": "https://www.youtube.com/watch?v=qC8LN32ep_Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\qC8LN32ep_Q.log",
+  "filename": "qC8LN32ep_Q.mp4",
+  "bytes": 3653430,
+  "sha256": "f0a0ad7c17258ee7719b206aeadf11e78f9e12ea7e99d41265f1c4441a6c6684",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "97.314830"
+    }
+  }
+}

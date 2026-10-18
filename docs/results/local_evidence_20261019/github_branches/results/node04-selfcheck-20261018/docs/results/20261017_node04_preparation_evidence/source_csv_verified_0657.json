@@ -1,0 +1,19 @@
+{
+  "start": "2026-10-17T07:01:08.489451+08:00",
+  "files": [
+    {
+      "path": "/home/user/Futaoran/omniaware/assets/downloads/okvqa_gs/okvqa_train_corpus.csv",
+      "bytes": 41252142,
+      "sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997",
+      "expected_sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997"
+    },
+    {
+      "path": "/home/user/Futaoran/omniaware/assets/downloads/okvqa_gs/okvqa_full_corpus.csv",
+      "bytes": 60445862,
+      "sha256": "4ab2352a2bff6413ac74f1a18ef7ffcc8a15b5f77df97a5b6afd8375448128ae",
+      "expected_sha256": "4ab2352a2bff6413ac74f1a18ef7ffcc8a15b5f77df97a5b6afd8375448128ae"
+    }
+  ],
+  "existing_retrieval_cache_changed": false,
+  "end": "2026-10-17T07:01:09.661204+08:00"
+}

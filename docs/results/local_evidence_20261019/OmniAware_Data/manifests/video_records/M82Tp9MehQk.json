@@ -1,0 +1,27 @@
+{
+  "id": "M82Tp9MehQk",
+  "source_url": "https://www.youtube.com/watch?v=M82Tp9MehQk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\M82Tp9MehQk.log",
+  "filename": "M82Tp9MehQk.mp4",
+  "bytes": 30137105,
+  "sha256": "a8747461eeee7e493342383d09e3980adc3d3c134667ae98802a5c3e1f7f7797",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "318.577778"
+    }
+  }
+}

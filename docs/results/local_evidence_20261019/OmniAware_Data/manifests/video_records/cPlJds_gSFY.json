@@ -1,0 +1,27 @@
+{
+  "id": "cPlJds_gSFY",
+  "source_url": "https://www.youtube.com/watch?v=cPlJds_gSFY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\cPlJds_gSFY.log",
+  "filename": "cPlJds_gSFY.mp4",
+  "bytes": 12962996,
+  "sha256": "4588b9903cc284b38c8722e5663de58e454d04726f776602111289bcf7d678b0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "103.723537"
+    }
+  }
+}

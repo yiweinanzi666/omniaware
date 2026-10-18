@@ -1,0 +1,27 @@
+{
+  "id": "WA_3_PIPGmU",
+  "source_url": "https://www.youtube.com/watch?v=WA_3_PIPGmU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WA_3_PIPGmU.log",
+  "filename": "WA_3_PIPGmU.mp4",
+  "bytes": 39299927,
+  "sha256": "78f4207c9e0e1e534c7b4906065187e1389568fd6d6a5619105dd25fc52b450a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "668.757914"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "roVJn_Dq-ec",
+  "source_url": "https://www.youtube.com/watch?v=roVJn_Dq-ec",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\roVJn_Dq-ec.log",
+  "filename": "roVJn_Dq-ec.mp4",
+  "bytes": 18557287,
+  "sha256": "373cb48d224ea441d5b83483ef67a0abd1a9e79315045ebd015a522f14541d4c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "256.046440"
+    }
+  }
+}

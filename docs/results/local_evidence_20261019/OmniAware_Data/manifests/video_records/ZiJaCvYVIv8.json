@@ -1,0 +1,27 @@
+{
+  "id": "ZiJaCvYVIv8",
+  "source_url": "https://www.youtube.com/watch?v=ZiJaCvYVIv8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ZiJaCvYVIv8.log",
+  "filename": "ZiJaCvYVIv8.mp4",
+  "bytes": 18833079,
+  "sha256": "687d56f4656c13750b06541b63922d27453c7e508741a365d726094136c3075c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "237.540136"
+    }
+  }
+}

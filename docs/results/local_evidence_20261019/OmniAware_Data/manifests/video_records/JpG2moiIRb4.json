@@ -1,0 +1,27 @@
+{
+  "id": "JpG2moiIRb4",
+  "source_url": "https://www.youtube.com/watch?v=JpG2moiIRb4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\JpG2moiIRb4.log",
+  "filename": "JpG2moiIRb4.mp4",
+  "bytes": 9459746,
+  "sha256": "bfeae5679b619fd31c4d2b6fd215e10ca5f6090160e82275c89a9c65c73d57dd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "120.232925"
+    }
+  }
+}

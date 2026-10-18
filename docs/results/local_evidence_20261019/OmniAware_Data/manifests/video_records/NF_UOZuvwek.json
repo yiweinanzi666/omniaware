@@ -1,0 +1,27 @@
+{
+  "id": "NF_UOZuvwek",
+  "source_url": "https://www.youtube.com/watch?v=NF_UOZuvwek",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\NF_UOZuvwek.log",
+  "filename": "NF_UOZuvwek.mp4",
+  "bytes": 21617095,
+  "sha256": "6de6e67cc8212095fa1592dd40d7755cc6ae4de8ef7043a5b601dc40d0ec6285",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "302.857868"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "AoBWfv6602M",
+  "source_url": "https://www.youtube.com/watch?v=AoBWfv6602M",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\AoBWfv6602M.log",
+  "filename": "AoBWfv6602M.mp4",
+  "bytes": 14202988,
+  "sha256": "e04c0ad90b8792d6fb7ee90b79ca55efe24f1a235befa109ce0df09d9fbb2313",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "155.620136"
+    }
+  }
+}

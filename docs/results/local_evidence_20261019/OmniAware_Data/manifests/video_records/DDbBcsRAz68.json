@@ -1,0 +1,27 @@
+{
+  "id": "DDbBcsRAz68",
+  "source_url": "https://www.youtube.com/watch?v=DDbBcsRAz68",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DDbBcsRAz68.log",
+  "filename": "DDbBcsRAz68.mp4",
+  "bytes": 9438950,
+  "sha256": "ea35c71ac9a56cbdc74bf7ddeecaf6a3259ec5334c1ecf8b71c1b253c1ec57b7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 600,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "95.689433"
+    }
+  }
+}

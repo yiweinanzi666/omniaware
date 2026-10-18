@@ -1,0 +1,27 @@
+{
+  "id": "hspt1-aK_mE",
+  "source_url": "https://www.youtube.com/watch?v=hspt1-aK_mE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hspt1-aK_mE.log",
+  "filename": "hspt1-aK_mE.mp4",
+  "bytes": 12305015,
+  "sha256": "9cd6185562c1a352732060507cf290896bc6125a620a370a0089b4b3498ae27d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "169.621769"
+    }
+  }
+}

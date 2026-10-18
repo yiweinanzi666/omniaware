@@ -1,0 +1,27 @@
+{
+  "id": "uRXtuYs-2w8",
+  "source_url": "https://www.youtube.com/watch?v=uRXtuYs-2w8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\uRXtuYs-2w8.log",
+  "filename": "uRXtuYs-2w8.mp4",
+  "bytes": 17666371,
+  "sha256": "a958da214bcfaf5f2a6c57a2e7275912ab132836fb753d2613bedcb9f6046fe8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "219.266032"
+    }
+  }
+}

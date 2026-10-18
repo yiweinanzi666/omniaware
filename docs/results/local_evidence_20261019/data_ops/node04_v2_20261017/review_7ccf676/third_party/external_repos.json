@@ -1,0 +1,97 @@
+{
+  "note": "Official code of the paper's baselines, backbones and benchmarks. Fetched by scripts/fetch_external.py into external/<name> (git-ignored). 'ref' is a pinned commit; null means the default branch at fetch time, after which the resolved commit is written back here. 'sparse' limits the checkout to the listed paths.",
+  "repos": [
+    {
+      "name": "SeaKR",
+      "url": "https://github.com/THU-KEG/SeaKR",
+      "ref": "d75fe707d22df4798794a8a8ae0040764e32b0d7",
+      "sparse": null,
+      "license": "GPL-3.0",
+      "role": "baseline (Table 2: SeaKR)"
+    },
+    {
+      "name": "M2RAG",
+      "url": "https://github.com/maziao/M2RAG",
+      "ref": "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22",
+      "sparse": null,
+      "license": "MIT",
+      "role": "baseline (Table 2: M2-RAG); same commit as baselines/m2rag_official.py"
+    },
+    {
+      "name": "UniversalRAG",
+      "url": "https://github.com/wgcyeo/UniversalRAG",
+      "ref": "d29ab3acaebfbaebdc7f095457076585bec88065",
+      "sparse": null,
+      "license": "Apache-2.0",
+      "role": "baseline (query-only modality routing), replaces SAM-RAG"
+    },
+    {
+      "name": "PASTA",
+      "url": "https://github.com/QingruZhang/PASTA",
+      "ref": "56a9138d2d071c9ab2860c72be596da9723ca793",
+      "sparse": null,
+      "license": "MIT",
+      "role": "reference for the PASTA-style bias row"
+    },
+    {
+      "name": "FlagEmbedding",
+      "url": "https://github.com/FlagOpen/FlagEmbedding",
+      "ref": "fd1a2bdf69488ffebe0327999d4400d8c8058a0b",
+      "sparse": null,
+      "license": "MIT",
+      "role": "BGE / bge-reranker-v2-m3 reference implementation (cross-encoder row)"
+    },
+    {
+      "name": "InternVL",
+      "url": "https://github.com/OpenGVLab/InternVL",
+      "ref": "2410d1dbf208f0e799459aff9376e5747dbf41a2",
+      "sparse": null,
+      "license": "MIT",
+      "role": "InternVL3.5-8B backbone transfer (chat template and model code; checkpoint OpenGVLab/InternVL3_5-8B-HF)"
+    },
+    {
+      "name": "WebQA",
+      "url": "https://github.com/WebQnA/WebQA",
+      "ref": "81cc377aaddb2cf9de98cf082a2795ce53ccc1f4",
+      "sparse": null,
+      "license": "CC0-1.0",
+      "role": "benchmark; same commit as third_party/webqa"
+    },
+    {
+      "name": "BARTScore",
+      "url": "https://github.com/neulab/BARTScore",
+      "ref": "248f511cb34ae3753fc81f7d7a945de5bfe33458",
+      "sparse": [
+        "bart_score.py",
+        "README.md",
+        "LICENSE"
+      ],
+      "license": "Apache-2.0",
+      "role": "WebQA fluency (official bart_score.py, same commit as the legacy BART provenance)"
+    },
+    {
+      "name": "ALCE",
+      "url": "https://github.com/princeton-nlp/ALCE",
+      "ref": "246c476a4edfc564266b7346b6e29ef4861ae937",
+      "sparse": null,
+      "license": "MIT",
+      "role": "citation-support reference (CiteRec definitions)"
+    },
+    {
+      "name": "DPR",
+      "url": "https://github.com/facebookresearch/DPR",
+      "ref": "a31212dc0a54dfa85d8bfa01e1669f149ac832b7",
+      "sparse": null,
+      "license": "CC-BY-NC-4.0 (NOASSERTION on GitHub)",
+      "role": "OK-VQA knowledge corpus (psgs_w100) download and retrieval reference"
+    },
+    {
+      "name": "VQA",
+      "url": "https://github.com/GT-Vision-Lab/VQA",
+      "ref": "a013f0043c1e2cdc995922dfe257f7149aa9af06",
+      "sparse": null,
+      "license": "NOASSERTION",
+      "role": "benchmark: official VQA evaluation (third_party/vqa_eval is its Python 3 port)"
+    }
+  ]
+}

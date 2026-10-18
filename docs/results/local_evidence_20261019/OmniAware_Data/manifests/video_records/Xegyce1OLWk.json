@@ -1,0 +1,27 @@
+{
+  "id": "Xegyce1OLWk",
+  "source_url": "https://www.youtube.com/watch?v=Xegyce1OLWk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Xegyce1OLWk.log",
+  "filename": "Xegyce1OLWk.mp4",
+  "bytes": 41008797,
+  "sha256": "464ee740cf92ca3678d5f7537f4072c812d13971df583c734912258c76066de6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 568,
+        "height": 320
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "706.861859"
+    }
+  }
+}

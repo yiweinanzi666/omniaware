@@ -1,0 +1,27 @@
+{
+  "id": "MpvqqmtZLO8",
+  "source_url": "https://www.youtube.com/watch?v=MpvqqmtZLO8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MpvqqmtZLO8.log",
+  "filename": "MpvqqmtZLO8.mp4",
+  "bytes": 40292807,
+  "sha256": "32512a66f4104078aa39a5151e07d22b391d6b7e85148d281892a9f6e1aa1637",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "504.523175"
+    }
+  }
+}

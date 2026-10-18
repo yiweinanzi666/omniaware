@@ -1,0 +1,27 @@
+{
+  "id": "RABmRh5f-B4",
+  "source_url": "https://www.youtube.com/watch?v=RABmRh5f-B4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\RABmRh5f-B4.log",
+  "filename": "RABmRh5f-B4.mp4",
+  "bytes": 71017963,
+  "sha256": "3eaf5a33bd1c08dcee4dfd93e6f1c5ad1a9dc2ca5400630bfd353b96e1975745",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "906.855329"
+    }
+  }
+}

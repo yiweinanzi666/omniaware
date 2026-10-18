@@ -1,0 +1,27 @@
+{
+  "id": "NPFXvTm_FyU",
+  "source_url": "https://www.youtube.com/watch?v=NPFXvTm_FyU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\NPFXvTm_FyU.log",
+  "filename": "NPFXvTm_FyU.mp4",
+  "bytes": 33779796,
+  "sha256": "0a7d0128eea0dc0ac9b44477ddd5c7b8ed6122e9acb62a976bbb879391ecea5f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "279.243175"
+    }
+  }
+}

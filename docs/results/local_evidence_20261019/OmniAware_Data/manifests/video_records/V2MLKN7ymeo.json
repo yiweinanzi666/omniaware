@@ -1,0 +1,27 @@
+{
+  "id": "V2MLKN7ymeo",
+  "source_url": "https://www.youtube.com/watch?v=V2MLKN7ymeo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\V2MLKN7ymeo.log",
+  "filename": "V2MLKN7ymeo.mp4",
+  "bytes": 21299324,
+  "sha256": "f3c1306004210bac512bfde2a47bc8cd9108c360833e1f16ce5b78f6913b4b97",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "333.717188"
+    }
+  }
+}

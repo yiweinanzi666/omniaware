@@ -1,0 +1,27 @@
+{
+  "id": "ssGdfY-mvek",
+  "source_url": "https://www.youtube.com/watch?v=ssGdfY-mvek",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ssGdfY-mvek.log",
+  "filename": "ssGdfY-mvek.mp4",
+  "bytes": 26908424,
+  "sha256": "78eb3791098edfd61b32629a36844115acd8d609e3f6c501e5732683594bf0f8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "361.766893"
+    }
+  }
+}

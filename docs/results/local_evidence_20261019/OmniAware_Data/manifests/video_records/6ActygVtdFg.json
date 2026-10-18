@@ -1,0 +1,27 @@
+{
+  "id": "6ActygVtdFg",
+  "source_url": "https://www.youtube.com/watch?v=6ActygVtdFg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\6ActygVtdFg.log",
+  "filename": "6ActygVtdFg.mp4",
+  "bytes": 19370486,
+  "sha256": "a7643f22c6797f5fe3f2ee6b39df30b8d5a70f7977ee8e67d502bc5c03a31045",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "235.125261"
+    }
+  }
+}

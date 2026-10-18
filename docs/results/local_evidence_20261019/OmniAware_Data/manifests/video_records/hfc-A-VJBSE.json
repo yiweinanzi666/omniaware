@@ -1,0 +1,27 @@
+{
+  "id": "hfc-A-VJBSE",
+  "source_url": "https://www.youtube.com/watch?v=hfc-A-VJBSE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hfc-A-VJBSE.log",
+  "filename": "hfc-A-VJBSE.mp4",
+  "bytes": 15806554,
+  "sha256": "4b1de9c1ad594f31300d51438e72896e78c23f700311cf8cded1177cd072e327",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "275.040363"
+    }
+  }
+}

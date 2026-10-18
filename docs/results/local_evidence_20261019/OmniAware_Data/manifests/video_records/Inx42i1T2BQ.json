@@ -1,0 +1,27 @@
+{
+  "id": "Inx42i1T2BQ",
+  "source_url": "https://www.youtube.com/watch?v=Inx42i1T2BQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Inx42i1T2BQ.log",
+  "filename": "Inx42i1T2BQ.mp4",
+  "bytes": 18351935,
+  "sha256": "72cdc7c43dbf24daa4ccba77741ed17e8e2a0afe99df236132d57b8fa1d8bcd8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 240,
+        "height": 426
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "602.116644"
+    }
+  }
+}

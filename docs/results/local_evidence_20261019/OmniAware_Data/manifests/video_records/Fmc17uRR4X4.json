@@ -1,0 +1,27 @@
+{
+  "id": "Fmc17uRR4X4",
+  "source_url": "https://www.youtube.com/watch?v=Fmc17uRR4X4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Fmc17uRR4X4.log",
+  "filename": "Fmc17uRR4X4.mp4",
+  "bytes": 7399826,
+  "sha256": "7e2655990772058855d9a0194e2aaa30d4ca0d1fe3cd3197f7dc128250390fe3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 470
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "55.124172"
+    }
+  }
+}

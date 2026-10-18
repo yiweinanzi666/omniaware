@@ -1,0 +1,27 @@
+{
+  "id": "J_iRtwoHHto",
+  "source_url": "https://www.youtube.com/watch?v=J_iRtwoHHto",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\J_iRtwoHHto.log",
+  "filename": "J_iRtwoHHto.mp4",
+  "bytes": 4510884,
+  "sha256": "add7a1fd33794dc61a662e063c198fb1338a3077d42c9f2ee7ce9bb8449872b2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "135.581315"
+    }
+  }
+}

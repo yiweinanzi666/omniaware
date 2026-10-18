@@ -1,0 +1,8 @@
+{
+  "id": "RQgogXs-8Eo",
+  "source_url": "https://www.youtube.com/watch?v=RQgogXs-8Eo",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\RQgogXs-8Eo.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=RQgogXs-8Eo\n[youtube] RQgogXs-8Eo: Downloading webpage\n[youtube] RQgogXs-8Eo: Downloading visionos player API JSON\nERROR: [youtube] RQgogXs-8Eo: Private video\n[youtube] Extracting URL: https://www.youtube.com/watch?v=RQgogXs-8Eo\n[youtube] RQgogXs-8Eo: Downloading webpage\n[youtube] RQgogXs-8Eo: Downloading visionos player API JSON\nERROR: [youtube] RQgogXs-8Eo: Private video\n[youtube] Extracting URL: https://www.youtube.com/watch?v=RQgogXs-8Eo\n[youtube] RQgogXs-8Eo: Downloading webpage\nWARNING: [youtube] RQgogXs-8Eo: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] RQgogXs-8Eo: Downloading initial data API JSON\n[youtube] RQgogXs-8Eo: Downloading visionos player API JSON\n[youtube] RQgogXs-8Eo: Downloading iframe API JS\n[youtube] RQgogXs-8Eo: Downloading player 21090930-main\n[youtube] RQgogXs-8Eo: Downloading web player API JSON\nERROR: [youtube] RQgogXs-8Eo: Private video. Sign in if you've been granted access to this video. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies\n"
+}

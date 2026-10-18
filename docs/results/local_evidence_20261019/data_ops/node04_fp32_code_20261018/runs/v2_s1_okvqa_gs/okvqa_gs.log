@@ -1,0 +1,79 @@
+
+===== 2026-10-17T12:41:50.774478+00:00 pid 2414983 =====
+/home/user/Futaoran/omniaware_v2_exec/src/omniaware/run.py --dataset okvqa_gs --split dev --model 8b --tag v2_s1_okvqa_gs --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+[failed] FileNotFoundError: [Errno 2] No such file or directory: '/home/user/Futaoran/omniaware_v2_exec/cache/okvqa_gs112k/candidates_full.jsonl'
+Traceback (most recent call last):
+  File "/home/user/Futaoran/omniaware_v2_exec/src/omniaware/runio.py", line 295, in tee_output
+    yield path
+  File "/home/user/Futaoran/omniaware_v2_exec/src/omniaware/run.py", line 516, in main
+    evaluate(ap, args, out_dir, norm_source)
+  File "/home/user/Futaoran/omniaware_v2_exec/src/omniaware/run.py", line 552, in evaluate
+    examples = data.LOADERS[split_universe](**loader_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Futaoran/omniaware_v2_exec/src/omniaware/data.py", line 276, in load_okvqa_gs
+    return load_okvqa(paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl", allow_missing=allow_missing)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Futaoran/omniaware_v2_exec/src/omniaware/data.py", line 233, in load_okvqa
+    with open(candidates_path or paths.OKVQA_CANDIDATES) as fh:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/Futaoran/omniaware_v2_exec/cache/okvqa_gs112k/candidates_full.jsonl'
+
+===== 2026-10-17T12:48:46.804649+00:00 pid 2415464 =====
+/home/user/Futaoran/omniaware_v2_exec/src/omniaware/run.py --dataset okvqa_gs --split dev --model 8b --tag v2_s1_okvqa_gs --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+[data] okvqa_gs: 5046 total, calib 500 (heldout), dev 256, dev 50
+Loading weights:   0%|          | 0/393 [00:00<?, ?it/s]Loading weights: 100%|██████████| 393/393 [00:00<00:00, 32320.81it/s]
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights: 100%|██████████| 750/750 [00:00<00:00, 14689.64it/s]
+[model] 8b loaded on cuda in 5.7s, 36 layers
+[env] commit 5cb10f3dca7abb3c46617831c0f834ba59c3104b dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']
+[ucal] 500 calibration examples in 321.1s
+[1/50] 3296875 2.02s P=799 U_pre=0.00 retrieve=False
+[2/50] 4703135 1.41s P=890 U_pre=0.53 retrieve=True
+[3/50] 5789675 1.8s P=896 U_pre=0.00 retrieve=False
+[4/50] 1736935 1.79s P=910 U_pre=0.56 retrieve=True
+[5/50] 236715 1.63s P=971 U_pre=0.28 retrieve=False
+[6/50] 1987175 1.33s P=767 U_pre=0.78 retrieve=True
+[7/50] 532295 1.43s P=731 U_pre=1.00 retrieve=True
+[8/50] 2031105 1.97s P=981 U_pre=0.52 retrieve=True
+[9/50] 4400005 1.58s P=686 U_pre=0.24 retrieve=False
+[10/50] 2018255 1.32s P=601 U_pre=0.14 retrieve=False
+[11/50] 1546075 1.54s P=887 U_pre=0.68 retrieve=True
+[12/50] 5427825 1.38s P=556 U_pre=0.00 retrieve=False
+[13/50] 1974995 1.81s P=578 U_pre=0.30 retrieve=False
+[14/50] 293465 1.62s P=660 U_pre=0.81 retrieve=True
+[15/50] 4812675 1.37s P=520 U_pre=0.86 retrieve=True
+[16/50] 5528425 1.6s P=684 U_pre=0.64 retrieve=True
+[17/50] 1187415 1.87s P=1041 U_pre=0.91 retrieve=True
+[18/50] 2984405 1.8s P=729 U_pre=0.75 retrieve=True
+[19/50] 2022015 1.7s P=923 U_pre=0.65 retrieve=True
+[20/50] 1863225 1.59s P=752 U_pre=0.32 retrieve=False
+[21/50] 5127295 1.44s P=562 U_pre=0.88 retrieve=True
+[22/50] 2910485 1.51s P=957 U_pre=0.00 retrieve=False
+[23/50] 5100805 1.69s P=498 U_pre=0.78 retrieve=True
+[24/50] 760295 1.75s P=999 U_pre=0.24 retrieve=False
+[25/50] 1538325 1.86s P=1004 U_pre=0.75 retrieve=True
+[26/50] 4222125 1.34s P=632 U_pre=0.89 retrieve=True
+[27/50] 1744575 1.44s P=762 U_pre=0.85 retrieve=True
+[28/50] 4741645 1.4s P=771 U_pre=0.14 retrieve=False
+[29/50] 5813945 1.32s P=555 U_pre=1.00 retrieve=True
+[30/50] 802195 1.35s P=697 U_pre=0.67 retrieve=True
+[31/50] 2600205 1.46s P=802 U_pre=0.56 retrieve=True
+[32/50] 1413345 1.49s P=567 U_pre=0.50 retrieve=True
+[33/50] 780325 1.56s P=572 U_pre=0.35 retrieve=True
+[34/50] 2517525 2.22s P=1077 U_pre=0.05 retrieve=False
+[35/50] 4246685 1.25s P=581 U_pre=0.17 retrieve=False
+[36/50] 2804135 1.61s P=471 U_pre=0.00 retrieve=False
+[37/50] 1576015 1.54s P=927 U_pre=0.66 retrieve=True
+[38/50] 4751845 3.06s P=589 U_pre=0.56 retrieve=True
+[39/50] 4273765 1.62s P=776 U_pre=0.63 retrieve=True
+[40/50] 2689665 1.52s P=744 U_pre=0.58 retrieve=True
+[41/50] 2907005 1.83s P=658 U_pre=0.73 retrieve=True
+[42/50] 2248505 1.38s P=709 U_pre=0.99 retrieve=True
+[43/50] 3294945 2.34s P=1065 U_pre=0.00 retrieve=False
+[44/50] 5348455 1.55s P=700 U_pre=0.40 retrieve=True
+[45/50] 5197165 1.8s P=907 U_pre=0.44 retrieve=True
+[46/50] 3686485 1.4s P=840 U_pre=0.00 retrieve=False
+[47/50] 5603325 1.4s P=472 U_pre=1.00 retrieve=True
+[48/50] 2608085 2.09s P=983 U_pre=0.49 retrieve=True
+[49/50] 2162545 1.5s P=783 U_pre=0.60 retrieve=True
+[50/50] 3249795 1.72s P=535 U_pre=0.23 retrieve=False
+[done] okvqa_gs 50 in 82.1s -> /home/user/Futaoran/omniaware_v2_exec/runs/v2_s1_okvqa_gs/okvqa_gs.jsonl; empty_answer_rate 0.000000; refusal_rate 0.000000; peak_gpu_memory_gib 16.78

@@ -1,0 +1,27 @@
+{
+  "id": "VOTCLswZwzQ",
+  "source_url": "https://www.youtube.com/watch?v=VOTCLswZwzQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VOTCLswZwzQ.log",
+  "filename": "VOTCLswZwzQ.mp4",
+  "bytes": 28367273,
+  "sha256": "75cf1a03fee9b28d554169096e658e0130eb958543771ec669ca5bf6730d0b55",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "535.266395"
+    }
+  }
+}

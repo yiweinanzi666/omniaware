@@ -1,0 +1,27 @@
+{
+  "id": "xSqFMGL_58g",
+  "source_url": "https://www.youtube.com/watch?v=xSqFMGL_58g",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\xSqFMGL_58g.log",
+  "filename": "xSqFMGL_58g.mp4",
+  "bytes": 27053795,
+  "sha256": "9c475a0c82e4f6c4f2b51b363bf6f10a0cdf3bc3e5bdccc4df1b7308d0f2492a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "183.855601"
+    }
+  }
+}

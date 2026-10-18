@@ -1,0 +1,21 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=I0aTesMFBrk
+[youtube] I0aTesMFBrk: Downloading webpage
+[youtube] I0aTesMFBrk: Downloading visionos player API JSON
+[youtube] I0aTesMFBrk: Downloading m3u8 information
+[info] I0aTesMFBrk: Downloading 1 format(s): 134+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.info.json
+[download] Got error: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032). Retrying (1/2)...
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+[youtube] Extracting URL: https://www.youtube.com/watch?v=I0aTesMFBrk
+[youtube] I0aTesMFBrk: Downloading webpage
+[youtube] I0aTesMFBrk: Downloading visionos player API JSON
+[youtube] I0aTesMFBrk: Downloading m3u8 information
+[info] I0aTesMFBrk: Downloading 1 format(s): 134+140
+[info] Video metadata is already present
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.f140.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\I0aTesMFBrk.f140.m4a (pass -k to keep)

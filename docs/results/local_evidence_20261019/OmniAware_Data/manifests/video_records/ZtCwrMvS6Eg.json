@@ -1,0 +1,27 @@
+{
+  "id": "ZtCwrMvS6Eg",
+  "source_url": "https://www.youtube.com/watch?v=ZtCwrMvS6Eg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ZtCwrMvS6Eg.log",
+  "filename": "ZtCwrMvS6Eg.mp4",
+  "bytes": 8836325,
+  "sha256": "64a1cafa82d5295c76b251f9fd5e4a44c415e33e616ef17afe7ad4edcb7bef27",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 656,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "109.412426"
+    }
+  }
+}

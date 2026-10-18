@@ -1,0 +1,24 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=N-mUi3pdhuA
+[youtube] N-mUi3pdhuA: Downloading webpage
+[youtube] N-mUi3pdhuA: Downloading visionos player API JSON
+[youtube] N-mUi3pdhuA: Downloading m3u8 information
+[info] N-mUi3pdhuA: Downloading 1 format(s): 134+140-16
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.f134.mp4
+[youtube] Extracting URL: https://www.youtube.com/watch?v=N-mUi3pdhuA
+[youtube] N-mUi3pdhuA: Downloading webpage
+WARNING: [youtube] unable to extract yt initial data; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+WARNING: [youtube] Incomplete data received in embedded initial data; re-fetching using API.
+[youtube] N-mUi3pdhuA: Downloading initial data API JSON
+[youtube] N-mUi3pdhuA: Downloading visionos player API JSON
+[youtube] N-mUi3pdhuA: Downloading m3u8 information
+[info] N-mUi3pdhuA: Downloading 1 format(s): 134+140-16
+[info] Video metadata is already present
+[download] Resuming download at byte 4794661
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.f140-16.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\N-mUi3pdhuA.f140-16.m4a (pass -k to keep)

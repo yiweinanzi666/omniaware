@@ -1,0 +1,27 @@
+{
+  "id": "SnnpZj1PlRc",
+  "source_url": "https://www.youtube.com/watch?v=SnnpZj1PlRc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SnnpZj1PlRc.log",
+  "filename": "SnnpZj1PlRc.mp4",
+  "bytes": 11461427,
+  "sha256": "d824f156ca58d1edf7e245c2e88fdfda72596a61a4fdd32daaa8177a0a66fbf6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "209.072472"
+    }
+  }
+}

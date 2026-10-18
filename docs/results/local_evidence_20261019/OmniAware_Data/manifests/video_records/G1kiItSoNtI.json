@@ -1,0 +1,27 @@
+{
+  "id": "G1kiItSoNtI",
+  "source_url": "https://www.youtube.com/watch?v=G1kiItSoNtI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\G1kiItSoNtI.log",
+  "filename": "G1kiItSoNtI.mp4",
+  "bytes": 17733365,
+  "sha256": "edb41ef34a75c984fbf35cb95a82909a149e25b8c9ae94b13c30dba10ee6c800",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "419.398821"
+    }
+  }
+}

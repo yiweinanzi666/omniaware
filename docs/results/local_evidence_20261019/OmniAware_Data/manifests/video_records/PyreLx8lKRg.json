@@ -1,0 +1,27 @@
+{
+  "id": "PyreLx8lKRg",
+  "source_url": "https://www.youtube.com/watch?v=PyreLx8lKRg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PyreLx8lKRg.log",
+  "filename": "PyreLx8lKRg.mp4",
+  "bytes": 17187737,
+  "sha256": "d0d4c010e6d1c931aa04604bd7f52335b3a8aa1d1d98e3616694104f79d312ce",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "262.965986"
+    }
+  }
+}

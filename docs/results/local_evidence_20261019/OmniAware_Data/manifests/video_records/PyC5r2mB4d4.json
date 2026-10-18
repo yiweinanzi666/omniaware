@@ -1,0 +1,27 @@
+{
+  "id": "PyC5r2mB4d4",
+  "source_url": "https://www.youtube.com/watch?v=PyC5r2mB4d4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PyC5r2mB4d4.log",
+  "filename": "PyC5r2mB4d4.mp4",
+  "bytes": 23165898,
+  "sha256": "9780906a7e397d76298b24eb640392667d05c82aa3a6756498cdfd438e24abc7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 470
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "539.608526"
+    }
+  }
+}

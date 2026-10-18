@@ -1,0 +1,92 @@
+{"event": "run_start", "workers": 8, "time": 1791904484.259514}
+{"event": "run_start", "workers": 16, "time": 1791904601.5672996}
+{"event": "run_start", "workers": 16, "time": 1791905682.75572}
+{"name": "imgs.7z.007", "status": "incomplete", "bytes": 285212672, "expected": 1073741824, "seconds": 4563.74, "errors": ["attempt 48: short response 276824064/1073741824", "attempt 49: short response 281018368/1073741824", "attempt 50: short response 285212672/1073741824"]}
+{"name": "imgs.7z.008", "status": "incomplete", "bytes": 297795584, "expected": 1073741824, "seconds": 5048.68, "errors": ["attempt 48: short response 289406976/1073741824", "attempt 49: short response 293601280/1073741824", "attempt 50: short response 297795584/1073741824"]}
+{"name": "imgs.7z.009", "status": "incomplete", "bytes": 205520896, "expected": 1073741824, "seconds": 5076.74, "errors": ["attempt 48: short response 197132288/1073741824", "attempt 49: short response 201326592/1073741824", "attempt 50: short response 205520896/1073741824"]}
+{"name": "imgs.7z.010", "status": "incomplete", "bytes": 218103808, "expected": 1073741824, "seconds": 5100.22, "errors": ["attempt 48: short response 209715200/1073741824", "attempt 49: short response 213909504/1073741824", "attempt 50: short response 218103808/1073741824"]}
+{"name": "imgs.7z.002", "status": "incomplete", "bytes": 360710144, "expected": 1073741824, "seconds": 5307.41, "errors": ["attempt 48: short response 352321536/1073741824", "attempt 49: short response 356515840/1073741824", "attempt 50: short response 360710144/1073741824"]}
+{"name": "imgs.7z.006", "status": "incomplete", "bytes": 297795584, "expected": 1073741824, "seconds": 5310.43, "errors": ["attempt 48: short response 289406976/1073741824", "attempt 49: short response 293601280/1073741824", "attempt 50: short response 297795584/1073741824"]}
+{"name": "imgs.7z.012", "status": "incomplete", "bytes": 218103808, "expected": 1073741824, "seconds": 5316.21, "errors": ["attempt 48: short response 213909504/1073741824", "attempt 49: short response 218103808/1073741824", "attempt 50: URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>; bytes=218103808"]}
+{"name": "imgs.7z.011", "status": "incomplete", "bytes": 189815827, "expected": 1073741824, "seconds": 5333.25, "errors": ["attempt 48: URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>; bytes=181427219", "attempt 49: short response 185621523/1073741824", "attempt 50: short response 189815827/1073741824"]}
+{"name": "imgs.7z.003", "status": "incomplete", "bytes": 394264576, "expected": 1073741824, "seconds": 5374.75, "errors": ["attempt 48: short response 385875968/1073741824", "attempt 49: short response 390070272/1073741824", "attempt 50: short response 394264576/1073741824"]}
+{"name": "imgs.7z.004", "status": "incomplete", "bytes": 385875968, "expected": 1073741824, "seconds": 5617.85, "errors": ["attempt 48: URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>; bytes=377487360", "attempt 49: short response 381681664/1073741824", "attempt 50: short response 385875968/1073741824"]}
+{"event": "run_start", "workers": 24, "time": 1791911543.1850698}
+{"event": "run_start", "workers": 24, "time": 1791912280.6990938}
+{"event": "run_start", "workers": 32, "time": 1791912801.457772}
+{"event": "run_start", "workers": 24, "time": 1791913054.5705469}
+{"event": "run_start", "workers": 24, "time": 1791913333.4540637}
+{"event": "run_start", "workers": 24, "time": 1791914107.8423219}
+{"event": "run_start", "workers": 48, "time": 1791915066.5817268}
+{"event": "run_start", "workers": 64, "time": 1791929452.4174252}
+{"event": "run_start", "workers": 48, "time": 1791929787.9392352}
+{"event": "run_start", "workers": 48, "time": 1791934097.2871482}
+{"event": "run_start", "workers": 48, "time": 1791947920.099994}
+{"event": "run_start", "workers": 48, "time": 1791949412.5894628}
+{"event": "run_start", "workers": 48, "time": 1791951791.9633265}
+{"event": "run_start", "workers": 64, "time": 1791958018.6669257}
+{"event": "run_start", "workers": 48, "time": 1791959160.9582205}
+{"event": "run_start", "workers": 32, "time": 1791959303.6529965}
+{"event": "run_start", "workers": 48, "time": 1791959637.189821}
+{"event": "run_start", "workers": 48, "time": 1791959745.4708169}
+{"event": "run_start", "workers": 48, "time": 1791959933.100954}
+{"event": "run_start", "workers": 48, "time": 1791960789.7637174}
+{"event": "run_start", "workers": 48, "time": 1791961249.0800633}
+{"event": "run_start", "workers": 48, "time": 1791962820.3810155}
+{"event": "run_start", "workers": 48, "time": 1791968011.7982926}
+{"event": "run_start", "workers": 48, "time": 1791970588.0770605}
+{"name": "imgs.7z.008", "status": "downloaded", "bytes": 1073741824, "seconds": 2780.03, "avg_mib_s": 0.368}
+{"name": "imgs.7z.002", "status": "downloaded", "bytes": 1073741824, "seconds": 4885.33, "avg_mib_s": 0.21}
+{"name": "imgs.7z.004", "status": "downloaded", "bytes": 1073741824, "seconds": 6236.79, "avg_mib_s": 0.164}
+{"name": "imgs.7z.007", "status": "downloaded", "bytes": 1073741824, "seconds": 9515.0, "avg_mib_s": 0.108}
+{"name": "imgs.7z.001", "status": "downloaded", "bytes": 1073741824, "seconds": 9637.24, "avg_mib_s": 0.106}
+{"name": "imgs.7z.003", "status": "downloaded", "bytes": 1073741824, "seconds": 12676.1, "avg_mib_s": 0.081}
+{"name": "imgs.7z.010", "status": "downloaded", "bytes": 1073741824, "seconds": 15108.26, "avg_mib_s": 0.068}
+{"name": "imgs.7z.009", "status": "downloaded", "bytes": 1073741824, "seconds": 17150.93, "avg_mib_s": 0.06}
+{"name": "imgs.7z.015", "status": "downloaded", "bytes": 1073741824, "seconds": 17308.01, "avg_mib_s": 0.059}
+{"name": "imgs.7z.012", "status": "downloaded", "bytes": 1073741824, "seconds": 20758.22, "avg_mib_s": 0.049}
+{"name": "imgs.7z.006", "status": "downloaded", "bytes": 1073741824, "seconds": 21464.33, "avg_mib_s": 0.048}
+{"name": "imgs.7z.030", "status": "downloaded", "bytes": 1073741824, "seconds": 23162.04, "avg_mib_s": 0.044}
+{"name": "imgs.7z.029", "status": "downloaded", "bytes": 1073741824, "seconds": 23637.76, "avg_mib_s": 0.043}
+{"name": "imgs.7z.016", "status": "downloaded", "bytes": 1073741824, "seconds": 23698.98, "avg_mib_s": 0.043}
+{"name": "imgs.7z.048", "status": "downloaded", "bytes": 1073741824, "seconds": 23810.56, "avg_mib_s": 0.043}
+{"name": "imgs.7z.041", "status": "downloaded", "bytes": 1073741824, "seconds": 25549.61, "avg_mib_s": 0.04}
+{"name": "imgs.7z.023", "status": "downloaded", "bytes": 1073741824, "seconds": 25713.08, "avg_mib_s": 0.04}
+{"name": "imgs.7z.011", "status": "downloaded", "bytes": 1073741824, "seconds": 71204.02, "avg_mib_s": 0.014}
+{"name": "imgs.7z.005", "status": "downloaded", "bytes": 1073741824, "seconds": 71659.62, "avg_mib_s": 0.014}
+{"name": "imgs.7z.017", "status": "downloaded", "bytes": 1073741824, "seconds": 71943.54, "avg_mib_s": 0.014}
+{"name": "imgs.7z.014", "status": "downloaded", "bytes": 1073741824, "seconds": 72060.6, "avg_mib_s": 0.014}
+{"name": "imgs.7z.028", "status": "downloaded", "bytes": 1073741824, "seconds": 73851.16, "avg_mib_s": 0.014}
+{"name": "imgs.7z.013", "status": "downloaded", "bytes": 1073741824, "seconds": 73892.39, "avg_mib_s": 0.014}
+{"name": "imgs.7z.026", "status": "downloaded", "bytes": 1073741824, "seconds": 73927.25, "avg_mib_s": 0.014}
+{"name": "imgs.7z.024", "status": "downloaded", "bytes": 1073741824, "seconds": 74166.05, "avg_mib_s": 0.014}
+{"name": "imgs.7z.018", "status": "downloaded", "bytes": 1073741824, "seconds": 74773.03, "avg_mib_s": 0.014}
+{"name": "imgs.7z.019", "status": "downloaded", "bytes": 1073741824, "seconds": 75581.32, "avg_mib_s": 0.014}
+{"name": "imgs.7z.025", "status": "downloaded", "bytes": 1073741824, "seconds": 75687.17, "avg_mib_s": 0.014}
+{"name": "imgs.7z.020", "status": "downloaded", "bytes": 1073741824, "seconds": 76248.74, "avg_mib_s": 0.013}
+{"name": "imgs.7z.045", "status": "downloaded", "bytes": 1073741824, "seconds": 77087.23, "avg_mib_s": 0.013}
+{"event": "run_start", "mode": "parallel_ranges", "workers": 48, "ranges": 805, "block_size": 4194304, "pid": 14372, "time": 1792047713.9150255}
+{"event": "file_complete", "name": "imgs.7z.037", "status": "downloaded", "bytes": 1073741824, "new_bytes": 2263985, "seconds": 139.31, "time": 1792047853.1193361}
+{"event": "file_complete", "name": "imgs.7z.021", "status": "downloaded", "bytes": 1073741824, "new_bytes": 13957303, "seconds": 638.49, "time": 1792048352.2626562}
+{"event": "file_complete", "name": "imgs.7z.033", "status": "downloaded", "bytes": 1073741824, "new_bytes": 21843835, "seconds": 696.27, "time": 1792048410.0714426}
+{"event": "run_start", "mode": "parallel_ranges", "workers": 24, "ranges": 730, "block_size": 4194304, "pid": 6348, "time": 1792048428.1896832}
+{"event": "file_complete", "name": "imgs.7z.027", "status": "downloaded", "bytes": 1073741824, "new_bytes": 16037406, "seconds": 197.09, "time": 1792048625.1822057}
+{"event": "file_complete", "name": "imgs.7z.022", "status": "downloaded", "bytes": 1073741824, "new_bytes": 9617189, "seconds": 261.11, "time": 1792048689.211818}
+{"event": "run_start", "mode": "parallel_ranges", "workers": 48, "ranges": 671, "block_size": 4194304, "pid": 11216, "time": 1792048903.6124964}
+{"event": "file_complete", "name": "imgs.7z.043", "status": "downloaded", "bytes": 1073741824, "new_bytes": 11399221, "seconds": 579.89, "time": 1792049483.4271657}
+{"event": "file_complete", "name": "imgs.7z.034", "status": "downloaded", "bytes": 1073741824, "new_bytes": 49057594, "seconds": 1205.97, "time": 1792050109.494706}
+{"event": "file_complete", "name": "imgs.7z.042", "status": "downloaded", "bytes": 1073741824, "new_bytes": 56254643, "seconds": 1445.3, "time": 1792050348.8313975}
+{"event": "file_complete", "name": "imgs.7z.047", "status": "downloaded", "bytes": 1073741824, "new_bytes": 62491118, "seconds": 1574.99, "time": 1792050478.5173995}
+{"event": "file_complete", "name": "imgs.7z.032", "status": "downloaded", "bytes": 1073741824, "new_bytes": 58995607, "seconds": 1804.84, "time": 1792050708.3640587}
+{"event": "file_complete", "name": "imgs.7z.035", "status": "downloaded", "bytes": 1073741824, "new_bytes": 87206905, "seconds": 1965.44, "time": 1792050868.9677873}
+{"event": "file_complete", "name": "imgs.7z.044", "status": "downloaded", "bytes": 1073741824, "new_bytes": 80360321, "seconds": 2026.66, "time": 1792050930.1938033}
+{"event": "file_complete", "name": "imgs.7z.039", "status": "downloaded", "bytes": 1073741824, "new_bytes": 95341342, "seconds": 2336.56, "time": 1792051240.0984552}
+{"event": "file_complete", "name": "imgs.7z.036", "status": "downloaded", "bytes": 1073741824, "new_bytes": 153130423, "seconds": 3017.59, "time": 1792051921.123306}
+{"event": "file_complete", "name": "imgs.7z.040", "status": "downloaded", "bytes": 1073741824, "new_bytes": 170195931, "seconds": 3279.66, "time": 1792052183.1841846}
+{"event": "file_complete", "name": "imgs.7z.038", "status": "downloaded", "bytes": 1073741824, "new_bytes": 182109853, "seconds": 3307.64, "time": 1792052211.17109}
+{"event": "file_complete", "name": "imgs.7z.031", "status": "downloaded", "bytes": 1073741824, "new_bytes": 192407008, "seconds": 3401.73, "time": 1792052305.2479227}
+{"event": "file_complete", "name": "imgs.7z.046", "status": "downloaded", "bytes": 1073741824, "new_bytes": 177845699, "seconds": 3421.7, "time": 1792052325.2305012}
+{"event": "file_complete", "name": "imgs.7z.051", "status": "downloaded", "bytes": 758433119, "new_bytes": 299449699, "seconds": 3951.22, "time": 1792052854.7643576}
+{"event": "file_complete", "name": "imgs.7z.049", "status": "downloaded", "bytes": 1073741824, "new_bytes": 507859780, "seconds": 4692.17, "time": 1792053595.7038436}
+{"event": "file_complete", "name": "imgs.7z.050", "status": "downloaded", "bytes": 1073741824, "new_bytes": 596337503, "seconds": 4738.25, "time": 1792053641.8048449}
+{"event": "run_end", "complete": 51, "total": 51, "time": 1792053641.8078358}

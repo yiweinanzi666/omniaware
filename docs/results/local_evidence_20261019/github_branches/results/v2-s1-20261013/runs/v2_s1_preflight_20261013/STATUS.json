@@ -1,0 +1,36 @@
+{
+  "written_local": "2026-10-13T01:25:27.180118-07:00",
+  "stage": "preflight",
+  "state": "failed_selfcheck",
+  "source_commit": "162115ecea8cdd9b2d1503f2d304e3066f4adb8c",
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:warnings"
+  ],
+  "test_result": {
+    "passed": 473,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 1,
+    "subtests_passed": 21,
+    "seconds": 13.11
+  },
+  "remaining_failure": "tests/test_run_smoke.py::test_interventions_and_relevance_noise",
+  "cause_observed": "spaCy en_core_web_sm 3.8.0 labels Oslo as ORG; no same-type replacement in the calibration pool; returned entity is None. Test expects a replacement city on every row.",
+  "source_modified": false,
+  "frozen_parameters_modified": false,
+  "s1_started": false,
+  "s2_started": false,
+  "s4_started": false,
+  "image_evidence_check_started": false,
+  "a100_access": {
+    "host": "region-9.autodl.pro",
+    "port": 32361,
+    "direct": "Connection refused",
+    "proxy_route": "Connection closed by UNKNOWN port 65535"
+  },
+  "experiment_config": "No S1 config exists because no real experiment was started. failed_synthetic_test_fixture/okvqa_config.json is the failing unit-test fixture configuration, not an S1 protocol configuration."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "xf-VitnGQVA",
+  "source_url": "https://www.youtube.com/watch?v=xf-VitnGQVA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\xf-VitnGQVA.log",
+  "filename": "xf-VitnGQVA.mp4",
+  "bytes": 26443979,
+  "sha256": "d0e7b39b0744ae75e0b5a2d2a9fa78adc210fbf399fa2853f90d3a4ff62bf3f6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "669.454512"
+    }
+  }
+}

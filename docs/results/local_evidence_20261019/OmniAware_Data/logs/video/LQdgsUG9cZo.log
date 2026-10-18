@@ -1,0 +1,15 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=LQdgsUG9cZo
+[youtube] LQdgsUG9cZo: Downloading webpage
+[youtube] LQdgsUG9cZo: Downloading visionos player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] LQdgsUG9cZo: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+[youtube] Extracting URL: https://www.youtube.com/watch?v=LQdgsUG9cZo
+[youtube] LQdgsUG9cZo: Downloading webpage
+WARNING: [youtube] LQdgsUG9cZo: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] LQdgsUG9cZo: Downloading initial data API JSON
+[youtube] LQdgsUG9cZo: Downloading visionos player API JSON
+[youtube] LQdgsUG9cZo: Downloading iframe API JS
+[youtube] LQdgsUG9cZo: Downloading player 21090930-main
+[youtube] LQdgsUG9cZo: Downloading web player API JSON
+WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
+ERROR: [youtube] LQdgsUG9cZo: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

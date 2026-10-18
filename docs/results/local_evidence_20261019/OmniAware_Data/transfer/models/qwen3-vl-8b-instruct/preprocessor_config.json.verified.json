@@ -1,0 +1,8 @@
+{
+  "repo": "Qwen/Qwen3-VL-8B-Instruct",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "file": "preprocessor_config.json",
+  "bytes": 390,
+  "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+  "verified_at": "2026-10-17T02:41:52+0800"
+}

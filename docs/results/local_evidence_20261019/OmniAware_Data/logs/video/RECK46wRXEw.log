@@ -1,0 +1,20 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=RECK46wRXEw
+[youtube] RECK46wRXEw: Downloading webpage
+[youtube] RECK46wRXEw: Downloading visionos player API JSON
+[youtube] RECK46wRXEw: Downloading m3u8 information
+[info] RECK46wRXEw: Downloading 1 format(s): 134+140-9
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.info.json
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+[youtube] Extracting URL: https://www.youtube.com/watch?v=RECK46wRXEw
+[youtube] RECK46wRXEw: Downloading webpage
+[youtube] RECK46wRXEw: Downloading visionos player API JSON
+[youtube] RECK46wRXEw: Downloading m3u8 information
+[info] RECK46wRXEw: Downloading 1 format(s): 134+140-9
+[info] Video metadata is already present
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.f140-9.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\RECK46wRXEw.f140-9.m4a (pass -k to keep)

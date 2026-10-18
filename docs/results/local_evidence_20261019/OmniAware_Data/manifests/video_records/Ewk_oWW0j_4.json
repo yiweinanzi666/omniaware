@@ -1,0 +1,27 @@
+{
+  "id": "Ewk_oWW0j_4",
+  "source_url": "https://www.youtube.com/watch?v=Ewk_oWW0j_4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ewk_oWW0j_4.log",
+  "filename": "Ewk_oWW0j_4.mp4",
+  "bytes": 28230021,
+  "sha256": "dca8ca7ca8c2861ba3ab9b03717c0b2248d3188131e02b0d06da63feb07efbc3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "279.730794"
+    }
+  }
+}

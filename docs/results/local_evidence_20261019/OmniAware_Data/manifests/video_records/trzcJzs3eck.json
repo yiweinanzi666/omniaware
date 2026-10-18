@@ -1,0 +1,27 @@
+{
+  "id": "trzcJzs3eck",
+  "source_url": "https://www.youtube.com/watch?v=trzcJzs3eck",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\trzcJzs3eck.log",
+  "filename": "trzcJzs3eck.mp4",
+  "bytes": 27657872,
+  "sha256": "c3f058e5819f7f7d93e2b2e041300e6b49893265cf6d5522387ba57a220838ea",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "182.137324"
+    }
+  }
+}

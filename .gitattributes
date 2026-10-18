@@ -1,0 +1,4 @@
+# Preserve exact evidence and vendored upstream bytes across platforms.
+assets/** -text
+external/** -text
+docs/results/local_evidence_20261019/** -text

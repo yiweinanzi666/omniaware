@@ -1,0 +1,3192 @@
+.......................................................................s [ 15%]
+..................................................EEEEEEE......... [ 29%]
+........................................................................ [ 44%]
+.........................................................F.............. [ 60%]
+.s...................................................................... [ 75%]
+........................................................................ [ 91%]
+.......................................s.                   [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of LocalQwenTests.test_generation_failure_preserves_started_input_and_propagates _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_image_errors_are_visible_and_do_not_download _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_official_token_count_and_trimming_semantics _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_one_user_message_caption_and_fixed_generate_budget _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_real_local_image_mapping_and_pixel_budget _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_real_tiny_cpu_qwen_text_and_visual_generation _
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+_ ERROR at setup of LocalQwenTests.test_token_cap_and_eos_at_cap_are_distinct __
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+>               hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:85: in _inner_fn
+    validate_repo_id(arg_value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+
+    def validate_repo_id(repo_id: str | None) -> None:
+        """Validate `repo_id` is valid.
+    
+        This is not meant to replace the proper validation made on the Hub but rather to
+        avoid local inconsistencies whenever possible (example: passing `repo_type` in the
+        `repo_id` is forbidden).
+    
+        Rules:
+        - Between 1 and 96 characters.
+        - Either "repo_name" or "namespace/repo_name"
+        - [a-zA-Z0-9] or "-", "_", "."
+        - "--" and ".." are forbidden
+    
+        Valid: `"foo"`, `"foo/bar"`, `"123"`, `"Foo-BAR_foo.bar123"`
+    
+        Not valid: `"datasets/foo/bar"`, `".repo_id"`, `"foo--bar"`, `"foo.git"`
+    
+        Example:
+        ```py
+        >>> from huggingface_hub.utils import validate_repo_id
+        >>> validate_repo_id(repo_id="valid_repo_id")
+        >>> validate_repo_id(repo_id="other..repo..id")
+        huggingface_hub.utils._validators.HFValidationError: Cannot have -- or .. in repo_id: 'other..repo..id'.
+        ```
+    
+        Discussed in https://github.com/huggingface/huggingface_hub/issues/1008.
+        In moon-landing (internal repository):
+        - https://github.com/huggingface/moon-landing/blob/main/server/lib/Names.ts#L27
+        - https://github.com/huggingface/moon-landing/blob/main/server/views/components/NewRepoForm/NewRepoForm.svelte#L138
+        """
+        if repo_id is None:
+            # Repo id is not always required
+            return
+    
+        if not isinstance(repo_id, str):
+            # Typically, a Path is not a repo_id
+            raise HFValidationError(f"Repo id must be a string, not {type(repo_id)}: '{repo_id}'.")
+    
+        if repo_id.count("/") > 1:
+>           raise HFValidationError(
+                "Repo id must be in the form 'repo_name' or 'namespace/repo_name':"
+                f" '{repo_id}'. Use `repo_type` argument if needed."
+            )
+E           huggingface_hub.errors.HFValidationError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py:133: HFValidationError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class 'test_m2rag_qwen.LocalQwenTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.processor = AutoProcessor.from_pretrained(
+            paths.QWEN_8B, local_files_only=True,
+        )
+
+tests/test_m2rag_qwen.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/models/auto/processing_auto.py:326: in from_pretrained
+    processor_config_file = cached_file(pretrained_model_name_or_path, PROCESSOR_NAME, **cached_file_kwargs)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:278: in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_or_repo_id = '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'
+filenames = ['processor_config.json']
+cache_dir = '/Users/futaoran/.cache/huggingface/hub', force_download = False
+proxies = None, token = None, revision = None, local_files_only = True
+subfolder = '', repo_type = None
+user_agent = 'transformers/5.5.3; python/3.12.10; session_id/b4a768c8fbb04dd5a622bfc1c115ef83; torch/2.14.1'
+_raise_exceptions_for_gated_repo = False
+_raise_exceptions_for_missing_entries = False
+_raise_exceptions_for_connection_errors = False, _commit_hash = None
+tqdm_class = None, deprecated_kwargs = {}
+
+    def cached_files(
+        path_or_repo_id: str | os.PathLike,
+        filenames: list[str],
+        cache_dir: str | os.PathLike | None = None,
+        force_download: bool = False,
+        proxies: dict[str, str] | None = None,
+        token: bool | str | None = None,
+        revision: str | None = None,
+        local_files_only: bool = False,
+        subfolder: str = "",
+        repo_type: str | None = None,
+        user_agent: str | dict[str, str] | None = None,
+        _raise_exceptions_for_gated_repo: bool = True,
+        _raise_exceptions_for_missing_entries: bool = True,
+        _raise_exceptions_for_connection_errors: bool = True,
+        _commit_hash: str | None = None,
+        tqdm_class: type | None = None,
+        **deprecated_kwargs,
+    ) -> list[str] | None:
+        """
+        Tries to locate several files in a local folder and repo, downloads and cache them if necessary.
+    
+        Args:
+            path_or_repo_id (`str` or `os.PathLike`):
+                This can be either:
+                - a string, the *model id* of a model repo on huggingface.co.
+                - a path to a *directory* potentially containing the file.
+            filenames (`list[str]`):
+                The name of all the files to locate in `path_or_repo`.
+            cache_dir (`str` or `os.PathLike`, *optional*):
+                Path to a directory in which a downloaded pretrained model configuration should be cached if the standard
+                cache should not be used.
+            force_download (`bool`, *optional*, defaults to `False`):
+                Whether or not to force to (re-)download the configuration files and override the cached versions if they
+                exist.
+            proxies (`dict[str, str]`, *optional*):
+                A dictionary of proxy servers to use by protocol or endpoint, e.g., `{'http': 'foo.bar:3128',
+                'http://hostname': 'foo.bar:4012'}.` The proxies are used on each request.
+            token (`str` or *bool*, *optional*):
+                The token to use as HTTP bearer authorization for remote files. If `True`, will use the token generated
+                when running `hf auth login` (stored in `~/.huggingface`).
+            revision (`str`, *optional*, defaults to `"main"`):
+                The specific model version to use. It can be a branch name, a tag name, or a commit id, since we use a
+                git-based system for storing models and other artifacts on huggingface.co, so `revision` can be any
+                identifier allowed by git.
+            local_files_only (`bool`, *optional*, defaults to `False`):
+                If `True`, will only try to load the tokenizer configuration from local files.
+            subfolder (`str`, *optional*, defaults to `""`):
+                In case the relevant files are located inside a subfolder of the model repo on huggingface.co, you can
+                specify the folder name here.
+            repo_type (`str`, *optional*):
+                Specify the repo type (useful when downloading from a space for instance).
+    
+        Private args:
+            _raise_exceptions_for_gated_repo (`bool`):
+                if False, do not raise an exception for gated repo error but return None.
+            _raise_exceptions_for_missing_entries (`bool`):
+                if False, do not raise an exception for missing entries but return None.
+            _raise_exceptions_for_connection_errors (`bool`):
+                if False, do not raise an exception for connection errors but return None.
+            _commit_hash (`str`, *optional*):
+                passed when we are chaining several calls to various files (e.g. when loading a tokenizer or
+                a pipeline). If files are cached for this commit hash, avoid calls to head and get from the cache.
+    
+        <Tip>
+    
+        Passing `token=True` is required when you want to use a private model.
+    
+        </Tip>
+    
+        Returns:
+            `Optional[str]`: Returns the resolved file (to the cache folder if downloaded from a repo).
+    
+        Examples:
+    
+        ```python
+        # Download a model weight from the Hub and cache it.
+        model_weights_file = cached_file("google-bert/bert-base-uncased", "pytorch_model.bin")
+        ```
+        """
+        if is_offline_mode() and not local_files_only:
+            logger.info("Offline mode: forcing local_files_only=True")
+            local_files_only = True
+        if subfolder is None:
+            subfolder = ""
+    
+        # Add folder to filenames
+        full_filenames = [os.path.join(subfolder, file) for file in filenames]
+    
+        path_or_repo_id = str(path_or_repo_id)
+        existing_files = []
+        for filename in full_filenames:
+            if os.path.isdir(path_or_repo_id):
+                resolved_file = os.path.join(path_or_repo_id, filename)
+                if not os.path.isfile(resolved_file):
+                    if _raise_exceptions_for_missing_entries and filename != os.path.join(subfolder, "config.json"):
+                        revision_ = "main" if revision is None else revision
+                        raise OSError(
+                            f"{path_or_repo_id} does not appear to have a file named {filename}. Checkout "
+                            f"'https://huggingface.co/{path_or_repo_id}/tree/{revision_}' for available files."
+                        )
+                    else:
+                        continue
+                existing_files.append(resolved_file)
+    
+        if os.path.isdir(path_or_repo_id):
+            return existing_files if existing_files else None
+    
+        if cache_dir is None:
+            cache_dir = constants.HF_HUB_CACHE
+        if isinstance(cache_dir, Path):
+            cache_dir = str(cache_dir)
+    
+        existing_files = []
+        file_counter = 0
+        if _commit_hash is not None and not force_download:
+            for filename in full_filenames:
+                # If the file is cached under that commit hash, we return it directly.
+                resolved_file = try_to_load_from_cache(
+                    path_or_repo_id, filename, cache_dir=cache_dir, revision=_commit_hash, repo_type=repo_type
+                )
+                if resolved_file is not None:
+                    if resolved_file is not _CACHED_NO_EXIST:
+                        file_counter += 1
+                        existing_files.append(resolved_file)
+                    elif not _raise_exceptions_for_missing_entries:
+                        file_counter += 1
+                    else:
+                        raise OSError(f"Could not locate {filename} inside {path_or_repo_id}.")
+    
+        # Either all the files were found, or some were _CACHED_NO_EXIST but we do not raise for missing entries
+        if file_counter == len(full_filenames):
+            return existing_files if len(existing_files) > 0 else None
+    
+        user_agent = http_user_agent(user_agent)
+        # download the files if needed
+        try:
+            if len(full_filenames) == 1:
+                # This is slightly better for only 1 file
+                hf_hub_download(
+                    path_or_repo_id,
+                    filenames[0],
+                    subfolder=None if len(subfolder) == 0 else subfolder,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+            else:
+                snapshot_download(
+                    path_or_repo_id,
+                    allow_patterns=full_filenames,
+                    repo_type=repo_type,
+                    revision=revision,
+                    cache_dir=cache_dir,
+                    user_agent=user_agent,
+                    force_download=force_download,
+                    proxies=proxies,
+                    token=token,
+                    local_files_only=local_files_only,
+                    tqdm_class=tqdm_class,
+                )
+    
+        except Exception as e:
+            # We cannot recover from them
+            if isinstance(e, RepositoryNotFoundError) and not isinstance(e, GatedRepoError):
+                raise OSError(
+                    f"{path_or_repo_id} is not a local folder and is not a valid model identifier "
+                    "listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token "
+                    "having permission to this repo either by logging in with `hf auth login` or by passing "
+                    "`token=<your_token>`"
+                ) from e
+            elif isinstance(e, RevisionNotFoundError):
+                raise OSError(
+                    f"{revision} is not a valid git identifier (branch name, tag name or commit id) that exists "
+                    "for this model name. Check the model page at "
+                    f"'https://huggingface.co/{path_or_repo_id}' for available revisions."
+                ) from e
+            elif isinstance(e, PermissionError):
+                raise OSError(
+                    f"PermissionError at {e.filename} when downloading {path_or_repo_id}. "
+                    "Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); "
+                    "2) a previous download was canceled and the lock file needs manual removal."
+                ) from e
+            elif isinstance(e, ValueError):
+>               raise OSError(f"{e}") from e
+E               OSError: Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/assets/cache/qwen3-vl-8b-instruct'. Use `repo_type` argument if needed.
+
+../v2_runtime_20261013/lib/python3.12/site-packages/transformers/utils/hub.py:473: OSError
+=================================== FAILURES ===================================
+____________________ test_interventions_and_relevance_noise ____________________
+
+tmp_path = PosixPath('/private/var/folders/vk/rrdjcnjd48d6d10xp5tf37k00000gn/T/pytest-of-futaoran/pytest-2/test_interventions_and_relevan0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x313efd760>
+
+    def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
+        cities = ["Paris", "Rome", "Berlin", "Madrid", "Vienna", "Prague", "Oslo", "Lisbon"]
+        examples = _examples(16)
+        for i, e in enumerate(examples):
+            e["golds"] = [cities[i % len(cities)]]
+            e["candidates"][0]["text"] = f"The capital is {e['golds'][0]} and more words follow here."
+        monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+        monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+        monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+        monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+        monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
+            e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+        kinds = ["mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction"]
+        run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+                  "--n-dev", "2", "--tag", "iv", "--tau=-1e9", "--tau-bias=-1e9",
+                  "--variants", "eab:g1.2:ans1:pos:gate", "--relevance-noise", "0.1", "--intervention", *kinds])
+        rows = [json.loads(line) for line in (tmp_path / "runs" / "iv" / "okvqa.jsonl").read_text().splitlines()]
+        assert rows
+        for r in rows:
+            iv = r["interventions"]
+            assert iv["eligible"] and iv["target"] == "k1" and iv["gold_in_target"] == r["golds"][0]
+>           assert iv["entity"] in cities and iv["entity"] != r["golds"][0]
+E           AssertionError: assert (None in ['Paris', 'Rome', 'Berlin', 'Madrid', 'Vienna', 'Prague', ...])
+
+tests/test_run_smoke.py:379: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[data] --n-dev 2 differs from the protocol size 256: the test set changes
+[data] okvqa: 16 total, calib 6 (heldout), dev 2, test 8
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 162115ecea8cdd9b2d1503f2d304e3066f4adb8c dirty=False torch 2.14.1 transformers 5.5.3 attn None dtype None gpus []
+[1/8] q006 0.0s P=382 U_pre=0.19 retrieve=True
+[2/8] q005 0.0s P=384 U_pre=0.00 retrieve=True
+[3/8] q010 0.0s P=389 U_pre=0.88 retrieve=True
+[4/8] q000 0.0s P=383 U_pre=0.23 retrieve=True
+[5/8] q001 0.0s P=382 U_pre=0.23 retrieve=True
+[6/8] q007 0.0s P=384 U_pre=0.00 retrieve=True
+[7/8] q014 0.0s P=387 U_pre=0.79 retrieve=True
+[8/8] q003 0.0s P=384 U_pre=0.05 retrieve=True
+[done] okvqa 8 in 0.0s -> /private/var/folders/vk/rrdjcnjd48d6d10xp5tf37k00000gn/T/pytest-of-futaoran/pytest-2/test_interventions_and_relevan0/runs/iv/okvqa.jsonl; empty_answer_rate 0.000000
+=========================== short test summary info ============================
+FAILED tests/test_run_smoke.py::test_interventions_and_relevance_noise - Asse...
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_generation_failure_preserves_started_input_and_propagates
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_image_errors_are_visible_and_do_not_download
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_official_token_count_and_trimming_semantics
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_one_user_message_caption_and_fixed_generate_budget
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_real_local_image_mapping_and_pixel_budget
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_real_tiny_cpu_qwen_text_and_visual_generation
+ERROR tests/test_m2rag_qwen.py::LocalQwenTests::test_token_cap_and_eos_at_cap_are_distinct
+1 failed, 456 passed, 4 skipped, 7 errors, 19 subtests passed in 30.22s

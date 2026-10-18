@@ -1,0 +1,27 @@
+{
+  "id": "jaeHOHXM56w",
+  "source_url": "https://www.youtube.com/watch?v=jaeHOHXM56w",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\jaeHOHXM56w.log",
+  "filename": "jaeHOHXM56w.mp4",
+  "bytes": 10119400,
+  "sha256": "7128deed948f7d6f40ba70b8b6af52aee4996ffcf36cd6bd92c8479cc2e51d4d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "118.119909"
+    }
+  }
+}

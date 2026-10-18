@@ -1,0 +1,27 @@
+{
+  "id": "rxy2n20vUGs",
+  "source_url": "https://www.youtube.com/watch?v=rxy2n20vUGs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rxy2n20vUGs.log",
+  "filename": "rxy2n20vUGs.mp4",
+  "bytes": 18906125,
+  "sha256": "f8fa5d689f76915c5679f27dd1a44e98d436a266ec6070a3b5c7c192e2b0e6bc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "175.124898"
+    }
+  }
+}

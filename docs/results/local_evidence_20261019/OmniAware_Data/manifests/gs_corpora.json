@@ -1,0 +1,24 @@
+[
+  {
+    "file": "okvqa_train_corpus.csv",
+    "rows": 112724,
+    "nonempty_passages": 112724,
+    "bytes": 41252142,
+    "sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997",
+    "prepared_path": "cache\\okvqa_gs112k\\corpus.jsonl",
+    "prepared_sha256": "c89fa9c4954753d9d769acd34320469bf7975b0429578afb1bf8662d40260ca3",
+    "source_url": "https://drive.google.com/file/d/1O8HkDzWIMc-uzLgG3BqHz-g2qtGeRcT6/view",
+    "usage": "Training-only GS main corpus"
+  },
+  {
+    "file": "okvqa_full_corpus.csv",
+    "rows": 168306,
+    "nonempty_passages": 168306,
+    "bytes": 60445862,
+    "sha256": "4ab2352a2bff6413ac74f1a18ef7ffcc8a15b5f77df97a5b6afd8375448128ae",
+    "prepared_path": "cache\\okvqa_gs168k_full\\corpus.jsonl",
+    "prepared_sha256": "834ac59446f1ecc41030e8b527c14fca5b3ef72e6f2f977062b765e4fb02b42a",
+    "source_url": "https://drive.google.com/file/d/1x9unz58_Lw7oLgTO73nslQ92xr4un6bl/view",
+    "usage": "Appendix comparison only; includes evaluation-question retrieval results"
+  }
+]

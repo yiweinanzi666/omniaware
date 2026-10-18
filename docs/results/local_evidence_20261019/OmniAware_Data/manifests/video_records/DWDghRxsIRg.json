@@ -1,0 +1,27 @@
+{
+  "id": "DWDghRxsIRg",
+  "source_url": "https://www.youtube.com/watch?v=DWDghRxsIRg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DWDghRxsIRg.log",
+  "filename": "DWDghRxsIRg.mp4",
+  "bytes": 5342685,
+  "sha256": "26251f1d6539157ff625bcc66c7443ddf82f2f8cb101a46ac437f9918fc758d5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "159.126349"
+    }
+  }
+}

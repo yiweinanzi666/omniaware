@@ -1,0 +1,14 @@
+{
+  "diagnose_saved_answer_format.py": {
+    "bytes": 2216,
+    "sha256": "6f2ecfa0b0e761d37b476bb8dab6f38ea649da8742ff1587a782e5f5dd0f3d77"
+  },
+  "manual_sentence_examples.json": {
+    "bytes": 13904,
+    "sha256": "84c2d425aff402928eaaea45a6100b3addc16c5c58101db01bb96ece7145d567"
+  },
+  "saved_format_diagnosis.json": {
+    "bytes": 336987,
+    "sha256": "0211a528cfac7b6736b6b8c1b3a9a0f6c0a87d8d2df5d74a4bbdc1952f0d1f46"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "WP2DNjbywo0",
+  "source_url": "https://www.youtube.com/watch?v=WP2DNjbywo0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WP2DNjbywo0.log",
+  "filename": "WP2DNjbywo0.mp4",
+  "bytes": 8864254,
+  "sha256": "9f21a95369f8ebe267e5522dfb04f509db15d02296c3723b34429f4524605deb",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "99.334966"
+    }
+  }
+}

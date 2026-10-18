@@ -1,0 +1,27 @@
+{
+  "id": "YPpMa6w-t6I",
+  "source_url": "https://www.youtube.com/watch?v=YPpMa6w-t6I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YPpMa6w-t6I.log",
+  "filename": "YPpMa6w-t6I.mp4",
+  "bytes": 22878517,
+  "sha256": "fc761c0201838c64d01662fc53d4d9dc5095798fbcedc7b01d7a16e7f57dde9a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "313.469388"
+    }
+  }
+}

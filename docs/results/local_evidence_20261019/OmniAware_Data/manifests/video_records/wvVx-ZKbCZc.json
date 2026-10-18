@@ -1,0 +1,27 @@
+{
+  "id": "wvVx-ZKbCZc",
+  "source_url": "https://www.youtube.com/watch?v=wvVx-ZKbCZc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\wvVx-ZKbCZc.log",
+  "filename": "wvVx-ZKbCZc.mp4",
+  "bytes": 21626443,
+  "sha256": "2e780a96207ea514dbba2c754ca3ae76d2dc39f7f15b57ff7d9d5f8b7adc12f8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "278.941315"
+    }
+  }
+}

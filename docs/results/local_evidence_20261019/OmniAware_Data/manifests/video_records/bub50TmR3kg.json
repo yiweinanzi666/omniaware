@@ -1,0 +1,27 @@
+{
+  "id": "bub50TmR3kg",
+  "source_url": "https://www.youtube.com/watch?v=bub50TmR3kg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\bub50TmR3kg.log",
+  "filename": "bub50TmR3kg.mp4",
+  "bytes": 40213770,
+  "sha256": "9edc6785d3d77ea5ce4dcc0b13bca269988e5a26ac9c4cab4be1e676bc58bae7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "747.380680"
+    }
+  }
+}

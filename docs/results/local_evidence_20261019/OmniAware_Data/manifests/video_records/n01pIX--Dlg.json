@@ -1,0 +1,27 @@
+{
+  "id": "n01pIX--Dlg",
+  "source_url": "https://www.youtube.com/watch?v=n01pIX--Dlg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\n01pIX--Dlg.log",
+  "filename": "n01pIX--Dlg.mp4",
+  "bytes": 9148074,
+  "sha256": "f7930801f0204171fbfb7c92bb5c2dababf34aafcc99a124ccf00e83817d633e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "152.137143"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "rOy24AULmwg",
+  "source_url": "https://www.youtube.com/watch?v=rOy24AULmwg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rOy24AULmwg.log",
+  "filename": "rOy24AULmwg.mp4",
+  "bytes": 48107003,
+  "sha256": "50179a263bfc07b637f36de053e0ff40a007bc9b2cc467f77ddc343c563397da",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "557.395011"
+    }
+  }
+}

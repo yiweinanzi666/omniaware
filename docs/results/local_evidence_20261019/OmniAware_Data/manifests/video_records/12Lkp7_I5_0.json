@@ -1,0 +1,27 @@
+{
+  "id": "12Lkp7_I5_0",
+  "source_url": "https://www.youtube.com/watch?v=12Lkp7_I5_0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\12Lkp7_I5_0.log",
+  "filename": "12Lkp7_I5_0.mp4",
+  "bytes": 5950284,
+  "sha256": "c48d35260ba641ad2f961a7d850d7f5a4086f33dd06484a0d52b3d6c83f7df58",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "100.890703"
+    }
+  }
+}

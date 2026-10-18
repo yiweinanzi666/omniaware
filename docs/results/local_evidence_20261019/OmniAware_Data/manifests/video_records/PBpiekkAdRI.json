@@ -1,0 +1,27 @@
+{
+  "id": "PBpiekkAdRI",
+  "source_url": "https://www.youtube.com/watch?v=PBpiekkAdRI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PBpiekkAdRI.log",
+  "filename": "PBpiekkAdRI.mp4",
+  "bytes": 15133036,
+  "sha256": "35228da075b91aa775d597485d3648e985f7c874a73f03a142cb73af677837ce",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "254.258503"
+    }
+  }
+}

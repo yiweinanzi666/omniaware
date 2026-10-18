@@ -1,0 +1,27 @@
+{
+  "id": "EGezIfpHYvg",
+  "source_url": "https://www.youtube.com/watch?v=EGezIfpHYvg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\EGezIfpHYvg.log",
+  "filename": "EGezIfpHYvg.mp4",
+  "bytes": 12644803,
+  "sha256": "8601afcb43b9a96463c8ebc91a383ae1d542c84e293c8d6f1c2bbe292501661d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "149.629388"
+    }
+  }
+}

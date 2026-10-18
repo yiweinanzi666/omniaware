@@ -1,0 +1,27 @@
+{
+  "id": "dlNHC6NVWmI",
+  "source_url": "https://www.youtube.com/watch?v=dlNHC6NVWmI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\dlNHC6NVWmI.log",
+  "filename": "dlNHC6NVWmI.mp4",
+  "bytes": 7868248,
+  "sha256": "8a7d011ce4f351dff604d14d2be956c90e46d744bc80141a5120d80e9f4172ed",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "158.778050"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "IVJbS33vr_E",
+  "source_url": "https://www.youtube.com/watch?v=IVJbS33vr_E",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\IVJbS33vr_E.log",
+  "filename": "IVJbS33vr_E.mp4",
+  "bytes": 18882871,
+  "sha256": "8e43736eb049d9131b760fefc96157110089163918fe890f0e1cb596c0eb7298",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "307.664399"
+    }
+  }
+}

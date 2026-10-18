@@ -1,0 +1,27 @@
+{
+  "id": "hq2-59nQt_A",
+  "source_url": "https://www.youtube.com/watch?v=hq2-59nQt_A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hq2-59nQt_A.log",
+  "filename": "hq2-59nQt_A.mp4",
+  "bytes": 25465193,
+  "sha256": "e8504fbe1ee19aed1c106a7ac992aea7d5cfb957f6e03b453051330a81a7d888",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "447.820045"
+    }
+  }
+}

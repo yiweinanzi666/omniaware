@@ -1,0 +1,87 @@
+........................................................................ [ 15%]
+................................................................ [ 28%]
+........................................................................ [ 43%]
+...................................................................F.... [ 58%]
+...........s............................................................ [ 74%]
+...............................FF....................................... [ 89%]
+...................................................         [100%]
+=================================== FAILURES ===================================
+____________________ test_interventions_and_relevance_noise ____________________
+
+tmp_path = PosixPath('/private/var/folders/vk/rrdjcnjd48d6d10xp5tf37k00000gn/T/pytest-of-futaoran/pytest-3/test_interventions_and_relevan0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x33ce35dc0>
+
+    def test_interventions_and_relevance_noise(tmp_path, monkeypatch):
+        cities = ["Paris", "Rome", "Berlin", "Madrid", "Vienna", "Prague", "Oslo", "Lisbon"]
+        examples = _examples(16)
+        for i, e in enumerate(examples):
+            e["golds"] = [cities[i % len(cities)]]
+            e["candidates"][0]["text"] = f"The capital is {e['golds'][0]} and more words follow here."
+        monkeypatch.setitem(data.LOADERS, "okvqa", lambda **kw: examples)
+        monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+        monkeypatch.setattr(paths, "LOCAL_CACHE", tmp_path / "cache")
+        monkeypatch.setattr(run, "QwenEAB", FakeQwen)
+        monkeypatch.setattr(run, "load_relevance", lambda exs, path, **kw: {
+            e["qid"]: {c["cid"]: {"text": 1.0 / int(c["cid"][1:])} for c in e["candidates"]} for e in exs})
+        kinds = ["mask", "cf", "random_edit", "rerun", "distractors", "inject_answer", "inject_instruction"]
+        run.main(["--dataset", "okvqa", "--split", "test", "--n-calib", "6", "--calib-source", "heldout",
+                  "--n-dev", "2", "--tag", "iv", "--tau=-1e9", "--tau-bias=-1e9",
+                  "--variants", "eab:g1.2:ans1:pos:gate", "--relevance-noise", "0.1", "--intervention", *kinds])
+        rows = [json.loads(line) for line in (tmp_path / "runs" / "iv" / "okvqa.jsonl").read_text().splitlines()]
+        assert rows
+        for r in rows:
+            iv = r["interventions"]
+            assert iv["eligible"] and iv["target"] == "k1" and iv["gold_in_target"] == r["golds"][0]
+>           assert iv["entity"] in cities and iv["entity"] != r["golds"][0]
+E           AssertionError: assert (None in ['Paris', 'Rome', 'Berlin', 'Madrid', 'Vienna', 'Prague', ...])
+
+tests/test_run_smoke.py:379: AssertionError
+----------------------------- Captured stdout call -----------------------------
+[data] --n-dev 2 differs from the protocol size 256: the test set changes
+[data] okvqa: 16 total, calib 6 (heldout), dev 2, test 8
+[model] 2b loaded on cpu in 0.0s, 4 layers
+[env] commit 162115ecea8cdd9b2d1503f2d304e3066f4adb8c dirty=False torch 2.14.1 transformers 5.5.3 attn None dtype None gpus []
+[1/8] q006 0.0s P=382 U_pre=0.19 retrieve=True
+[2/8] q005 0.0s P=384 U_pre=0.00 retrieve=True
+[3/8] q010 0.0s P=389 U_pre=0.88 retrieve=True
+[4/8] q000 0.0s P=383 U_pre=0.23 retrieve=True
+[5/8] q001 0.0s P=382 U_pre=0.23 retrieve=True
+[6/8] q007 0.0s P=384 U_pre=0.00 retrieve=True
+[7/8] q014 0.0s P=387 U_pre=0.79 retrieve=True
+[8/8] q003 0.0s P=384 U_pre=0.05 retrieve=True
+[done] okvqa 8 in 0.0s -> /private/var/folders/vk/rrdjcnjd48d6d10xp5tf37k00000gn/T/pytest-of-futaoran/pytest-3/test_interventions_and_relevan0/runs/iv/okvqa.jsonl; empty_answer_rate 0.000000
+_ test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate[webqa_full-train] _
+
+dataset = 'webqa_full', source = 'train'
+
+    @pytest.mark.parametrize("dataset,source", [("webqa_full", "train"), ("okvqa_gs", "heldout")])
+    def test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate(dataset, source):
+        result = _cli("--stage", "s1", "--dataset", dataset, "--n", "50", "--dry-run")
+        assert result.returncode == 0, result.stderr
+>       assert result.stderr == ""
+E       AssertionError: assert '/Users/futao... noqa: E402\n' == ''
+E         
+E         + /Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/scripts/v2_runs.py:24: UserWarning: /Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006 exists but is not used: WebQA open-retrieval artifacts come from /Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/webqa_open. Set OMNIAWARE_WEBQA_OPEN_DIR=/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006 to use it.
+E         +   from omniaware import paths, runio  # noqa: E402
+
+tests/test_v2_runs.py:31: AssertionError
+_ test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate[okvqa_gs-heldout] _
+
+dataset = 'okvqa_gs', source = 'heldout'
+
+    @pytest.mark.parametrize("dataset,source", [("webqa_full", "train"), ("okvqa_gs", "heldout")])
+    def test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate(dataset, source):
+        result = _cli("--stage", "s1", "--dataset", dataset, "--n", "50", "--dry-run")
+        assert result.returncode == 0, result.stderr
+>       assert result.stderr == ""
+E       AssertionError: assert '/Users/futao... noqa: E402\n' == ''
+E         
+E         + /Users/futaoran/Desktop/WWW2027/experiments/omniaware_github_20261009/v2_20261013/scripts/v2_runs.py:24: UserWarning: /Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006 exists but is not used: WebQA open-retrieval artifacts come from /Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/webqa_open. Set OMNIAWARE_WEBQA_OPEN_DIR=/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/runs/phase1_dense_retrieval_codex_20261006 to use it.
+E         +   from omniaware import paths, runio  # noqa: E402
+
+tests/test_v2_runs.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_smoke.py::test_interventions_and_relevance_noise - Asse...
+FAILED tests/test_v2_runs.py::test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate[webqa_full-train]
+FAILED tests/test_v2_runs.py::test_s1_dry_run_names_dataset_dev_split_flags_and_the_empty_answer_gate[okvqa_gs-heldout]
+3 failed, 471 passed, 1 skipped, 21 subtests passed in 13.00s

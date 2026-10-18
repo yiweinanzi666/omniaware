@@ -1,0 +1,27 @@
+{
+  "id": "HLOjJWv_EeI",
+  "source_url": "https://www.youtube.com/watch?v=HLOjJWv_EeI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HLOjJWv_EeI.log",
+  "filename": "HLOjJWv_EeI.mp4",
+  "bytes": 2367417,
+  "sha256": "3785a4b4ee44d371c9fdbe5084cb6f070343cb173263c284ae085269d3a3eec2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "55.286712"
+    }
+  }
+}

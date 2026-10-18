@@ -1,0 +1,27 @@
+{
+  "id": "QQRg-fDztNk",
+  "source_url": "https://www.youtube.com/watch?v=QQRg-fDztNk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\QQRg-fDztNk.log",
+  "filename": "QQRg-fDztNk.mp4",
+  "bytes": 31837678,
+  "sha256": "a6c86cbc41c35973d42ffd6b4f7369ca702910ca41ce85c839e6155f488f1044",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 478
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "272.068209"
+    }
+  }
+}

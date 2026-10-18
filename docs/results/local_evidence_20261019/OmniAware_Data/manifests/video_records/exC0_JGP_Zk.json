@@ -1,0 +1,27 @@
+{
+  "id": "exC0_JGP_Zk",
+  "source_url": "https://www.youtube.com/watch?v=exC0_JGP_Zk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\exC0_JGP_Zk.log",
+  "filename": "exC0_JGP_Zk.mp4",
+  "bytes": 14108474,
+  "sha256": "85dfeb7199f3187404d63d9134c2306b6a2cb53f02748f35a4d2306604c84446",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "177.888073"
+    }
+  }
+}

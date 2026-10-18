@@ -1,0 +1,14 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=Qp6MK68rm7I
+[youtube] Qp6MK68rm7I: Downloading webpage
+[youtube] Qp6MK68rm7I: Downloading visionos player API JSON
+[youtube] Qp6MK68rm7I: Downloading m3u8 information
+WARNING: [youtube] Qp6MK68rm7I: Failed to download m3u8 information: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)
+[info] Qp6MK68rm7I: Downloading 1 format(s): 134+140-20
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.f140-20.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.f140-20.m4a (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\Qp6MK68rm7I.f134.mp4 (pass -k to keep)

@@ -1,0 +1,27 @@
+{
+  "id": "MGCW14iUnJw",
+  "source_url": "https://www.youtube.com/watch?v=MGCW14iUnJw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MGCW14iUnJw.log",
+  "filename": "MGCW14iUnJw.mp4",
+  "bytes": 8632065,
+  "sha256": "d5ed697a6480cef120bd6a763d897d708a163976cc85b483c93e8620e1d6e274",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "109.830385"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "zECQ1eda01o",
+  "source_url": "https://www.youtube.com/watch?v=zECQ1eda01o",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zECQ1eda01o.log",
+  "filename": "zECQ1eda01o.mp4",
+  "bytes": 108702481,
+  "sha256": "849548b6696152d265f6cc63847f3314c4efe60d84fc9956a916b8832ed7cb88",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1647.525442"
+    }
+  }
+}

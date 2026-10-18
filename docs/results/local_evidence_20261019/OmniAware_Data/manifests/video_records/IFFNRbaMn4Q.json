@@ -1,0 +1,8 @@
+{
+  "id": "IFFNRbaMn4Q",
+  "source_url": "https://www.youtube.com/watch?v=IFFNRbaMn4Q",
+  "status": "failed",
+  "error": "yt-dlp exit 1",
+  "log": "E:\\OmniAware_Data\\logs\\video\\IFFNRbaMn4Q.log",
+  "detail": "[youtube] Extracting URL: https://www.youtube.com/watch?v=IFFNRbaMn4Q\n[youtube] IFFNRbaMn4Q: Downloading webpage\n[youtube] IFFNRbaMn4Q: Downloading visionos player API JSON\nERROR: [youtube] IFFNRbaMn4Q: Video unavailable\n[youtube] Extracting URL: https://www.youtube.com/watch?v=IFFNRbaMn4Q\n[youtube] IFFNRbaMn4Q: Downloading webpage\n[youtube] IFFNRbaMn4Q: Downloading visionos player API JSON\nERROR: [youtube] IFFNRbaMn4Q: Video unavailable\n[youtube] Extracting URL: https://www.youtube.com/watch?v=IFFNRbaMn4Q\n[youtube] IFFNRbaMn4Q: Downloading webpage\nWARNING: [youtube] IFFNRbaMn4Q: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)\n[youtube] IFFNRbaMn4Q: Downloading initial data API JSON\n[youtube] IFFNRbaMn4Q: Downloading visionos player API JSON\n[youtube] IFFNRbaMn4Q: Downloading iframe API JS\n[youtube] IFFNRbaMn4Q: Downloading player 21090930-main\n[youtube] IFFNRbaMn4Q: Downloading web player API JSON\nERROR: [youtube] IFFNRbaMn4Q: Video unavailable. This video is no longer available because the YouTube account associated with this video has been terminated.\n"
+}

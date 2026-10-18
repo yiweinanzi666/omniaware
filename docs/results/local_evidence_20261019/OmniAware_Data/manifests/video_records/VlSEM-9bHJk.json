@@ -1,0 +1,27 @@
+{
+  "id": "VlSEM-9bHJk",
+  "source_url": "https://www.youtube.com/watch?v=VlSEM-9bHJk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VlSEM-9bHJk.log",
+  "filename": "VlSEM-9bHJk.mp4",
+  "bytes": 9525463,
+  "sha256": "5729b7ff63862fbb8c92830af4062ade72dc58973ce9d93bbf1f9a812b76cc50",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "164.490159"
+    }
+  }
+}

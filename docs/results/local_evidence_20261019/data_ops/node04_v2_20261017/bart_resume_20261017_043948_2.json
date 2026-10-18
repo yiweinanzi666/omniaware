@@ -1,0 +1,17 @@
+{
+  "command": [
+    "C:\\Users\\Administrator\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "-m",
+    "gdown",
+    "--no-cookies",
+    "--continue",
+    "https://drive.google.com/uc?id=1_7JfF7KOInb7ZrxKHIigTMR4ChVET01m",
+    "-O",
+    "D:\\WWW2027\\data_ops\\node04_v2_20261017\\bart_score.pth"
+  ],
+  "start": "2026-10-17T04:39:48.578029+08:00",
+  "log": "D:\\WWW2027\\data_ops\\node04_v2_20261017\\bart_resume_20261017_043948_2.log",
+  "exit_code": 1,
+  "end": "2026-10-17T04:41:30.032886+08:00",
+  "log_sha256": "8e71c26b72f89e1cda79c354f9c993ab83b4a70c7f055712bef15d54cf13f5b8"
+}

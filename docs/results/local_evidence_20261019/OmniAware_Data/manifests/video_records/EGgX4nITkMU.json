@@ -1,0 +1,27 @@
+{
+  "id": "EGgX4nITkMU",
+  "source_url": "https://www.youtube.com/watch?v=EGgX4nITkMU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\EGgX4nITkMU.log",
+  "filename": "EGgX4nITkMU.mp4",
+  "bytes": 29603436,
+  "sha256": "834de31c29900aa8cf0808535898b6353b6878d65cf4da4bf549cc49dad4cfff",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "627.983673"
+    }
+  }
+}

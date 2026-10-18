@@ -1,0 +1,27 @@
+{
+  "id": "R-gj3INEROk",
+  "source_url": "https://www.youtube.com/watch?v=R-gj3INEROk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\R-gj3INEROk.log",
+  "filename": "R-gj3INEROk.mp4",
+  "bytes": 71950329,
+  "sha256": "d49245a4cb4d8ee1897b38a58bc2ed931a2afbf62bb93b99062879356e739370",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "686.497959"
+    }
+  }
+}

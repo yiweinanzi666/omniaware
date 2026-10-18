@@ -1,0 +1,27 @@
+{
+  "id": "FJnD_dNdoB0",
+  "source_url": "https://www.youtube.com/watch?v=FJnD_dNdoB0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\FJnD_dNdoB0.log",
+  "filename": "FJnD_dNdoB0.mp4",
+  "bytes": 5744678,
+  "sha256": "3e8ed0d9c03076a201882da6c4d4509a734c35c6ea76b7fe0d8e772d27b3f2f9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "78.111927"
+    }
+  }
+}

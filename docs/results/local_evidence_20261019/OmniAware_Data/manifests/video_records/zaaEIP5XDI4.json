@@ -1,0 +1,27 @@
+{
+  "id": "zaaEIP5XDI4",
+  "source_url": "https://www.youtube.com/watch?v=zaaEIP5XDI4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zaaEIP5XDI4.log",
+  "filename": "zaaEIP5XDI4.mp4",
+  "bytes": 52976820,
+  "sha256": "8357d1dfff5fd9acd786d5a0efea3ca48ad0d6fcaa96b24be130b9d03cb5b975",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "538.192109"
+    }
+  }
+}

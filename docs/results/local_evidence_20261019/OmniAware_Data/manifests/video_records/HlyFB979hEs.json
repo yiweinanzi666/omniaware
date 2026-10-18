@@ -1,0 +1,27 @@
+{
+  "id": "HlyFB979hEs",
+  "source_url": "https://www.youtube.com/watch?v=HlyFB979hEs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HlyFB979hEs.log",
+  "filename": "HlyFB979hEs.mp4",
+  "bytes": 16687637,
+  "sha256": "95ebdaa8a1415e44eb07e1b517386e9aec231977be22bbea3e64e936481c1d16",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "270.860771"
+    }
+  }
+}

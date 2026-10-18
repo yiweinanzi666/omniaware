@@ -1,0 +1,27 @@
+{
+  "id": "I_SPSDqTDrk",
+  "source_url": "https://www.youtube.com/watch?v=I_SPSDqTDrk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\I_SPSDqTDrk.log",
+  "filename": "I_SPSDqTDrk.mp4",
+  "bytes": 18138589,
+  "sha256": "f0188c5b088c77c1d83551576d872f2245c71f621553ffe72b6c1b322e1fd9ca",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "404.932789"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=odBNH7c10_I
+[youtube] odBNH7c10_I: Downloading webpage
+[youtube] odBNH7c10_I: Downloading visionos player API JSON
+[youtube] odBNH7c10_I: Downloading m3u8 information
+[info] odBNH7c10_I: Downloading 1 format(s): 135+140-10
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.info.json
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+[youtube] Extracting URL: https://www.youtube.com/watch?v=odBNH7c10_I
+[youtube] odBNH7c10_I: Downloading webpage
+[youtube] odBNH7c10_I: Downloading visionos player API JSON
+[youtube] odBNH7c10_I: Downloading m3u8 information
+[info] odBNH7c10_I: Downloading 1 format(s): 135+140-10
+[info] Video metadata is already present
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.f135.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.f140-10.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.f135.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\odBNH7c10_I.f140-10.m4a (pass -k to keep)

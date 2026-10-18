@@ -1,0 +1,27 @@
+{
+  "id": "HIIxmtp6-bk",
+  "source_url": "https://www.youtube.com/watch?v=HIIxmtp6-bk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HIIxmtp6-bk.log",
+  "filename": "HIIxmtp6-bk.mp4",
+  "bytes": 13297661,
+  "sha256": "729b45bb732ceefb1c955edccc8b85ac26b12b6a3636291cb2db0516a2709afa",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "249.591293"
+    }
+  }
+}
