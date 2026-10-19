@@ -24,7 +24,7 @@
 
 - 2026-10-19 之后，本目录下的压缩包与安装包（`.tar`、`.zip`、`.whl`、`.bundle`、`.tar.gz`，共 69 个、约 325 MB）已从当前版本删除，并通过重写历史从全部提交中移除（重写前的完整仓库另存为本地 bundle 备份，不在 GitHub 上）；同样移除的还有本目录下其余大于 1 MiB 的数据运维文件（18 个、约 205 MB：`data_ops/node04_v2_20261017/cleanup_*` 清理清单与哈希、`OmniAware_Data/cache` 与 `assets` 下的语料和索引、HybridQA 原始 JSON、`WEBQA_RANGE_SERVER.stderr.log`）；`file_manifest.csv` 与 S1 逐题输出保留。`file_manifest.csv` 中被移除文件的条目保持原样，用于核对来源与哈希。
 - 单个原始文件达到 100 MiB 时排除；权重、张量、视频、音频、图片等体量大的资产类别、下载碎片、缓存和私有认证文件也排除。源目录中的 `.git` 历史和 Python 字节码不作为实验材料上传。
-- 小型外部源码、许可、配置、查询、VideoRAG 转录、Parquet 文件及 NLTK 支持资源随本次提交保存。它们有助于检查工程与输入来源，但不意味着完整像素或权重都在 GitHub。
+- 小型外部源码、许可、配置、查询、VideoRAG 转录、Parquet 文件及 NLTK 支持资源随本次提交保存。它们有助于检查工程与输入来源，但不意味着完整像素或权重都在 GitHub。其中仓库根目录 `external/` 的副本（上游源码、UniversalRAG 的 VideoRAG 元数据与字幕、HybridQA/UniversalRAG parquet）已于 2026-10-19 从 Git 历史中移除，恢复为 `.gitignore` 的原设计：上游源码用 `python scripts/fetch_external.py` 按 `third_party/external_repos.json` 的固定 commit 取回，数据按 README 第 4.3 节的 `get_*.sh` 与 `build_subset` 重新生成。
 - 体量较大的文本日志、清单以及 VideoRAG `.info.json` 下载元数据使用 gzip 无损压缩。源文件保持原样。若原目录已有同名 `.gz`，新压缩副本使用 `.upload.gz`，两者分别登记。
 - 识别到的认证字面量仅在发布副本中脱敏，源文件不修改；具体文件和数量见 `redacted_files`。
 - 仓库外的日志可能仍由其他会话写入，本次保存的是收集时读取到的字节。源路径和文件名用于说明来源，不保证合作者机器上存在相同绝对路径。
