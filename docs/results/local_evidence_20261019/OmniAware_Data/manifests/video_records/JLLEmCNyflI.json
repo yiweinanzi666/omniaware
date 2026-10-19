@@ -1,0 +1,27 @@
+{
+  "id": "JLLEmCNyflI",
+  "source_url": "https://www.youtube.com/watch?v=JLLEmCNyflI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\JLLEmCNyflI.log",
+  "filename": "JLLEmCNyflI.mp4",
+  "bytes": 16831410,
+  "sha256": "6dd61f51800085e45c79e9a721daddaa8b6d1838ad061eaafb5f778b8ec08a53",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "262.315828"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "zsbMxLoPZIs",
+  "source_url": "https://www.youtube.com/watch?v=zsbMxLoPZIs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zsbMxLoPZIs.log",
+  "filename": "zsbMxLoPZIs.mp4",
+  "bytes": 20294482,
+  "sha256": "2add2e56e2dc8b0fc06a29239eac24e8a3ed08fd2c4fdd8dad9978458c313117",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "321.758912"
+    }
+  }
+}

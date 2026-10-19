@@ -1,0 +1,27 @@
+{
+  "id": "MaD0HUNdBJk",
+  "source_url": "https://www.youtube.com/watch?v=MaD0HUNdBJk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MaD0HUNdBJk.log",
+  "filename": "MaD0HUNdBJk.mp4",
+  "bytes": 30764253,
+  "sha256": "4b2da54daafad87f5b48962b640cd533f6aae33caa2c23220a1640162852b403",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "501.411701"
+    }
+  }
+}

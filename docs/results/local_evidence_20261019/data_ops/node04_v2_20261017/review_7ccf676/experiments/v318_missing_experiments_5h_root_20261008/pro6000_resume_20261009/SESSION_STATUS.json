@@ -1,0 +1,1538 @@
+{
+  "updated_utc": "2026-10-09T13:38:16.543422+00:00",
+  "user_decision": "Keep all experiments and seeds17/23/29, official metrics only, no Claude, no GPU worker interruption. Latest direct requests:100 physical output tokens/s and200 fully completed seed-question units/minute as acceleration targets, not achieved. Preserve frozen scientific inputs/methods/seeds/output caps/scoring.",
+  "monitor": "http://127.0.0.1:8769/",
+  "ssh_socket": "/tmp/www2027-experiments-37028",
+  "remote_session": "/root/autodl-tmp/v318_resume_20261009",
+  "actual_sample": {
+    "sampled_at": 1791531242.2863424,
+    "run_path": "/root/autodl-tmp/v318_controls512_root_20261008/cuda_controls512",
+    "total": 512,
+    "completed": 512,
+    "arms": [
+      "static",
+      "decode_only_eab",
+      "eab_p",
+      "no_u_scaling",
+      "no_bias_gate"
+    ],
+    "logical_predictions": 2560,
+    "subsets": {
+      "img": 256,
+      "text": 256
+    },
+    "subset_totals": {
+      "img": 256,
+      "text": 256
+    },
+    "calibration": 64,
+    "calibration_total": 64,
+    "gpu": {
+      "name": "2 GPUs",
+      "utilization": 100.0,
+      "used_mib": 162492.0,
+      "total_mib": 195774.0,
+      "temperature": 71.0,
+      "power": 964.5,
+      "power_limit": 1200.0
+    },
+    "gpus": [
+      {
+        "index": 0,
+        "uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "utilization": 100.0,
+        "used_mib": 80509.0,
+        "total_mib": 97887.0,
+        "temperature": 71.0,
+        "power": 518.23,
+        "power_limit": 600.0
+      },
+      {
+        "index": 1,
+        "uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "utilization": 100.0,
+        "used_mib": 81983.0,
+        "total_mib": 97887.0,
+        "temperature": 67.0,
+        "power": 446.27,
+        "power_limit": 600.0
+      }
+    ],
+    "boot_id": "646ab369-44aa-4cde-b48b-2ff7d518caca",
+    "cpu_pct": null,
+    "cpu_cores": 44.0,
+    "ram_used_bytes": 46419607552,
+    "ram_total_bytes": 236223201280,
+    "workers": [],
+    "incomplete_json_lines": 0,
+    "conflicting_qids": 0,
+    "complete_receipt": true,
+    "queue": {
+      "updated_utc": "2026-10-08T19:27:43.018354+00:00",
+      "phase": "COMPLETE",
+      "running": {},
+      "completed_workers": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pending_workers": [],
+      "loading_worker": null,
+      "free_mib": 78947.0,
+      "gpu_utilization": 65.0,
+      "minimum_free_mib_for_next_worker": 22528,
+      "attempts": {
+        "0": 1,
+        "1": 2,
+        "2": 1,
+        "3": 1,
+        "4": 1
+      }
+    },
+    "other_model_workers": [],
+    "order_experiment": {
+      "completed": 14592,
+      "total": 14592,
+      "questions": 128,
+      "calibration": 500,
+      "calibration_total": 500,
+      "queue": {
+        "updated_utc": "2026-10-08T20:13:23.594434+00:00",
+        "phase": "COMPLETE",
+        "running": {},
+        "completed_workers": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "pending_workers": [],
+        "loading_worker": null,
+        "free_mib": 97826.0,
+        "gpu_utilization": 0.0,
+        "minimum_free_mib_for_next_worker": 22528,
+        "attempts": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 1
+        }
+      },
+      "complete": true,
+      "running": []
+    },
+    "paper_experiment": {
+      "completed": 768,
+      "total": 768,
+      "observation_completed": 756,
+      "observation_total": 756,
+      "conflicts": 0,
+      "complete": true,
+      "sequence": {
+        "stage": "COMPLETE",
+        "updated_utc": "2026-10-08T20:10:37.680224+00:00",
+        "controller_pid": 10778,
+        "scope": "Fresh756 observations and sorted256x3 generation; official scoring follows locally"
+      }
+    },
+    "full4966_observer": {
+      "completed": 5466,
+      "total": 5466,
+      "calibration_completed": 500,
+      "calibration_total": 500,
+      "cohort_completed": 4966,
+      "cohort_total": 4966,
+      "pid": 21410,
+      "process_alive": false,
+      "complete": true,
+      "error": null
+    },
+    "mmqa_observer": {
+      "completed": 2941,
+      "total": 2941,
+      "calibration_completed": 500,
+      "calibration_total": 500,
+      "cohort_completed": 2441,
+      "cohort_total": 2441,
+      "pid": 1705,
+      "process_alive": false,
+      "complete": true,
+      "error": null,
+      "prior_completed": 232,
+      "prior_failed": 1,
+      "recovery_full_rerun": true
+    },
+    "mmqa_decoder_check": {
+      "completed": 2941,
+      "total": 2941,
+      "pids": [],
+      "complete": true,
+      "error": null
+    },
+    "mmqa_continuation": {
+      "cpu_ready": 6,
+      "total_jobs": 6,
+      "gpu_running": 6,
+      "gpu_complete": 0,
+      "logical_trials_planned": 43938,
+      "jobs": [
+        {
+          "status": "RUNNING",
+          "pid": 3105,
+          "seed": 17,
+          "kind": "blind",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_blind",
+          "config_sha256": "c5e029a3f7e15ceb46269a80df7d6009cb7e9bfff060f9a397f206de600d1699",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530066.3605955,
+          "process_alive": true,
+          "completed_physical": 2138,
+          "total_physical": 5229,
+          "failed_attempts": 2,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        },
+        {
+          "status": "RUNNING",
+          "pid": 3151,
+          "seed": 23,
+          "kind": "blind",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_blind",
+          "config_sha256": "0f85f56cfb5bc615d3dffa37ac6ba6e0de845aa0a63d1b265a7e47ec6bb6b2cb",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530091.4818237,
+          "process_alive": true,
+          "completed_physical": 1597,
+          "total_physical": 5229,
+          "failed_attempts": 2,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        },
+        {
+          "status": "RUNNING",
+          "pid": 3180,
+          "seed": 29,
+          "kind": "blind",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_blind",
+          "config_sha256": "921f5e94eb7b30d4dbcca70d8ee0a5527476565cd764c04073cea098f30ddcf6",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530101.614903,
+          "process_alive": true,
+          "completed_physical": 1690,
+          "total_physical": 5229,
+          "failed_attempts": 2,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        },
+        {
+          "status": "RUNNING",
+          "pid": 3221,
+          "seed": 17,
+          "kind": "oracle",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_oracle",
+          "config_sha256": "48d84ae9c5cd4380ad433feeea6be7019f402561464b6d8c8d5ba72d5fba2540",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530126.7307038,
+          "process_alive": true,
+          "completed_physical": 846,
+          "total_physical": 2441,
+          "failed_attempts": 1,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        },
+        {
+          "status": "RUNNING",
+          "pid": 3250,
+          "seed": 23,
+          "kind": "oracle",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_oracle",
+          "config_sha256": "4c2c365e55e4169ea4f888fe221ec1e4997b0b5a837a63b1142ca5710c150563",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530136.8224947,
+          "process_alive": true,
+          "completed_physical": 1029,
+          "total_physical": 2441,
+          "failed_attempts": 1,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        },
+        {
+          "status": "RUNNING",
+          "pid": 3302,
+          "seed": 29,
+          "kind": "oracle",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_oracle",
+          "config_sha256": "3c5889e362cd7d704959cc81f3e9529797bdbe9aae36723fd4871c277d3f4fd2",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530161.946887,
+          "process_alive": true,
+          "completed_physical": 828,
+          "total_physical": 2441,
+          "failed_attempts": 1,
+          "progress_unit": "physical_generation",
+          "progress_source": "committed native CUDA result.json; final scoring validation is separate"
+        }
+      ],
+      "error": null,
+      "gpu_queue_alive": true,
+      "gpu": {
+        "status": "RUNNING",
+        "pid": 3071,
+        "phase": "ALL_MM_QA_JOBS_ADMITTED"
+      }
+    },
+    "mmqa_encoding": {
+      "bge": {
+        "completed": 210139,
+        "total": 210139,
+        "pid": 21890,
+        "process_alive": false,
+        "complete": true,
+        "error": null,
+        "controller_pid": 21842,
+        "status": "COMPLETE",
+        "updated_utc": "2026-10-08T21:55:14.914430+00:00"
+      },
+      "clip": {
+        "completed": 44551,
+        "total": 44551,
+        "pid": 24464,
+        "process_alive": false,
+        "complete": true,
+        "error": null,
+        "controller_pid": 24463,
+        "status": "COMPLETE",
+        "updated_utc": "2026-10-08T21:29:02.222843+00:00"
+      }
+    },
+    "full4966_generation": {
+      "runs": [
+        {
+          "seed": 17,
+          "completed_questions": 4966,
+          "total_questions": 4966,
+          "completed_answers": 24830,
+          "total_answers": 24830,
+          "arms": 5,
+          "pids": [
+            12833
+          ],
+          "process_alive": false,
+          "complete": true,
+          "error": null,
+          "status": "COMPLETE",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        },
+        {
+          "seed": 23,
+          "completed_questions": 4966,
+          "total_questions": 4966,
+          "completed_answers": 24830,
+          "total_answers": 24830,
+          "arms": 5,
+          "pids": [
+            12928
+          ],
+          "process_alive": false,
+          "complete": true,
+          "error": null,
+          "status": "COMPLETE",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        },
+        {
+          "seed": 29,
+          "completed_questions": 4966,
+          "total_questions": 4966,
+          "completed_answers": 24830,
+          "total_answers": 24830,
+          "arms": 5,
+          "pids": [
+            13023
+          ],
+          "process_alive": false,
+          "complete": true,
+          "error": null,
+          "status": "COMPLETE",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        }
+      ],
+      "completed_questions": 14898,
+      "total_questions": 14898,
+      "completed_answers": 74490,
+      "total_answers": 74490,
+      "pids": [],
+      "process_alive": false,
+      "complete": true,
+      "error": null
+    },
+    "ce_generation": {
+      "runs": [
+        {
+          "seed": 17,
+          "completed_questions": 4966,
+          "total_questions": 4966,
+          "completed_answers": 9932,
+          "total_answers": 9932,
+          "arms": 2,
+          "pids": [
+            13109
+          ],
+          "process_alive": false,
+          "complete": true,
+          "error": null,
+          "status": "COMPLETE",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        },
+        {
+          "seed": 23,
+          "completed_questions": 4966,
+          "total_questions": 4966,
+          "completed_answers": 9932,
+          "total_answers": 9932,
+          "arms": 2,
+          "pids": [
+            13193
+          ],
+          "process_alive": false,
+          "complete": true,
+          "error": null,
+          "status": "COMPLETE",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        },
+        {
+          "seed": 29,
+          "completed_questions": 1854,
+          "total_questions": 4966,
+          "completed_answers": 3709,
+          "total_answers": 9932,
+          "arms": 2,
+          "pids": [
+            3096
+          ],
+          "process_alive": true,
+          "complete": false,
+          "error": null,
+          "status": "RUNNING",
+          "incomplete_lines": 0,
+          "conflicting_answers": 0,
+          "invalid_lines": 0
+        }
+      ],
+      "completed_questions": 11786,
+      "total_questions": 14898,
+      "completed_answers": 23573,
+      "total_answers": 29796,
+      "pids": [
+        3096
+      ],
+      "process_alive": true,
+      "complete": false,
+      "error": null,
+      "queue": {
+        "status": "RUNNING",
+        "pid": 3071,
+        "boot_id": "646ab369-44aa-4cde-b48b-2ff7d518caca",
+        "plan_sha256": "8606cfb77d13ba7f22a908274fef7e4d1ddc6db302d181a07e7d074ae63c6843",
+        "started_at": 1791530051.2300863,
+        "jobs": {
+          "ce_seed29": {
+            "status": "RUNNING",
+            "pid": 3096,
+            "seed": 29,
+            "kind": "ce",
+            "gpu_index": 0,
+            "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+            "output": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed29",
+            "config_sha256": "c2c04c2531f7ff017ee383d98e4de50a8666eea618c46348323fbc2d923a29f0",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530061.3078697
+          },
+          "mmqa_seed17_blind": {
+            "status": "RUNNING",
+            "pid": 3105,
+            "seed": 17,
+            "kind": "blind",
+            "gpu_index": 1,
+            "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_blind",
+            "config_sha256": "c5e029a3f7e15ceb46269a80df7d6009cb7e9bfff060f9a397f206de600d1699",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530066.3605955
+          },
+          "mmqa_seed23_blind": {
+            "status": "RUNNING",
+            "pid": 3151,
+            "seed": 23,
+            "kind": "blind",
+            "gpu_index": 0,
+            "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_blind",
+            "config_sha256": "0f85f56cfb5bc615d3dffa37ac6ba6e0de845aa0a63d1b265a7e47ec6bb6b2cb",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530091.4818237
+          },
+          "mmqa_seed29_blind": {
+            "status": "RUNNING",
+            "pid": 3180,
+            "seed": 29,
+            "kind": "blind",
+            "gpu_index": 1,
+            "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_blind",
+            "config_sha256": "921f5e94eb7b30d4dbcca70d8ee0a5527476565cd764c04073cea098f30ddcf6",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530101.614903
+          },
+          "mmqa_seed17_oracle": {
+            "status": "RUNNING",
+            "pid": 3221,
+            "seed": 17,
+            "kind": "oracle",
+            "gpu_index": 0,
+            "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_oracle",
+            "config_sha256": "48d84ae9c5cd4380ad433feeea6be7019f402561464b6d8c8d5ba72d5fba2540",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530126.7307038
+          },
+          "mmqa_seed23_oracle": {
+            "status": "RUNNING",
+            "pid": 3250,
+            "seed": 23,
+            "kind": "oracle",
+            "gpu_index": 1,
+            "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_oracle",
+            "config_sha256": "4c2c365e55e4169ea4f888fe221ec1e4997b0b5a837a63b1142ca5710c150563",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530136.8224947
+          },
+          "mmqa_seed29_oracle": {
+            "status": "RUNNING",
+            "pid": 3302,
+            "seed": 29,
+            "kind": "oracle",
+            "gpu_index": 0,
+            "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+            "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_oracle",
+            "config_sha256": "3c5889e362cd7d704959cc81f3e9529797bdbe9aae36723fd4871c277d3f4fd2",
+            "model_loaded": true,
+            "first_generation_complete": true,
+            "started_at": 1791530161.946887
+          }
+        },
+        "updated_at": 1791531252.6593952,
+        "process_alive": true,
+        "phase": "ALL_JOBS_LAUNCHED"
+      }
+    },
+    "launch": {
+      "pid": 1642,
+      "resumed_utc": "2026-10-08T19:05:51.840914+00:00",
+      "retained_calibration_rows": 64,
+      "retained_completed_questions": 1,
+      "command": [
+        "/root/autodl-tmp/www2027-py312-cu130/bin/python",
+        "-P",
+        "-B",
+        "-u",
+        "/root/autodl-tmp/v318_controls512_root_20261008/cuda_controls512/run_cuda_controls.py",
+        "--base",
+        "/root/autodl-tmp/www2027_webqa_official_20261008/pro6000_ours_fresh_cuda_20261008",
+        "--model-path",
+        "/root/autodl-tmp/WWW2027/experiments/eab_first_token/cache/qwen3-vl-8b-instruct",
+        "--image-root",
+        "/root/autodl-tmp/www2027_webqa_official_20261008/full_routed4966_images"
+      ],
+      "env_overrides": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "TOKENIZERS_PARALLELISM": "false",
+        "HF_HUB_OFFLINE": "1",
+        "TRANSFORMERS_OFFLINE": "1",
+        "PYTHONOPTIMIZE": "0",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "calibration_sha256": "8e74a0f202d9a37f2665e38fad74a4acef8a0de01478d72d9be56cedfaa00811",
+      "status": "RESUMED_BOUND_PREFIX_AFTER_USER_GPU_RESTART",
+      "previous_gpu_mps_server": "Previous CUDA MPS daemon ended with shutdown; normal CUDA used after restart; same frozen inference binding"
+    },
+    "log": "  File \"/root/autodl-tmp/www2027-py312-cu130/lib/python3.12/site-packages/transformers/cache_utils.py\", line 1397, in update\n    keys, values = self.layers[layer_idx].update(key_states, value_states, *args, **kwargs)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/autodl-tmp/www2027-py312-cu130/lib/python3.12/site-packages/transformers/cache_utils.py\", line 147, in update\n    self.values = torch.cat([self.values, value_states], dim=-2)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nKeyboardInterrupt",
+    "physical_output_throughput": {
+      "status": "READY",
+      "window_seconds": 120,
+      "window_start": 1791531137.5170245,
+      "window_end": 1791531257.5170245,
+      "coverage_seconds": 120,
+      "output_tokens_per_second": 14.641666666666667,
+      "completed_calls_per_minute": 42.0,
+      "completed_output_tokens": 1757,
+      "completed_physical_calls": 84,
+      "target_tokens_per_second": [
+        120,
+        200
+      ],
+      "runs": [
+        {
+          "label": "seed17",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed17/physical_calls.jsonl",
+          "config_sha256": "72c42c85e5921195e05a555711c3f9248b91d0d8f36399bdf55908bdab2ac71c",
+          "coverage_seconds": 120,
+          "completed_calls": 0,
+          "output_tokens": 0,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 59069178,
+          "resets": 0
+        },
+        {
+          "label": "seed23",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed23/physical_calls.jsonl",
+          "config_sha256": "bbc2c4c94b6d368ea210cae8a8dbc74a5b7c7601b605c1c759ae1a4026009b7a",
+          "coverage_seconds": 120,
+          "completed_calls": 0,
+          "output_tokens": 0,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 59069098,
+          "resets": 0
+        },
+        {
+          "label": "seed29",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed29/physical_calls.jsonl",
+          "config_sha256": "eb2ae44608ea455c721fe578c802c88c212b8ed4058b64723690e741927a9736",
+          "coverage_seconds": 120,
+          "completed_calls": 0,
+          "output_tokens": 0,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 59068203,
+          "resets": 0
+        },
+        {
+          "label": "ce_seed17",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed17/physical_calls.jsonl",
+          "config_sha256": "4920b0042eea4808772fdb4f1ff3a5dc0d1cbabf25bd4f17c3411d29ffcaeb60",
+          "coverage_seconds": 120,
+          "completed_calls": 0,
+          "output_tokens": 0,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 34100719,
+          "resets": 0
+        },
+        {
+          "label": "ce_seed23",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed23/physical_calls.jsonl",
+          "config_sha256": "288c1332992b92a722858f72577dfe93a625c52bf42ed52221b0c5235621e892",
+          "coverage_seconds": 120,
+          "completed_calls": 0,
+          "output_tokens": 0,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 34100898,
+          "resets": 0
+        },
+        {
+          "label": "ce_seed29",
+          "path": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed29/physical_calls.jsonl",
+          "config_sha256": "c2c04c2531f7ff017ee383d98e4de50a8666eea618c46348323fbc2d923a29f0",
+          "coverage_seconds": 120,
+          "completed_calls": 84,
+          "output_tokens": 1757,
+          "error": null,
+          "incomplete_line": false,
+          "bytes_read_this_poll": 13107274,
+          "resets": 0
+        }
+      ],
+      "error": null,
+      "scope": "WebQA/CE only; completed physical answer_token_ids; excludes logical reuse, prefill, MMQA and other GPU work"
+    },
+    "official_scoring": {
+      "status": "RUNNING",
+      "updated_utc": "2026-10-09T07:33:38.201344+00:00",
+      "pid": 4195,
+      "jobs": {
+        "webqa_seed17": {
+          "status": "SCORING",
+          "pid": 4551,
+          "started_utc": "2026-10-09T07:32:53.200514+00:00"
+        },
+        "ce_seed17": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed17/completion.json": "fbd3e99fa9057def68f5995d549f7d7e7b47a4d438bc326817b4815d041c4ccc"
+          }
+        },
+        "mmqa_seed17": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "webqa_seed23": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed23/completion.json": "5f21affe54eef9fa6f9e12f970e75689fc3631fb99707944049fa11edc5e4db8"
+          }
+        },
+        "ce_seed23": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed23/completion.json": "2e8bd152ebddb23c3da57607bae22fa8fe6ed2ccbcac60f7f24b30c55d0e88b3"
+          }
+        },
+        "mmqa_seed23": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "webqa_seed29": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed29/completion.json": "ac2131ba984474da26d26686e44f8dc98fb215ee0a22a2b7d2e2e315379094e9"
+          }
+        },
+        "ce_seed29": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "mmqa_seed29": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        }
+      },
+      "plan_sha256": "80f4fcf79875109169ab48f758700cf96fa2f6cf4d1a622320135bde193c519b"
+    },
+    "dual_resume": {
+      "status": "RUNNING",
+      "pid": 3071,
+      "boot_id": "646ab369-44aa-4cde-b48b-2ff7d518caca",
+      "plan_sha256": "8606cfb77d13ba7f22a908274fef7e4d1ddc6db302d181a07e7d074ae63c6843",
+      "started_at": 1791530051.2300863,
+      "jobs": {
+        "ce_seed29": {
+          "status": "RUNNING",
+          "pid": 3096,
+          "seed": 29,
+          "kind": "ce",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed29",
+          "config_sha256": "c2c04c2531f7ff017ee383d98e4de50a8666eea618c46348323fbc2d923a29f0",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530061.3078697
+        },
+        "mmqa_seed17_blind": {
+          "status": "RUNNING",
+          "pid": 3105,
+          "seed": 17,
+          "kind": "blind",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_blind",
+          "config_sha256": "c5e029a3f7e15ceb46269a80df7d6009cb7e9bfff060f9a397f206de600d1699",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530066.3605955
+        },
+        "mmqa_seed23_blind": {
+          "status": "RUNNING",
+          "pid": 3151,
+          "seed": 23,
+          "kind": "blind",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_blind",
+          "config_sha256": "0f85f56cfb5bc615d3dffa37ac6ba6e0de845aa0a63d1b265a7e47ec6bb6b2cb",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530091.4818237
+        },
+        "mmqa_seed29_blind": {
+          "status": "RUNNING",
+          "pid": 3180,
+          "seed": 29,
+          "kind": "blind",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_blind",
+          "config_sha256": "921f5e94eb7b30d4dbcca70d8ee0a5527476565cd764c04073cea098f30ddcf6",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530101.614903
+        },
+        "mmqa_seed17_oracle": {
+          "status": "RUNNING",
+          "pid": 3221,
+          "seed": 17,
+          "kind": "oracle",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed17_oracle",
+          "config_sha256": "48d84ae9c5cd4380ad433feeea6be7019f402561464b6d8c8d5ba72d5fba2540",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530126.7307038
+        },
+        "mmqa_seed23_oracle": {
+          "status": "RUNNING",
+          "pid": 3250,
+          "seed": 23,
+          "kind": "oracle",
+          "gpu_index": 1,
+          "gpu_uuid": "GPU-adcd0574-60a7-5189-bdbf-fd8df0be0c55",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed23_oracle",
+          "config_sha256": "4c2c365e55e4169ea4f888fe221ec1e4997b0b5a837a63b1142ca5710c150563",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530136.8224947
+        },
+        "mmqa_seed29_oracle": {
+          "status": "RUNNING",
+          "pid": 3302,
+          "seed": 29,
+          "kind": "oracle",
+          "gpu_index": 0,
+          "gpu_uuid": "GPU-66f6b9fd-5be6-7d46-28e5-c4d4a1bbf1b8",
+          "output": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/work_cuda/seed29_oracle",
+          "config_sha256": "3c5889e362cd7d704959cc81f3e9529797bdbe9aae36723fd4871c277d3f4fd2",
+          "model_loaded": true,
+          "first_generation_complete": true,
+          "started_at": 1791530161.946887
+        }
+      },
+      "updated_at": 1791531257.6627338
+    },
+    "additional_gpu_jobs": [
+      {
+        "kind": "dragin",
+        "seed": 17,
+        "pid": 4327,
+        "gpu_index": 1,
+        "model_loaded": true
+      }
+    ],
+    "sample_duration_seconds": 17.218554735183716,
+    "continuation": {
+      "checked_at": 1791531259.4934678,
+      "groups": [
+        {
+          "id": "dragin",
+          "title": "DRAGIN · 全量对照",
+          "runs": [
+            {
+              "seed": 17,
+              "completed": 4,
+              "total": 4966,
+              "status": "RUNNING",
+              "pid": 10912,
+              "process_alive": true
+            },
+            {
+              "seed": 23,
+              "completed": 0,
+              "total": 4966,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            },
+            {
+              "seed": 29,
+              "completed": 0,
+              "total": 4966,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            }
+          ],
+          "status": "RUNNING",
+          "waiting": "等待 MMQA 队列与显存",
+          "controller_alive": true,
+          "updated_utc": null,
+          "completed": 4,
+          "total": 14898,
+          "error": null
+        },
+        {
+          "id": "seakr_smoke",
+          "title": "SeaKR · 8 题 GPU 验证",
+          "runs": [
+            {
+              "seed": 17,
+              "completed": 0,
+              "total": 8,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            }
+          ],
+          "status": "PAUSED_HARDWARE",
+          "waiting": "等待 DRAGIN 完成",
+          "controller_alive": false,
+          "updated_utc": "2026-10-09T06:37:46.097784+00:00",
+          "completed": 0,
+          "total": 8,
+          "error": null
+        },
+        {
+          "id": "seakr",
+          "title": "SeaKR · 全量对照",
+          "runs": [
+            {
+              "seed": 17,
+              "completed": 0,
+              "total": 4966,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            },
+            {
+              "seed": 23,
+              "completed": 0,
+              "total": 4966,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            },
+            {
+              "seed": 29,
+              "completed": 0,
+              "total": 4966,
+              "status": "WAITING",
+              "pid": null,
+              "process_alive": false
+            }
+          ],
+          "status": "PAUSED_HARDWARE",
+          "waiting": "等待 8 题 GPU 验证通过",
+          "controller_alive": false,
+          "updated_utc": "2026-10-09T06:37:46.215489+00:00",
+          "completed": 0,
+          "total": 14898,
+          "error": null
+        }
+      ]
+    },
+    "five_hour_target": {
+      "started_utc": "2026-10-09T06:15:06.421937+00:00",
+      "deadline_utc": "2026-10-09T11:15:06.421937+00:00",
+      "hours": 5,
+      "source": "User changed the active goal to complete all V3.19 experiments on Pro6000 within5h",
+      "completion_claim": false
+    }
+  },
+  "official_cpu_scoring": {
+    "status": "UNVERIFIED_REMOTE_UNAVAILABLE",
+    "pid": 4195,
+    "plan_sha256": "80f4fcf79875109169ab48f758700cf96fa2f6cf4d1a622320135bde193c519b",
+    "probe_pass": true,
+    "probe_absolute_difference": 1.0728836059570312e-05,
+    "all_formal_results_complete": false,
+    "receipt": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/cpu_scoring_resume_37028/REMOTE_STATUS.json",
+    "latest_sample": {
+      "status": "RUNNING",
+      "updated_utc": "2026-10-09T07:33:38.201344+00:00",
+      "pid": 4195,
+      "jobs": {
+        "webqa_seed17": {
+          "status": "SCORING",
+          "pid": 4551,
+          "started_utc": "2026-10-09T07:32:53.200514+00:00"
+        },
+        "ce_seed17": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed17/completion.json": "fbd3e99fa9057def68f5995d549f7d7e7b47a4d438bc326817b4815d041c4ccc"
+          }
+        },
+        "mmqa_seed17": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "webqa_seed23": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed23/completion.json": "5f21affe54eef9fa6f9e12f970e75689fc3631fb99707944049fa11edc5e4db8"
+          }
+        },
+        "ce_seed23": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/ce_seed23/completion.json": "2e8bd152ebddb23c3da57607bae22fa8fe6ed2ccbcac60f7f24b30c55d0e88b3"
+          }
+        },
+        "mmqa_seed23": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "webqa_seed29": {
+          "status": "WAITING_STABLE_COMPLETION",
+          "completion_sha256": {
+            "/root/autodl-tmp/v318_webqa_full4966_root_20261008/work_cuda/seed29/completion.json": "ac2131ba984474da26d26686e44f8dc98fb215ee0a22a2b7d2e2e315379094e9"
+          }
+        },
+        "ce_seed29": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        },
+        "mmqa_seed29": {
+          "status": "WAITING_COMPLETE_GENERATION"
+        }
+      },
+      "plan_sha256": "80f4fcf79875109169ab48f758700cf96fa2f6cf4d1a622320135bde193c519b"
+    }
+  },
+  "ce_manual_admission": {
+    "seed": 23,
+    "pid": 6849,
+    "started_utc": "2026-10-09T02:27:36.649400+00:00",
+    "science_unchanged": true,
+    "source": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/admit_ce23_once.py"
+  },
+  "performance": {
+    "four_worker_output_tokens_per_second": 56.65,
+    "five_worker_output_tokens_per_second": 56.71666666666667,
+    "scope": "Two different120-second sequential workload windows; throughput approximately unchanged. Do not claim controlled speedup.",
+    "active_investigation": "MMQA MPS service overcount fixed in explicit admissionv3; four current GPU models remain running. Latest exact120s(all3MMQA+CE29):45.325physical outputt/s,136physicalcalls/min,39.5fully completed seedquestionunits/min. Different workload from earlier WebQA/CE84–85t/s; no controlled speedup claim. Batch2diagnostic has no GPU results and cannot enter with~16GiB free.",
+    "normal_cuda_last300s": {
+      "output_tokens_per_second": 59.696666666666665,
+      "calls_per_minute": 165.8,
+      "generation_wall_fraction_approx": 0.98
+    },
+    "mps_nvml_probe": "Two small tensor clients both visible individually plus MPS server; original PID gates overcount conservatively rather than undercount. Temporary isolated daemon quit; no model affected.",
+    "mps_equivalence": "16fixed inputs x2 repeats x2modes: all64 raw output tokens and CPU tensor identities match historical; independent ledger/source/prefix audit PASS. Fullfive120s measured83.025 outputtokens/sec; later windows~84–85.",
+    "mps_five_clients_120s": {
+      "tokens_per_second": 83.025,
+      "physical_calls_per_minute": 256,
+      "before_tokens_per_second": 59.6966666667,
+      "before_physical_calls_per_minute": 165.8,
+      "scope": "Observed changing sequential workload windows, not matched quality benchmarks."
+    },
+    "numa_online_trial": {
+      "before_tokens_per_second": 84.15,
+      "numa0_tokens_per_second": 84.45833333333333,
+      "conclusion": "No clear improvement; original affinity restored live. No signals/model restart; five PIDs unchanged."
+    },
+    "live_tokens_card": {
+      "status": "DEPLOYED",
+      "window_seconds": 120,
+      "scope": "WebQA/CE completedphysicaloutputonly",
+      "exact_window_independent_recheck": "PASS",
+      "source_dir": "live_monitor",
+      "patch_sha256": "107ce760d6097c36ff699c15a33680f0a4b870f09d2b671630fb7b4fbf95f6a2",
+      "last_observed_tokens_per_second": 86.79166666666667
+    },
+    "mmqa_batch2_candidate": {
+      "directory": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/mmqa_batch2_candidate",
+      "status": "REMOTE_FULL_TRAIN32_CPU_CHECK_PASS; all3inputSHAverified; 0GPUcalls; waiting safe free capacity",
+      "train32_plan_sha256": "8600745adf417a5dcf72cb1212925dbd2d24a6b06bf3faca6fa2be24f663fcc0",
+      "gpu_calls": 0,
+      "formal_queues_modified": false,
+      "target_120_200_achieved": false,
+      "freeze_sha256": "7889c04fc4a591a13ef3ece04004d98dba5c40eabcd47865a3463585b4f1e34e",
+      "ready_sha256": "82bd6e6588a618d364c618aecddde0091e1864f949650231cf4863cda0076618",
+      "cpu_tests": 18,
+      "independent_driver_tests": 9,
+      "physical_gpu_probe_calls_planned": 52,
+      "remote_model_path_verified": "/root/autodl-tmp/v318_mmqa_full2441_root_20261008/observer_portable/project/experiments/eab_first_token/cache/qwen3-vl-8b-instruct",
+      "transfer_status_path": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/mmqa_batch2_transfer/STATUS.json",
+      "remote_prepared": "/root/autodl-tmp/v318_resume_20261009/mmqa_batch2_diagnostic_staging/prepared",
+      "remote_diagnostic_code_deployed": true,
+      "remote_project": "/root/autodl-tmp/v318_resume_20261009/mmqa_batch2_diagnostic_staging/project",
+      "code_archive_sha256": "6573d7398aca3214f8b08e50656ee08d09e04974ac668aaea2c81f36279d79d0",
+      "remote_code_receipt": "/root/autodl-tmp/v318_resume_20261009/mmqa_batch2_diagnostic_staging/CODE_CPU_READY.json",
+      "code_files_verified": 47,
+      "remote_full_input_check_pending": false,
+      "transfer_status": "TRANSFER_COMPLETE_SHA_VERIFIED",
+      "remote_full_train32_cpu_check": {
+        "status": "REMOTE_FULL_TRAIN32_CPU_CHECK_PASS",
+        "completed_utc": "2026-10-09T04:04:31.709284+00:00",
+        "returncode": 0,
+        "command": [
+          "/root/autodl-tmp/www2027-py312-cu130/bin/python",
+          "-B",
+          "-P",
+          "-m",
+          "experiments.v318_missing_experiments_5h_root_20261008.mmqa_batch2_candidate.diagnostic_driver",
+          "check",
+          "--prepared",
+          "/root/autodl-tmp/v318_resume_20261009/mmqa_batch2_diagnostic_staging/prepared"
+        ],
+        "elapsed_seconds": 8.827602561563253,
+        "result": {
+          "status": "CPU_CHECK_PASS",
+          "questions": 32,
+          "pairs": 16,
+          "qa_calls": 0
+        },
+        "gpu_visible_devices": "",
+        "qa_calls": 0,
+        "prepared_plan_sha256": "8600745adf417a5dcf72cb1212925dbd2d24a6b06bf3faca6fa2be24f663fcc0",
+        "diagnostic_freeze_sha256": "7889c04fc4a591a13ef3ece04004d98dba5c40eabcd47865a3463585b4f1e34e"
+      }
+    },
+    "latest_measured_120s": {
+      "sampled_at": 1791524799.8154945,
+      "output_tokens_per_second": 84.58333333333333,
+      "completed_output_tokens": 10150,
+      "completed_physical_calls": 421,
+      "target_achieved": false,
+      "scope": "WebQA/CE only; completed physical answer_token_ids; excludes logical reuse, prefill, MMQA and other GPU work"
+    },
+    "latest_full_workers_120s": {
+      "status": "PASS_READ_ONLY_120S_MEASUREMENT",
+      "start": 1791526747.949643,
+      "end": 1791526867.949643,
+      "window_seconds": 120,
+      "output_tokens": 5439,
+      "output_tokens_per_second": 45.325,
+      "physical_calls_per_minute": 136.0,
+      "fully_completed_seed_questions_per_minute": 39.5,
+      "runs": [
+        {
+          "label": "ce_seed29",
+          "output_tokens": 1880,
+          "physical_calls": 100,
+          "fully_completed_seed_questions": 51,
+          "completed_qids": [
+            "d5c2b45c0dba11ecb1e81171463288e9",
+            "d5c2b5ba0dba11ecb1e81171463288e9",
+            "d5c2b6320dba11ecb1e81171463288e9",
+            "d5c2bcd60dba11ecb1e81171463288e9",
+            "d5c2c30c0dba11ecb1e81171463288e9",
+            "d5c2c4f60dba11ecb1e81171463288e9",
+            "d5c2c6360dba11ecb1e81171463288e9",
+            "d5c2c6ae0dba11ecb1e81171463288e9",
+            "d5c2c8480dba11ecb1e81171463288e9",
+            "d5c2cdac0dba11ecb1e81171463288e9",
+            "d5c2ceb00dba11ecb1e81171463288e9",
+            "d5c2cf820dba11ecb1e81171463288e9",
+            "d5c2d00e0dba11ecb1e81171463288e9",
+            "d5c2d1760dba11ecb1e81171463288e9",
+            "d5c2d3740dba11ecb1e81171463288e9",
+            "d5c2d6ee0dba11ecb1e81171463288e9",
+            "d5c2d7fc0dba11ecb1e81171463288e9",
+            "d5c2d9be0dba11ecb1e81171463288e9",
+            "d5c2db440dba11ecb1e81171463288e9",
+            "d5c2dbc60dba11ecb1e81171463288e9",
+            "d5c2de320dba11ecb1e81171463288e9",
+            "d5c2e2f60dba11ecb1e81171463288e9",
+            "d5c2e5440dba11ecb1e81171463288e9",
+            "d5c2e5ee0dba11ecb1e81171463288e9",
+            "d5c2e83c0dba11ecb1e81171463288e9",
+            "d5c2e8e60dba11ecb1e81171463288e9",
+            "d5c2ea8a0dba11ecb1e81171463288e9",
+            "d5c2ebde0dba11ecb1e81171463288e9",
+            "d5c2ed0a0dba11ecb1e81171463288e9",
+            "d5c2f0f20dba11ecb1e81171463288e9",
+            "d5c2f2820dba11ecb1e81171463288e9",
+            "d5c2f2aa0dba11ecb1e81171463288e9",
+            "d5c2f2c80dba11ecb1e81171463288e9",
+            "d5c2f4e40dba11ecb1e81171463288e9",
+            "d5c2f55c0dba11ecb1e81171463288e9",
+            "d5c2f6920dba11ecb1e81171463288e9",
+            "d5c2f7320dba11ecb1e81171463288e9",
+            "d5c2f8180dba11ecb1e81171463288e9",
+            "d5c2f8e00dba11ecb1e81171463288e9",
+            "d5c2f9f80dba11ecb1e81171463288e9",
+            "d5c2fad40dba11ecb1e81171463288e9",
+            "d5c2fafc0dba11ecb1e81171463288e9",
+            "d5c2fc0a0dba11ecb1e81171463288e9",
+            "d5c2fc320dba11ecb1e81171463288e9",
+            "d5c300f60dba11ecb1e81171463288e9",
+            "d5c302f40dba11ecb1e81171463288e9",
+            "d5c304480dba11ecb1e81171463288e9",
+            "d5c304c00dba11ecb1e81171463288e9",
+            "d5c3061e0dba11ecb1e81171463288e9",
+            "d5c306460dba11ecb1e81171463288e9",
+            "d5c3068c0dba11ecb1e81171463288e9"
+          ],
+          "config_sha256": "c2c04c2531f7ff017ee383d98e4de50a8666eea618c46348323fbc2d923a29f0"
+        },
+        {
+          "label": "mmqa_seed17",
+          "output_tokens": 1182,
+          "physical_calls": 59,
+          "fully_completed_seed_questions": 8,
+          "completed_qids": [
+            "5fa187a053d883f7d8f70660ecb8dcdb",
+            "07d557d6858d898116839bcc713c9ca4",
+            "fd34f323c804b4ad17f5b09ecd6e619c",
+            "a1775ed08aaa2eaa8bb14ef7100182cf",
+            "16ed05d817c87f868745ebb6fdc84010",
+            "42c2c94cf67396a600aec09f0b12c3d2",
+            "168d9f74f7f355cc97139f9a2814b69d",
+            "aa50d519067acf344d4b01187575b13e"
+          ],
+          "config_sha256": "c5e029a3f7e15ceb46269a80df7d6009cb7e9bfff060f9a397f206de600d1699"
+        },
+        {
+          "label": "mmqa_seed23",
+          "output_tokens": 1167,
+          "physical_calls": 57,
+          "fully_completed_seed_questions": 11,
+          "completed_qids": [
+            "eaa6860ac718c20f4abd5907d1c60354",
+            "b13aa027cf1c6c34d5e58a06d80d4700",
+            "b8e0cfceab6d355abf6d54b36539b894",
+            "398a5b4c13699a533399e1286834af7d",
+            "024a2b24f4f7da220a879b0479ef1166",
+            "0b19821faab71aec4cc1c3705b027b9d",
+            "58f5f77c9571e1d74f560b2100d3e2dc",
+            "3b3793152347552aea6d81cf2d24a82b",
+            "4844cfb8e6e674c71eb48249a108a635",
+            "eb292e02d2bf514866014b4aab480af3",
+            "92634ad0d40c745cbf16ec20b55d3022"
+          ],
+          "config_sha256": "0f85f56cfb5bc615d3dffa37ac6ba6e0de845aa0a63d1b265a7e47ec6bb6b2cb"
+        },
+        {
+          "label": "mmqa_seed29",
+          "output_tokens": 1210,
+          "physical_calls": 56,
+          "fully_completed_seed_questions": 9,
+          "completed_qids": [
+            "e92c5d803610ccf775a0147b50f2446b",
+            "7c2f7dcb9d25d9273a77153fc70dced2",
+            "4e61357a8e2b1d0b42d271fb65acf19e",
+            "5aad242cee2a8c42383b4ad6c65d27cb",
+            "d6d364fd925181714fe29b0dba5bb0be",
+            "06dd51cac80f97a2547dcbd060fc9b91",
+            "dd920fa1a56fece13a4585ff36c7e016",
+            "4a51e6fcbcbd40b70fbbb41aeb48900f",
+            "c38d39b39912cc58a0822432b6660fbf"
+          ],
+          "config_sha256": "921f5e94eb7b30d4dbcca70d8ee0a5527476565cd764c04073cea098f30ddcf6"
+        }
+      ],
+      "question_definition": "One seed-question with every frozen experimental arm completed; separate seeds remain separate units.",
+      "excludes": "Input tokens, logical answer reuse, scoring and completed earlier WebQA/CE runs",
+      "completed_utc": "2026-10-09T06:21:09.096374+00:00"
+    },
+    "latest_targets": {
+      "output_tokens_per_second": 100,
+      "fully_completed_seed_questions_per_minute": 200,
+      "achieved": false
+    }
+  },
+  "next_work": [
+    "Wait for the authorized server to be powered on before any remote continuation.",
+    "Recheck live processes, unique IDs and hashes before resuming; do not report unverified scoring.",
+    "Keep partial raw archives and failed transfer receipts; do not overwrite frozen snapshots."
+  ],
+  "scope_gaps": "Human150 annotations and undefined paper subsets/protocols are still evidence gaps; do not fill them using generated numbers or call this entire paper complete.",
+  "handoff_notes": "WebQA GPU12833/12928/13023 ended naturally with completion. CE17/23 ended naturally; CE29 is39880. MMQAblind17/23/29 are40151/41206/41566, all CUDA loaded and first actual results verified. Admission CPU controller42139(v3), originalscientific plan still503d4ed...; v3 fixes MPS server overcount and childexec race, adopts existing outputs/PIDs and never restarts GPU workers. DRAGIN localwaiter93668 with new owner-bound operationalplan53ebd291...; SeaKR55469 unchanged. Do not restart original3512 or41561 or useoldDRAGIN plan. Official6014 scoring29; missingdependency exactoriginalbytes repaired,17check-onlyPASS and initial failed jobs retained/released for retry. No new complete official scores yet.",
+  "automation_id": "v3-18",
+  "dragin_continuation": {
+    "pid": 93668,
+    "state": "WAITING_CURRENT_MMQA_OWNER_IDENTITY_VERIFIED",
+    "plan_sha256": "53ebd291d561765e7b06e113f97dda68d7271fd4a16f21d2086ad7ed5e607b59",
+    "plan_path": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/dragin_formal_continuation_v3_PLAN.json",
+    "recovery": "Old waiter no-QA-child failure archived; rebind exactv3controller source/owner while keeping formal scientific plan unchanged."
+  },
+  "keep_awake": {
+    "pid": 55468,
+    "waits_for_pid": 55467,
+    "started_utc": "2026-10-09T03:41:29.441552+00:00",
+    "additional_pid": 55470,
+    "scope": "Prevent idle system sleep while local waiting controllers run"
+  },
+  "monitor_pid": 96574,
+  "transport_recovery": "02:48 UTC authenticated same socket; all5 GPU continued. Failed local DRAGIN no-child attempt archived; same frozen plan controller restarted42567. Orphan previous monitor7133 terminated; current10064 kept.",
+  "active_maintenance": {
+    "operation": "MPS same-input scheduling trial",
+    "remote_controller_pid": 12423,
+    "operation_dir": "/root/autodl-tmp/v318_resume_20261009/mps_transition_20261009T0301",
+    "normal_probe_pid": 12463,
+    "held_remote_controllers": [],
+    "held_local_controller": null,
+    "phase": "COMPLETE_ADMISSION_REPAIR; four GPU workers uninterrupted, official CPU scoring continues. No safe spare memory for batch2 diagnostic.",
+    "new_worker_pids": [
+      39880,
+      40151,
+      41206,
+      41566
+    ],
+    "ce_controller_pid": 13303
+  },
+  "seakr_train8_waiter": {
+    "pid": 55469,
+    "caffeinate_pid": 55470,
+    "status": "WAITING_FOR_DRAGIN_COMPLETE_NO_GPU_LAUNCH",
+    "plan_sha256": "1cd470bd71aa9b2e485e100b8a6a275671403cda89f869d98296eb902799554b",
+    "formal_seakr_auto_start": false
+  },
+  "automation_latest_instruction": "v3-18 updatedACTIVE: explicit no stop/pause/restart5GPUworkers for120–200target; preserveofficial3seeds. Quietwhenhealthyunchanged.",
+  "backup_resume_audit": {
+    "status": "SOURCE_AUDIT_COMPLETE; MATCHED_FILES_TRANSFER_RUNNING",
+    "pid": null,
+    "directory": "/root/autodl-tmp/v318_resume_20261009/backup_resume_audit",
+    "local_directory": "experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/backup_resume_audit",
+    "planned_missing_files": 189604,
+    "planned_missing_bytes": 19126143807,
+    "old_snapshot_untouched": true,
+    "download_not_started": false,
+    "next_action": "Continue safe backup transfer62665: 189597 old-SHA files19.126GB in72chunks; staging SHA then absent-path import. Keep7changed sources unresolved. All3331mapped collision entries now PASS after124missing files copied from verified local backup donors. Remaining normal duplicate-content closure and full-manifest verification after transfer; archive originalDOWNLOAD_PLAN before any old finish script.",
+    "audit_pid": null,
+    "audit_counts": {
+      "MATCH": 189597,
+      "SOURCE_SIZE_CHANGED": 1,
+      "SOURCE_HASH_CHANGED": 6
+    },
+    "transfer_pid": 62665,
+    "transfer_plan_sha256": "a6200b8940e57ad07341bc55981b037b1bcc04291614f351f6930a3868d923cf",
+    "transfer_status": {
+      "status": "DOWNLOADING_TO_STAGING",
+      "pid": 62665,
+      "started_at": 1791519235.2595851,
+      "completed_files": 189583,
+      "verified_bytes": 6417593211,
+      "planned_files": 189597,
+      "planned_bytes": 19126114923,
+      "plan_sha256": "a6200b8940e57ad07341bc55981b037b1bcc04291614f351f6930a3868d923cf",
+      "snapshot_overwrites": 0,
+      "chunk": 58,
+      "chunks": 72,
+      "rsync_pid": 94321,
+      "updated_at": 1791527116.047296
+    },
+    "script": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/backup_resume_audit/resume_verified.py",
+    "changed_sources": 7,
+    "mapped_collision_closure": {
+      "status": "PASS_MAPPED_COLLISION_CLOSURE",
+      "entries": 3331,
+      "regular_files": 2320,
+      "symlinks": 963,
+      "directories": 48,
+      "locally_copied_missing_files": 124,
+      "download_bytes": 0,
+      "receipt": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/backup_collision_recovery/POST_REPAIR_VERIFIED.json"
+    }
+  },
+  "raw_archive_inventory": {
+    "path": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/formal_raw_archive/INPUT_INVENTORY.json",
+    "sha256": "143a31c35781e2f41bae14dfae7a63d3daab83a89c9ad9726f2825a88347d1fa",
+    "jobs": 12,
+    "config_and_ready_binding_only": true,
+    "collection_started": true,
+    "policy": "Archive stopped completed or failed raw runs in new local snapshots after source/output hashes are verified; scientific scores require separate strict complete official checks. Do not mix new raw outputs into old serverbackup.",
+    "ready_receipts": 12,
+    "verification": {
+      "status": "INVENTORY_BINDINGS_VERIFIED_NO_RAW_COLLECTION_YET",
+      "utc": "2026-10-09T04:35:33.264644+00:00",
+      "run_configs": 12,
+      "ready_receipts": 12,
+      "mmqa_ready_config_denominator_matches": 6,
+      "input_inventory_sha256": "143a31c35781e2f41bae14dfae7a63d3daab83a89c9ad9726f2825a88347d1fa",
+      "actual_archive_collections": 0
+    },
+    "verified_snapshots": [
+      "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/formal_raw_archive/snapshots/webqa_seed17_20261009T055519Z"
+    ]
+  },
+  "latest_health_checkpoint": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/heartbeat_20261009T0715",
+  "mmqa_admission_version": {
+    "version": "v3_mps_service_exclusion_exec_handshake",
+    "controller_pid": 42139,
+    "source_sha256": "05651e7c8415e76d9a48912e6a480ba39ef30a2f34e3d0c0b80f11bfe7b8c426",
+    "queue_plan_sha256": "503d4edb7a3bd5a49fa564ab8e492afe5151de6bd770e1d63df3b453e75e8199",
+    "worker_pids": [
+      40151,
+      41206,
+      41566
+    ],
+    "gpu_restarts": 0,
+    "failure_and_recovery_receipts": "heartbeat_20261009T0555/remote/mmqa_admission_v3_20261009T0612",
+    "admission_only": true
+  },
+  "status": "REMOTE_SERVER_UNAVAILABLE_RESULTS_UNVERIFIED",
+  "actual_sample_is_live": true,
+  "hardware_pause": {
+    "active": false,
+    "status": "RESUMED_ON_DUAL_PRO6000",
+    "verified_utc": "2026-10-09T06:31:20.450352+00:00",
+    "gpu_workers_exited": true,
+    "remote_disk_synced": true,
+    "last_memory_used_mib": 61,
+    "proof": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/shutdown_20261009T0631/REMOTE_RESPONSE.json",
+    "proof_sha256": "1ff37f4571d9322fe95404c1c7bc867b261d4a456235abf05a94193aba670498",
+    "resume_policy": "Wait for user hardware-ready confirmation, then verify current GPU inventory and completed records before launching generation.",
+    "display_status": "双 GPU 实验运行中",
+    "display_detail": "7 个冻结任务已通过断点校验并产生新结果。",
+    "resume_requested": true,
+    "target": {
+      "host": "connect.bjb1.seetacloud.com",
+      "port": 37028
+    },
+    "old_machine": "User reports unusable; excluded from scheduling",
+    "resumed_at": 1791529127.839864,
+    "resume_evidence": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/clone_37028/LIVE_VERIFICATION.json"
+  },
+  "current_connection": {
+    "status": "REMOTE_UNAVAILABLE",
+    "target": "connect.bjb1.seetacloud.com:37028",
+    "error": "UNAVAILABLE: [Errno 61] Connection refused",
+    "password_read_or_saved": false
+  },
+  "official_scoring_connection": {
+    "status": "RESUMED_ON_NEW_SERVER",
+    "pid": 4195,
+    "complete_verified": false
+  },
+  "backup_resume_current_status": {
+    "status": "NEEDS_ATTENTION",
+    "pid": 62665,
+    "started_at": 1791519235.2595851,
+    "completed_files": 189583,
+    "verified_bytes": 6417593211,
+    "planned_files": 189597,
+    "planned_bytes": 19126114923,
+    "plan_sha256": "a6200b8940e57ad07341bc55981b037b1bcc04291614f351f6930a3868d923cf",
+    "snapshot_overwrites": 0,
+    "chunk": 58,
+    "chunks": 72,
+    "rsync_pid": 94321,
+    "updated_at": 1791527535.550428,
+    "error": "rsync failed with exit 255; staging retained"
+  },
+  "seakr_train8_waiter_current_status": {
+    "status": "PAUSED_HARDWARE",
+    "pid": 96842,
+    "updated_utc": "2026-10-09T06:37:46.097784+00:00",
+    "qa_child_started": false,
+    "reason": "Preserve the active hardware-upgrade pause; controller binding repair is validated and ready for main-thread resumption.",
+    "repair": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/continuation_repair_20261009",
+    "pause_record": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/HARDWARE_PAUSE.json"
+  },
+  "next_work_after_hardware_ready": [
+    "Verify current physical GPU inventory/UUIDs, frozen plans/configs and process identities.",
+    "Verify all committed generation prefixes and retained failures before binding any resume version.",
+    "Collect remaining completed raw WebQA/CE outputs into new local snapshots and complete original SHA-verified server backup.",
+    "Resume official CPU scoring only after reviewing interrupted scoring artifacts and frozen scorer identity.",
+    "Continue all seeds and pending DRAGIN/SeaKR under unchanged scientific settings."
+  ],
+  "available_new_server_access": {
+    "status": "NEW_SERVER_ACCESS_GPU_AND_FROZEN_PREFIX_VERIFIED",
+    "checked_utc": "2026-10-09T06:53:18.965387+00:00",
+    "host": "connect.bjb1.seetacloud.com",
+    "port": 37028,
+    "ssh_socket": "/tmp/www2027-pro6000-37028",
+    "hostname": "autodl-container-kl7wef5luq-2484f159",
+    "gpu_count": 2,
+    "all12_frozen_configs_and_ready_receipts_match": true,
+    "complete_raw_runs_sha_verified": 5,
+    "interrupted_prefixes_cpu_verified": 4,
+    "qa_models_loaded": 0,
+    "qa_generations": 0,
+    "gpu_workers_launched": 0,
+    "hardware_pause_preserved": true,
+    "receipts_sha256": {
+      "mmqa_blind_seed17_CPU_PREFIX.json": "c53025e222e137abf95caa8f730857ab3216739ecc3414f4da286f6c76341eb0",
+      "mmqa_blind_seed23_CPU_PREFIX.json": "cbb0a38d7437104525c846990cef8ed91f8f5c244803fcf7a4ac8b1262264865",
+      "ce_seed29_CPU_PREFIX.json": "ae0dc9edee290fc49086e87db468ebe769e51907ae6d6eabf3c05f8d38ad3e0c",
+      "mmqa_blind_seed29_CPU_PREFIX.json": "2aa4d04b4ddd59ba7d122bfb70528b6028c8700356dcf4711328a9dfc641c3c2",
+      "GPU_COMPUTE_PROBE.json": "3cdf08fde57f61439ed2c2942327d83725fdc6c21f17f21edc2533da9bc6d098",
+      "BINDING_CHECK.json": "88374abd980bcd5ea16c5ae6ac5659eea031f93e5c2a899a426cef8e9be16b92"
+    },
+    "scope": "Authorized new SSH target inspected using an existing authenticated master; no password read or saved. Scientific data, seeds, methods and scoring unchanged. Existing pause and scheduler ownership preserved."
+  },
+  "previous_ssh_socket": "/tmp/www2027-pro6000-resume-20261009",
+  "current_target": {
+    "host": "connect.bjb1.seetacloud.com",
+    "port": 37028,
+    "ssh_socket": "/tmp/www2027-experiments-37028"
+  },
+  "dual_gpu_recovery_evidence": {
+    "source": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/v319_continuation/clone_37028/LIVE_VERIFICATION.json",
+    "sha256": "570b5c2c0c2e99c298faca4f0d4c1ebaa3cd04a134c9917d730d7ce7ca712aff",
+    "queue_plan_sha256": "d392ba727c0e338d88953bf3c56e57da222211df3e28bfed58707123149e502e",
+    "controller_pid": 1812,
+    "seven_jobs_have_new_generation_receipts": true
+  },
+  "raw_archive_continuation": {
+    "collector": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/formal_raw_archive/archive_completed_37028_io_v2.py",
+    "status": "NEEDS_ATTENTION_PARTIAL_ARCHIVE_PRESERVED",
+    "jobs": [
+      "webqa_seed23",
+      "webqa_seed29",
+      "ce_seed17",
+      "ce_seed23"
+    ],
+    "prelaunch_transport_failures_retained": true,
+    "target_port": 37028,
+    "launch_receipt": "/Users/futaoran/Desktop/WWW2027/experiments/v318_missing_experiments_5h_root_20261008/pro6000_resume_20261009/formal_raw_archive/COLLECTOR_LAUNCH_IO_V2.json",
+    "old_io_failure_retained": true,
+    "completed": []
+  },
+  "official_cpu_scoring_before_resume": {
+    "pid": 6014,
+    "directory": "/root/autodl-tmp/v318_resume_20261009/official_scoring",
+    "state": "Full-seed gates only; CPU BART probe passed. No new full-seed scores complete yet.",
+    "dragin_followup": {
+      "pid": 15218,
+      "status": "WAITING_ORIGINAL_NINE_SEED_SCORING",
+      "plan_sha256": "2f20ccea71b77d85ec21a7c41a8716d7e84284064b8061e9e422c4806f436394",
+      "assets_verified": 292,
+      "local_collector_pid": 49606,
+      "small_results_mirror_pid": 46589,
+      "actual_quality_scoring_started": false
+    },
+    "dependency_repair": {
+      "source_sha256": "ff8fdb8a6dcfdd4ee56bca29a6ff0d8b108614d7a94978a83f320f4007d2ac64",
+      "bytes": 19612,
+      "seed17_complete_physical_validation": "PASS",
+      "seed29_complete_physical_validation": "PASS",
+      "seed29_official_score_state": "SCORING",
+      "scientific_scorer_changed": false,
+      "directory": "official_scoring/dependency_repair_20261009T0601"
+    }
+  },
+  "active_maintenance_current": {
+    "scope": "CPU scorer recovery and raw result IO only",
+    "qa_launches": 0,
+    "gpu_worker_signals": 0,
+    "mps_transition_provenance": "../v319_continuation/clone_37028/MPS_TRANSITION_RESPONSE.json",
+    "historical_transitions_and_failed_attempts_retained": true,
+    "mmqa_six_workers_live": true,
+    "cpu_scoring_source_and_staging_freeze_verified_unchanged": true
+  },
+  "user_constraints": {
+    "claude": "PROHIBITED",
+    "official_metrics_only": true,
+    "frozen_workers_must_not_be_interrupted": true
+  }
+}

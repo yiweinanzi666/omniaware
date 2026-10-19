@@ -1,0 +1,27 @@
+{
+  "id": "YM__DWPxxXk",
+  "source_url": "https://www.youtube.com/watch?v=YM__DWPxxXk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YM__DWPxxXk.log",
+  "filename": "YM__DWPxxXk.mp4",
+  "bytes": 10670138,
+  "sha256": "fc8e5d79d3f4ff812bf8373d39752d557e9a4cda1b2eac226da7967f5308e688",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "174.312200"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "XD75elGf5rg",
+  "source_url": "https://www.youtube.com/watch?v=XD75elGf5rg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\XD75elGf5rg.log",
+  "filename": "XD75elGf5rg.mp4",
+  "bytes": 100081258,
+  "sha256": "f15ff37786d830b858be7f65deb6c0e56de8e23ffbda2aafbac09f41cb8afd69",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1716.744127"
+    }
+  }
+}

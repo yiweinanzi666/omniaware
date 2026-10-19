@@ -1,0 +1,27 @@
+{
+  "id": "Opo2tFsLTEI",
+  "source_url": "https://www.youtube.com/watch?v=Opo2tFsLTEI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Opo2tFsLTEI.log",
+  "filename": "Opo2tFsLTEI.mp4",
+  "bytes": 44014594,
+  "sha256": "304564a8a190acda29dd8583c1cfbb48c530c644cc4b8a6673b3a9b8df0aea9b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "885.934150"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "hJAW2E_hARw",
+  "source_url": "https://www.youtube.com/watch?v=hJAW2E_hARw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hJAW2E_hARw.log",
+  "filename": "hJAW2E_hARw.mp4",
+  "bytes": 17513396,
+  "sha256": "8b4ba5584ee2d5df2e8500449989bbce7868d4b73246094a1e5a3cc93965a1bc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "274.041905"
+    }
+  }
+}

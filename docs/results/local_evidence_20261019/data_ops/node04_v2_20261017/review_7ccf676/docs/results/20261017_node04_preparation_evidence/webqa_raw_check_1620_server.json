@@ -1,0 +1,121 @@
+{
+  "time": "2026-10-17T16:14:18.211115+08:00",
+  "source": "/home/user/Futaoran/WebQA/imgs.tsv",
+  "images": [
+    {
+      "image_id": "30278219",
+      "raw_bytes": 112801,
+      "sha256": "c20abd196b6e0f645dd71a7273e3144d4957d5a3f2f56b7762fe8e8328a5cb6c",
+      "head_hex": "89504e470d0a1a0a0000000d4948445200000273000002290806000000c9a5be",
+      "tail_hex": "bdf6ff01bc37f486846ed0b10000000049454e44ae426082",
+      "strict_decode_ok": false,
+      "error": "cannot identify image file <_io.BytesIO object at 0x7f2ab2612de0>"
+    },
+    {
+      "image_id": "30045608",
+      "raw_bytes": 185547,
+      "sha256": "5464553142e4313341b7d452a6d5c3a42418ce20f41650892f72e38e9ae9cb2d",
+      "head_hex": "89504e470d0a1a0a0000000d49484452000002cf000002500802000000fe201e",
+      "tail_hex": "3281c0ff341ac28a5386a1d60000000049454e44ae426082",
+      "strict_decode_ok": false,
+      "error": "cannot identify image file <_io.BytesIO object at 0x7f2ab2612de0>"
+    },
+    {
+      "image_id": "30366390",
+      "raw_bytes": 759165,
+      "sha256": "d69940905e24cca24ee6501027ea121d446a964ca61b24ee187c84442b5fccc5",
+      "head_hex": "89504e470d0a1a0a0000000d49484452000003200000021408020000006d8edf",
+      "tail_hex": "cfbffcff91f0bbeddffbe8640000000049454e44ae426082",
+      "format": "PNG",
+      "size": [
+        800,
+        532
+      ],
+      "strict_decode_ok": false,
+      "error": "Decompressed data too large for PngImagePlugin.MAX_TEXT_CHUNK"
+    },
+    {
+      "image_id": "30298493",
+      "raw_bytes": 50580,
+      "sha256": "dbf43328613bc9176904843bd47865e192595fe554f54de0174e19540af8034e",
+      "head_hex": "ffd8ffe000104a46494600010101004800480000ffe114924578696600004d4d",
+      "tail_hex": "721aae3721b43edb50545b43c80a093c7201edafbf4ca245",
+      "format": "JPEG",
+      "size": [
+        350,
+        250
+      ],
+      "strict_decode_ok": false,
+      "error": "image file is truncated (78 bytes not processed)"
+    },
+    {
+      "image_id": "30014375",
+      "raw_bytes": 16593,
+      "sha256": "f2f58b585aa38eae81f1cb3801d81503a808524ed126532d71ccf5680d1f7650",
+      "head_hex": "89504e470d0a1a0a0000000d4948445200000171000001670806000000500879",
+      "tail_hex": "fe8bff0320fc0adffb543d6f0000000049454e44ae426082",
+      "strict_decode_ok": false,
+      "error": "cannot identify image file <_io.BytesIO object at 0x7f2ab2612de0>"
+    },
+    {
+      "image_id": "30039288",
+      "raw_bytes": 344188,
+      "sha256": "bcfbf74cefa510bb535bb3f44e4edde895ff39309b93484d346f51b97350b0e1",
+      "head_hex": "ffd8ffe000104a46494600010201004800480000ffe11c954578696600004949",
+      "tail_hex": "0b91d685534e47b9cf1ace553952b16061564653e63a7dd0",
+      "format": "JPEG",
+      "size": [
+        648,
+        486
+      ],
+      "strict_decode_ok": false,
+      "error": "image file is truncated (19 bytes not processed)"
+    },
+    {
+      "image_id": "30233625",
+      "raw_bytes": 18272,
+      "sha256": "700322df6af437d1b0d02eb7e1ce36fb3fcc2a6cdc369bd8cb02ed66b726a755",
+      "head_hex": "89504e470d0a1a0a0000000d4948445200000183000000da080600000044922e",
+      "tail_hex": "3c08fc3fc66d898e2a0055430000000049454e44ae426082",
+      "strict_decode_ok": false,
+      "error": "cannot identify image file <_io.BytesIO object at 0x7f2aaff153a0>"
+    },
+    {
+      "image_id": "30161353",
+      "raw_bytes": 52771,
+      "sha256": "f5c84da6b5523d5f018a0775a86324c3c192e37af69e6215730de80bb5abe1ef",
+      "head_hex": "89504e470d0a1a0a0000000d494844520000025800000190080300000045ebee",
+      "tail_hex": "541fff1fb2c95fefd6ca368d0000000049454e44ae426082",
+      "strict_decode_ok": false,
+      "error": "cannot identify image file <_io.BytesIO object at 0x7f2aaff153a0>"
+    },
+    {
+      "image_id": "30172755",
+      "raw_bytes": 40960,
+      "sha256": "b75dcb38cb7febf1ff7b453fcbe10bff16f17e58ed47a72e395ce151afb09729",
+      "head_hex": "ffd8ffe000104a46494600010201004800480000ffed1d4250686f746f73686f",
+      "tail_hex": "6bf1bd2fd353fa3f4ffc257fe190b4b9af7628bc35a09739",
+      "format": "JPEG",
+      "size": [
+        231,
+        324
+      ],
+      "strict_decode_ok": false,
+      "error": "image file is truncated (2 bytes not processed)"
+    },
+    {
+      "image_id": "30039112",
+      "raw_bytes": 40960,
+      "sha256": "5e12567bdb20839517a3fd130a53e3b56ac3a1c6e21d20c0e4aac88d2faf2674",
+      "head_hex": "ffd8ffe000104a46494600010200006400640000ffec00334475636b79000100",
+      "tail_hex": "583524bd6aa55ef183e9324909eb25669b5363c1511199b3",
+      "format": "JPEG",
+      "size": [
+        640,
+        438
+      ],
+      "strict_decode_ok": false,
+      "error": "image file is truncated (12 bytes not processed)"
+    }
+  ]
+}

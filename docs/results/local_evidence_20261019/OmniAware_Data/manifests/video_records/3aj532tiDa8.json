@@ -1,0 +1,27 @@
+{
+  "id": "3aj532tiDa8",
+  "source_url": "https://www.youtube.com/watch?v=3aj532tiDa8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\3aj532tiDa8.log",
+  "filename": "3aj532tiDa8.mp4",
+  "bytes": 30334148,
+  "sha256": "9871d9d54c154bbf18e40ab1b0b1ddedf54e3d44e7801073adf90ea919907fcc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "500.807982"
+    }
+  }
+}

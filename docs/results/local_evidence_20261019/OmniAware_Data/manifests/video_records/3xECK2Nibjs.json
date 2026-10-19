@@ -1,0 +1,27 @@
+{
+  "id": "3xECK2Nibjs",
+  "source_url": "https://www.youtube.com/watch?v=3xECK2Nibjs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\3xECK2Nibjs.log",
+  "filename": "3xECK2Nibjs.mp4",
+  "bytes": 8813133,
+  "sha256": "51f2d212034a9a4d982517c56c9ada278f63ef7514c7b9d9fe2a337514485d69",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "128.220590"
+    }
+  }
+}

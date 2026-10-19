@@ -1,0 +1,7 @@
+LOADING okvqa_gs okvqa_gs
+{"dataset": "okvqa_gs", "universe": "okvqa_gs", "count": 5046, "meta": {"dropped": {}}, "count_ok": true}
+LOADING webqa_full webqa_full
+{"dataset": "webqa_full", "error": "MissingDataError", "message": "webqa/val/all: fact image missing: 4 items in 4 questions, e.g. ['d5d27f720dba11ecb1e81171463288e9', 'd5d570a60dba11ecb1e81171463288e9', 'd5d5ec0c0dba11ecb1e81171463288e9', 'd5d8eeca0dba11ecb1e81171463288e9']. Fix the assets, or pass --allow-missing-assets to drop them (the drop is recorded in the run configuration)."}
+LOADING webqa_open_img webqa_open_full
+{"dataset": "webqa_open_img", "universe": "webqa_open_full", "count": 4966, "meta": {"dropped": {}}, "count_ok": true}
+{"dataset": "webqa_open_img", "train_count": 36766, "train_meta": {"dropped": {}}}

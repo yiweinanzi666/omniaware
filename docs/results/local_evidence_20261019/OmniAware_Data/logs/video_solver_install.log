@@ -1,0 +1,5 @@
+Collecting yt-dlp-ejs==0.8.0
+  Downloading yt_dlp_ejs-0.8.0-py3-none-any.whl.metadata (3.5 kB)
+Downloading yt_dlp_ejs-0.8.0-py3-none-any.whl (53 kB)
+Installing collected packages: yt-dlp-ejs
+Successfully installed yt-dlp-ejs-0.8.0

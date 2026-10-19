@@ -1,0 +1,27 @@
+{
+  "id": "ThdVdcCAuZA",
+  "source_url": "https://www.youtube.com/watch?v=ThdVdcCAuZA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ThdVdcCAuZA.log",
+  "filename": "ThdVdcCAuZA.mp4",
+  "bytes": 15123459,
+  "sha256": "9288cca029f55babc4c3756cb96e60b6dc52474e4b69f07e01971a57810f3b8c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "530.065125"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "zsHAix_kBrg",
+  "source_url": "https://www.youtube.com/watch?v=zsHAix_kBrg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zsHAix_kBrg.log",
+  "filename": "zsHAix_kBrg.mp4",
+  "bytes": 4869136,
+  "sha256": "676123136c705823974805e4d0f7002f7a7a082d2c925575c7ac49a7e5d2d57e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "89.466485"
+    }
+  }
+}

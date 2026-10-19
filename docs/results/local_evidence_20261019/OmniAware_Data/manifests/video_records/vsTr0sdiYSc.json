@@ -1,0 +1,27 @@
+{
+  "id": "vsTr0sdiYSc",
+  "source_url": "https://www.youtube.com/watch?v=vsTr0sdiYSc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\vsTr0sdiYSc.log",
+  "filename": "vsTr0sdiYSc.mp4",
+  "bytes": 28483181,
+  "sha256": "9a27515f7ab8b9d7cdfcb5ba406b1abd5c0ca05f9b9103f54306f946512bc343",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "526.373152"
+    }
+  }
+}

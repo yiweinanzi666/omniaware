@@ -1,0 +1,1 @@
+ps -ef | grep -E 'image_evidence_check|python.*analysis' | grep -v grep | tail -10

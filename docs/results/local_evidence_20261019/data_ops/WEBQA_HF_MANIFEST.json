@@ -1,0 +1,466 @@
+{
+  "folder_url": "https://drive.google.com/drive/folders/19ApkbD5w0I5sV1IeQ9EofJRyAjKnA7tb",
+  "records": [
+    {
+      "name": "imgs.7z.001",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.001?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.002",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.002?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.003",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.003?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.004",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.004?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.005",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.005?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.006",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.006?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.007",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.007?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.008",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.008?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.009",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.009?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.010",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.010?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.011",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.011?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.012",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.012?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.013",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.013?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.014",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.014?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.015",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.015?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.016",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.016?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.017",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.017?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.018",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.018?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.019",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.019?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.020",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.020?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.021",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.021?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.022",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.022?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.023",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.023?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.024",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.024?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.025",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.025?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.026",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.026?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.027",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.027?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.028",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.028?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.029",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.029?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.030",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.030?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.031",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.031?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.032",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.032?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.033",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.033?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.034",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.034?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.035",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.035?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.036",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.036?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.037",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.037?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.038",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.038?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.039",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.039?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.040",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.040?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.041",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.041?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.042",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.042?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.043",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.043?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.044",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.044?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.045",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.045?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.046",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.046?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.047",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.047?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.048",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.048?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.049",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.049?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.050",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.050?download=true",
+      "http_status": 200,
+      "content_length": 1073741824,
+      "content_disposition": "",
+      "last_modified": ""
+    },
+    {
+      "name": "imgs.7z.051",
+      "id": null,
+      "url": "https://huggingface.co/datasets/Ancci/webqa_large/resolve/main/imgs.7z.051?download=true",
+      "http_status": 200,
+      "content_length": 758433119,
+      "content_disposition": "",
+      "last_modified": ""
+    }
+  ],
+  "count": 51,
+  "created_at": "2026-10-15T07:21:43Z"
+}

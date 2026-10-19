@@ -1,0 +1,64 @@
+
+===== 2026-10-18T05:07:23.211590+00:00 pid 2467580 =====
+/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/run.py --dataset webqa_full --split dev --model 8b --dtype float32 --tag v2_s1_webqa_full --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+[data] webqa_full: 4966 total, calib 500 (train), dev 256, dev 50
+[data] candidates: 0 questions with fewer than k=5; image: 4 without
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 17848.68it/s]
+Loading weights:   0%|          | 0/590 [00:00<?, ?it/s]Loading weights: 100%|██████████| 590/590 [00:00<00:00, 35217.66it/s]
+[relevance] scored 550 examples in 203.5s
+Loading weights:   0%|          | 0/393 [00:00<?, ?it/s]Loading weights: 100%|██████████| 393/393 [00:00<00:00, 30686.03it/s]
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights:   0%|          | 1/750 [00:00<07:09,  1.74it/s]Loading weights:   0%|          | 2/750 [00:00<03:44,  3.33it/s]Loading weights:   8%|▊         | 59/750 [00:00<00:05, 121.62it/s]Loading weights:  11%|█         | 81/750 [00:00<00:05, 121.53it/s]Loading weights:  13%|█▎        | 100/750 [00:01<00:05, 118.61it/s]Loading weights:  15%|█▌        | 116/750 [00:01<00:06, 105.02it/s]Loading weights:  18%|█▊        | 133/750 [00:01<00:05, 107.95it/s]Loading weights:  19%|█▉        | 146/750 [00:01<00:05, 108.58it/s]Loading weights:  21%|██        | 159/750 [00:01<00:05, 105.49it/s]Loading weights:  23%|██▎       | 171/750 [00:01<00:05, 103.39it/s]Loading weights:  24%|██▍       | 182/750 [00:01<00:05, 103.00it/s]Loading weights:  26%|██▌       | 193/750 [00:02<00:05, 99.62it/s] Loading weights:  27%|██▋       | 204/750 [00:02<00:05, 93.76it/s]Loading weights:  29%|██▊       | 214/750 [00:02<00:05, 91.86it/s]Loading weights:  30%|██▉       | 224/750 [00:02<00:05, 87.98it/s]Loading weights:  31%|███▏      | 235/750 [00:02<00:06, 75.50it/s]Loading weights:  33%|███▎      | 248/750 [00:02<00:05, 87.37it/s]Loading weights:  34%|███▍      | 258/750 [00:02<00:05, 84.09it/s]Loading weights:  36%|███▌      | 268/750 [00:03<00:05, 83.43it/s]Loading weights:  37%|███▋      | 279/750 [00:03<00:05, 82.05it/s]Loading weights:  39%|███▊      | 290/750 [00:03<00:05, 84.80it/s]Loading weights:  40%|████      | 301/750 [00:03<00:04, 89.93it/s]Loading weights:  42%|████▏     | 312/750 [00:03<00:05, 87.23it/s]Loading weights:  43%|████▎     | 325/750 [00:03<00:04, 89.83it/s]Loading weights:  45%|████▍     | 336/750 [00:03<00:04, 90.37it/s]Loading weights:  46%|████▌     | 346/750 [00:03<00:04, 84.56it/s]Loading weights:  48%|████▊     | 359/750 [00:04<00:04, 91.66it/s]Loading weights:  50%|█████     | 378/750 [00:04<00:03, 110.11it/s]Loading weights:  52%|█████▏    | 390/750 [00:04<00:03, 112.62it/s]Loading weights:  55%|█████▌    | 415/750 [00:04<00:02, 149.26it/s]Loading weights:  59%|█████▉    | 441/750 [00:04<00:01, 169.61it/s]Loading weights:  64%|██████▍   | 479/750 [00:04<00:01, 216.13it/s]Loading weights:  70%|███████   | 525/750 [00:04<00:00, 271.15it/s]Loading weights:  75%|███████▍  | 559/750 [00:04<00:00, 289.33it/s]Loading weights:  79%|███████▊  | 589/750 [00:04<00:00, 276.37it/s]Loading weights:  83%|████████▎ | 621/750 [00:05<00:00, 287.92it/s]Loading weights:  87%|████████▋ | 655/750 [00:05<00:00, 288.27it/s]Loading weights:  92%|█████████▏| 693/750 [00:05<00:00, 283.04it/s]Loading weights:  97%|█████████▋| 727/750 [00:05<00:00, 274.21it/s]Loading weights: 100%|██████████| 750/750 [00:05<00:00, 137.48it/s]
+[model] 8b loaded on cuda in 12.5s, 36 layers
+[env] commit a11e234fc2741fc122eb0a7bb6b5d7cd6f9f2ee8 dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.float32 gpus ['NVIDIA L20']
+[ucal] 500 calibration examples in 549.6s
+[1/50] d5d3d7f00dba 15.38s P=744 U_pre=0.26 retrieve=False
+[2/50] d5d5742a0dba 7.79s P=959 U_pre=0.73 retrieve=True
+[3/50] d5d034e20dba 15.54s P=1037 U_pre=1.00 retrieve=True
+[4/50] d5db7faa0dba 11.24s P=635 U_pre=0.90 retrieve=True
+[5/50] d5c128c60dba 13.15s P=1285 U_pre=0.25 retrieve=False
+[6/50] d5db03fe0dba 13.48s P=1026 U_pre=0.89 retrieve=True
+[7/50] d5d331920dba 6.35s P=631 U_pre=0.25 retrieve=False
+[8/50] d5cc8e640dba 9.99s P=1188 U_pre=0.26 retrieve=False
+[9/50] d5cb69580dba 11.71s P=1003 U_pre=1.00 retrieve=True
+[10/50] d5df71780dba 10.66s P=1188 U_pre=0.26 retrieve=False
+[11/50] d5c272c60dba 10.08s P=1188 U_pre=0.25 retrieve=False
+[12/50] d5da29fc0dba 16.73s P=895 U_pre=0.29 retrieve=False
+[13/50] d5ccc8fc0dba 9.9s P=1039 U_pre=0.63 retrieve=True
+[14/50] d5c617e60dba 7.95s P=843 U_pre=0.29 retrieve=False
+[15/50] d5c5b92c0dba 7.22s P=635 U_pre=0.30 retrieve=False
+[16/50] d5c50c840dba 12.23s P=1007 U_pre=1.00 retrieve=True
+[17/50] d5ce9d120dba 10.86s P=1257 U_pre=0.68 retrieve=True
+[18/50] d5d76de80dba 10.06s P=889 U_pre=1.00 retrieve=True
+[19/50] d5de89020dba 12.32s P=409 U_pre=0.27 retrieve=False
+[20/50] d5dce9300dba 14.28s P=812 U_pre=1.00 retrieve=True
+[21/50] d5c0f8d80dba 11.63s P=1472 U_pre=0.31 retrieve=False
+[22/50] d5c638980dba 11.56s P=840 U_pre=0.28 retrieve=False
+[23/50] d5ce8c460dba 12.67s P=829 U_pre=0.67 retrieve=True
+[24/50] d5d8972c0dba 20.26s P=521 U_pre=0.49 retrieve=True
+[25/50] d5daefae0dba 10.93s P=951 U_pre=0.42 retrieve=True
+[26/50] d5cae5aa0dba 11.09s P=965 U_pre=0.95 retrieve=True
+[27/50] d5d7ef5c0dba 11.23s P=1009 U_pre=0.66 retrieve=True
+[28/50] d5c703c20dba 11.21s P=728 U_pre=0.93 retrieve=True
+[29/50] d5df37ee0dba 12.32s P=1019 U_pre=0.34 retrieve=False
+[30/50] d5cd7c3e0dba 8.12s P=837 U_pre=0.26 retrieve=False
+[31/50] d5d880f20dba 12.07s P=969 U_pre=0.25 retrieve=False
+[32/50] d5d0bb9c0dba 10.04s P=444 U_pre=0.25 retrieve=False
+[33/50] d5db372a0dba 8.38s P=1036 U_pre=0.26 retrieve=False
+[34/50] d5d6773a0dba 13.69s P=1057 U_pre=0.25 retrieve=False
+[35/50] d5c569e00dba 9.83s P=820 U_pre=0.49 retrieve=True
+[36/50] d5c8e0de0dba 8.29s P=1706 U_pre=1.00 retrieve=True
+[37/50] d5bfc29c0dba 11.19s P=1447 U_pre=0.29 retrieve=False
+[38/50] d5d9c4b20dba 12.23s P=755 U_pre=0.42 retrieve=True
+[39/50] d5c747560dba 13.62s P=1024 U_pre=0.25 retrieve=False
+[40/50] d5d7d0080dba 12.11s P=593 U_pre=1.00 retrieve=True
+[41/50] d5d5b9120dba 6.67s P=352 U_pre=0.58 retrieve=True
+[42/50] d5df295c0dba 10.36s P=1229 U_pre=0.26 retrieve=False
+[43/50] d5d562aa0dba 10.05s P=772 U_pre=1.00 retrieve=True
+[44/50] d5d44fa00dba 10.85s P=648 U_pre=1.00 retrieve=True
+[45/50] d5c981a60dba 9.67s P=1460 U_pre=0.90 retrieve=True
+[46/50] d5d318420dba 4.57s P=435 U_pre=0.32 retrieve=False
+[47/50] d5cd51960dba 10.04s P=654 U_pre=1.00 retrieve=True
+[48/50] d5c987320dba 9.95s P=1474 U_pre=0.35 retrieve=False
+[49/50] d5d106560dba 13.81s P=1014 U_pre=1.00 retrieve=True
+[50/50] d5d5b9da0dba 10.26s P=874 U_pre=0.34 retrieve=False
+[done] webqa_full 50 in 555.8s -> /home/user/Futaoran/omniaware_v2_selfcheck_20261018/runs/fp32_20261018/v2_s1_webqa_full/webqa_full.jsonl; empty_answer_rate 0.000000; refusal_rate 0.007286; peak_gpu_memory_gib 34.28

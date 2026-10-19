@@ -1,0 +1,84 @@
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli added_tokens.json
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "added_tokens.json", "bytes": 18, "sha256": "cd0141b19e809eb963a8f8244fad72530233f729e1f6960d281e1fbb3537b2fb", "verified_at": "2026-10-17T03:47:08+0800"}
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli config.json
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "config.json", "bytes": 1056, "sha256": "7f9d420b616691c5b575bab8839719aefbddc656d8e1316519414b097ce43e3d", "verified_at": "2026-10-17T03:47:08+0800"}
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli special_tokens_map.json
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "special_tokens_map.json", "bytes": 156, "sha256": "fcfbeb4e25cd37fb5b8030406394253b245230fd3b552750092bab7d24d827da", "verified_at": "2026-10-17T03:47:08+0800"}
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli spm.model
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "spm.model", "bytes": 2464616, "sha256": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd", "verified_at": "2026-10-17T03:47:08+0800"}
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer.json
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "tokenizer.json", "bytes": 8648889, "sha256": "7aa118770f066a74530d161c7d0b994d0629cc0ff3a0df213f184192773f960a", "verified_at": "2026-10-17T03:47:08+0800"}
+VERIFIED_EXISTING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli tokenizer_config.json
+COMPLETE {"repo": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli", "revision": "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7", "file": "tokenizer_config.json", "bytes": 395, "sha256": "556a192d83e3edb45a09a6207095dd9295c3b2279062e5cc430feac4cb7a0817", "verified_at": "2026-10-17T03:47:08+0800"}
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 48234496 source huggingface.co
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 50331648 / 870182606 MiB/s 0.06
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 54525952 / 870182606 MiB/s 0.09
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 58720256 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 62914560 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 66060288 / 870182606 MiB/s 0.1
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 68157440 / 870182606 MiB/s 0.09
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 70254592 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 73400320 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 74448896 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 76546048 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 78643200 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 83886080 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 88080384 / 870182606 MiB/s 0.07
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 93323264 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 96468992 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 99614720 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 102760448 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 106954752 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 109051904 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 111149056 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 115343360 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 119537664 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 123731968 / 870182606 MiB/s 0.08
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ConnectionError HTTPSConnectionPool(host='us.aws.cdn.hf.co', port=443): Read timed out.
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 127926272 source hf-mirror.com
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 130023424 / 870182606 MiB/s 0.06
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 133169152 / 870182606 MiB/s 0.08
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 135266304 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 136314880 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 137363456 / 870182606 MiB/s 0.04
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 138412032 / 870182606 MiB/s 0.04
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(11035548 bytes read, 731220786 more expected)', IncompleteRead(11035548 bytes read, 731220786 more expected))
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 138412032 source huggingface.co
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 141557760 / 870182606 MiB/s 0.09
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 149946368 / 870182606 MiB/s 0.17
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 152043520 / 870182606 MiB/s 0.12
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 155189248 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 161480704 / 870182606 MiB/s 0.12
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 166723584 / 870182606 MiB/s 0.13
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 175112192 / 870182606 MiB/s 0.14
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 177209344 / 870182606 MiB/s 0.13
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 180355072 / 870182606 MiB/s 0.13
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 183500800 / 870182606 MiB/s 0.12
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 185597952 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 187695104 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 191889408 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 195035136 / 870182606 MiB/s 0.11
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 198180864 / 870182606 MiB/s 0.1
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(62192478 bytes read, 669578096 more expected)', IncompleteRead(62192478 bytes read, 669578096 more expected))
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ProxyError HTTPSConnectionPool(host='us.aws.cdn.hf.co', port=443): Max retries exceeded with url: /xet-bridge-us/629e473a46b4826be2c81e93/b276a6aa43bffe4afe89e3a7e7629d7bc3fe48638bf52058d26ec
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+DOWNLOADING MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors offset 200278016 source huggingface.co
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 203423744 / 870182606 MiB/s 0.06
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 205520896 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 207618048 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 208666624 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 211812352 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 216006656 / 870182606 MiB/s 0.06
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 217055232 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 218103808 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 219152384 / 870182606 MiB/s 0.04
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 222298112 / 870182606 MiB/s 0.05
+PROGRESS MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors 224395264 / 870182606 MiB/s 0.05
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ChunkedEncodingError ('Connection broken: IncompleteRead(25222016 bytes read, 644682574 more expected)', IncompleteRead(25222016 bytes read, 644682574 more expected))
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors SSLError HTTPSConnectionPool(host='hf-mirror.com', port=443): Max retries exceeded with url: /MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7dc
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors HTTPError 404 Client Error: Not Found for url: https://modelscope.cn/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/master/model.safetensors?download=true&resume_off
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors SSLError HTTPSConnectionPool(host='huggingface.co', port=443): Max retries exceeded with url: /MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/resolve/b3546ea6b0346eb6f8d5d68b13c7d
+RETRY MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli model.safetensors ReadTimeout HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=15)
+REPO_FAILED MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli RuntimeError('could not obtain MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli/model.safetensors')

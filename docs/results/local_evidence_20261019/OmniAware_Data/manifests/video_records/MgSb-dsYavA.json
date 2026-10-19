@@ -1,0 +1,27 @@
+{
+  "id": "MgSb-dsYavA",
+  "source_url": "https://www.youtube.com/watch?v=MgSb-dsYavA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MgSb-dsYavA.log",
+  "filename": "MgSb-dsYavA.mp4",
+  "bytes": 15315940,
+  "sha256": "70d4a7c3003835d075458ddac64b5e11ec28f1a04362e9785f852d94377f024e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "161.796644"
+    }
+  }
+}

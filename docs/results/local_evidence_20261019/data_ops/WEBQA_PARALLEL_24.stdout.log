@@ -1,0 +1,4 @@
+{"count": 51, "total_bytes": 54445524319, "manifest": "D:\\WWW2027\\data_ops\\WEBQA_HF_MANIFEST.json"}
+{"event": "run_start", "mode": "parallel_ranges", "workers": 24, "ranges": 730, "block_size": 4194304, "pid": 6348, "time": 1792048428.1896832}
+{"event": "file_complete", "name": "imgs.7z.027", "status": "downloaded", "bytes": 1073741824, "new_bytes": 16037406, "seconds": 197.09, "time": 1792048625.1822057}
+{"event": "file_complete", "name": "imgs.7z.022", "status": "downloaded", "bytes": 1073741824, "new_bytes": 9617189, "seconds": 261.11, "time": 1792048689.211818}

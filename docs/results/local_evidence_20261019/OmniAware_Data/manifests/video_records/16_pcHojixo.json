@@ -1,0 +1,27 @@
+{
+  "id": "16_pcHojixo",
+  "source_url": "https://www.youtube.com/watch?v=16_pcHojixo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\16_pcHojixo.log",
+  "filename": "16_pcHojixo.mp4",
+  "bytes": 10522625,
+  "sha256": "d2ad8e711d5830b2f021897a818edbd9ac4dc1cb8e2883f377ab26ccef333fd1",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "179.049070"
+    }
+  }
+}

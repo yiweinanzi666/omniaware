@@ -1,0 +1,27 @@
+{
+  "id": "SeqJXt0Ju_A",
+  "source_url": "https://www.youtube.com/watch?v=SeqJXt0Ju_A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\SeqJXt0Ju_A.log",
+  "filename": "SeqJXt0Ju_A.mp4",
+  "bytes": 3031429,
+  "sha256": "9bd05139df9fcfd8e9bf0b81973dccf61ba8800fb8f885b2bc5921875fb36f9a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "37.639546"
+    }
+  }
+}

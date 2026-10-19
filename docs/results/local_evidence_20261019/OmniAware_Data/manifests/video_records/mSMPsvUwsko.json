@@ -1,0 +1,27 @@
+{
+  "id": "mSMPsvUwsko",
+  "source_url": "https://www.youtube.com/watch?v=mSMPsvUwsko",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\mSMPsvUwsko.log",
+  "filename": "mSMPsvUwsko.mp4",
+  "bytes": 35868431,
+  "sha256": "e29b78cc866bda92766f39ffb4f8dc956c24b175326bd29bb690fbed609f9d4c",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "501.179501"
+    }
+  }
+}

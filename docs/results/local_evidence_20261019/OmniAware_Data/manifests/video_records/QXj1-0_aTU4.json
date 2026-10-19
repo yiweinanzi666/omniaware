@@ -1,0 +1,27 @@
+{
+  "id": "QXj1-0_aTU4",
+  "source_url": "https://www.youtube.com/watch?v=QXj1-0_aTU4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\QXj1-0_aTU4.log",
+  "filename": "QXj1-0_aTU4.mp4",
+  "bytes": 12001160,
+  "sha256": "0508b341d1fa80a37f4b0a120805d25b6cdc8ba46576a26fcc0517e45ff5c5bc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "132.191202"
+    }
+  }
+}

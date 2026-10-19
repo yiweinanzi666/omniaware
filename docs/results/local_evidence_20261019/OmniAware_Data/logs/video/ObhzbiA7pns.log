@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=ObhzbiA7pns
+[youtube] ObhzbiA7pns: Downloading webpage
+[youtube] ObhzbiA7pns: Downloading visionos player API JSON
+ERROR: [youtube] ObhzbiA7pns: Private video
+[youtube] Extracting URL: https://www.youtube.com/watch?v=ObhzbiA7pns
+[youtube] ObhzbiA7pns: Downloading webpage
+[youtube] ObhzbiA7pns: Downloading visionos player API JSON
+ERROR: [youtube] ObhzbiA7pns: Private video
+[youtube] Extracting URL: https://www.youtube.com/watch?v=ObhzbiA7pns
+[youtube] ObhzbiA7pns: Downloading webpage
+WARNING: [youtube] ObhzbiA7pns: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] ObhzbiA7pns: Downloading initial data API JSON
+[youtube] ObhzbiA7pns: Downloading visionos player API JSON
+[youtube] ObhzbiA7pns: Downloading iframe API JS
+[youtube] ObhzbiA7pns: Downloading player 21090930-main
+[youtube] ObhzbiA7pns: Downloading web player API JSON
+ERROR: [youtube] ObhzbiA7pns: Private video. Sign in if you've been granted access to this video. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies

@@ -1,0 +1,27 @@
+{
+  "id": "rg4LEiLdeJg",
+  "source_url": "https://www.youtube.com/watch?v=rg4LEiLdeJg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\rg4LEiLdeJg.log",
+  "filename": "rg4LEiLdeJg.mp4",
+  "bytes": 8838671,
+  "sha256": "de8ef09e0e9b7f22a938e6b36c065247b63bc769bbf1758c786ddd98cad83cae",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "134.606077"
+    }
+  }
+}

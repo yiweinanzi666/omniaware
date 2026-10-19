@@ -1,0 +1,27 @@
+{
+  "id": "2Q733LS2cJs",
+  "source_url": "https://www.youtube.com/watch?v=2Q733LS2cJs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\2Q733LS2cJs.log",
+  "filename": "2Q733LS2cJs.mp4",
+  "bytes": 18104383,
+  "sha256": "e54d8a36d174c30b43aaeac4b6a38bbb6daabf4846652a3bdf29331958b0d5e2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "321.712472"
+    }
+  }
+}

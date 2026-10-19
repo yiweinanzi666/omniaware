@@ -1,0 +1,27 @@
+{
+  "id": "hz-aDUvGoGI",
+  "source_url": "https://www.youtube.com/watch?v=hz-aDUvGoGI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hz-aDUvGoGI.log",
+  "filename": "hz-aDUvGoGI.mp4",
+  "bytes": 14341960,
+  "sha256": "d1720bfed4426301dd0425d491fa7c7a95ddd412afbe59b9da2c629e25204be7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "254.722902"
+    }
+  }
+}

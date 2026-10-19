@@ -1,0 +1,27 @@
+{
+  "id": "BaTBZ-Wss_8",
+  "source_url": "https://www.youtube.com/watch?v=BaTBZ-Wss_8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\BaTBZ-Wss_8.log",
+  "filename": "BaTBZ-Wss_8.mp4",
+  "bytes": 23381245,
+  "sha256": "7e9c3709abc12feb7fbcd23e396f4d2a7f07349d31a85f3c4d9013e56e9529a5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "292.548209"
+    }
+  }
+}

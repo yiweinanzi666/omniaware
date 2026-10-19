@@ -1,0 +1,27 @@
+{
+  "id": "Kmpz_3K8xUU",
+  "source_url": "https://www.youtube.com/watch?v=Kmpz_3K8xUU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Kmpz_3K8xUU.log",
+  "filename": "Kmpz_3K8xUU.mp4",
+  "bytes": 18581638,
+  "sha256": "09c076b7b644ec6784a68881ee8926b90e51d1c7e0b47369c89f99cc63a4b447",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "202.934000"
+    }
+  }
+}

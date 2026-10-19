@@ -1,0 +1,27 @@
+{
+  "id": "WACHIzbplB0",
+  "source_url": "https://www.youtube.com/watch?v=WACHIzbplB0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WACHIzbplB0.log",
+  "filename": "WACHIzbplB0.mp4",
+  "bytes": 16241776,
+  "sha256": "77c1fe71fe073a5ecba0bc375ca4c368167188df95743d3ad325ef6fca5c5754",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "284.699864"
+    }
+  }
+}

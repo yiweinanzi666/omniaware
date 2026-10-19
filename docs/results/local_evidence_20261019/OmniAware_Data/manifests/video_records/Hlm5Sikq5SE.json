@@ -1,0 +1,27 @@
+{
+  "id": "Hlm5Sikq5SE",
+  "source_url": "https://www.youtube.com/watch?v=Hlm5Sikq5SE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Hlm5Sikq5SE.log",
+  "filename": "Hlm5Sikq5SE.mp4",
+  "bytes": 24675998,
+  "sha256": "60d35936129c179a89d92cd3da04de05030f04d86a7ed400288563679e2d2c5b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "841.909116"
+    }
+  }
+}

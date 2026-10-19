@@ -1,0 +1,27 @@
+{
+  "id": "klseSk2hn-Y",
+  "source_url": "https://www.youtube.com/watch?v=klseSk2hn-Y",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\klseSk2hn-Y.log",
+  "filename": "klseSk2hn-Y.mp4",
+  "bytes": 6137232,
+  "sha256": "a51f8310b428486fc400da25f2f3a87fde5ac6eb9986fdf86fbe32d2f0ad042e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "54.102494"
+    }
+  }
+}

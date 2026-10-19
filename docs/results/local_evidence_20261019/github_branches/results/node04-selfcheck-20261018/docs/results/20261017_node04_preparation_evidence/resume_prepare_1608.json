@@ -1,0 +1,31 @@
+{
+  "start": "2026-10-17T16:08:58.384487+08:00",
+  "command": [
+    "/home/user/Futaoran/omniaware_v2_python311/bin/python",
+    "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/resume_prepare_1608.py"
+  ],
+  "asset_view": "/home/user/Futaoran/omniaware_v2_assets_20261017_resume",
+  "new_cache": "/home/user/Futaoran/omniaware_v2_cache_20261017_resume",
+  "gs": {
+    "official_csv_sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997",
+    "rows": 112724,
+    "old_indexed_prefix_matches_csv": true,
+    "old_offsets_match_prefix": true,
+    "candidate_texts_match_csv": true,
+    "candidate_rows": 5046,
+    "old_corpus_sha256": "0ba5607c4733de5e94e644e92b4883f684b7cd37bcc4b23238eeb6abe86c96e6",
+    "new_corpus_sha256": "058fe2fc84d9aad7e1dc2b6a2f39aeafe8b587da5380e895c5e3ced1b491a8e7",
+    "prefix_bytes": 43500279,
+    "extra_tail_bytes": 112724,
+    "original_cache_changed": false,
+    "reused": [
+      "emb_112724.f16",
+      "emb_112724.done",
+      "candidates_full.jsonl"
+    ]
+  },
+  "m2rag_commit": "ea6b9977f5a153215b38cd9a6aa3e4702ffbda22",
+  "ok": true,
+  "exit_code": 0,
+  "end": "2026-10-17T16:09:01.931247+08:00"
+}

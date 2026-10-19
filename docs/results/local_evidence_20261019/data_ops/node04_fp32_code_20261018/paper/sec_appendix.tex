@@ -1,0 +1,167 @@
+%% ===============================================================
+\section{Evaluation Details}
+\label{app:protocol}
+This appendix restates the v2 protocol.
+The v2 runs have not been executed.
+Placeholder cells in the body stay \ph{}.
+
+\textit{Splits.}
+WebQA draws at least 500 calibration questions and 256 development questions from the training split.
+Those two sets are disjoint from each other and from the test split.
+The test split is all 4{,}966 validation questions.
+Calibration is not taken from the WebQA validation split.
+OK-VQA uses 500 calibration questions, 256 development questions, and the remainder of the validation split.
+The three OK-VQA sets are pairwise disjoint.
+An empty test set is an error.
+For a validation split of 5{,}046 questions the remainder is 4{,}290.
+Question-id lists are hashed, and the test command checks the hash of the frozen decision file \texttt{runs/v2\_decisions/}.
+
+\textit{Actions.}
+The main-method actions are \texttt{direct}, \texttt{static\_text}, \texttt{static\_image}, \texttt{static\_mixed}, and \texttt{rerank\_static}.
+They share one prompt, one decoding budget, and one candidate pool inside a run.
+The prompt asks for the frozen answer format.
+It does not ask for a sources line in place of an answer.
+WebQA uses one sentence aligned with the reference style.
+OK-VQA uses at most three words and official VQA normalization.
+The prompt is fixed before any model run and is the same for every arm.
+Evidence Attention Bias is not one of the five actions.
+
+\textit{Metrics and baselines.}
+OK-VQA reports official VQA accuracy only.
+WebQA's primary metric is acc$_{\mathrm{approx}}$ (Appendix~\ref{app:webqa_scoring}), with normalized BART and QA$_{\mathrm{approx}}$ on the full set and on image and text subsets.
+The primary WebQA setting is the distractor pool.
+Open retrieval is the second setting.
+The strong baseline is the single action with the best calibration-set score.
+Primary relative gain uses that score as the denominator.
+Gain versus \texttt{static\_mixed} is also reported.
+The oracle is the per-question best action.
+Adaptive comparators (NTE trigger, SeaKR, the v1 $\Uomni$ gate, UniversalRAG) are not candidates for the strong baseline.
+\texttt{gold-in-top-$k$} is offline analysis only.
+
+\textit{Statistics and selection.}
+Intervals are paired bootstrap 95\% confidence intervals over questions, with Holm correction for multiple comparisons.
+Greedy decoding does not contribute a seed standard deviation.
+The risk-control claim uses the mean paired gap to the strong baseline (Section~\ref{sec:risk}).
+Thresholds and grids are chosen on the calibration or development split.
+The test split is scored once.
+A grid is not selected on the test split.
+The development gates in Section~\ref{sec:setup} are criteria.
+This draft does not claim that a gate has passed.
+
+%% ===============================================================
+\section{Local Algebra of the Retired Attention Bias}
+\label{app:dca}
+The identities below describe the attention bias removed from the main method.
+They are not v2 accuracy results, and they do not say that the bias improves answers or order robustness.
+Section~\ref{sec:steer} quotes the empirical measurement.
+
+Fix one layer, one head, and one attention row, with pre-bias attention mass $\mu_j$ on chunk $j$.
+Retrieved chunks $j\in\{1,\dots,k\}$ receive a logit bias $\lambda r_j$ on the rows $a\ge\tend$ (\texttt{ans1}).
+Group $0$ is the remaining visible keys, with $r_0=0$.
+When the old gate is active, $\lambda=\gamma\Uomni$; otherwise $\lambda=0$.
+The previous default path that biased only decode rows (\texttt{ans2}) is not this formula, and it is not labeled as the paper form.
+The gate that produced the quoted runs read $U_{\mathrm{post}}$.
+
+\begin{proposition}[Bounded relevance tilt]
+\label{thm:tilt}
+Under this bias, attention inside each span keeps its proportions, and the chunk masses become
+\begin{equation}
+\mu_j'=\frac{\mu_j e^{\lambda r_j}}{\sum_{l=0}^{k}\mu_l e^{\lambda r_l}}.
+\label{eq:local}
+\end{equation}
+For any two chunks, $\mu'_j/\mu'_l=(\mu_j/\mu_l)\,e^{\lambda(r_j-r_l)}$ with $|\lambda(r_j-r_l)|\le\gamma$.
+\end{proposition}
+
+\begin{proof}
+A key $i$ in $\mathrm{span}(d_j)$ receives logit $s_i+\lambda r_j$, so its weight is $\alpha_i e^{\lambda r_j}/\sum_{i'}\alpha_{i'}e^{\lambda r(i')}$.
+Keys in one span share $e^{\lambda r_j}$, so proportions inside the span are unchanged.
+Summing over the span gives Equation~\eqref{eq:local} with $Z(\lambda)=\sum_l\mu_l e^{\lambda r_l}$.
+For any distribution $p$ over the groups,
+\[
+\lambda\sum_j p_j r_j-D_{\mathrm{KL}}(p\,\|\,\mu)
+=\log Z(\lambda)-D_{\mathrm{KL}}(p\,\|\,\mu'),
+\]
+which is maximized uniquely at $p=\mu'$.
+The odds ratio is the quotient of two instances of Equation~\eqref{eq:local}.
+$|\lambda(r_j-r_l)|\le\gamma$ because $\lambda\le\gamma\Uomni\le\gamma$ and $r\in[0,1]$.
+\end{proof}
+
+Chunk replication with $n_j=\max(1,\mathrm{round}(e^{\gamma\Uomni r_j}))$ copies matches the same reweighting at bias $\log n_j$, up to rounding, under three local assumptions: replica logits at the row are unchanged, values are unchanged, and every copy is visible to the row.
+Rotary embeddings, causal masking, and cross-layer residuals can break those assumptions.
+A full-system accuracy comparison of replication and the bias is not a v2 result and is not reported.
+
+\begin{proposition}[Local copy identity]
+\label{thm:dca-local}
+Under the three assumptions, pooling the copies of key $i\in\mathrm{span}(d_j)$ gives the EAB weight at bias $b_j=\log n_j$, and the chunk masses match.
+\end{proposition}
+
+\begin{proof}
+Both normalizers equal
+\begin{equation}
+D=\sum_{i\in\text{group }0}e^{s_i}+\sum_{\ell=1}^{k}n_\ell\sum_{i\in\mathrm{span}(d_\ell)}e^{s_i},
+\label{eq:dca-norm}
+\end{equation}
+because $n_j e^{s_i}=e^{s_i+\log n_j}$.
+Pooling copies gives weight $n_j e^{s_i}/D$.
+Equal pooled weights and equal values give the same attention output at the row.
+\end{proof}
+
+%% ===============================================================
+\section{Supplementary Placeholders}
+\label{app:supp}
+Open-retrieval scores, cost, and the paired-gap intervals are the placeholder tables in Section~\ref{sec:extra} and Table~\ref{tab:main}.
+No seed-wise standard deviation is attached to a greedy run.
+Sensitivity to $\delta$ is the development-split row of Table~\ref{tab:ablation}.
+That row is not a test-set search.
+Backbone transfer, if it is run, is \ph{} and is not claimed here.
+Secondary WebQA numbers for a filled run are normalized BART and QA$_{\mathrm{approx}}$ from the same predictions as acc$_{\mathrm{approx}}$.
+They are \ph{} until stage~s4 is run.
+
+%% ===============================================================
+\section{WebQA Scoring}
+\label{app:webqa_scoring}
+The published WebQA evaluator~\cite{chang2022webqa} computes acc$_{\mathrm{approx}}$ from category-specific F1 for color, shape, number, and yes/no questions and from recall for the other categories.
+We combine this accuracy component $a_i$ with the ParaBank2 BARTScore checkpoint of the WebQA authors.
+For reference $r_i$, answer $y_i$, and reference-to-answer log score $s$,
+\begin{equation}
+F_i=\min\bigl\{e^{s(r_i,y_i)-s(r_i,r_i)},1\bigr\},\qquad
+\mathrm{QA}_{\mathrm{approx}}=\frac{100}{N}\sum_{i=1}^{N}a_i F_i .
+\label{eq:webqa}
+\end{equation}
+$F_i$ is the normalized BART factor.
+Public validation has reference answers and does not have the keyword labels of the hidden test set, which is why the combined score is called QA$_{\mathrm{approx}}$.
+The primary reported WebQA number is acc$_{\mathrm{approx}}$.
+Normalized BART and QA$_{\mathrm{approx}}$ are reported with it, including image and text subsets.
+Loose lexical scores are not reported beside them.
+BART scoring uses CPU FP32, eager attention, and one checkpoint for every action.
+Filled values of these metrics are \ph{} until the v2 run exists.
+The 512-question static figures in Section~\ref{sec:setup} are quotations from the root-cause report, not cells of Table~\ref{tab:webqa}.
+
+%% ===============================================================
+\section{Error and Case Analysis}
+\label{app:error}
+Shares of errors from missing top-$k$ evidence, from the wrong modality, and from answer normalization are \ph{}.
+The denominator, once a run exists, is the number of scored test questions, and failures to decode are counted in that denominator.
+No example is inserted in this draft.
+The attention-bias cases discussed in Section~\ref{sec:steer} are the root-cause report's cases, not a new error study.
+
+%% ===============================================================
+\section{Limitations and Ethical Considerations}
+\label{app:limitations}
+\textit{Limitations.}
+v2 decodes several actions per question.
+Thresholds and the ridge coefficients of v2-Cal depend on the calibration split.
+The strongest single action is chosen on that same sample, which makes the risk claim slightly anti-conservative.
+The guarantee in Section~\ref{sec:risk} bounds the expected score of the chosen policy, under i.i.d. questions and an asymptotically valid test, at $\delta=0.10$ and a tolerance of $\epsilon=1.0$ point.
+The image-evidence pipeline is a separate 50-question diagnostic whose outcome is \ph{}.
+\texttt{gold-in-top-$k$} is not available as an inference-time feature.
+MMQA and video are outside the current command interface.
+Historical cached baselines, loose WebQA scores, greedy seed standard deviations, and test-set grid selection are withdrawn and are not repaired by filling \ph{}.
+
+\label{app:ethics}
+\textit{Ethical considerations.}
+Retrieved Web text and images can be wrong, biased, or adversarial, and a selector that sometimes trusts them can repeat that content.
+The direct action is kept in the action set so that retrieval is not mandatory.
+Datasets used here are public.
+Deployments on private content need access controls.
+\tbd{[[AI-use disclosure]]}

@@ -1,0 +1,27 @@
+{
+  "id": "Wkt8pzARGNE",
+  "source_url": "https://www.youtube.com/watch?v=Wkt8pzARGNE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Wkt8pzARGNE.log",
+  "filename": "Wkt8pzARGNE.mp4",
+  "bytes": 19999065,
+  "sha256": "b5bf6940585b9126cd096228a6457d0fe7baf38d0ad42b195780915137bb36bd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "161.355465"
+    }
+  }
+}

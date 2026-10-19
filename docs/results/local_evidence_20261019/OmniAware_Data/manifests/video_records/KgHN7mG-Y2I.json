@@ -1,0 +1,27 @@
+{
+  "id": "KgHN7mG-Y2I",
+  "source_url": "https://www.youtube.com/watch?v=KgHN7mG-Y2I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\KgHN7mG-Y2I.log",
+  "filename": "KgHN7mG-Y2I.mp4",
+  "bytes": 19215570,
+  "sha256": "37ec6546a48772d78bb23fa0b35274910bd7dc70eab6782392837269b506927e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "292.339229"
+    }
+  }
+}

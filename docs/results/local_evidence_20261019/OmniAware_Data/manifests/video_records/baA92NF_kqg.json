@@ -1,0 +1,27 @@
+{
+  "id": "baA92NF_kqg",
+  "source_url": "https://www.youtube.com/watch?v=baA92NF_kqg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\baA92NF_kqg.log",
+  "filename": "baA92NF_kqg.mp4",
+  "bytes": 34157009,
+  "sha256": "bf8a40242961c76038cf71b157a2b17cbc93b35e242a1ce5ce5b6cb17c432861",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "344.653787"
+    }
+  }
+}

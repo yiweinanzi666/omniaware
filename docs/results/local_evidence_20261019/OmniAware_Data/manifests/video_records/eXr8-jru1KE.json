@@ -1,0 +1,27 @@
+{
+  "id": "eXr8-jru1KE",
+  "source_url": "https://www.youtube.com/watch?v=eXr8-jru1KE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\eXr8-jru1KE.log",
+  "filename": "eXr8-jru1KE.mp4",
+  "bytes": 6109247,
+  "sha256": "550adbd27d90547e6363caec6af921c090de7eb864d0321cb1b34645d9188581",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "193.747302"
+    }
+  }
+}

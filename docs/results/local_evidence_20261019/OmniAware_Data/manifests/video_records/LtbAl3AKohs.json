@@ -1,0 +1,27 @@
+{
+  "id": "LtbAl3AKohs",
+  "source_url": "https://www.youtube.com/watch?v=LtbAl3AKohs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\LtbAl3AKohs.log",
+  "filename": "LtbAl3AKohs.mp4",
+  "bytes": 14762094,
+  "sha256": "5c24aeda1f57b8622c71e1f407030a8c6bce61a12bbd0d49cebccb763a5ae0c8",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "322.455510"
+    }
+  }
+}

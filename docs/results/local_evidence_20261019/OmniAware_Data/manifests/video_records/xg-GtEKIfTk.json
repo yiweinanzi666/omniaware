@@ -1,0 +1,27 @@
+{
+  "id": "xg-GtEKIfTk",
+  "source_url": "https://www.youtube.com/watch?v=xg-GtEKIfTk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\xg-GtEKIfTk.log",
+  "filename": "xg-GtEKIfTk.mp4",
+  "bytes": 24030147,
+  "sha256": "21c6935dab595f7a7482c4dc94a26f7ceeded648456ca7be55cfe45f1d2daaaf",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "307.525079"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=bKI8h3bAJ6Y
+[youtube] bKI8h3bAJ6Y: Downloading webpage
+[youtube] bKI8h3bAJ6Y: Downloading visionos player API JSON
+[youtube] bKI8h3bAJ6Y: Downloading m3u8 information
+[info] bKI8h3bAJ6Y: Downloading 1 format(s): 134+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.f140.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\bKI8h3bAJ6Y.f140.m4a (pass -k to keep)

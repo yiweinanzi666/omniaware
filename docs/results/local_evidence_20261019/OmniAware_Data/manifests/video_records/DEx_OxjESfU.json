@@ -1,0 +1,27 @@
+{
+  "id": "DEx_OxjESfU",
+  "source_url": "https://www.youtube.com/watch?v=DEx_OxjESfU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DEx_OxjESfU.log",
+  "filename": "DEx_OxjESfU.mp4",
+  "bytes": 4873717,
+  "sha256": "80c95147083b08fffeb7352ab7e4ed9d4c3f3973f65d248487a27e166f844267",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "114.660136"
+    }
+  }
+}

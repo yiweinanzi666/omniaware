@@ -1,0 +1,27 @@
+{
+  "id": "JpFKBvRDwUI",
+  "source_url": "https://www.youtube.com/watch?v=JpFKBvRDwUI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\JpFKBvRDwUI.log",
+  "filename": "JpFKBvRDwUI.mp4",
+  "bytes": 61085248,
+  "sha256": "77982210db18c57f4c7db0dacb7a571b98c1850a50465341a24ed4d51b3bb557",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1254.063311"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "Oven59qer4s",
+  "source_url": "https://www.youtube.com/watch?v=Oven59qer4s",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Oven59qer4s.log",
+  "filename": "Oven59qer4s.mp4",
+  "bytes": 1718039,
+  "sha256": "cd21f92e7dcd20a47db5a5f80beea363133d4d9936f72b2696d0c760c0ebf586",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "29.582222"
+    }
+  }
+}

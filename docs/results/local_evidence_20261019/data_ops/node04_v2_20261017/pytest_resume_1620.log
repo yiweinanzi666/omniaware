@@ -1,0 +1,156 @@
+........................................................................ [ 13%]
+.................................................................. [ 25%]
+.........s............................................................ [ 38%]
+........................................................................ [ 51%]
+........................................................................ [ 64%]
+........................................................................ [ 77%]
+........................................................................ [ 90%]
+......................................EEEEE........                    [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of OfficialMetricTests.test_duplicate_and_unpaired_questions_rejected _
+
+cls = <class 'test_webqa_acc.OfficialMetricTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.metric, cls.provenance = load_official_metric()
+                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_webqa_acc.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source_dir = PosixPath('/home/user/Futaoran/omniaware_v2_exec/third_party/webqa')
+spacy_model = 'en_core_web_sm'
+
+    def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
+        """Return the unmodified published approximate metric and its provenance."""
+        source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
+        sources, source_hashes = {}, {}
+        for filename in OFFICIAL_FILES:
+            raw = (source_dir / filename).read_bytes()
+            source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+            if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+>               raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                                   f"{OFFICIAL_FILES[filename]}; the official source has changed")
+E               RuntimeError: /home/user/Futaoran/omniaware_v2_exec/third_party/webqa/eval_1022.py: sha256 ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1 does not match the pinned 6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c; the official source has changed
+
+src/omniaware/eval/webqa_acc.py:51: RuntimeError
+_ ERROR at setup of OfficialMetricTests.test_published_empty_and_normalization_semantics _
+
+cls = <class 'test_webqa_acc.OfficialMetricTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.metric, cls.provenance = load_official_metric()
+                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_webqa_acc.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source_dir = PosixPath('/home/user/Futaoran/omniaware_v2_exec/third_party/webqa')
+spacy_model = 'en_core_web_sm'
+
+    def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
+        """Return the unmodified published approximate metric and its provenance."""
+        source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
+        sources, source_hashes = {}, {}
+        for filename in OFFICIAL_FILES:
+            raw = (source_dir / filename).read_bytes()
+            source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+            if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+>               raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                                   f"{OFFICIAL_FILES[filename]}; the official source has changed")
+E               RuntimeError: /home/user/Futaoran/omniaware_v2_exec/third_party/webqa/eval_1022.py: sha256 ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1 does not match the pinned 6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c; the official source has changed
+
+src/omniaware/eval/webqa_acc.py:51: RuntimeError
+_ ERROR at setup of OfficialMetricTests.test_question_paired_bootstrap_and_means _
+
+cls = <class 'test_webqa_acc.OfficialMetricTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.metric, cls.provenance = load_official_metric()
+                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_webqa_acc.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source_dir = PosixPath('/home/user/Futaoran/omniaware_v2_exec/third_party/webqa')
+spacy_model = 'en_core_web_sm'
+
+    def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
+        """Return the unmodified published approximate metric and its provenance."""
+        source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
+        sources, source_hashes = {}, {}
+        for filename in OFFICIAL_FILES:
+            raw = (source_dir / filename).read_bytes()
+            source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+            if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+>               raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                                   f"{OFFICIAL_FILES[filename]}; the official source has changed")
+E               RuntimeError: /home/user/Futaoran/omniaware_v2_exec/third_party/webqa/eval_1022.py: sha256 ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1 does not match the pinned 6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c; the official source has changed
+
+src/omniaware/eval/webqa_acc.py:51: RuntimeError
+_ ERROR at setup of OfficialMetricTests.test_reference_changes_between_variants_rejected _
+
+cls = <class 'test_webqa_acc.OfficialMetricTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.metric, cls.provenance = load_official_metric()
+                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_webqa_acc.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source_dir = PosixPath('/home/user/Futaoran/omniaware_v2_exec/third_party/webqa')
+spacy_model = 'en_core_web_sm'
+
+    def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
+        """Return the unmodified published approximate metric and its provenance."""
+        source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
+        sources, source_hashes = {}, {}
+        for filename in OFFICIAL_FILES:
+            raw = (source_dir / filename).read_bytes()
+            source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+            if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+>               raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                                   f"{OFFICIAL_FILES[filename]}; the official source has changed")
+E               RuntimeError: /home/user/Futaoran/omniaware_v2_exec/third_party/webqa/eval_1022.py: sha256 ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1 does not match the pinned 6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c; the official source has changed
+
+src/omniaware/eval/webqa_acc.py:51: RuntimeError
+_ ERROR at setup of OfficialMetricTests.test_reference_rule_is_explicit_and_shared _
+
+cls = <class 'test_webqa_acc.OfficialMetricTests'>
+
+    @classmethod
+    def setUpClass(cls):
+>       cls.metric, cls.provenance = load_official_metric()
+                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_webqa_acc.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source_dir = PosixPath('/home/user/Futaoran/omniaware_v2_exec/third_party/webqa')
+spacy_model = 'en_core_web_sm'
+
+    def load_official_metric(source_dir=None, spacy_model="en_core_web_sm"):
+        """Return the unmodified published approximate metric and its provenance."""
+        source_dir = Path(source_dir or paths.THIRD_PARTY / "webqa")
+        sources, source_hashes = {}, {}
+        for filename in OFFICIAL_FILES:
+            raw = (source_dir / filename).read_bytes()
+            source_hashes[filename] = hashlib.sha256(raw).hexdigest()
+            if source_hashes[filename] != OFFICIAL_FILES[filename]:   # checked before anything is executed
+>               raise RuntimeError(f"{source_dir / filename}: sha256 {source_hashes[filename]} does not match the pinned "
+                                   f"{OFFICIAL_FILES[filename]}; the official source has changed")
+E               RuntimeError: /home/user/Futaoran/omniaware_v2_exec/third_party/webqa/eval_1022.py: sha256 ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1 does not match the pinned 6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c; the official source has changed
+
+src/omniaware/eval/webqa_acc.py:51: RuntimeError
+=========================== short test summary info ============================
+ERROR tests/test_webqa_acc.py::OfficialMetricTests::test_duplicate_and_unpaired_questions_rejected
+ERROR tests/test_webqa_acc.py::OfficialMetricTests::test_published_empty_and_normalization_semantics
+ERROR tests/test_webqa_acc.py::OfficialMetricTests::test_question_paired_bootstrap_and_means
+ERROR tests/test_webqa_acc.py::OfficialMetricTests::test_reference_changes_between_variants_rejected
+ERROR tests/test_webqa_acc.py::OfficialMetricTests::test_reference_rule_is_explicit_and_shared
+541 passed, 1 skipped, 5 errors, 10 subtests passed in 133.58s (0:02:13)

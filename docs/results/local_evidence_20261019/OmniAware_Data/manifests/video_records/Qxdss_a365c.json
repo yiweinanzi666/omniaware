@@ -1,0 +1,27 @@
+{
+  "id": "Qxdss_a365c",
+  "source_url": "https://www.youtube.com/watch?v=Qxdss_a365c",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Qxdss_a365c.log",
+  "filename": "Qxdss_a365c.mp4",
+  "bytes": 8909267,
+  "sha256": "8bece08625e1e4903b15e6883138d4bf4824cb44a5aa5057da957bc5c5134d53",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "149.072109"
+    }
+  }
+}

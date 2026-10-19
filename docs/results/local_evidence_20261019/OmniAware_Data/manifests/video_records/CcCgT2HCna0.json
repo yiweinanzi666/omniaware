@@ -1,0 +1,27 @@
+{
+  "id": "CcCgT2HCna0",
+  "source_url": "https://www.youtube.com/watch?v=CcCgT2HCna0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CcCgT2HCna0.log",
+  "filename": "CcCgT2HCna0.mp4",
+  "bytes": 57739671,
+  "sha256": "590c3fe1f06992446ec70fbd96c5e06db6e22981394bee76b7fe653cb609c8a5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "900.237642"
+    }
+  }
+}

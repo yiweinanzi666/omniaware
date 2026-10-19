@@ -1,0 +1,27 @@
+{
+  "id": "UFsnifaN3s8",
+  "source_url": "https://www.youtube.com/watch?v=UFsnifaN3s8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\UFsnifaN3s8.log",
+  "filename": "UFsnifaN3s8.mp4",
+  "bytes": 4998763,
+  "sha256": "8c3baaf12e7edabfc28f832bd2bd25d211507dad433641c4d5980eabc93c19b1",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 720,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "175.984036"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "3yatinXL3G4",
+  "source_url": "https://www.youtube.com/watch?v=3yatinXL3G4",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\3yatinXL3G4.log",
+  "filename": "3yatinXL3G4.mp4",
+  "bytes": 35764851,
+  "sha256": "d88bff4745808aa894eb2c7acec1116ba95ca281216d91774933e9046098a49f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 852,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "293.221587"
+    }
+  }
+}

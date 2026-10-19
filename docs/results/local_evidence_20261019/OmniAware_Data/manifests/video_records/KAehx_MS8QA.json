@@ -1,0 +1,27 @@
+{
+  "id": "KAehx_MS8QA",
+  "source_url": "https://www.youtube.com/watch?v=KAehx_MS8QA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\KAehx_MS8QA.log",
+  "filename": "KAehx_MS8QA.mp4",
+  "bytes": 47863367,
+  "sha256": "84e8400f50796f068e8c11d9bc22f11f73cb41ea0ca508b281845e68ddd2f102",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "601.675465"
+    }
+  }
+}

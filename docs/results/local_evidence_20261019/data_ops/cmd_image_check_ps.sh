@@ -1,0 +1,1 @@
+ps -ef | grep 'image_evidence_check' | grep -v grep || true

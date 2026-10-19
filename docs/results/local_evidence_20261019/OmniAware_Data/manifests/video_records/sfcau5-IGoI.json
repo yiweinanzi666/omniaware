@@ -1,0 +1,27 @@
+{
+  "id": "sfcau5-IGoI",
+  "source_url": "https://www.youtube.com/watch?v=sfcau5-IGoI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\sfcau5-IGoI.log",
+  "filename": "sfcau5-IGoI.mp4",
+  "bytes": 206010240,
+  "sha256": "2b6c2a29f8cd3e280073950a32eb4a7bbcef29ed366b651a89f4866f64e43201",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1653.957370"
+    }
+  }
+}

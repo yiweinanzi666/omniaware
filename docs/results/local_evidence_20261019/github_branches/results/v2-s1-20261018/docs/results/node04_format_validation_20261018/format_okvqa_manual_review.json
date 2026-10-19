@@ -1,0 +1,652 @@
+{
+  "dataset": "okvqa_gs",
+  "source_commit": "318ab6c59a9bba7d379e166d119074443bb68892",
+  "sample": "first20 original S1 order, all available actions",
+  "actions_reviewed": 80,
+  "manual_gate": "FAIL",
+  "introductory_wording_outputs": 2,
+  "reason": "qid2022015 static_text and static_mixed both output at a donut shop; unnecessary introductory at a remains. Complete names and meaningful multiword phrases are retained rather than truncated.",
+  "decision": "Stop before S2; preserve raw answers and do not silently iterate prompts.",
+  "checks": [
+    {
+      "qid": "3296875",
+      "action": "direct",
+      "short": "cavalier king charles spaniel",
+      "answer": "cavalier king charles spaniel",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "3296875",
+      "action": "static_text",
+      "short": "Cavalier King Charles Spaniel",
+      "answer": "Cavalier King Charles Spaniel",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "3296875",
+      "action": "static_mixed",
+      "short": "Cavalier King Charles Spaniel",
+      "answer": "Cavalier King Charles Spaniel",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "3296875",
+      "action": "rerank_static",
+      "short": "bichon frise",
+      "answer": "bichon frise",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4703135",
+      "action": "direct",
+      "short": "digital camera",
+      "answer": "digital camera",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4703135",
+      "action": "static_text",
+      "short": "camera phone",
+      "answer": "camera phone",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4703135",
+      "action": "static_mixed",
+      "short": "camera phone",
+      "answer": "camera phone",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4703135",
+      "action": "rerank_static",
+      "short": "digital camera",
+      "answer": "digital camera",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5789675",
+      "action": "direct",
+      "short": "250 mph",
+      "answer": "250 mph",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5789675",
+      "action": "static_text",
+      "short": "311 mph",
+      "answer": "311 mph",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5789675",
+      "action": "static_mixed",
+      "short": "311 mph",
+      "answer": "311 mph",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5789675",
+      "action": "rerank_static",
+      "short": "300 mph",
+      "answer": "300 mph",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1736935",
+      "action": "direct",
+      "short": "kentucky derby",
+      "answer": "kentucky derby",
+      "format": "PASS",
+      "note": "Kentucky Derby is a complete event name and is allowed by the approved instruction; exact-match correctness is a separate question."
+    },
+    {
+      "qid": "1736935",
+      "action": "static_text",
+      "short": "Kentucky Derby",
+      "answer": "Kentucky Derby",
+      "format": "PASS",
+      "note": "Kentucky Derby is a complete event name and is allowed by the approved instruction; exact-match correctness is a separate question."
+    },
+    {
+      "qid": "1736935",
+      "action": "static_mixed",
+      "short": "Kentucky Derby",
+      "answer": "Kentucky Derby",
+      "format": "PASS",
+      "note": "Kentucky Derby is a complete event name and is allowed by the approved instruction; exact-match correctness is a separate question."
+    },
+    {
+      "qid": "1736935",
+      "action": "rerank_static",
+      "short": "Kentucky Derby",
+      "answer": "Kentucky Derby",
+      "format": "PASS",
+      "note": "Kentucky Derby is a complete event name and is allowed by the approved instruction; exact-match correctness is a separate question."
+    },
+    {
+      "qid": "236715",
+      "action": "direct",
+      "short": "serve",
+      "answer": "serve",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "236715",
+      "action": "static_text",
+      "short": "serve",
+      "answer": "serve",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "236715",
+      "action": "static_mixed",
+      "short": "serve",
+      "answer": "serve",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "236715",
+      "action": "rerank_static",
+      "short": "serve",
+      "answer": "serve",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1987175",
+      "action": "direct",
+      "short": "shhh",
+      "answer": "shhh",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1987175",
+      "action": "static_text",
+      "short": "shhh",
+      "answer": "shhh",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1987175",
+      "action": "static_mixed",
+      "short": "shhh",
+      "answer": "shhh",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1987175",
+      "action": "rerank_static",
+      "short": "shhh",
+      "answer": "shhh",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "532295",
+      "action": "direct",
+      "short": "metal",
+      "answer": "metal",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "532295",
+      "action": "static_text",
+      "short": "aluminum",
+      "answer": "aluminum",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "532295",
+      "action": "static_mixed",
+      "short": "aluminum",
+      "answer": "aluminum",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "532295",
+      "action": "rerank_static",
+      "short": "aluminum",
+      "answer": "aluminum",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2031105",
+      "action": "direct",
+      "short": "1880",
+      "answer": "1880",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2031105",
+      "action": "static_text",
+      "short": "1885",
+      "answer": "1885",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2031105",
+      "action": "static_mixed",
+      "short": "1885",
+      "answer": "1885",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2031105",
+      "action": "rerank_static",
+      "short": "1885",
+      "answer": "1885",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4400005",
+      "action": "direct",
+      "short": "rock",
+      "answer": "rock",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4400005",
+      "action": "static_text",
+      "short": "rock",
+      "answer": "rock",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4400005",
+      "action": "static_mixed",
+      "short": "rock",
+      "answer": "rock",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4400005",
+      "action": "rerank_static",
+      "short": "rock",
+      "answer": "rock",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2018255",
+      "action": "direct",
+      "short": "Cake Boss",
+      "answer": "Cake Boss",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2018255",
+      "action": "static_text",
+      "short": "Oren Neu Dag",
+      "answer": "Oren Neu Dag",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2018255",
+      "action": "static_mixed",
+      "short": "Oren Neu Dag",
+      "answer": "Oren Neu Dag",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2018255",
+      "action": "rerank_static",
+      "short": "Thomas Mayer",
+      "answer": "Thomas Mayer",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1546075",
+      "action": "direct",
+      "short": "temperate",
+      "answer": "temperate",
+      "format": "PASS",
+      "note": "warm and sunny is a descriptive climate phrase, not an introductory sentence; semantic correctness is not annotated here."
+    },
+    {
+      "qid": "1546075",
+      "action": "static_text",
+      "short": "warm and sunny",
+      "answer": "warm and sunny",
+      "format": "PASS",
+      "note": "warm and sunny is a descriptive climate phrase, not an introductory sentence; semantic correctness is not annotated here."
+    },
+    {
+      "qid": "1546075",
+      "action": "static_mixed",
+      "short": "warm and sunny",
+      "answer": "warm and sunny",
+      "format": "PASS",
+      "note": "warm and sunny is a descriptive climate phrase, not an introductory sentence; semantic correctness is not annotated here."
+    },
+    {
+      "qid": "1546075",
+      "action": "rerank_static",
+      "short": "tropical",
+      "answer": "tropical",
+      "format": "PASS",
+      "note": "warm and sunny is a descriptive climate phrase, not an introductory sentence; semantic correctness is not annotated here."
+    },
+    {
+      "qid": "5427825",
+      "action": "direct",
+      "short": "winter",
+      "answer": "winter",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5427825",
+      "action": "static_text",
+      "short": "winter",
+      "answer": "winter",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5427825",
+      "action": "static_mixed",
+      "short": "winter",
+      "answer": "winter",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5427825",
+      "action": "rerank_static",
+      "short": "autumn",
+      "answer": "autumn",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1974995",
+      "action": "direct",
+      "short": "1946",
+      "answer": "1946",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1974995",
+      "action": "static_text",
+      "short": "1901",
+      "answer": "1901",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1974995",
+      "action": "static_mixed",
+      "short": "1901",
+      "answer": "1901",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1974995",
+      "action": "rerank_static",
+      "short": "1901",
+      "answer": "1901",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "293465",
+      "action": "direct",
+      "short": "marshmallow",
+      "answer": "marshmallow",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "293465",
+      "action": "static_text",
+      "short": "marshmallow",
+      "answer": "marshmallow",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "293465",
+      "action": "static_mixed",
+      "short": "marshmallow",
+      "answer": "marshmallow",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "293465",
+      "action": "rerank_static",
+      "short": "marshmallow",
+      "answer": "marshmallow",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4812675",
+      "action": "direct",
+      "short": "row",
+      "answer": "row",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4812675",
+      "action": "static_text",
+      "short": "canoeing",
+      "answer": "canoeing",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4812675",
+      "action": "static_mixed",
+      "short": "canoeing",
+      "answer": "canoeing",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "4812675",
+      "action": "rerank_static",
+      "short": "paddle",
+      "answer": "paddle",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5528425",
+      "action": "direct",
+      "short": "pitcher",
+      "answer": "pitcher",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5528425",
+      "action": "static_text",
+      "short": "pitcher",
+      "answer": "pitcher",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5528425",
+      "action": "static_mixed",
+      "short": "pitcher",
+      "answer": "pitcher",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "5528425",
+      "action": "rerank_static",
+      "short": "pitcher",
+      "answer": "pitcher",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1187415",
+      "action": "direct",
+      "short": "100 feet",
+      "answer": "100 feet",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1187415",
+      "action": "static_text",
+      "short": "300 feet",
+      "answer": "300 feet",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1187415",
+      "action": "static_mixed",
+      "short": "300 feet",
+      "answer": "300 feet",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1187415",
+      "action": "rerank_static",
+      "short": "300 feet",
+      "answer": "300 feet",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2984405",
+      "action": "direct",
+      "short": "boeing 737",
+      "answer": "boeing 737",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2984405",
+      "action": "static_text",
+      "short": "Boeing 737",
+      "answer": "Boeing 737",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2984405",
+      "action": "static_mixed",
+      "short": "Boeing 737",
+      "answer": "Boeing 737",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2984405",
+      "action": "rerank_static",
+      "short": "Boeing 737",
+      "answer": "Boeing 737",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2022015",
+      "action": "direct",
+      "short": "bakery",
+      "answer": "bakery",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "2022015",
+      "action": "static_text",
+      "short": "at a donut shop",
+      "answer": "at a donut shop",
+      "format": "FAIL",
+      "note": "Raw answer at a donut shop retains the introductory at a framework; the location phrase is donut shop. This fails the approved omit-introductory-wording requirement; no output is rewritten."
+    },
+    {
+      "qid": "2022015",
+      "action": "static_mixed",
+      "short": "at a donut shop",
+      "answer": "at a donut shop",
+      "format": "FAIL",
+      "note": "Raw answer at a donut shop retains the introductory at a framework; the location phrase is donut shop. This fails the approved omit-introductory-wording requirement; no output is rewritten."
+    },
+    {
+      "qid": "2022015",
+      "action": "rerank_static",
+      "short": "on premises",
+      "answer": "on premises",
+      "format": "PASS",
+      "note": "on premises is an idiomatic location phrase; deleting on mechanically is not an appropriate format rule."
+    },
+    {
+      "qid": "1863225",
+      "action": "direct",
+      "short": "new york",
+      "answer": "new york",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1863225",
+      "action": "static_text",
+      "short": "Delhi",
+      "answer": "Delhi",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1863225",
+      "action": "static_mixed",
+      "short": "Delhi",
+      "answer": "Delhi",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    },
+    {
+      "qid": "1863225",
+      "action": "rerank_static",
+      "short": "Washington, D.C.",
+      "answer": "Washington, D.C.",
+      "format": "PASS",
+      "note": "Word/phrase only; retain complete names, numbers and units. Incorrect entities alone are not format failures."
+    }
+  ]
+}

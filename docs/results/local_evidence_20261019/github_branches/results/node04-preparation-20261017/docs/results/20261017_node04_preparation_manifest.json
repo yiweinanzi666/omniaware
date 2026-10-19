@@ -1,0 +1,255 @@
+{
+  "created": "2026-10-17T16:44:12.087242+08:00",
+  "scope": "Assets, data and Python environment preparation; not S1/S2 experimental results.",
+  "model_sources": {
+    "qwen8b": [
+      "Qwen/Qwen3-VL-8B-Instruct",
+      "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
+    ],
+    "reranker": [
+      "BAAI/bge-reranker-v2-m3",
+      "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+    ],
+    "nli": [
+      "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
+      "b3546ea6b0346eb6f8d5d68b13c7dc6d0376b3d7"
+    ],
+    "bartscore": [
+      "BARTScore ParaBank official Drive + facebook/bart-large-cnn config",
+      "37f520fa929c961707657b28798b30c003dd100b (config)"
+    ]
+  },
+  "model_assets": {
+    "qwen8b": {
+      "manifest": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/qwen8b_verified_manifest.json",
+      "manifest_sha256": "e5eacf5b9c77e4b399a5c81b5a5aff9d9208d6d7fd517a1161d7cad2728e71ff",
+      "files": 16,
+      "bytes": 17545915883,
+      "current_size_errors": [],
+      "verification": "Original publish SHA256 verified; current sizes rechecked."
+    },
+    "reranker": {
+      "manifest": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/reranker_verified_manifest.json",
+      "manifest_sha256": "9108f34e95e44eaac1eb58edf07a92871ea40e9e31e5b6dd56fe34a67ad3586c",
+      "files": 6,
+      "bytes": 2293242108,
+      "current_size_errors": [],
+      "verification": "Original publish SHA256 verified; current sizes rechecked."
+    },
+    "nli": {
+      "manifest": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/nli_verified_manifest.json",
+      "manifest_sha256": "6de5a90f09c84e96b6900b0ff88ba6b6cafa1a8b1898c83dee2619369a072ce8",
+      "files": 8,
+      "bytes": 881305316,
+      "current_size_errors": [],
+      "verification": "Original publish SHA256 verified; current sizes rechecked."
+    },
+    "bartscore": {
+      "manifest": "/home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/bartscore_verified_manifest.json",
+      "manifest_sha256": "0769ee000c5de2431977376981e38689468e255137364f276a9b233905261892",
+      "files": 12,
+      "bytes": 1628282683,
+      "current_size_errors": [],
+      "verification": "Original publish SHA256 verified; current sizes rechecked."
+    }
+  },
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "transformers": "5.5.3",
+    "spacy": "3.8.16",
+    "faiss-cpu": "1.15.1",
+    "en-core-web-sm": "3.8.0",
+    "Pillow": "12.3.0",
+    "numpy": "2.4.6",
+    "pytest": "9.1.1"
+  },
+  "data_loaders": {
+    "webqa_full": {
+      "universe": "webqa_full",
+      "count": 4966,
+      "meta": {
+        "dropped": {}
+      },
+      "train_count": 36766,
+      "train_meta": {
+        "dropped": {}
+      }
+    },
+    "webqa_open_img": {
+      "universe": "webqa_open_full",
+      "count": 4966,
+      "meta": {
+        "dropped": {}
+      },
+      "train_count": 36766,
+      "train_meta": {
+        "dropped": {}
+      }
+    },
+    "okvqa_gs": {
+      "universe": "okvqa_gs",
+      "count": 5046,
+      "meta": {
+        "dropped": {}
+      }
+    }
+  },
+  "webqa_image_fact_closure": {
+    "checked_facts": 606932,
+    "missing": []
+  },
+  "gs": {
+    "official_csv_sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997",
+    "rows": 112724,
+    "old_indexed_prefix_matches_csv": true,
+    "old_offsets_match_prefix": true,
+    "candidate_texts_match_csv": true,
+    "candidate_rows": 5046,
+    "old_corpus_sha256": "0ba5607c4733de5e94e644e92b4883f684b7cd37bcc4b23238eeb6abe86c96e6",
+    "new_corpus_sha256": "058fe2fc84d9aad7e1dc2b6a2f39aeafe8b587da5380e895c5e3ced1b491a8e7",
+    "prefix_bytes": 43500279,
+    "extra_tail_bytes": 112724,
+    "original_cache_changed": false,
+    "reused": [
+      "emb_112724.f16",
+      "emb_112724.done",
+      "candidates_full.jsonl"
+    ]
+  },
+  "pytest": {
+    "source_commit": "7ccf676e9804b2dfdf571d5b94fe8c9aba843acb",
+    "passed": 546,
+    "skipped": 1,
+    "subtests_passed": 21,
+    "failed": 0,
+    "errors": 0
+  },
+  "experimental_gates": "Full code review and actual 8B selfcheck/S1/S2 are separate, not claimed complete here. S4 forbidden.",
+  "evidence": [
+    {
+      "file": "qwen8b_verified_manifest.json",
+      "bytes": 5272,
+      "sha256": "e5eacf5b9c77e4b399a5c81b5a5aff9d9208d6d7fd517a1161d7cad2728e71ff"
+    },
+    {
+      "file": "reranker_verified_manifest.json",
+      "bytes": 1917,
+      "sha256": "9108f34e95e44eaac1eb58edf07a92871ea40e9e31e5b6dd56fe34a67ad3586c"
+    },
+    {
+      "file": "nli_verified_manifest.json",
+      "bytes": 3363,
+      "sha256": "6de5a90f09c84e96b6900b0ff88ba6b6cafa1a8b1898c83dee2619369a072ce8"
+    },
+    {
+      "file": "bartscore_verified_manifest.json",
+      "bytes": 3855,
+      "sha256": "0769ee000c5de2431977376981e38689468e255137364f276a9b233905261892"
+    },
+    {
+      "file": "source_csv_verified_0657.json",
+      "bytes": 775,
+      "sha256": "1758823a44ce5003d9849132e607c9a1a1692668fbe403fd60b01f2cebf02761"
+    },
+    {
+      "file": "resume_prepare_1608.json",
+      "bytes": 1174,
+      "sha256": "81180b6a4cb2838ca775c41a52bb4e199441a0b2ded9b970abe67913bdd990ad"
+    },
+    {
+      "file": "publish_webqa_1631.json",
+      "bytes": 6540,
+      "sha256": "74e6dfb16cc45a2c9a371880b5e2e05c9d4c00703d4e2fcbfb2710776db64ceb"
+    },
+    {
+      "file": "lf_checkout_pytest_1631.json",
+      "bytes": 1673,
+      "sha256": "0177edd4c45d7111c6ccbb1e046f48c7ccee915e2fb080aea6e8eae6e09c0c80"
+    },
+    {
+      "file": "preparation_inventory_1631.json",
+      "bytes": 2986,
+      "sha256": "c6a7130f50f56b4e3706bb160730a675f5f5a32461709dc39f1437feac4e30a8"
+    },
+    {
+      "file": "bartscore_cpu_asset_check_0750.json",
+      "bytes": 2363,
+      "sha256": "80eba5c4214e0f9551e44dbf5aaff07a8105d0af3270746689f823773551965f"
+    },
+    {
+      "file": "check_assets_1640.json",
+      "bytes": 373,
+      "sha256": "e35b4f7d8762a170306a9e814b5dc490fcb679ef37ee001cae01ec61be361754"
+    },
+    {
+      "file": "check_assets_1640.log",
+      "bytes": 4533,
+      "sha256": "a3ae061547542e493c7e8c4dee73c09c36318ef6c7c5a298b45859e4e7d3979f"
+    },
+    {
+      "file": "pip_freeze_1640.txt",
+      "bytes": 2381,
+      "sha256": "059d0031e35b73e09269a9d1d69fb2da216e4bfaf42b0ab0efef5bf67a99e551"
+    },
+    {
+      "file": "webqa_probe_1620.json",
+      "bytes": 4790,
+      "sha256": "b5514497fc8e6f7e5ea0c381217f9ed9e45fa825c5f41d90aca77b9e4c6876eb"
+    },
+    {
+      "file": "webqa_raw_check_1620_server.json",
+      "bytes": 4666,
+      "sha256": "09096208c46c27238bd1a7219dfd850772f426c533c71777c6c4884af4922078"
+    },
+    {
+      "file": "webqa_raw_check_1620_local.json",
+      "bytes": 4800,
+      "sha256": "8e5ee23aa11db13fb67e45b1dc4117acf00a44f81ed564007c454f9cc270ff33"
+    },
+    {
+      "file": "V2_ASSET_CHECK_20261017_initial.json",
+      "bytes": 6507,
+      "sha256": "7b6659c770d2f52fde508c662f7781f9df01f58dcf39a30c329ea3c2b1469898"
+    },
+    {
+      "file": "environment_complete.json",
+      "bytes": 142,
+      "sha256": "07c3c1f00a0ef0de44fa448317458fecaafc96e469f7c6ea604f7dd51275056e"
+    },
+    {
+      "file": "cleanup_comparison_1725.json",
+      "bytes": 20389,
+      "sha256": "a8ce5dcbaf4b71eb1d4d7bb1a51d0a8355aa2b8330caa1799c6786bdab949bd3"
+    },
+    {
+      "file": "cleanup_hashes_1635_local.json",
+      "bytes": 1608,
+      "sha256": "5f5c06e9ea0fb3555bc8a09d5249d1607799f9745aea8e63910dd51b079f86d1"
+    },
+    {
+      "file": "cleanup_hashes_1645_server.json",
+      "bytes": 472,
+      "sha256": "42570ac5d8079a6f4b7672d8baaff3e480eaaf7f0cde8a87ad4180110787f72b"
+    }
+  ],
+  "local_cleanup": "Only task data/cache; code/reports/other data retained. File deletion requires matching local/server SHA256 and a separately logged deletion receipt.",
+  "v2_asset_preparation_accepted": true,
+  "global_asset_checker_exit_code": 1,
+  "excluded_missing_asset_lines": [
+    "MISSING InternVL3.5-8B-HF            /home/user/Futaoran/omniaware_v2_assets_20261017_resume/cache/InternVL3_5-8B-HF   [backbone transfer]",
+    "MISSING OK-VQA BM25 candidates       /home/user/Futaoran/omniaware_v2_assets_20261017_resume/data/okvqa_val5046_assets/validation_candidates.jsonl   [dev grid only (optional)]",
+    "MISSING OK-VQA DPR-wiki candidates   /home/user/Futaoran/omniaware_v2_cache_20261017_resume/okvqa_dense/candidates_full.jsonl   [dev grid only (optional)]",
+    "MISSING HybridQA corpora             /home/user/Futaoran/omniaware_v2_exec_lf/external/UniversalRAG/dataset/table.parquet   [HybridQA]",
+    "MISSING HybridQA rankings            /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/rankings/hybridqa/table.jsonl   [HybridQA]",
+    "MISSING VideoRAG rankings            /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/rankings/videorag_synth/video.jsonl   [VideoRAG-Synth]",
+    "MISSING VideoRAG frames              /home/user/Futaoran/omniaware_v2_assets_20261017_resume/universalrag/frames   [VideoRAG-Synth]"
+  ],
+  "cleanup_verification": {
+    "matched_files": 394864,
+    "matched_bytes": 225657120356,
+    "retained_files": 26,
+    "eligible_manifest_sha256": "8093880f2ceb112a8202a0982f5416ec82d3086c05a6870b084c97e231467086",
+    "deletion_performed": false
+  }
+}

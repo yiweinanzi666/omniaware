@@ -1,0 +1,14 @@
+{
+  "eval_1022.py": {
+    "before_sha256": "ac6f77de53a0f504e2ae7ed5c55c5a5a63eca70d4174d8eaf12cd99044050dd1",
+    "after_sha256": "6862a280454b576062695724b3417c9e4ce43af5447596ff4efca15d8d1e3f5c",
+    "crlf_only": true,
+    "backup": "/home/user/Futaoran/omniaware_selfcheck_logs_20261018/format_revision/eval_1022.py.checkout-crlf"
+  },
+  "eval_webqa.md": {
+    "before_sha256": "4a6268395d4bca210bca3aa68948e0dfa960ea758cfea35ec4a9327dee74e24e",
+    "after_sha256": "c6dfcb9a7f8aed27c393e3d1296e038f37f10483de66b771963770482fea1ab3",
+    "crlf_only": true,
+    "backup": "/home/user/Futaoran/omniaware_selfcheck_logs_20261018/format_revision/eval_webqa.md.checkout-crlf"
+  }
+}

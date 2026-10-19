@@ -1,0 +1,27 @@
+{
+  "id": "aAlUaDVNMlY",
+  "source_url": "https://www.youtube.com/watch?v=aAlUaDVNMlY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\aAlUaDVNMlY.log",
+  "filename": "aAlUaDVNMlY.mp4",
+  "bytes": 26474743,
+  "sha256": "d1f424002617a9015d5e1efce55e34436eb3a6a075ad999836007179dbf5669a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "510.444263"
+    }
+  }
+}

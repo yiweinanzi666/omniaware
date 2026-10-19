@@ -1,0 +1,1 @@
+cat /home/user/Futaoran/omniaware_v2_exec/runs/v2_s1_webqa_full/webqa_full.env.ndjson

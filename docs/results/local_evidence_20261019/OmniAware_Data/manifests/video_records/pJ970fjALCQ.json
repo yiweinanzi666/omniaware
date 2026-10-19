@@ -1,0 +1,27 @@
+{
+  "id": "pJ970fjALCQ",
+  "source_url": "https://www.youtube.com/watch?v=pJ970fjALCQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\pJ970fjALCQ.log",
+  "filename": "pJ970fjALCQ.mp4",
+  "bytes": 44573197,
+  "sha256": "afbcc4b3d3b38d6e1f9e562e377e3f0ece1ee0adb0dd4fb23b51cf7321cbd3e6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "547.247891"
+    }
+  }
+}

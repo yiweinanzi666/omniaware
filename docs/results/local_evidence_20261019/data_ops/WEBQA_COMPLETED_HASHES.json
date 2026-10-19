@@ -1,0 +1,364 @@
+{
+  "measured_at": "2026-10-15T16:46:49.2108815+08:00",
+  "checksum_authority": "mirror Git LFS SHA-256; not an official WebQA checksum",
+  "archive_test": "NOT_RUN",
+  "records": [
+    {
+      "name": "imgs.7z.001",
+      "bytes": 1073741824,
+      "sha256": "010d539fbd2226642604e705d3b05600b05158fcabec44bc06a798a5d38c1222",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.002",
+      "bytes": 1073741824,
+      "sha256": "cae06ce7f78badfa6091a599f702490d3c58e9620da22479a4f8f94b0527a05c",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.003",
+      "bytes": 1073741824,
+      "sha256": "cb302b5b15f5b1f3fe82b608b8bbc9789545c5fc2b2602403f27643760cbc2be",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.004",
+      "bytes": 1073741824,
+      "sha256": "447d7cd76a1276e8db269bdcf4101e08727c6c45f07cb4ceff343519076e175b",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.005",
+      "bytes": 1073741824,
+      "sha256": "2c7b368ac96f8835bcc5e0e091f5ffc2ab53145365d8de4eed3aa5f3e9e6f26f",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.006",
+      "bytes": 1073741824,
+      "sha256": "563aa1c445f0595cc9b15b8c27218b818861989d3997f873f1e0ba35acc45780",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.007",
+      "bytes": 1073741824,
+      "sha256": "7c95d0f10546e9d6fcc1049210c4d02553ceb505249c42a361f2fc4a70602af7",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.008",
+      "bytes": 1073741824,
+      "sha256": "ab571731622c2cc6b0a009c9e13f7d12ee87bb339daa8b0f4e0d7c135e7d4a2b",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.009",
+      "bytes": 1073741824,
+      "sha256": "7ea970e264251670bd8d6b9e4562904653bf673aaffcd13df6b4f144539d5c19",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.010",
+      "bytes": 1073741824,
+      "sha256": "0e4c2ea8429fb0428ad5a8586a376078cac21cfdccaa86f34be9384b1a71f231",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.011",
+      "bytes": 1073741824,
+      "sha256": "a50a0f99531640a800dd15e9ec1d01df10e04f18bbb887d032c25e3620426beb",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.012",
+      "bytes": 1073741824,
+      "sha256": "566b45c8bafc66da2afd8aa651d7019eb0446ed0530fbdca73deb93aa171f905",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.013",
+      "bytes": 1073741824,
+      "sha256": "87f02ec58549e3b618b15e20d383ff8a811511b9e39e5299117b06fa92ba7dd7",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.014",
+      "bytes": 1073741824,
+      "sha256": "fd4ef11a163ea48f46c2f62807d8fb04f5658f999a1697a3b5b9f1d49a1891bf",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.015",
+      "bytes": 1073741824,
+      "sha256": "40b15bbd121ef75c473b180b1e57f6ae6917f0b5e74b5b8a534f55537a5d648c",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.016",
+      "bytes": 1073741824,
+      "sha256": "9730ec5a4c93f6fbe6338676b7866003dd78c5a496331bb34df6fc83c0b706ee",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.017",
+      "bytes": 1073741824,
+      "sha256": "bf3616a8b66c666d97590860c8b914316b39ca99828a45126a7e37d54fb6304f",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.018",
+      "bytes": 1073741824,
+      "sha256": "95a1ef4e849c3bfbeb012dfdc47d52e5e6c758be78243246d63c33d12558f9c9",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.019",
+      "bytes": 1073741824,
+      "sha256": "befc2538554f96ce98ac8e69c98a9fa863e752f26c87324a6ab5c3aa7344d387",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.020",
+      "bytes": 1073741824,
+      "sha256": "20e43003e53c395eae5119336f0109a5dea8e2a9aaf7489af3d777b6dd170bf5",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.021",
+      "bytes": 1073741824,
+      "sha256": "df93024d13cc03b0a749b09880cb6cb8a2c61473cd61328608dcbcbc2fced2f3",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.022",
+      "bytes": 1073741824,
+      "sha256": "1b2047155d8b5a15cdad7c41b21886f296ae09a4aeaf2b60521b313e89bc4768",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.023",
+      "bytes": 1073741824,
+      "sha256": "b01e0815c14d774d58ec8a6dd103e6a66767bdba641f135b05d947267ed18ee0",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.024",
+      "bytes": 1073741824,
+      "sha256": "6141da4371a0e1584147db1509d2cb5a802d5bd6971dcb9cd4021df9667530f0",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.025",
+      "bytes": 1073741824,
+      "sha256": "db1ff8c5c8b0f4f4044ae220db62ad8287cc4f6576782431c94e95297d597cb2",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.026",
+      "bytes": 1073741824,
+      "sha256": "0789c86153f351f635c323ed6e236c8bb6e6b84ff011c6bbc68d8ba501b8cca0",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.027",
+      "bytes": 1073741824,
+      "sha256": "0cdfd6a975d51609e93e031ffbb4a57f73dd9b17234810f57e84f7a2c28c38ec",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.028",
+      "bytes": 1073741824,
+      "sha256": "59c54df067187da48144129f334058a6146809590aad324dce77f4081c5a0c54",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.029",
+      "bytes": 1073741824,
+      "sha256": "b40515eb120c6134b3515f7ba4f5fae45586a7713ce2980e00e10238e8a4a573",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.030",
+      "bytes": 1073741824,
+      "sha256": "53df1f740f2cc34221565408520cf5e66038a7bd1d2f711b8dd239655d1bf92c",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.031",
+      "bytes": 1073741824,
+      "sha256": "b323f21d905644545ab9973e290619c89d5b4110bc0e1acba57faa15233f84de",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.032",
+      "bytes": 1073741824,
+      "sha256": "75e306272aae85f7e01f0ac9080821975bd853cf5114364328389ecaf965b434",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.033",
+      "bytes": 1073741824,
+      "sha256": "96bfbde83e618e17c3c03b5cbc6041779f1af07f3c2221379330124c09612704",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.034",
+      "bytes": 1073741824,
+      "sha256": "ad954769c56f6f9b6eb80ea4d4efaacd095b5a32b1b22435d53c8c1dfce73c29",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.035",
+      "bytes": 1073741824,
+      "sha256": "4d2af4e14e4573bfd67f79044a3cb8d8a1e209e9c6383686c611ddcaa6d050cc",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.036",
+      "bytes": 1073741824,
+      "sha256": "3ec27aa7114f7fc5889c6dc7bfc7b335e406834a8624bacfd864527dd70401a1",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.037",
+      "bytes": 1073741824,
+      "sha256": "3f61e520d5d352cc49431dc117dd8d23407e784fb3cd1397df629ecd887a5fd9",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.038",
+      "bytes": 1073741824,
+      "sha256": "952b690e814e1f64343d62a3a1eff3767f60351d11d03f59ebff187e28b1dbb5",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.039",
+      "bytes": 1073741824,
+      "sha256": "58b81ec9fd67fc1bf60a987647b00904d0d723ca3567bf7b0fa90e58eb81ae10",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.040",
+      "bytes": 1073741824,
+      "sha256": "3f21fce912c004c5712cc60819fc8cd6266eb633464076f4edfdd4b99709c51d",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.041",
+      "bytes": 1073741824,
+      "sha256": "dcd6b5d62d06a63066df0efa23bc6b958b9256dc1c74afba897c09cac6910803",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.042",
+      "bytes": 1073741824,
+      "sha256": "461eb1f6e915ba821b147b3541d83503e454464d48db8f863c1c90d5f9cb2738",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.043",
+      "bytes": 1073741824,
+      "sha256": "462179d60c75e562135d70688e862812e409f13e5aa24f54ed83c07efaacf0bd",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.044",
+      "bytes": 1073741824,
+      "sha256": "39c036b51d3bf00d4b0f5dd560d4abd4b2f5cc45b1fb526b8819aa76e45b66a7",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.045",
+      "bytes": 1073741824,
+      "sha256": "47d56ff6e54ddb8ed8f261669f90c3d84d55b8978c2a1d7c694a525a2f18ea18",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.046",
+      "bytes": 1073741824,
+      "sha256": "0940a648617a020e8b5e0115b8a86ea49b388bf2fa31d0839042ef3c3aab3764",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.047",
+      "bytes": 1073741824,
+      "sha256": "28cb8806935dac84e16302239e3bd96d6435380b87474ded2196a46dfc4ce70f",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.048",
+      "bytes": 1073741824,
+      "sha256": "b954c4d879fee68f2badd66e97a24d18c697bc73139a2d4671a782e7f83e6dcf",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.049",
+      "bytes": 1073741824,
+      "sha256": "a8fb517e202161bd1948e61693ac8745bc2f87110fe8c1d8388a507e42a4dc3d",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.050",
+      "bytes": 1073741824,
+      "sha256": "bdb3579f009870aedf503898b14c65d6d40b9cdefca7d144517e0baea2e693bd",
+      "stable": true,
+      "mirror_sha256_matches": true
+    },
+    {
+      "name": "imgs.7z.051",
+      "bytes": 758433119,
+      "sha256": "ffb6c2b93c1816459e856e782974e59ed42a4413d1333ebf50349242156ee657",
+      "stable": true,
+      "mirror_sha256_matches": true
+    }
+  ]
+}

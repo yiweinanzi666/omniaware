@@ -1,0 +1,27 @@
+{
+  "id": "G2g-bmckTq8",
+  "source_url": "https://www.youtube.com/watch?v=G2g-bmckTq8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\G2g-bmckTq8.log",
+  "filename": "G2g-bmckTq8.mp4",
+  "bytes": 18596406,
+  "sha256": "93758878453073b524abf6ab26014c384f4b63d631d18a27f6c8dd292e71b98f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "214.900680"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=nDl0aw3GaXk
+[youtube] nDl0aw3GaXk: Downloading webpage
+[youtube] nDl0aw3GaXk: Downloading visionos player API JSON
+[youtube] nDl0aw3GaXk: Downloading m3u8 information
+[youtube] nDl0aw3GaXk: Downloading player 21090930-main
+[youtube] [jsc:node] Solving JS challenges using node
+WARNING: [youtube] [jsc] Remote component challenge solver script (node) was skipped. It may be required to solve JS challenges. You can enable the download with  --remote-components ejs:github  (recommended). For more information and alternatives, refer to  https://github.com/yt-dlp/yt-dlp/wiki/EJS
+WARNING: [youtube] nDl0aw3GaXk: n challenge solving failed: Some formats may be missing. Ensure you have a supported JavaScript runtime and challenge solver script distribution installed. Review any warnings presented before this message. For more details, refer to  https://github.com/yt-dlp/yt-dlp/wiki/EJS
+[info] nDl0aw3GaXk: Downloading 1 format(s): 135+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.f135.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.f140.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.f135.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\nDl0aw3GaXk.f140.m4a (pass -k to keep)

@@ -1,0 +1,27 @@
+{
+  "id": "E2MZRD_RObs",
+  "source_url": "https://www.youtube.com/watch?v=E2MZRD_RObs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\E2MZRD_RObs.log",
+  "filename": "E2MZRD_RObs.mp4",
+  "bytes": 6767229,
+  "sha256": "088cc5d38bd10c061eefaded9eb95034f8d1ad2170aedf302be72b841214d985",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "131.471383"
+    }
+  }
+}

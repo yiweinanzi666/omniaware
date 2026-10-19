@@ -1,0 +1,27 @@
+{
+  "id": "lQGU-P4p5Kk",
+  "source_url": "https://www.youtube.com/watch?v=lQGU-P4p5Kk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\lQGU-P4p5Kk.log",
+  "filename": "lQGU-P4p5Kk.mp4",
+  "bytes": 8662851,
+  "sha256": "3c0761c3cfaa442ced664209d85f658305257c82d60cc30451d899ce660d8922",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "130.472925"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "vpDpM3ioPPM",
+  "source_url": "https://www.youtube.com/watch?v=vpDpM3ioPPM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\vpDpM3ioPPM.log",
+  "filename": "vpDpM3ioPPM.mp4",
+  "bytes": 3612364,
+  "sha256": "2cc9c6e628fe442c3830155a608e9d77378292603483994389281e3812dabb40",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "62.206259"
+    }
+  }
+}

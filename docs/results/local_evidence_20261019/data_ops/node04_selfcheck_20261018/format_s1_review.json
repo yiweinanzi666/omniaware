@@ -1,0 +1,1877 @@
+{
+  "webqa_full": {
+    "questions": 50,
+    "same_qids_as_previous": true,
+    "changed_prompt_hashes": 249,
+    "evidence_image_differences": [],
+    "input_trace_counts": {
+      "direct": {
+        "available": 50,
+        "images": 0,
+        "visual_tokens": 0,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0,
+        "bad_direct_image_count": 0
+      },
+      "static_text": {
+        "available": 50,
+        "images": 0,
+        "visual_tokens": 0,
+        "empty_non_refusal": 0,
+        "refusal": 1,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      },
+      "static_image": {
+        "available": 49,
+        "images": 242,
+        "visual_tokens": 55802,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0,
+        "image_questions": 22,
+        "missing_images_or_tokens": 0
+      },
+      "static_mixed": {
+        "available": 50,
+        "images": 128,
+        "visual_tokens": 29487,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      },
+      "rerank_static": {
+        "available": 50,
+        "images": 44,
+        "visual_tokens": 10344,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      }
+    },
+    "instruction_matches_approved": true,
+    "frozen_config_comparison": {
+      "max_new_tokens": {
+        "old": 384,
+        "new": 384,
+        "equal": true
+      },
+      "max_pixels": {
+        "old": 262144,
+        "new": 262144,
+        "equal": true
+      },
+      "split_seed": {
+        "old": 2027,
+        "new": 2027,
+        "equal": true
+      },
+      "split_qids_sha256": {
+        "old": {
+          "calib": "1dd2a2d4c7c7cb3882150a0c51bd5f15de7fd7f10c67c0265432362c5010f6c0",
+          "dev": "804f5532d836a0830ab734873f30f36d306d01a90f95dd2afff812d00be3eee0",
+          "test": "5dcec09794c3f9db9f7f6e44b863fb90933dc9521766c875adbc8fd8a96871d3"
+        },
+        "new": {
+          "calib": "1dd2a2d4c7c7cb3882150a0c51bd5f15de7fd7f10c67c0265432362c5010f6c0",
+          "dev": "804f5532d836a0830ab734873f30f36d306d01a90f95dd2afff812d00be3eee0",
+          "test": "5dcec09794c3f9db9f7f6e44b863fb90933dc9521766c875adbc8fd8a96871d3"
+        },
+        "equal": true
+      },
+      "evaluation_qids_sha256": {
+        "old": "c45ad5e50859f5f72543180bb3be252f03b76a18e50bde19eeb4401776905515",
+        "new": "c45ad5e50859f5f72543180bb3be252f03b76a18e50bde19eeb4401776905515",
+        "equal": true
+      },
+      "dtype": {
+        "old": "float32",
+        "new": "float32",
+        "equal": true
+      }
+    },
+    "env": [
+      {
+        "written_utc": "2026-10-18T09:37:28.376228+00:00",
+        "argv": [
+          "/home/user/Futaoran/omniaware_v2_format_20261018/src/omniaware/run.py",
+          "--dataset",
+          "webqa_full",
+          "--split",
+          "dev",
+          "--model",
+          "8b",
+          "--dtype",
+          "float32",
+          "--tag",
+          "v2_s1_webqa_full",
+          "--calib-source",
+          "train",
+          "--n-calib",
+          "500",
+          "--n-dev",
+          "256",
+          "--split-seed",
+          "2027",
+          "--v2",
+          "--v2-reranker",
+          "--n-eval",
+          "50",
+          "--max-empty-rate",
+          "0.005"
+        ],
+        "git_commit": "318ab6c59a9bba7d379e166d119074443bb68892",
+        "git_branch": "fix/node04-answer-format-20261018",
+        "git_dirty": false,
+        "git_dirty_files": [],
+        "python": "3.11.17",
+        "platform": "Linux-4.18.0-348.el8.x86_64-x86_64-with-glibc2.28",
+        "torch": "2.11.0+cu128",
+        "transformers": "5.5.3",
+        "numpy": "2.4.6",
+        "cuda_available": true,
+        "cuda_version": "12.8",
+        "gpus": [
+          "NVIDIA L20"
+        ],
+        "cudnn_benchmark": false,
+        "matmul_precision": "highest",
+        "model": {
+          "kind": "qwen3_vl",
+          "device": "cuda",
+          "dtype": "torch.float32",
+          "attn_implementation": "sdpa",
+          "n_layers": 36,
+          "vocab_size": 151669,
+          "image_size": {
+            "shortest_edge": 65536,
+            "longest_edge": 262144
+          }
+        }
+      }
+    ],
+    "prompt_rows": 20,
+    "log_has_env": true,
+    "log_has_done": true,
+    "completion_hashes_match": {
+      "output": true,
+      "config": true
+    },
+    "completion": {
+      "dataset": "webqa_full",
+      "questions": 50,
+      "output": "webqa_full.jsonl",
+      "output_sha256": "9411b0f543be42bd17844ac55be647b1ef5b1c86ede787197ebf8a64a3aa7aad",
+      "config": "webqa_full_config.json",
+      "config_sha256": "553a266325449eb4b1d53b2c1b5855b4bccdb081d56ce2b15502056004d1270d",
+      "written_utc": "2026-10-18T09:56:31.204113+00:00",
+      "empty_answer_rate": 0.0,
+      "refusal_rate": 0.0018214936247723133,
+      "n_answers": 549,
+      "n_empty": 0,
+      "n_blank": 0,
+      "n_citation_only": 0,
+      "n_refusal": 1,
+      "empty_by_arm": {
+        "direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static_joint": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "gated:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_trigger:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_shared:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_text": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 1
+        },
+        "action:static_image": {
+          "n": 49,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_mixed": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:rerank_static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        }
+      }
+    },
+    "format": {
+      "answer_format": "answer_first",
+      "questions": 50,
+      "actions": {
+        "direct": {
+          "questions": 50,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.98,
+          "template_start": 0.1
+        },
+        "static_text": {
+          "questions": 50,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.86,
+          "template_start": 0.22
+        },
+        "static_image": {
+          "questions": 49,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.9591836734693877,
+          "template_start": 0.1836734693877551
+        },
+        "static_mixed": {
+          "questions": 50,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.96,
+          "template_start": 0.16
+        },
+        "rerank_static": {
+          "questions": 50,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.94,
+          "template_start": 0.16
+        }
+      },
+      "min_answer_first": 0.9,
+      "passed": true,
+      "below": []
+    },
+    "first20": [
+      {
+        "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+        "question": "Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?",
+        "actions": {
+          "direct": {
+            "short": "Red Fox Battalion",
+            "answer": "The Red Fox Battalion came first, predating the British officer later known as the \"Red Fox.\"",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Red Fox Battalion",
+            "answer": "The \"Red Fox Battalion\" came first, as it was formed on 22 September 1917, predating Lieutenant Albert Michael Sinclair, known as the \"Red Fox,\" who was a prisoner during World War II.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "British military officer",
+            "answer": "The British military officer later known as the \"Red Fox\" came first, as there is no historical record of a \"Red Fox Battalion\" in military history.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "British military officer",
+            "answer": "The British military officer, Lieutenant Albert Michael Sinclair, known as the \"Red Fox,\" predates the \"Red Fox Battalion\" by several decades.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Red Fox Battalion",
+            "answer": "The \"Red Fox Battalion\" came first, established on 22 September 1917, predating the British officer known as \"Red Fox\" who was active during World War II.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5d5742a0dba11ecb1e81171463288e9",
+        "question": "What Latin name is given to the daughter of Zeus and Demeter?",
+        "actions": {
+          "direct": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Proserpina",
+            "answer": "The daughter of Zeus and Demeter is known in Latin as Proserpina.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Kore",
+            "answer": "The daughter of Zeus and Demeter is called Kore.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5d034e20dba11ecb1e81171463288e9",
+        "question": "What type of ship building technique might have been used to make quadriremes?",
+        "actions": {
+          "direct": {
+            "short": "Clinker-built",
+            "answer": "Quadriremes were likely constructed using clinker-built shipbuilding techniques, where overlapping planks are fastened together.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Frame-first construction",
+            "answer": "Quadriremes were likely built using frame-first construction, a technique originating from Mediterranean shipbuilding traditions.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Keel and frame construction",
+            "answer": "Quadriremes were built using keel and frame construction, a technique that provided structural integrity for large, oared warships.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Frame-first construction",
+            "answer": "Quadriremes, like other ancient warships, were likely built using frame-first construction, where the internal framework is assembled before attaching the planks.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Frame-first construction",
+            "answer": "Quadriremes were likely built using frame-first construction, a technique involving laying down the vessel’s framework before attaching planks.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5db7faa0dba11ecb1e81171463288e9",
+        "question": "The mineral composed of iron (II) carbonate and is 48% iron is commonly found where?",
+        "actions": {
+          "direct": {
+            "short": "Siderite",
+            "answer": "Siderite, an iron(II) carbonate mineral that is 48% iron by mass, is commonly found in sedimentary rocks and hydrothermal deposits.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Siderite",
+            "answer": "Siderite, the mineral composed of iron (II) carbonate and containing 48% iron, is commonly found in iron formations and sedimentary rocks.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Siderite",
+            "answer": "Siderite, a mineral composed of iron(II) carbonate and containing 48% iron, is commonly found in sedimentary rocks.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Siderite",
+            "answer": "Siderite, the mineral composed of iron (II) carbonate and containing 48% iron, is commonly found in iron ore deposits.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Siderite",
+            "answer": "Siderite, the mineral composed of iron (II) carbonate, is commonly found in iron ore deposits and is valued for being 48% iron.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5c128c60dba11ecb1e81171463288e9",
+        "question": "Which is more triangular: The Pro Football Hall of Fame or the Rock and Roll Hall of Fame?",
+        "actions": {
+          "direct": {
+            "short": "Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "The Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame due to its prominent pyramid-like glass structure.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5db03fe0dba11ecb1e81171463288e9",
+        "question": "What part of the Limestone Massif of northwestern Syria are part of the four ethnic mountains of western Syria?",
+        "actions": {
+          "direct": {
+            "short": "Jabal al-Akrad",
+            "answer": "The Jabal al-Akrad is part of the four ethnic mountains of western Syria and lies within the Limestone Massif of northwestern Syria.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are among the four \"ethnic mountains\" of western Syria.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Al-Hasakah",
+            "answer": "The Al-Hasakah region, part of the Limestone Massif in northwestern Syria, is one of the four ethnic mountains of western Syria.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are one of the four ethnic mountains of western Syria.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains, part of the Limestone Massif of northwestern Syria, are among the four \"ethnic mountains\" of western Syria.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5d331920dba11ecb1e81171463288e9",
+        "question": "Is the diet of the Metopidius indicus and the chimney swift the same?",
+        "actions": {
+          "direct": {
+            "short": "No",
+            "answer": "The diet of Metopidius indicus and the chimney swift is not the same.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift eats flying insects and spiders, while the bronze-winged jacana forages on floating aquatic vegetation.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift feeds on flying insects and spiders, while the bronze-winged jacana forages on aquatic vegetation.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift feeds on flying insects and spiders, while the bronze-winged jacana forages on aquatic vegetation.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5cc8e640dba11ecb1e81171463288e9",
+        "question": "Between an Amanita lividopallescens and a Small pink fungi, which mushroom has the larger cap?",
+        "actions": {
+          "direct": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has a larger cap than the Small pink fungi.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Small pink fungi",
+            "answer": "The Small pink fungi has the larger cap compared to the Amanita lividopallescens.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5cb69580dba11ecb1e81171463288e9",
+        "question": "How are the statues positioned in the stairs at the west entrance of Sha Tin?",
+        "actions": {
+          "direct": {
+            "short": "Facing outward",
+            "answer": "The statues at the west entrance stairs of Sha Tin are positioned facing outward.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Not mentioned",
+            "answer": "The statues at the west entrance of Sha Tin are not described in the provided evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "On both sides",
+            "answer": "The statues are positioned on both sides of the stairs at the west entrance of Sha Tin.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "On both sides",
+            "answer": "The statues are positioned on both sides of the stairs at the west entrance of Sha Tin.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "On both sides",
+            "answer": "The statues are positioned on both sides of the stairs at the west entrance of the Ten Thousand Buddhas Monastery in Sha Tin.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5df71780dba11ecb1e81171463288e9",
+        "question": "Both Medea and Rhesus were most likely written by what great playwright?",
+        "actions": {
+          "direct": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were written by the ancient Greek playwright Euripides.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were written by the great playwright Euripides.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5c272c60dba11ecb1e81171463288e9",
+        "question": "Are the Greek islands pipes in the Museum of Greek Folk Instruments in Athens all the exact same size?",
+        "actions": {
+          "direct": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "The Greek islands pipes displayed in the Museum of Greek Folk Instruments in Athens are not all the exact same size, as shown by the varying lengths and designs of the Askomandoura pipes from Ikaria, Cephalonia, Kalymnos, and Karpathos.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5da29fc0dba11ecb1e81171463288e9",
+        "question": "What are the two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian?",
+        "actions": {
+          "direct": {
+            "short": "Merostomata and Remipedia",
+            "answer": "The two suborders of arthropods that first developed near the end of the Early Cambrian and thrived during the Middle Cambrian are Merostomata and Remipedia.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Agnostida",
+            "answer": "The order Agnostida, an arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian, is the subject of the question, though it is not divided into two suborders as implied.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Agnostida and Eodiscina",
+            "answer": "The two suborders of arthropods that first developed near the end of the Early Cambrian and thrived during the Middle Cambrian are Agnostida and Eodiscina.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Agnostida",
+            "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostida and the trilobites from the Redlichiida, Corynexochida, and Ptychopariida orders.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Agnostina and Eodiscina",
+            "answer": "The two suborders of the order Agnostida, which first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian, are Agnostina and Eodiscina.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+        "question": "Between Union Square in NYC and Union Square in San Francisco, do either or both have palm trees?",
+        "actions": {
+          "direct": {
+            "short": "No",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco has palm trees.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco are mentioned as having palm trees in the provided evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "San Francisco",
+            "answer": "Union Square in San Francisco has palm trees, while Union Square in NYC does not.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "San Francisco",
+            "answer": "Union Square in San Francisco has palm trees, but Union Square in NYC does not.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco is mentioned as having palm trees in the provided evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5c617e60dba11ecb1e81171463288e9",
+        "question": "Is the Golden Pavilion Temple near a pond ?",
+        "actions": {
+          "direct": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is located near a pond.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is near a pond, as the reflection of its golden surfaces on the pond is noted as a key visual feature.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is situated near a pond, as shown in multiple images of the temple reflecting in the water.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is situated near a pond, as evidenced by its reflection visible in the water in multiple images.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple, specifically Kinkaku-ji in Kyoto, Japan, is located near a pond called Kyōko-chi.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+        "question": "Is Lavenham High Street a one-way street or is it open to two-way traffic?",
+        "actions": {
+          "direct": {
+            "short": "Two-way",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Not specified",
+            "answer": "The provided evidence does not indicate whether Lavenham High Street is one-way or open to two-way traffic.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Two-way",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Two-way",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Two-way traffic",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5c50c840dba11ecb1e81171463288e9",
+        "question": "Which purple flowers have the most petals?",
+        "actions": {
+          "direct": {
+            "short": "Hydrangea macrophylla",
+            "answer": "Hydrangea macrophylla has the most petals among purple flowers, often displaying hundreds per bloom.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Passiflora incarnata",
+            "answer": "Passiflora incarnata has five petals, which is the highest number mentioned among the purple flowers described.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Aster novae-angliae",
+            "answer": "The purple Aster novae-angliae flowers have the most petals, with each flower displaying numerous slender, elongated petals radiating from a yellow center.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Aster",
+            "answer": "The purple aster flowers have the most petals, with each flower displaying numerous slender petals surrounding a yellow center.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Passiflora incarnata",
+            "answer": "Passiflora incarnata has five petals, which is the highest number mentioned among the purple flowers listed.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5ce9d120dba11ecb1e81171463288e9",
+        "question": "Are there gaps between the petals of both the Alcea Rosea Hollyhocks and the Packera cana?",
+        "actions": {
+          "direct": {
+            "short": "No",
+            "answer": "Neither Alcea Rosea Hollyhocks nor Packera cana have noticeable gaps between their petals.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "There are no gaps between the petals of either the Alcea Rosea Hollyhocks or the Packera cana, as neither species is described with such a feature in the provided evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "There are no gaps between the petals of the Alcea Rosea Hollyhocks shown, and Packera cana is not depicted in the evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "There are no gaps between the petals of Alcea Rosea Hollyhocks, and Packera cana is not depicted in the evidence.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Yes",
+            "answer": "Both Alcea Rosea Hollyhocks and Packera cana have visible gaps between their petals.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5d76de80dba11ecb1e81171463288e9",
+        "question": "How many bilabial consonants are used in the system that was created in 1886 so that people could write down sounds of languages in a standard way?",
+        "actions": {
+          "direct": {
+            "short": "None",
+            "answer": "The 1886 system, the International Phonetic Alphabet, does not use bilabial consonants as a category but rather specifies individual sounds, including bilabial ones like /p/, /b/, /m/, which are part of its inventory.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "eight",
+            "answer": "The system created in 1886 to write down sounds of languages in a standard way, the International Phonetic Alphabet, uses eight bilabial consonants.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "1886",
+            "answer": "The system created in 1886, the International Phonetic Alphabet, uses 1886 bilabial consonants.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Eight",
+            "answer": "The system created in 1886, the International Phonetic Alphabet, uses eight bilabial consonants.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "eight",
+            "answer": "The system created in 1886 to write down sounds of languages in a standard way, the International Phonetic Alphabet, uses eight bilabial consonants.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5de89020dba11ecb1e81171463288e9",
+        "question": "How much closer is Gainesville Regional Airport to Gainesville than Winchester Airport is to Winchester, Ontario, Canada?",
+        "actions": {
+          "direct": {
+            "short": "Gainesville Regional Airport is closer.",
+            "answer": "Gainesville Regional Airport is closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "3 miles closer",
+            "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Not applicable",
+            "answer": "Gainesville Regional Airport is not in Ontario, Canada, and there is no Winchester Airport in Ontario, so the question cannot be answered with a distance.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "3 miles closer",
+            "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "3 miles",
+            "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "d5dce9300dba11ecb1e81171463288e9",
+        "question": "What is the name for the type of person that is prejudiced against the victims of the attack that Philo of Alexandria describes as occurring in 38 CE and resulting in thousands of deaths?",
+        "actions": {
+          "direct": {
+            "short": "Sadducees",
+            "answer": "The Sadducees were the group prejudiced against the victims of the attack Philo of Alexandria described in 38 CE, which resulted in thousands of deaths.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "antisemite",
+            "answer": "A person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_image": {
+            "short": "Antisemite",
+            "answer": "The term for the type of person prejudiced against the victims of the attack Philo of Alexandria described in 38 CE is an antisemite.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Antisemite",
+            "answer": "A person prejudiced against Jews, the victims of the attack Philo of Alexandria described in 38 CE, is called an antisemite.",
+            "answer_first_ok": true,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Antisemite",
+            "answer": "A person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+            "answer_first_ok": true,
+            "refusal": false
+          }
+        }
+      }
+    ]
+  },
+  "okvqa_gs": {
+    "questions": 50,
+    "same_qids_as_previous": true,
+    "changed_prompt_hashes": 200,
+    "evidence_image_differences": [],
+    "input_trace_counts": {
+      "direct": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 1,
+        "missing_topk_text": 0,
+        "bad_direct_image_count": 0
+      },
+      "static_text": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      },
+      "static_mixed": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      },
+      "rerank_static": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "empty_non_refusal": 0,
+        "refusal": 0,
+        "hit_token_cap": 0,
+        "missing_topk_text": 0
+      }
+    },
+    "instruction_matches_approved": true,
+    "frozen_config_comparison": {
+      "max_new_tokens": {
+        "old": 30,
+        "new": 30,
+        "equal": true
+      },
+      "max_pixels": {
+        "old": 262144,
+        "new": 262144,
+        "equal": true
+      },
+      "split_seed": {
+        "old": 2027,
+        "new": 2027,
+        "equal": true
+      },
+      "split_qids_sha256": {
+        "old": {
+          "calib": "41c2c01862ec7c27358c32dd617ba322e941d61cf489f8c9d15b8a162b0ef3a1",
+          "dev": "a20cbf4c77b910ab4091b1bbca996c8e40bda66851a684f57bc459e1c9a98e6a",
+          "test": "8aaa962f20983e1d9719795754439c04097e79981f6564e38e3db62a201d7a41"
+        },
+        "new": {
+          "calib": "41c2c01862ec7c27358c32dd617ba322e941d61cf489f8c9d15b8a162b0ef3a1",
+          "dev": "a20cbf4c77b910ab4091b1bbca996c8e40bda66851a684f57bc459e1c9a98e6a",
+          "test": "8aaa962f20983e1d9719795754439c04097e79981f6564e38e3db62a201d7a41"
+        },
+        "equal": true
+      },
+      "evaluation_qids_sha256": {
+        "old": "171dd22e795ea2f378804f627ae78b00b8e14d955b710e71242e23f424f6e42d",
+        "new": "171dd22e795ea2f378804f627ae78b00b8e14d955b710e71242e23f424f6e42d",
+        "equal": true
+      },
+      "dtype": {
+        "old": "float32",
+        "new": "float32",
+        "equal": true
+      }
+    },
+    "env": [
+      {
+        "written_utc": "2026-10-18T09:59:20.911226+00:00",
+        "argv": [
+          "/home/user/Futaoran/omniaware_v2_format_20261018/src/omniaware/run.py",
+          "--dataset",
+          "okvqa_gs",
+          "--split",
+          "dev",
+          "--model",
+          "8b",
+          "--dtype",
+          "float32",
+          "--tag",
+          "v2_s1_okvqa_gs",
+          "--calib-source",
+          "heldout",
+          "--n-calib",
+          "500",
+          "--n-dev",
+          "256",
+          "--split-seed",
+          "2027",
+          "--v2",
+          "--v2-reranker",
+          "--n-eval",
+          "50",
+          "--max-empty-rate",
+          "0.005"
+        ],
+        "git_commit": "318ab6c59a9bba7d379e166d119074443bb68892",
+        "git_branch": "fix/node04-answer-format-20261018",
+        "git_dirty": false,
+        "git_dirty_files": [],
+        "python": "3.11.17",
+        "platform": "Linux-4.18.0-348.el8.x86_64-x86_64-with-glibc2.28",
+        "torch": "2.11.0+cu128",
+        "transformers": "5.5.3",
+        "numpy": "2.4.6",
+        "cuda_available": true,
+        "cuda_version": "12.8",
+        "gpus": [
+          "NVIDIA L20"
+        ],
+        "cudnn_benchmark": false,
+        "matmul_precision": "highest",
+        "model": {
+          "kind": "qwen3_vl",
+          "device": "cuda",
+          "dtype": "torch.float32",
+          "attn_implementation": "sdpa",
+          "n_layers": 36,
+          "vocab_size": 151669,
+          "image_size": {
+            "shortest_edge": 65536,
+            "longest_edge": 262144
+          }
+        }
+      }
+    ],
+    "prompt_rows": 20,
+    "log_has_env": true,
+    "log_has_done": true,
+    "completion_hashes_match": {
+      "output": true,
+      "config": true
+    },
+    "completion": {
+      "dataset": "okvqa_gs",
+      "questions": 50,
+      "output": "okvqa_gs.jsonl",
+      "output_sha256": "dd955f78f9e536b075ca58ca65f32d5d7b801c90696d6b0518954b6019fc36f4",
+      "config": "okvqa_gs_config.json",
+      "config_sha256": "025ecb90da800ae9dbf595caa2fd19c078a2e3cfda2192332e3b14e5d21d09c9",
+      "written_utc": "2026-10-18T10:11:35.879114+00:00",
+      "empty_answer_rate": 0.0,
+      "refusal_rate": 0.0,
+      "n_answers": 500,
+      "n_empty": 0,
+      "n_blank": 0,
+      "n_citation_only": 0,
+      "n_refusal": 0,
+      "empty_by_arm": {
+        "direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static_joint": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "gated:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_trigger:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_shared:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_text": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_mixed": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:rerank_static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        }
+      }
+    },
+    "format": {
+      "answer_format": "plain",
+      "questions": 50,
+      "actions": {
+        "direct": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.98,
+          "template_start": 0.04
+        },
+        "static_text": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.94,
+          "template_start": 0.08
+        },
+        "static_mixed": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.94,
+          "template_start": 0.08
+        },
+        "rerank_static": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.96,
+          "template_start": 0.06
+        }
+      },
+      "min_answer_first": 0.9,
+      "passed": true,
+      "below": []
+    },
+    "first20": [
+      {
+        "qid": "3296875",
+        "question": "What is the type of dog on the woman's lap?",
+        "actions": {
+          "direct": {
+            "short": "cavalier king charles spaniel",
+            "answer": "cavalier king charles spaniel",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Cavalier King Charles Spaniel",
+            "answer": "Cavalier King Charles Spaniel",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Cavalier King Charles Spaniel",
+            "answer": "Cavalier King Charles Spaniel",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "bichon frise",
+            "answer": "bichon frise",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "4703135",
+        "question": "What camera is she using to take this picture?",
+        "actions": {
+          "direct": {
+            "short": "digital camera",
+            "answer": "digital camera",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "camera phone",
+            "answer": "camera phone",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "camera phone",
+            "answer": "camera phone",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "digital camera",
+            "answer": "digital camera",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "5789675",
+        "question": "How fast can this train go?",
+        "actions": {
+          "direct": {
+            "short": "250 mph",
+            "answer": "250 mph",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "311 mph",
+            "answer": "311 mph",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "311 mph",
+            "answer": "311 mph",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "300 mph",
+            "answer": "300 mph",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1736935",
+        "question": "What derby is the horse apart of?",
+        "actions": {
+          "direct": {
+            "short": "kentucky derby",
+            "answer": "kentucky derby",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Kentucky Derby",
+            "answer": "Kentucky Derby",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Kentucky Derby",
+            "answer": "Kentucky Derby",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Kentucky Derby",
+            "answer": "Kentucky Derby",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "236715",
+        "question": "What move is this considered?",
+        "actions": {
+          "direct": {
+            "short": "serve",
+            "answer": "serve",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "serve",
+            "answer": "serve",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "serve",
+            "answer": "serve",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "serve",
+            "answer": "serve",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1987175",
+        "question": "The man is indicating what to the obeserver?",
+        "actions": {
+          "direct": {
+            "short": "shhh",
+            "answer": "shhh",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "shhh",
+            "answer": "shhh",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "shhh",
+            "answer": "shhh",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "shhh",
+            "answer": "shhh",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "532295",
+        "question": "Name the material which is used to make the name board shown in this picture?",
+        "actions": {
+          "direct": {
+            "short": "metal",
+            "answer": "metal",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "2031105",
+        "question": "When was this type of vehicle first made?",
+        "actions": {
+          "direct": {
+            "short": "1880",
+            "answer": "1880",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "1885",
+            "answer": "1885",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "1885",
+            "answer": "1885",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "1885",
+            "answer": "1885",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "4400005",
+        "question": "The natural structure shown is made of what material?",
+        "actions": {
+          "direct": {
+            "short": "rock",
+            "answer": "rock",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "rock",
+            "answer": "rock",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "rock",
+            "answer": "rock",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "rock",
+            "answer": "rock",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "2018255",
+        "question": "Who made this?",
+        "actions": {
+          "direct": {
+            "short": "Cake Boss",
+            "answer": "Cake Boss",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Oren Neu Dag",
+            "answer": "Oren Neu Dag",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Oren Neu Dag",
+            "answer": "Oren Neu Dag",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Thomas Mayer",
+            "answer": "Thomas Mayer",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1546075",
+        "question": "What kind of climate do those trees flourish in?",
+        "actions": {
+          "direct": {
+            "short": "temperate",
+            "answer": "temperate",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "warm and sunny",
+            "answer": "warm and sunny",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "warm and sunny",
+            "answer": "warm and sunny",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "tropical",
+            "answer": "tropical",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "5427825",
+        "question": "What time of year is it?",
+        "actions": {
+          "direct": {
+            "short": "winter",
+            "answer": "winter",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "winter",
+            "answer": "winter",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "winter",
+            "answer": "winter",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "autumn",
+            "answer": "autumn",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1974995",
+        "question": "What year did the company advertising on the side of this bag open for business?",
+        "actions": {
+          "direct": {
+            "short": "1946",
+            "answer": "1946",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "1901",
+            "answer": "1901",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "1901",
+            "answer": "1901",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "1901",
+            "answer": "1901",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "293465",
+        "question": "What makes up the smoke stack on this cake?",
+        "actions": {
+          "direct": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "4812675",
+        "question": "What activity is the man in the canoe about to do?",
+        "actions": {
+          "direct": {
+            "short": "row",
+            "answer": "row",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "canoeing",
+            "answer": "canoeing",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "canoeing",
+            "answer": "canoeing",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "paddle",
+            "answer": "paddle",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "5528425",
+        "question": "What position is the player playing?",
+        "actions": {
+          "direct": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1187415",
+        "question": "How high can this kite fly?",
+        "actions": {
+          "direct": {
+            "short": "100 feet",
+            "answer": "100 feet",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "2984405",
+        "question": "What model plane is this?",
+        "actions": {
+          "direct": {
+            "short": "boeing 737",
+            "answer": "boeing 737",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Boeing 737",
+            "answer": "Boeing 737",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Boeing 737",
+            "answer": "Boeing 737",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Boeing 737",
+            "answer": "Boeing 737",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "2022015",
+        "question": "Where are these donuts being made?",
+        "actions": {
+          "direct": {
+            "short": "bakery",
+            "answer": "bakery",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "at a donut shop",
+            "answer": "at a donut shop",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "at a donut shop",
+            "answer": "at a donut shop",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "on premises",
+            "answer": "on premises",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      },
+      {
+        "qid": "1863225",
+        "question": "What city is this in?",
+        "actions": {
+          "direct": {
+            "short": "new york",
+            "answer": "new york",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_text": {
+            "short": "Delhi",
+            "answer": "Delhi",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "static_mixed": {
+            "short": "Delhi",
+            "answer": "Delhi",
+            "answer_first_ok": null,
+            "refusal": false
+          },
+          "rerank_static": {
+            "short": "Washington, D.C.",
+            "answer": "Washington, D.C.",
+            "answer_first_ok": null,
+            "refusal": false
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "measured_at": "2026-10-15T16:42:28.1308276+08:00",
+  "source": "hf:Ancci/webqa_large",
+  "source_manifest": "D:\\WWW2027\\data_ops\\WEBQA_HF_MANIFEST.json",
+  "chunks_total": 51,
+  "chunks_partial": 0,
+  "chunks_complete": 51,
+  "bytes_landed": 54445524319,
+  "bytes_contiguous": 54445524319,
+  "bytes_staged": 0,
+  "bytes_target": 54445524319,
+  "percent": 100.0,
+  "recent_rate_mib_s": null,
+  "measurement_seconds": 0.065566,
+  "estimated_remaining_hours": null,
+  "process_ids": [],
+  "proxy_url": "http://127.0.0.1:7897",
+  "resume_mode": "continuous .part prefix plus persistent disjoint ranges",
+  "disk_free_bytes": 251359211520,
+  "other_datasets": "user downloads other datasets; current download scope is WebQA"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "bYwbenxP4-I",
+  "source_url": "https://www.youtube.com/watch?v=bYwbenxP4-I",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\bYwbenxP4-I.log",
+  "filename": "bYwbenxP4-I.mp4",
+  "bytes": 3230249,
+  "sha256": "9eeeaf35d818da32a1932489369339b8e3b07557f7163730fc1b6deb5e5bee96",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "63.692336"
+    }
+  }
+}

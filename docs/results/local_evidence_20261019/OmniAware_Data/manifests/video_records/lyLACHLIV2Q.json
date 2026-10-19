@@ -1,0 +1,27 @@
+{
+  "id": "lyLACHLIV2Q",
+  "source_url": "https://www.youtube.com/watch?v=lyLACHLIV2Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\lyLACHLIV2Q.log",
+  "filename": "lyLACHLIV2Q.mp4",
+  "bytes": 9413944,
+  "sha256": "fb3518c2040084308aa7d35eeb2775510f0216240d15e41a06bd7f48519ff746",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "207.145215"
+    }
+  }
+}

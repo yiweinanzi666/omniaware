@@ -1,0 +1,27 @@
+{
+  "id": "GC-gjd2STjU",
+  "source_url": "https://www.youtube.com/watch?v=GC-gjd2STjU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\GC-gjd2STjU.log",
+  "filename": "GC-gjd2STjU.mp4",
+  "bytes": 33284089,
+  "sha256": "b481ed4b96030cd8d7871fe885862578525b980fca99923ace003f3d4e24f2b9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "562.758821"
+    }
+  }
+}

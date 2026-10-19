@@ -1,0 +1,13 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=TPNAsBooGhU
+[youtube] TPNAsBooGhU: Downloading webpage
+[youtube] TPNAsBooGhU: Downloading visionos player API JSON
+[youtube] TPNAsBooGhU: Downloading m3u8 information
+[info] TPNAsBooGhU: Downloading 1 format(s): 134+140-19
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.f140-19.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\TPNAsBooGhU.f140-19.m4a (pass -k to keep)

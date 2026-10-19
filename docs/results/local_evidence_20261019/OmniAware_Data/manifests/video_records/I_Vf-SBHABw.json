@@ -1,0 +1,27 @@
+{
+  "id": "I_Vf-SBHABw",
+  "source_url": "https://www.youtube.com/watch?v=I_Vf-SBHABw",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\I_Vf-SBHABw.log",
+  "filename": "I_Vf-SBHABw.mp4",
+  "bytes": 14806068,
+  "sha256": "00c96a3b7901889eab9e511fe1c5ec35d1bf34e0b37aa83351a61d302c33271f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "296.170522"
+    }
+  }
+}

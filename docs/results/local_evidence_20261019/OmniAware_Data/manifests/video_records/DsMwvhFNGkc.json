@@ -1,0 +1,27 @@
+{
+  "id": "DsMwvhFNGkc",
+  "source_url": "https://www.youtube.com/watch?v=DsMwvhFNGkc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\DsMwvhFNGkc.log",
+  "filename": "DsMwvhFNGkc.mp4",
+  "bytes": 3091945,
+  "sha256": "d1f599ba48a6e5279859174f7033b16e62eec7ab48e4d417be18310c9aaf725b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "60.766621"
+    }
+  }
+}

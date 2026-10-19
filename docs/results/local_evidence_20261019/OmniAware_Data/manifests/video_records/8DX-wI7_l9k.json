@@ -1,0 +1,27 @@
+{
+  "id": "8DX-wI7_l9k",
+  "source_url": "https://www.youtube.com/watch?v=8DX-wI7_l9k",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\8DX-wI7_l9k.log",
+  "filename": "8DX-wI7_l9k.mp4",
+  "bytes": 39935869,
+  "sha256": "2a941b808ae807afbd36c1243c85221f2b1fcbd405db14649f5051102fc9313e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "740.298594"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "VMlmV0ejb-A",
+  "source_url": "https://www.youtube.com/watch?v=VMlmV0ejb-A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VMlmV0ejb-A.log",
+  "filename": "VMlmV0ejb-A.mp4",
+  "bytes": 79357518,
+  "sha256": "86e5007c8f8ccafb76036b5e0627ef5a27451191b66ece7463581add77135c10",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 800,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "886.746848"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+START 2026-10-18T12:27:35+08:00
+COMMAND /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --tag v2_s2_okvqa_gs_dev --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab
+[lock] removing the lock of process 2420983, which is no longer running: okvqa_gs.lock
+[data] okvqa_gs: 5046 total, calib 500 (heldout), dev 256, dev 256
+Loading weights:   0%|          | 0/750 [00:00<?, ?it/s]Loading weights: 100%|██████████| 750/750 [00:00<00:00, 40458.48it/s]
+[model] 8b loaded on cuda in 4.6s, 36 layers
+[env] commit 28e9514dc432d6891a492390bc4bdef176c519ea dirty=False torch 2.11.0+cu128 transformers 5.5.3 attn sdpa dtype torch.bfloat16 gpus ['NVIDIA L20']
+[seakr] threshold -5.9098 (U retrieval rate on calibration 0.626; 3 of 500 calibration questions have no eigen score)
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.

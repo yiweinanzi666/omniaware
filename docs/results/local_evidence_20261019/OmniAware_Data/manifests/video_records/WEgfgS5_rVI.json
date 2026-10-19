@@ -1,0 +1,27 @@
+{
+  "id": "WEgfgS5_rVI",
+  "source_url": "https://www.youtube.com/watch?v=WEgfgS5_rVI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WEgfgS5_rVI.log",
+  "filename": "WEgfgS5_rVI.mp4",
+  "bytes": 5435619,
+  "sha256": "75c563111f3d4e6d8fbbed2f1d15881772831e8fd1c57076ac3fdd7953ef7f51",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "93.065578"
+    }
+  }
+}

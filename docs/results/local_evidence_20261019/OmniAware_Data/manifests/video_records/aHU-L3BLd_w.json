@@ -1,0 +1,27 @@
+{
+  "id": "aHU-L3BLd_w",
+  "source_url": "https://www.youtube.com/watch?v=aHU-L3BLd_w",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\aHU-L3BLd_w.log",
+  "filename": "aHU-L3BLd_w.mp4",
+  "bytes": 12990714,
+  "sha256": "ed08f50a44cf7ef65e5d79e4572effe382cf7a4e1028d965f08e6fece6b86c4f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "255.054000"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "act1vCEchLY",
+  "source_url": "https://www.youtube.com/watch?v=act1vCEchLY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\act1vCEchLY.log",
+  "filename": "act1vCEchLY.mp4",
+  "bytes": 72989008,
+  "sha256": "8393ee0482430a8aaf962d8cbe95afebf6f64c8564c0f70eb59154cf4a50d447",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1002.033923"
+    }
+  }
+}

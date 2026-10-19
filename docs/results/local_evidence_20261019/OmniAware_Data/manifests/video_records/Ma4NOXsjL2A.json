@@ -1,0 +1,27 @@
+{
+  "id": "Ma4NOXsjL2A",
+  "source_url": "https://www.youtube.com/watch?v=Ma4NOXsjL2A",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Ma4NOXsjL2A.log",
+  "filename": "Ma4NOXsjL2A.mp4",
+  "bytes": 28601665,
+  "sha256": "0d65328cda4d48d2bf6932ada5bd26c63c4ddc5f4edb8b070d4a2d8b1460e09e",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "467.814000"
+    }
+  }
+}

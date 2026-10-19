@@ -1,0 +1,27 @@
+{
+  "id": "ZkjN0BRIKUI",
+  "source_url": "https://www.youtube.com/watch?v=ZkjN0BRIKUI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\ZkjN0BRIKUI.log",
+  "filename": "ZkjN0BRIKUI.mp4",
+  "bytes": 8046746,
+  "sha256": "1e48386af8cdee927d822af66612b26d8f81d557a70f1d2c196948125a74a14b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "123.948118"
+    }
+  }
+}

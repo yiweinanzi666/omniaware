@@ -1,0 +1,27 @@
+{
+  "id": "HtMYVp-Mckg",
+  "source_url": "https://www.youtube.com/watch?v=HtMYVp-Mckg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HtMYVp-Mckg.log",
+  "filename": "HtMYVp-Mckg.mp4",
+  "bytes": 11895114,
+  "sha256": "08ce7b527786d9e3831add1a9c5b6a1463d021c32c3d4ce2fc4670c935aaafcc",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "200.597188"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=crHCltuvn9g
+[youtube] crHCltuvn9g: Downloading webpage
+[youtube] crHCltuvn9g: Downloading visionos player API JSON
+ERROR: [youtube] crHCltuvn9g: This video is unavailable
+[youtube] Extracting URL: https://www.youtube.com/watch?v=crHCltuvn9g
+[youtube] crHCltuvn9g: Downloading webpage
+WARNING: [youtube] crHCltuvn9g: Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
+[youtube] crHCltuvn9g: Downloading initial data API JSON
+[youtube] crHCltuvn9g: Downloading visionos player API JSON
+[youtube] crHCltuvn9g: Downloading iframe API JS
+[youtube] crHCltuvn9g: Downloading player 94e937f9-main
+[youtube] crHCltuvn9g: Downloading web player API JSON
+ERROR: [youtube] crHCltuvn9g: Video unavailable

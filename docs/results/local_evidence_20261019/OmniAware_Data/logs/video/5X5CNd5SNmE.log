@@ -1,0 +1,14 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=5X5CNd5SNmE
+[youtube] 5X5CNd5SNmE: Downloading webpage
+[youtube] 5X5CNd5SNmE: Downloading visionos player API JSON
+[youtube] 5X5CNd5SNmE: Downloading m3u8 information
+[info] 5X5CNd5SNmE: Downloading 1 format(s): 135+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.info.json
+[download] Got error: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032). Retrying (1/2)...
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.f135.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.f140.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.f135.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\5X5CNd5SNmE.f140.m4a (pass -k to keep)

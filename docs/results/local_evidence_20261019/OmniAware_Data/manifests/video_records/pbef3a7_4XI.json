@@ -1,0 +1,27 @@
+{
+  "id": "pbef3a7_4XI",
+  "source_url": "https://www.youtube.com/watch?v=pbef3a7_4XI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\pbef3a7_4XI.log",
+  "filename": "pbef3a7_4XI.mp4",
+  "bytes": 33399956,
+  "sha256": "613d2b7c4724e1d2b1c09b78559270d9dbae0c1bd011ccdc15a7019722d45304",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "551.984762"
+    }
+  }
+}

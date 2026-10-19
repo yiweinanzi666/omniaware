@@ -1,0 +1,78 @@
+{
+ "dataset": "okvqa_gs",
+ "questions": 50,
+ "output": "okvqa_gs.jsonl",
+ "output_sha256": "ba5343a1f06e97569d39619b6be18eeaedd6eaf42e0165b7874524700d3e599d",
+ "config": "okvqa_gs_config.json",
+ "config_sha256": "c3026ea1bb495c405e44eedbe654d430ae7c33bcc0b4173c2468e4c2480564e7",
+ "written_utc": "2026-10-17T12:55:56.249149+00:00",
+ "empty_answer_rate": 0.0,
+ "refusal_rate": 0.0,
+ "n_answers": 500,
+ "n_empty": 0,
+ "n_blank": 0,
+ "n_citation_only": 0,
+ "n_refusal": 0,
+ "empty_by_arm": {
+  "direct": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "static_joint": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "gated:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "nte_trigger:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "nte_shared:static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "action:direct": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "action:static_text": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "action:static_mixed": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  },
+  "action:rerank_static": {
+   "n": 50,
+   "blank": 0,
+   "citation_only": 0,
+   "refusal": 0
+  }
+ }
+}

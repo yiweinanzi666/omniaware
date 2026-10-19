@@ -1,0 +1,27 @@
+{
+  "id": "_eOA-zawYEA",
+  "source_url": "https://www.youtube.com/watch?v=_eOA-zawYEA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\_eOA-zawYEA.log",
+  "filename": "_eOA-zawYEA.mp4",
+  "bytes": 6967402,
+  "sha256": "5bebd958ab8913274847faf4dfaef05f333651a9f5011e71b50d61e55bc57a3f",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "114.288617"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TPNAsBooGhU",
+  "source_url": "https://www.youtube.com/watch?v=TPNAsBooGhU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\TPNAsBooGhU.log",
+  "filename": "TPNAsBooGhU.mp4",
+  "bytes": 9489786,
+  "sha256": "1404374d4730ec274904888cefd9c16d73b9f83e7f593af3661eec4a5f444ab0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "131.030204"
+    }
+  }
+}

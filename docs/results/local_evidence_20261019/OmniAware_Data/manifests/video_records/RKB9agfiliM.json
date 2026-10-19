@@ -1,0 +1,27 @@
+{
+  "id": "RKB9agfiliM",
+  "source_url": "https://www.youtube.com/watch?v=RKB9agfiliM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\RKB9agfiliM.log",
+  "filename": "RKB9agfiliM.mp4",
+  "bytes": 12578732,
+  "sha256": "37696e6d7f31680d8dce6f722a7a9052af43c3aca23277b726fcc99b1f664f0b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "151.486984"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "_kNfs-Oh3KE",
+  "source_url": "https://www.youtube.com/watch?v=_kNfs-Oh3KE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\_kNfs-Oh3KE.log",
+  "filename": "_kNfs-Oh3KE.mp4",
+  "bytes": 55467947,
+  "sha256": "bd6d63663bbfa9ece1baec17332aed327c34544f157e2660cd017542d98cc020",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "900.911020"
+    }
+  }
+}

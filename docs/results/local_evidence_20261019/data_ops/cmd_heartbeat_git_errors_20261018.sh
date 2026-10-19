@@ -1,0 +1,3 @@
+cd /home/user/Futaoran/omniaware_v2_exec
+printf 'GIT\n'; git status --short; git rev-parse --abbrev-ref HEAD; git rev-parse HEAD
+printf 'ERROR_SCAN\n'; for f in /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/s2_webqa_full_20261017.log /home/user/Futaoran/omniaware/assets/manifests/v2_run_20261017/s2_okvqa_gs_20261017.log /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev/webqa_full.log /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.log; do echo FILE=$f; grep -Eina 'traceback|error|failed|exception|killed|oom' "$f" 2>/dev/null | tail -5 || true; done

@@ -1,0 +1,25 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=8mIGGn3AS1E
+[youtube] 8mIGGn3AS1E: Downloading webpage
+[youtube] 8mIGGn3AS1E: Downloading visionos player API JSON
+[youtube] 8mIGGn3AS1E: Downloading tv downgraded player API JSON
+[youtube] 8mIGGn3AS1E: Downloading web embedded client config
+[youtube] 8mIGGn3AS1E: Downloading player 21090930-main
+[youtube] 8mIGGn3AS1E: Downloading web embedded player API JSON
+[youtube] [jsc:node] Solving JS challenges using node
+WARNING: [youtube] [jsc] Remote component challenge solver script (node) was skipped. It may be required to solve JS challenges. You can enable the download with  --remote-components ejs:github  (recommended). For more information and alternatives, refer to  https://github.com/yt-dlp/yt-dlp/wiki/EJS
+WARNING: [youtube] 8mIGGn3AS1E: n challenge solving failed: Some formats may be missing. Ensure you have a supported JavaScript runtime and challenge solver script distribution installed. Review any warnings presented before this message. For more details, refer to  https://github.com/yt-dlp/yt-dlp/wiki/EJS
+ERROR: [youtube] 8mIGGn3AS1E: This video is not available
+[youtube] Extracting URL: https://www.youtube.com/watch?v=8mIGGn3AS1E
+[youtube] 8mIGGn3AS1E: Downloading webpage
+[youtube] 8mIGGn3AS1E: Downloading visionos player API JSON
+[youtube] 8mIGGn3AS1E: Downloading tv downgraded player API JSON
+[youtube] 8mIGGn3AS1E: Downloading web embedded client config
+[youtube] 8mIGGn3AS1E: Downloading player 21090930-main
+[youtube] 8mIGGn3AS1E: Downloading web embedded player API JSON
+[youtube] [jsc:node] Solving JS challenges using node
+WARNING: [youtube] 8mIGGn3AS1E: Some web_embedded client https formats have been skipped as they are missing a URL. YouTube may have enabled the SABR-only streaming experiment for the current session. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details
+[info] 8mIGGn3AS1E: Downloading 1 format(s): 18
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\8mIGGn3AS1E.info.json
+[download] Sleeping 5.00 seconds as required by the site...
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\8mIGGn3AS1E.mp4
+[download] Download completed

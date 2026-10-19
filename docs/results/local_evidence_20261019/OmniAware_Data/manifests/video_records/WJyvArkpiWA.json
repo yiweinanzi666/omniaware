@@ -1,0 +1,27 @@
+{
+  "id": "WJyvArkpiWA",
+  "source_url": "https://www.youtube.com/watch?v=WJyvArkpiWA",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\WJyvArkpiWA.log",
+  "filename": "WJyvArkpiWA.mp4",
+  "bytes": 35384829,
+  "sha256": "ce1afab68f9b8defa662ed9e2104036e47d4d2e14a715d5a89690baea7ffe8c5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "382.757732"
+    }
+  }
+}

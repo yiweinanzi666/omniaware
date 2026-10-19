@@ -1,0 +1,235 @@
+{
+  "started": "2026-10-18T02:04:40.514298+08:00",
+  "source": "28e9514dc432d6891a492390bc4bdef176c519ea",
+  "torch": "2.11.0+cu128",
+  "tolerance": {
+    "logits": 0.05,
+    "attention": 0.02
+  },
+  "diagnostic_only": true,
+  "modes": [
+    {
+      "mode": "default",
+      "segmented": {
+        "ok": false,
+        "max_abs_diff": 0.375,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": false,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.404296875,
+            "t_end_attention_max_abs_diff": 0.0014485716819763184,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.404296875,
+            "t_end_attention_max_abs_diff": 0.0014485716819763184,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0007995963096618652,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "ok": false,
+      "seconds": 1.079010248184204
+    },
+    {
+      "mode": "no_reduced_precision",
+      "segmented": {
+        "ok": false,
+        "max_abs_diff": 0.3125,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": false,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.375,
+            "t_end_attention_max_abs_diff": 0.00033593177795410156,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.375,
+            "t_end_attention_max_abs_diff": 0.00033593177795410156,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5625,
+            "t_end_attention_max_abs_diff": 0.0007666945457458496,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "ok": false,
+      "seconds": 0.3777658939361572
+    },
+    {
+      "mode": "math",
+      "segmented": {
+        "ok": false,
+        "max_abs_diff": 0.5,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": false,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0007218122482299805,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0007218122482299805,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.3125,
+            "t_end_attention_max_abs_diff": 0.0008544325828552246,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "ok": false,
+      "seconds": 0.6119787693023682
+    },
+    {
+      "mode": "flash",
+      "error": "Traceback (most recent call last):\n  File \"/home/user/Futaoran/omniaware_selfcheck_logs_20261018/diagnose_precision.py\", line 55, in <module>\n    row['segmented'] = vrm.segmented_check(q, enc)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_selfcheck_20261018/scripts/verify_real_model.py\", line 112, in segmented_check\n    _, _, seg = q.run(enc, None, 1, decode_static=False)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/qwen_eab.py\", line 377, in run\n    base_logits = self._step(suffix, cache, capture=True)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/qwen_eab.py\", line 320, in _step\n    out = self.model(input_ids=ids.to(self.device), past_key_values=cache, use_cache=True, logits_to_keep=1)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/utils/generic.py\", line 876, in wrapper\n    output = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py\", line 1507, in forward\n    outputs = self.model(\n              ^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/utils/generic.py\", line 876, in wrapper\n    output = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py\", line 1346, in forward\n    outputs = self.language_model(\n              ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/utils/generic.py\", line 952, in wrapper\n    output = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/utils/output_capturing.py\", line 248, in wrapper\n    outputs = func(self, *args, **kwargs)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py\", line 916, in forward\n    layer_outputs = decoder_layer(\n                    ^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/modeling_layers.py\", line 93, in __call__\n    return super().__call__(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py\", line 548, in forward\n    hidden_states, _ = self.self_attn(\n                       ^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1779, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1790, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py\", line 492, in forward\n    attn_output, attn_weights = attention_interface(\n                                ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/qwen_eab.py\", line 75, in _eab_sdpa\n    return _ORIG_SDPA(module, query, key, value, attention_mask, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/Futaoran/omniaware_v2_python311/lib/python3.11/site-packages/transformers/integrations/sdpa_attention.py\", line 92, in sdpa_attention_forward\n    attn_output = torch.nn.functional.scaled_dot_product_attention(\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: No available kernel. Aborting execution.\n",
+      "ok": false,
+      "seconds": 0.23021650314331055
+    },
+    {
+      "mode": "fp32_attention",
+      "segmented": {
+        "ok": false,
+        "max_abs_diff": 0.5,
+        "argmax_equal": true,
+        "prompt_tokens": 63,
+        "split": 39
+      },
+      "reference": {
+        "ok": false,
+        "prompt_tokens": 63,
+        "arms": {
+          "static": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0007218122482299805,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans2": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.5,
+            "t_end_attention_max_abs_diff": 0.0007218122482299805,
+            "tokens": [
+              23780
+            ],
+            "reference_tokens": [
+              23780
+            ]
+          },
+          "ans1": {
+            "ok": false,
+            "tokens_match": true,
+            "first_logits_max_abs_diff": 0.3125,
+            "t_end_attention_max_abs_diff": 0.0008544325828552246,
+            "tokens": [
+              2623
+            ],
+            "reference_tokens": [
+              2623
+            ]
+          }
+        }
+      },
+      "ok": false,
+      "seconds": 0.539860725402832
+    }
+  ],
+  "ended": "2026-10-18T02:04:47.502793+08:00"
+}

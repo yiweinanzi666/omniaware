@@ -1,0 +1,27 @@
+{
+  "id": "S9faOmac1d8",
+  "source_url": "https://www.youtube.com/watch?v=S9faOmac1d8",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\S9faOmac1d8.log",
+  "filename": "S9faOmac1d8.mp4",
+  "bytes": 18059137,
+  "sha256": "453e54bd604695f6ea03bb2ce1c8d1f17b53e4e89a066c3b23f0274915551468",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "260.783311"
+    }
+  }
+}

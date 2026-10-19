@@ -1,0 +1,27 @@
+{
+  "id": "nfoMo0On_Ck",
+  "source_url": "https://www.youtube.com/watch?v=nfoMo0On_Ck",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\nfoMo0On_Ck.log",
+  "filename": "nfoMo0On_Ck.mp4",
+  "bytes": 9787831,
+  "sha256": "52f81175bf4097bbf91ab5021fc3d26a8eed54e360c5434f4ecd4f0329e894b4",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "186.107937"
+    }
+  }
+}

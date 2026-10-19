@@ -1,0 +1,27 @@
+{
+  "id": "Um_NJ287WBo",
+  "source_url": "https://www.youtube.com/watch?v=Um_NJ287WBo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Um_NJ287WBo.log",
+  "filename": "Um_NJ287WBo.mp4",
+  "bytes": 18779686,
+  "sha256": "a0589a1398f3ae3078617d4e594e96e34d59d4ab864cf9302e612ba4f00101b0",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "276.085261"
+    }
+  }
+}

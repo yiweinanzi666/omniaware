@@ -1,0 +1,27 @@
+{
+  "id": "AqMaNejiWsI",
+  "source_url": "https://www.youtube.com/watch?v=AqMaNejiWsI",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\AqMaNejiWsI.log",
+  "filename": "AqMaNejiWsI.mp4",
+  "bytes": 30409110,
+  "sha256": "2a9e5d3197486e60795176468baf2c6fca35ada7f18898b3f0c4ab3155c177b3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "627.658594"
+    }
+  }
+}

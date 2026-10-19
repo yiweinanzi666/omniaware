@@ -1,0 +1,12 @@
+{
+ "dataset": "okvqa",
+ "questions": 8,
+ "output": "okvqa.jsonl",
+ "output_sha256": "c7f3b13d644b0d908458a8c94e7f5976690b74d5b94b76105b3d9669c5ce3c13",
+ "config": "okvqa_config.json",
+ "config_sha256": "a0e65a3a2399e66be45affe6beca9b4ceb0c876357bb96a262c7b48061997a3c",
+ "written_utc": "2026-10-13T08:22:33.602040+00:00",
+ "empty_answer_rate": 0.0,
+ "n_answers": 64,
+ "n_empty": 0
+}

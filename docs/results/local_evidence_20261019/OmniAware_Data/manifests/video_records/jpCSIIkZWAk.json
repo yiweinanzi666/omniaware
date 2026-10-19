@@ -1,0 +1,27 @@
+{
+  "id": "jpCSIIkZWAk",
+  "source_url": "https://www.youtube.com/watch?v=jpCSIIkZWAk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\jpCSIIkZWAk.log",
+  "filename": "jpCSIIkZWAk.mp4",
+  "bytes": 9645162,
+  "sha256": "5aea4ddd8da4bd258abc28b346ca1d15bc19fd0437f0fa2e305e9f527ad5fb82",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "181.603265"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "iGybr5-jiTc",
+  "source_url": "https://www.youtube.com/watch?v=iGybr5-jiTc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\iGybr5-jiTc.log",
+  "filename": "iGybr5-jiTc.mp4",
+  "bytes": 25183347,
+  "sha256": "a5dea479451adcbed53fcd717f2900fbb2c6c3323720f34316c10538927c2e65",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "309.452336"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "HgAQMO19Kjs",
+  "source_url": "https://www.youtube.com/watch?v=HgAQMO19Kjs",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HgAQMO19Kjs.log",
+  "filename": "HgAQMO19Kjs.mp4",
+  "bytes": 44662141,
+  "sha256": "0d7360533f1d04d88d998b08cda7396fb95996b0244fb491b1ebd556c84d2e20",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "512.719819"
+    }
+  }
+}

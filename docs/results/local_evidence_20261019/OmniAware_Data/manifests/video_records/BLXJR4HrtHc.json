@@ -1,0 +1,27 @@
+{
+  "id": "BLXJR4HrtHc",
+  "source_url": "https://www.youtube.com/watch?v=BLXJR4HrtHc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\BLXJR4HrtHc.log",
+  "filename": "BLXJR4HrtHc.mp4",
+  "bytes": 20484326,
+  "sha256": "83fdbd05a74c69e100a1d5528d2c35507801cfb0ce57168bd40f630da83c762d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "518.965986"
+    }
+  }
+}

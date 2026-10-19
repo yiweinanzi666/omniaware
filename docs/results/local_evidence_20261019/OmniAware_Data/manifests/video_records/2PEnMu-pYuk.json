@@ -1,0 +1,27 @@
+{
+  "id": "2PEnMu-pYuk",
+  "source_url": "https://www.youtube.com/watch?v=2PEnMu-pYuk",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\2PEnMu-pYuk.log",
+  "filename": "2PEnMu-pYuk.mp4",
+  "bytes": 7812442,
+  "sha256": "6d4d103f28fb7d9f5f5eba1aad159193bb3b6c5c227eefc510313086d04fb139",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "265.380862"
+    }
+  }
+}

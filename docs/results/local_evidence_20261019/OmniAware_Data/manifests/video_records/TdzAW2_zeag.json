@@ -1,0 +1,27 @@
+{
+  "id": "TdzAW2_zeag",
+  "source_url": "https://www.youtube.com/watch?v=TdzAW2_zeag",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\TdzAW2_zeag.log",
+  "filename": "TdzAW2_zeag.mp4",
+  "bytes": 26763165,
+  "sha256": "4d0e634cbc2c721a38cc8ee5fcd37d7ae3676ee42c61f729650cd39eda4ee0a6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "465.885170"
+    }
+  }
+}

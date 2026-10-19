@@ -1,0 +1,27 @@
+{
+  "id": "QK_kLDgrNOg",
+  "source_url": "https://www.youtube.com/watch?v=QK_kLDgrNOg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\QK_kLDgrNOg.log",
+  "filename": "QK_kLDgrNOg.mp4",
+  "bytes": 13928260,
+  "sha256": "729044453501dcf4a5ec82734b838def7dd2823f18239d3ed22ee1336d038311",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "197.787574"
+    }
+  }
+}

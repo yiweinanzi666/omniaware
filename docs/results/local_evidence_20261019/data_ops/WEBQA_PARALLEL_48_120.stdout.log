@@ -1,0 +1,19 @@
+{"count": 51, "total_bytes": 54445524319, "manifest": "D:\\WWW2027\\data_ops\\WEBQA_HF_MANIFEST.json"}
+{"event": "run_start", "mode": "parallel_ranges", "workers": 48, "ranges": 671, "block_size": 4194304, "pid": 11216, "time": 1792048903.6124964}
+{"event": "file_complete", "name": "imgs.7z.043", "status": "downloaded", "bytes": 1073741824, "new_bytes": 11399221, "seconds": 579.89, "time": 1792049483.4271657}
+{"event": "file_complete", "name": "imgs.7z.034", "status": "downloaded", "bytes": 1073741824, "new_bytes": 49057594, "seconds": 1205.97, "time": 1792050109.494706}
+{"event": "file_complete", "name": "imgs.7z.042", "status": "downloaded", "bytes": 1073741824, "new_bytes": 56254643, "seconds": 1445.3, "time": 1792050348.8313975}
+{"event": "file_complete", "name": "imgs.7z.047", "status": "downloaded", "bytes": 1073741824, "new_bytes": 62491118, "seconds": 1574.99, "time": 1792050478.5173995}
+{"event": "file_complete", "name": "imgs.7z.032", "status": "downloaded", "bytes": 1073741824, "new_bytes": 58995607, "seconds": 1804.84, "time": 1792050708.3640587}
+{"event": "file_complete", "name": "imgs.7z.035", "status": "downloaded", "bytes": 1073741824, "new_bytes": 87206905, "seconds": 1965.44, "time": 1792050868.9677873}
+{"event": "file_complete", "name": "imgs.7z.044", "status": "downloaded", "bytes": 1073741824, "new_bytes": 80360321, "seconds": 2026.66, "time": 1792050930.1938033}
+{"event": "file_complete", "name": "imgs.7z.039", "status": "downloaded", "bytes": 1073741824, "new_bytes": 95341342, "seconds": 2336.56, "time": 1792051240.0984552}
+{"event": "file_complete", "name": "imgs.7z.036", "status": "downloaded", "bytes": 1073741824, "new_bytes": 153130423, "seconds": 3017.59, "time": 1792051921.123306}
+{"event": "file_complete", "name": "imgs.7z.040", "status": "downloaded", "bytes": 1073741824, "new_bytes": 170195931, "seconds": 3279.66, "time": 1792052183.1841846}
+{"event": "file_complete", "name": "imgs.7z.038", "status": "downloaded", "bytes": 1073741824, "new_bytes": 182109853, "seconds": 3307.64, "time": 1792052211.17109}
+{"event": "file_complete", "name": "imgs.7z.031", "status": "downloaded", "bytes": 1073741824, "new_bytes": 192407008, "seconds": 3401.73, "time": 1792052305.2479227}
+{"event": "file_complete", "name": "imgs.7z.046", "status": "downloaded", "bytes": 1073741824, "new_bytes": 177845699, "seconds": 3421.7, "time": 1792052325.2305012}
+{"event": "file_complete", "name": "imgs.7z.051", "status": "downloaded", "bytes": 758433119, "new_bytes": 299449699, "seconds": 3951.22, "time": 1792052854.7643576}
+{"event": "file_complete", "name": "imgs.7z.049", "status": "downloaded", "bytes": 1073741824, "new_bytes": 507859780, "seconds": 4692.17, "time": 1792053595.7038436}
+{"event": "file_complete", "name": "imgs.7z.050", "status": "downloaded", "bytes": 1073741824, "new_bytes": 596337503, "seconds": 4738.25, "time": 1792053641.8048449}
+{"event": "run_end", "complete": 51, "total": 51, "time": 1792053641.8078358}

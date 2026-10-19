@@ -1,0 +1,27 @@
+{
+  "id": "S3coOosaeaQ",
+  "source_url": "https://www.youtube.com/watch?v=S3coOosaeaQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\S3coOosaeaQ.log",
+  "filename": "S3coOosaeaQ.mp4",
+  "bytes": 26941388,
+  "sha256": "01b1b34eab907690f54a7190d3e6c75f472020ae033fe0994d0e11b48648128b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "366.968163"
+    }
+  }
+}

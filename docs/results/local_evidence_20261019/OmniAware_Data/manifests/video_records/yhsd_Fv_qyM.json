@@ -1,0 +1,27 @@
+{
+  "id": "yhsd_Fv_qyM",
+  "source_url": "https://www.youtube.com/watch?v=yhsd_Fv_qyM",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\yhsd_Fv_qyM.log",
+  "filename": "yhsd_Fv_qyM.mp4",
+  "bytes": 9415781,
+  "sha256": "1093261600d26e017b7e86564aeeb22415b637b3b0c889075058a562ad3990a3",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "207.888254"
+    }
+  }
+}

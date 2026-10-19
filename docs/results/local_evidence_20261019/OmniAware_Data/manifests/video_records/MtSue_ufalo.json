@@ -1,0 +1,27 @@
+{
+  "id": "MtSue_ufalo",
+  "source_url": "https://www.youtube.com/watch?v=MtSue_ufalo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MtSue_ufalo.log",
+  "filename": "MtSue_ufalo.mp4",
+  "bytes": 53239925,
+  "sha256": "af5383a87952fefe5c777be25db4e7f2a528075d3f00e97ada9b135fcd392115",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1112.978866"
+    }
+  }
+}

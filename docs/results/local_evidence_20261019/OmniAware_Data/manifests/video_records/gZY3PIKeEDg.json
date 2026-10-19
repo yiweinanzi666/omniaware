@@ -1,0 +1,27 @@
+{
+  "id": "gZY3PIKeEDg",
+  "source_url": "https://www.youtube.com/watch?v=gZY3PIKeEDg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\gZY3PIKeEDg.log",
+  "filename": "gZY3PIKeEDg.mp4",
+  "bytes": 12522808,
+  "sha256": "f9b69e41b0fe5f25d9698dda36481674090c53f40884de4b141af1b4c7df7721",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "82.546939"
+    }
+  }
+}

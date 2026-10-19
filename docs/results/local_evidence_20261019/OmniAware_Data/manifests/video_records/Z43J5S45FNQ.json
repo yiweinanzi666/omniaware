@@ -1,0 +1,27 @@
+{
+  "id": "Z43J5S45FNQ",
+  "source_url": "https://www.youtube.com/watch?v=Z43J5S45FNQ",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Z43J5S45FNQ.log",
+  "filename": "Z43J5S45FNQ.mp4",
+  "bytes": 39383229,
+  "sha256": "c2a3daba3a0bc3a2411e9809ea2b93350f85dd700cb450aced02b9d08bbfe8f1",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "553.656599"
+    }
+  }
+}

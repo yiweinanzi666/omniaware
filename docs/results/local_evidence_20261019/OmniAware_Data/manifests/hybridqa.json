@@ -1,0 +1,28 @@
+{
+  "suite_questions": 2000,
+  "suite_tables": 1849,
+  "suite_paragraphs": 61750,
+  "questions_with_all_source_files": 2000,
+  "missing_tables": [],
+  "missing_passage_files": [],
+  "source_table_files": 15316,
+  "source_passage_files": 15316,
+  "raw_storage": "Complete ZIP; suite files read directly from ZIP to preserve Windows-incompatible filenames",
+  "sources": [
+    {
+      "repo": "wenhuchen/WikiTables-WithLinks",
+      "commit": "dc066e1a6d5281511d8b73a6107d5ad2824cc2b2",
+      "url": "https://codeload.github.com/wenhuchen/WikiTables-WithLinks/zip/dc066e1a6d5281511d8b73a6107d5ad2824cc2b2",
+      "archive_sha256": "6d4bac29d4a72bb387230ea7de596d4a8e4965528a2997c9d5f2b13d017c8244",
+      "archive_bytes": 193533225,
+      "archive_entries": 30641,
+      "raw_storage": "Complete original ZIP, including filenames invalid on Windows; access directly with zipfile. Previously extracted legal paths are auxiliary only."
+    },
+    {
+      "repo": "wenhuchen/HybridQA",
+      "commit": "db22fda8c5951438fade3c69d75b350335ba93b3",
+      "url": "https://codeload.github.com/wenhuchen/HybridQA/zip/db22fda8c5951438fade3c69d75b350335ba93b3",
+      "archive_sha256": "fb94e44c12f9f91b75e7743c119b70f131d12d67033f2eaafd4e280836a039c7"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "sDBA56ty_ug",
+  "source_url": "https://www.youtube.com/watch?v=sDBA56ty_ug",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\sDBA56ty_ug.log",
+  "filename": "sDBA56ty_ug.mp4",
+  "bytes": 8893497,
+  "sha256": "7088c8b3b48785bf4e9f0a55ca50259f89d5e20e27d60e1d8f5b429b5af5f6ab",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "82.895238"
+    }
+  }
+}

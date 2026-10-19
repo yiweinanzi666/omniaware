@@ -1,0 +1,27 @@
+{
+  "id": "zvRomPRS1PE",
+  "source_url": "https://www.youtube.com/watch?v=zvRomPRS1PE",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\zvRomPRS1PE.log",
+  "filename": "zvRomPRS1PE.mp4",
+  "bytes": 4458350,
+  "sha256": "d5960c6c7be6d3655316e89fc022f99ef38f6e5bef116f7c01653d13de3953d9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "120.094000"
+    }
+  }
+}

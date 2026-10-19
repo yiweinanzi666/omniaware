@@ -1,0 +1,27 @@
+{
+  "id": "MHCGRt_MRwY",
+  "source_url": "https://www.youtube.com/watch?v=MHCGRt_MRwY",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\MHCGRt_MRwY.log",
+  "filename": "MHCGRt_MRwY.mp4",
+  "bytes": 13789761,
+  "sha256": "5dea44ca79a435e5991e236178fb26d984c7a63d76bdda6ae42a386f14db4df7",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "165.697596"
+    }
+  }
+}

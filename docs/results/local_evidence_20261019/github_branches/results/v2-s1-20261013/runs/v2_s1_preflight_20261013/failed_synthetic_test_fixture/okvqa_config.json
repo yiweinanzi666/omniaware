@@ -1,0 +1,145 @@
+{
+ "dataset": "okvqa",
+ "model": "2b",
+ "max_patches": 1,
+ "split": "test",
+ "n_calib": 6,
+ "calib_source": "heldout",
+ "n_dev": 2,
+ "split_seed": 2027,
+ "allow_missing_assets": false,
+ "offset": 0,
+ "n_eval": null,
+ "k": 5,
+ "min_per_modality": 0,
+ "modality_routing": false,
+ "route_rule": "mh",
+ "query_routes": null,
+ "first_round_routing": false,
+ "order": "rank",
+ "replication_gamma": null,
+ "seed": 0,
+ "selector": "relevance",
+ "universalrag_top": 5,
+ "universalrag_modalities": null,
+ "intervention": [
+  "mask",
+  "cf",
+  "random_edit",
+  "rerun",
+  "distractors",
+  "inject_answer",
+  "inject_instruction"
+ ],
+ "relevance_noise": 0.1,
+ "noise_draw": 0,
+ "relevance_norm": "ecdf",
+ "norm_from": null,
+ "no_calibration": false,
+ "image_mode": "mix",
+ "beta": 0.3,
+ "tau": -1000000000.0,
+ "tau_bias": -1000000000.0,
+ "eab_uncertainty": "pre",
+ "answer_style": "default",
+ "variants": [
+  {
+   "name": "eab:g1.2:ans1:pos:gate",
+   "gamma": 1.2,
+   "rows": "ans1",
+   "form": "pos",
+   "gate": true,
+   "layers": "all",
+   "relevance": "retriever",
+   "context": false
+  }
+ ],
+ "analysis_eab": false,
+ "probe_uncertainty": false,
+ "u_combine": "sum",
+ "attn_layer": "last",
+ "max_pixels": 262144,
+ "max_new_tokens": 30,
+ "seakr_samples": 0,
+ "seakr_max_new_tokens": 100,
+ "seakr_threshold": null,
+ "fitm": false,
+ "m2rag": false,
+ "tag": "iv",
+ "v2": false,
+ "v2_reranker": false,
+ "decisions": null,
+ "decisions_sha256": null,
+ "norm_pre": {
+  "median": 0.15090518981915546,
+  "iqr": 0.19718138591366569
+ },
+ "norm_post": {
+  "median": 0.9908958312907499,
+  "iqr": 0.052648666208438555
+ },
+ "norm_probe": null,
+ "comb_pre": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "comb_post": {
+  "beta": 0.3,
+  "mode": "sum",
+  "grd": null,
+  "pred": null
+ },
+ "model_path": "/Users/futaoran/Desktop/WWW2027/experiments/eab_first_token/cache/qwen3-vl-2b-instruct",
+ "seakr_threshold_used": null,
+ "seakr_missing_calibration": null,
+ "intervention_entity_types": "spacy+rules",
+ "nte_threshold": 0.002119908540077224,
+ "nte_norm": {
+  "median": 0.15090518981915546,
+  "iqr": 0.19718138591366569
+ },
+ "u_retrieval_rate_calibration": 1.0,
+ "evaluation_questions": 8,
+ "candidate_sha256": "895041958424a42d0c25d815919f0c13ffbeea3c357449bef7b06120deac24fe",
+ "split_sizes": {
+  "universe": 16,
+  "calib": 6,
+  "dev": 2,
+  "test": 8
+ },
+ "dropped_for_missing_assets": {
+  "universe": {}
+ },
+ "candidate_shortfall": {
+  "k": 5,
+  "fewer_than_k": {
+   "count": 0,
+   "qids": []
+  },
+  "without_modality": {}
+ },
+ "evaluation_qids_sha256": "24d4fdd298a287bbcb486608252d278b075eda92cdaaaf7d47e1f3a312a91f20",
+ "split_qids_sha256": {
+  "calib": "09e693491d8dbaec35eca15ff4d8091f0a04849bb46839f6cef93fce62c3b0c3",
+  "dev": "4f3dada212d1e639229fc7a662d4bd3abf186f0bd3d6fc8afdddb4483b588a0d",
+  "test": "24d4fdd298a287bbcb486608252d278b075eda92cdaaaf7d47e1f3a312a91f20"
+ },
+ "instruction": "Answer in no more than 3 words. Give the answer only.",
+ "instruction_sha256": "265d82f2af86857f500a6c2c2b27836f0065bc8f897bb8395392fdc6e146aaa5",
+ "instruction_exceptions": {},
+ "cache_fingerprints": {
+  "relevance": "163e6552ba4d4176a2b19cd76e6dde320164034308805a88d8e0fd8e43f111c9",
+  "ce": null,
+  "ucal": "6f729d69a88762deb95c3d721db7602be0a966e55119d9baddadf11461ad70d1",
+  "seakr": null
+ },
+ "protocol_differences": {
+  "m2rag.summarizer": "The official M2RAG single-stage summarizer writes an intermediate document (at most 384 tokens) from the chunks before the answer extractor reads it. Every other arm reads the chunks directly. This is the M2RAG protocol and is kept.",
+  "m2rag.extractor_prompt": "The extractor's own constraints (EXTRACTOR_INSTRUCTION) follow the run's shared answer instruction. The official constraints are kept.",
+  "m2rag.chat_template": "The official flat-content user message through LocalQwenVLM, not the ChatML prompt of the other arms.",
+  "m2rag.video": "M2-RAG accepts no video evidence, so it is not run on VideoRAG-Synth.",
+  "fitm": "None: Found-in-the-Middle reads the joint input with the run's prompt and pixel budget."
+ }
+}

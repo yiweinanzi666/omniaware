@@ -1,0 +1,41 @@
+2026-10-17T02:58:40+08:00
+index, name, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
+0, NVIDIA L20, 14 MiB, 46068 MiB, 0 %
+1, NVIDIA L20, 14 MiB, 46068 MiB, 0 %
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py", line 836, in forward
+    layer_outputs = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/transformers/modeling_layers.py", line 109, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py", line 592, in forward
+    hidden_states, _ = self.self_attn(
+                       ^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1783, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1794, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/anaconda3/lib/python3.12/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py", line 536, in forward
+    attn_output, attn_weights = attention_interface(
+                                ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Futaoran/omniaware/scripts/verify_real_model.py", line 152, in ref_sdpa
+    logits = logits.masked_fill((k_pos[None, :] > q_pos[:, None])[None, None], float("-inf"))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: expected self and mask to be on the same device, but got mask on cpu and self on cuda:0
+FALLBACK_CONFIG {"model": "2b", "split": "dev", "n_calib": 500, "n_dev": 256, "n_eval": 50, "selector": "relevance", "max_new_tokens": 10, "v2": false, "model_path": "/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-2b-instruct"}
+SMOKE_HASH output 3182fd7e7fc58e5846a91c07bca46212a6252c14173829d0d67ee46b48cc2a1a matches_marker True
+SMOKE_HASH config cb7db5ad4818abdac5a39cb55c6563e43b70a92c61d6f82d74e7a34e955f9555 matches_marker True
+RANKING {"path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/bge/rankings.jsonl", "lines": 4966, "bytes": 3398706, "sha256": "99e2a3483f87bb833adc00f3de41a346f355e6d6fcc9e15fabd9590b485060cd"}
+RANKING {"path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/clip/rankings.jsonl", "lines": 4966, "bytes": 1859312, "sha256": "7d5d0fb7fd962478cabd4bc3583caedbadba1c2b64e87fe360afd746924bf988"}
+RANKING {"path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/bge/rankings.jsonl", "lines": 36766, "bytes": 25162332, "sha256": "32d989fabe72b6d2294b55399ec669d7138caf9bef20d543d569687b9bc3eafb"}
+RANKING {"path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/clip/rankings.jsonl", "lines": 36766, "bytes": 13766094, "sha256": "ee085fa8acc7de45f46ac2630166a11f311bb52af745aa07ec0c496a2a886b72"}

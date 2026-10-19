@@ -1,0 +1,66 @@
+{
+ "format_version": 1,
+ "files": {
+  ".gitattributes": {
+   "size": 1570,
+   "blob_id": "52373fe24473b1aa44333d318f578ae6bf04b49b"
+  },
+  "README.md": {
+   "size": 17229,
+   "blob_id": "553540879ec61aea21df00434c984c0f760a3fcc"
+  },
+  "assets/BEIR-bge-en-v1.5.png": {
+   "size": 56374,
+   "blob_id": "04c10ca35a93a9e7addcb758eada3ed4bd523629"
+  },
+  "assets/BEIR-e5-mistral.png": {
+   "size": 40223,
+   "blob_id": "236d46eb6277ad60230de001dfd6a40d045b448c"
+  },
+  "assets/CMTEB-retrieval-bge-zh-v1.5.png": {
+   "size": 51484,
+   "blob_id": "b02707868af9da608747fad12cde2b116e4a6c86"
+  },
+  "assets/llama-index.png": {
+   "size": 106473,
+   "blob_id": "3bac2b657173d245738405767e31a2c790cdc064"
+  },
+  "assets/miracl-bge-m3.png": {
+   "size": 52028,
+   "blob_id": "f6e542add093ce645f67e09f0eb758c4e0c688ed"
+  },
+  "config.json": {
+   "size": 795,
+   "blob_id": "9f62673cb00ec41dcec8947b9ed16f6f2eb23ba2"
+  },
+  "model.safetensors": {
+   "size": 2271071852,
+   "blob_id": "773a0a7d7cc8a010835938a3a82a87eac8b21909",
+   "lfs_sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286",
+   "lfs_size": 2271071852,
+   "xet_hash": "9ed473ea2f42f1bab57bc585c3a90e9eb52ad04c8c15607e59006635dd305847"
+  },
+  "sentencepiece.bpe.model": {
+   "size": 5069051,
+   "blob_id": "7a3f40a75f870bc1f21700cd414dc2acc431583c",
+   "lfs_sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865",
+   "lfs_size": 5069051,
+   "xet_hash": "8b03b9e079abc849bdd27d0942fa6a77f9e7836db188512be97e4b3d52f415a8"
+  },
+  "special_tokens_map.json": {
+   "size": 964,
+   "blob_id": "b1879d702821e753ffe4245048eee415d54a9385"
+  },
+  "tokenizer.json": {
+   "size": 17098273,
+   "blob_id": "1c98a28b19c084901b2622d8e8b15e85eed13bff",
+   "lfs_sha256": "69564b696052886ed0ac63fa393e928384e0f8caada38c1f4864a9bfbf379c15",
+   "lfs_size": 17098273,
+   "xet_hash": "a6f245d5141ef77b3b89d7b7b9abc5ffcc095aad2908a46268b077c87d7319b6"
+  },
+  "tokenizer_config.json": {
+   "size": 1173,
+   "blob_id": "328a00a9a560aadcf2a3064f917517359eb3cc26"
+  }
+ }
+}

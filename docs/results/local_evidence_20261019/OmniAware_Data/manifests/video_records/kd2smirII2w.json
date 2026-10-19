@@ -1,0 +1,27 @@
+{
+  "id": "kd2smirII2w",
+  "source_url": "https://www.youtube.com/watch?v=kd2smirII2w",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\kd2smirII2w.log",
+  "filename": "kd2smirII2w.mp4",
+  "bytes": 16396281,
+  "sha256": "67b2e9d564216b06247b19011658847adaea1001038f746d0eda08e17434b96b",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 562,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "287.207619"
+    }
+  }
+}

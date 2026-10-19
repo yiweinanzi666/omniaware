@@ -1,0 +1,27 @@
+{
+  "id": "FgNGNMyf5do",
+  "source_url": "https://www.youtube.com/watch?v=FgNGNMyf5do",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\FgNGNMyf5do.log",
+  "filename": "FgNGNMyf5do.mp4",
+  "bytes": 20877502,
+  "sha256": "e45240e0e08413b02e701566e2237d8a730334a0837f789231fe1e6a2a129ef9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "282.888707"
+    }
+  }
+}

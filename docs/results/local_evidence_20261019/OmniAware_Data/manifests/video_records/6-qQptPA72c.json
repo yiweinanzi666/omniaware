@@ -1,0 +1,27 @@
+{
+  "id": "6-qQptPA72c",
+  "source_url": "https://www.youtube.com/watch?v=6-qQptPA72c",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\6-qQptPA72c.log",
+  "filename": "6-qQptPA72c.mp4",
+  "bytes": 12321525,
+  "sha256": "4db4a91596d269ca084a6a4ea2cdb9b38c759dfad55d1cb06b5c4e8bba5e92c5",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "276.851519"
+    }
+  }
+}

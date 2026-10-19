@@ -1,0 +1,27 @@
+{
+  "id": "-DFJa-grkQc",
+  "source_url": "https://www.youtube.com/watch?v=-DFJa-grkQc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\-DFJa-grkQc.log",
+  "filename": "-DFJa-grkQc.mp4",
+  "bytes": 20380371,
+  "sha256": "5c13211283d66eefc6cc50a3c052474a1a5f534e96a8def5e4f37a81e960173a",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "391.054000"
+    }
+  }
+}

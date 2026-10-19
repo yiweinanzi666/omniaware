@@ -1,0 +1,1 @@
+ps -ef | grep -E 'image_evidence_check' | grep -v grep | tail -5; ls -lh /home/user/Futaoran/omniaware_v2_exec/runs/image_evidence_check.json 2>/dev/null || true

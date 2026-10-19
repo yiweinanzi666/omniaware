@@ -1,0 +1,27 @@
+{
+  "id": "PATVRcmpE80",
+  "source_url": "https://www.youtube.com/watch?v=PATVRcmpE80",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PATVRcmpE80.log",
+  "filename": "PATVRcmpE80.mp4",
+  "bytes": 13589232,
+  "sha256": "6d6e9cfdb96de11d74c2daca7d69d1c62cf5be0844359e828c7776e42e1e70d9",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 320,
+        "height": 240
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "320.969433"
+    }
+  }
+}

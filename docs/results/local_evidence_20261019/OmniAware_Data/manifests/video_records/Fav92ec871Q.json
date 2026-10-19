@@ -1,0 +1,27 @@
+{
+  "id": "Fav92ec871Q",
+  "source_url": "https://www.youtube.com/watch?v=Fav92ec871Q",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\Fav92ec871Q.log",
+  "filename": "Fav92ec871Q.mp4",
+  "bytes": 12827361,
+  "sha256": "f635e26d4ebb2ecdf746d74458586b2ed2cd58a949f228efb4dec78e66e57374",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "189.544490"
+    }
+  }
+}

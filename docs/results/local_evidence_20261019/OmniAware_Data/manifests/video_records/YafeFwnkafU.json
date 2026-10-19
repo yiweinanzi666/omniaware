@@ -1,0 +1,27 @@
+{
+  "id": "YafeFwnkafU",
+  "source_url": "https://www.youtube.com/watch?v=YafeFwnkafU",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\YafeFwnkafU.log",
+  "filename": "YafeFwnkafU.mp4",
+  "bytes": 13085907,
+  "sha256": "2e2356ce805380d874a42f6cace1c36f8fb025bb0c92f55d1d24e85dde95f424",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "213.809342"
+    }
+  }
+}

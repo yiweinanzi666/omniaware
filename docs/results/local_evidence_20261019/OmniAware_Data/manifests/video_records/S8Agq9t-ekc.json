@@ -1,0 +1,27 @@
+{
+  "id": "S8Agq9t-ekc",
+  "source_url": "https://www.youtube.com/watch?v=S8Agq9t-ekc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\S8Agq9t-ekc.log",
+  "filename": "S8Agq9t-ekc.mp4",
+  "bytes": 22374386,
+  "sha256": "e2cb9429e9e558c78bf16898b17f3dbbefab11ebeb4bbccdaa0d2dd11bb3838d",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 854,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "152.717642"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "HLRrOrT89eg",
+  "source_url": "https://www.youtube.com/watch?v=HLRrOrT89eg",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\HLRrOrT89eg.log",
+  "filename": "HLRrOrT89eg.mp4",
+  "bytes": 4773864,
+  "sha256": "95f32abb1de8d7f7a34c2e2515d6aa379428b39fcc8a2ab2691dbfa6b50763b2",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "82.198639"
+    }
+  }
+}

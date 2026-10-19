@@ -1,0 +1,17 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=0jf2FFEVdws
+[youtube] 0jf2FFEVdws: Downloading webpage
+[youtube] 0jf2FFEVdws: Downloading visionos player API JSON
+[youtube] 0jf2FFEVdws: Downloading tv downgraded player API JSON
+[youtube] 0jf2FFEVdws: Downloading web embedded client config
+[youtube] 0jf2FFEVdws: Downloading player 21090930-main
+[youtube] 0jf2FFEVdws: Downloading web embedded player API JSON
+[youtube] [jsc:node] Solving JS challenges using node
+[info] 0jf2FFEVdws: Downloading 1 format(s): 134+140
+[info] Writing video metadata as JSON to: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.info.json
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.f134.mp4
+[download] Download completed
+[download] Destination: E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.f140.m4a
+[download] Download completed
+[Merger] Merging formats into "E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.mp4"
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.f134.mp4 (pass -k to keep)
+Deleting original file E:\OmniAware_Data\omniaware\external\UniversalRAG\dataset\videorag\videos\0jf2FFEVdws.f140.m4a (pass -k to keep)

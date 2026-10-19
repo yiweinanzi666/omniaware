@@ -1,0 +1,27 @@
+{
+  "id": "N7Dc13N6Lig",
+  "source_url": "https://www.youtube.com/watch?v=N7Dc13N6Lig",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\N7Dc13N6Lig.log",
+  "filename": "N7Dc13N6Lig.mp4",
+  "bytes": 14965974,
+  "sha256": "5c8697a45a28c252b1a1d5cea1a9fa3882c022d27c3e83f7473681565d0c9d73",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "232.617506"
+    }
+  }
+}

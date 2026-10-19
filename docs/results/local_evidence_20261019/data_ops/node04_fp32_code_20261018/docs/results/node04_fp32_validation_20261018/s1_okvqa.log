@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/run.py", line 1278, in <module>
+    main()
+  File "/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/run.py", line 518, in main
+    evaluate(ap, args, out_dir, norm_source)
+  File "/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/run.py", line 554, in evaluate
+    examples = data.LOADERS[split_universe](**loader_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/data.py", line 276, in load_okvqa_gs
+    return load_okvqa(paths.LOCAL_CACHE / "okvqa_gs112k" / "candidates_full.jsonl", allow_missing=allow_missing)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Futaoran/omniaware_v2_selfcheck_20261018/src/omniaware/data.py", line 233, in load_okvqa
+    with open(candidates_path or paths.OKVQA_CANDIDATES) as fh:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/Futaoran/omniaware_v2_cache_fp32_20261018/okvqa_gs112k/candidates_full.jsonl'
+/home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --dtype float32 --tag v2_s1_okvqa_gs --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_selfcheck_20261018/scripts/analysis/answer_slot.py format --run /home/user/Futaoran/omniaware_v2_selfcheck_20261018/runs/fp32_20261018/v2_s1_okvqa_gs/okvqa_gs.jsonl --min-answer-first 0.9
+/home/user/Futaoran/omniaware_v2_python311/bin/python /home/user/Futaoran/omniaware_v2_selfcheck_20261018/scripts/analysis/image_evidence_check.py --n 50
+step failed with exit code 1; the remaining steps were not run. Command: /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset okvqa_gs --split dev --model 8b --dtype float32 --tag v2_s1_okvqa_gs --calib-source heldout --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --n-eval 50 --max-empty-rate 0.005

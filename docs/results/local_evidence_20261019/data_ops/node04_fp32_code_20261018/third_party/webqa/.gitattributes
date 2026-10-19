@@ -1,0 +1,3 @@
+# Official metric source hashes must survive checkout on every platform.
+eval_1022.py -text
+eval_webqa.md -text

@@ -1,0 +1,27 @@
+{
+  "id": "CPB-34XYQRc",
+  "source_url": "https://www.youtube.com/watch?v=CPB-34XYQRc",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\CPB-34XYQRc.log",
+  "filename": "CPB-34XYQRc.mp4",
+  "bytes": 27018747,
+  "sha256": "acdca0c0584a8c46da8d85390114c460823be0904d7efd5a293a53f9834252e6",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "421.906576"
+    }
+  }
+}

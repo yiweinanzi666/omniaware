@@ -1,0 +1,27 @@
+{
+  "id": "PnnSI132g-o",
+  "source_url": "https://www.youtube.com/watch?v=PnnSI132g-o",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\PnnSI132g-o.log",
+  "filename": "PnnSI132g-o.mp4",
+  "bytes": 86886541,
+  "sha256": "477b6cd940890695fa329114a67149791852f0a2f5b35123d32330cc71e27230",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "1205.626485"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+2026-10-19T00:04:45+08:00
+PROCS
+1266476       1 14-02:02:47  0.0  0.0 Ss   tmux new-session -d -s www2027-download bash /data04/user/WWW2027/_ops/migration.sh >> /data04/user/WWW2027/_ops/migration.parallel.log 2>&1; task_rc=$?; echo $task_rc > /data04/user/WWW2027/_ops/migration.exit-code
+2417240       1  1-02:58:48  0.0  0.0 S    /home/user/Futaoran/omniaware_v2_python311/bin/python scripts/v2_runs.py --stage s2 --dataset webqa_full
+2422384 2417240  1-01:35:53 4310  2.0 Rl   /home/user/Futaoran/omniaware_v2_python311/bin/python -m omniaware.run --dataset webqa_full --split dev --model 8b --tag v2_s2_webqa_full_dev --calib-source train --n-calib 500 --n-dev 256 --split-seed 2027 --v2 --v2-reranker --fitm --m2rag --seakr-samples 20 --analysis-eab
+GPU
+0, 19430 MiB, 85 %
+1, 14 MiB, 0 %
+COUNTS
+102 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_webqa_full_dev/webqa_full.jsonl
+54 /home/user/Futaoran/omniaware_v2_exec/runs/v2_s2_okvqa_gs_dev/okvqa_gs.jsonl
+OLD_TAIL
+[93/256] d5d4a1080dba 728.75s P=1081 U_pre=1.00 retrieve=True
+[94/256] d5c1c2a40dba 898.44s P=927 U_pre=0.27 retrieve=False
+[95/256] d5d0d01e0dba 59.75s P=858 U_pre=0.31 retrieve=False
+[96/256] d5d96cc40dba 179.26s P=1288 U_pre=0.78 retrieve=True
+[97/256] d5beee800dba 46.45s P=812 U_pre=0.26 retrieve=False
+[98/256] d5c5d6780dba 83.94s P=702 U_pre=0.28 retrieve=False
+[99/256] d5da2a7e0dba 167.25s P=1243 U_pre=0.82 retrieve=True
+[100/256] d5c907e40dba 83.97s P=1471 U_pre=0.34 retrieve=False
+[101/256] d5df06840dba 1083.05s P=652 U_pre=0.26 retrieve=False
+[102/256] d5c7f00c0dba 90.24s P=1292 U_pre=0.31 retrieve=False
+DECISIONS
+WORKTREE
+?? runs/v2_s2_okvqa_gs_calib/
+?? runs/v2_s2_okvqa_gs_dev/
+?? runs/v2_s2_pause_20261018/
+?? runs/v2_s2_webqa_full_calib/
+?? runs/v2_s2_webqa_full_dev/
+28e9514dc432d6891a492390bc4bdef176c519ea
+RECENT_LOG
+[73/256] d5d96ec20dba 106.8s P=624 U_pre=0.27 retrieve=False
+[74/256] d5cb87580dba 100.5s P=1170 U_pre=0.77 retrieve=True
+[75/256] d5dc36e80dba 78.18s P=842 U_pre=0.32 retrieve=False
+[76/256] d5bfaf5a0dba 380.23s P=1440 U_pre=0.26 retrieve=False
+[77/256] d5dd8c5a0dba 772.73s P=731 U_pre=0.38 retrieve=True
+[78/256] d5cd4c960dba 559.99s P=782 U_pre=0.26 retrieve=False
+[79/256] d5d937860dba 177.38s P=684 U_pre=0.49 retrieve=True
+[80/256] d5cddb700dba 37.21s P=529 U_pre=0.29 retrieve=False
+[81/256] d5cb07100dba 342.55s P=1502 U_pre=1.00 retrieve=True
+[82/256] d5d5fada0dba 728.17s P=644 U_pre=0.96 retrieve=True
+[83/256] d5d4a1800dba 750.36s P=426 U_pre=0.43 retrieve=True
+[84/256] d5ceff1e0dba 434.62s P=1086 U_pre=0.28 retrieve=False
+[85/256] d5d0fa440dba 525.88s P=710 U_pre=0.65 retrieve=True
+[86/256] d5c43cdc0dba 417.32s P=411 U_pre=0.26 retrieve=False
+[87/256] d5d48e2a0dba 888.65s P=656 U_pre=0.26 retrieve=False
+[88/256] d5c4aa140dba 95.55s P=1479 U_pre=0.74 retrieve=True
+[89/256] d5c691f80dba 68.54s P=906 U_pre=0.26 retrieve=False
+[90/256] d5bf042e0dba 177.86s P=845 U_pre=0.43 retrieve=True
+[91/256] d5c7ba240dba 74.23s P=967 U_pre=1.00 retrieve=True
+[92/256] d5dab8040dba 126.69s P=573 U_pre=0.41 retrieve=True
+[93/256] d5d4a1080dba 728.75s P=1081 U_pre=1.00 retrieve=True
+[94/256] d5c1c2a40dba 898.44s P=927 U_pre=0.27 retrieve=False
+[95/256] d5d0d01e0dba 59.75s P=858 U_pre=0.31 retrieve=False
+[96/256] d5d96cc40dba 179.26s P=1288 U_pre=0.78 retrieve=True
+[97/256] d5beee800dba 46.45s P=812 U_pre=0.26 retrieve=False
+[98/256] d5c5d6780dba 83.94s P=702 U_pre=0.28 retrieve=False
+[99/256] d5da2a7e0dba 167.25s P=1243 U_pre=0.82 retrieve=True
+[100/256] d5c907e40dba 83.97s P=1471 U_pre=0.34 retrieve=False
+[101/256] d5df06840dba 1083.05s P=652 U_pre=0.26 retrieve=False
+[102/256] d5c7f00c0dba 90.24s P=1292 U_pre=0.31 retrieve=False

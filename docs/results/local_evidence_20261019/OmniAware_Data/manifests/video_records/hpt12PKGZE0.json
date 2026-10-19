@@ -1,0 +1,27 @@
+{
+  "id": "hpt12PKGZE0",
+  "source_url": "https://www.youtube.com/watch?v=hpt12PKGZE0",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\hpt12PKGZE0.log",
+  "filename": "hpt12PKGZE0.mp4",
+  "bytes": 26445056,
+  "sha256": "b122a82a70e85f57f2432490e6fc98a00f5e8a5b62a9840e6c99c7493ce43b41",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "359.537778"
+    }
+  }
+}

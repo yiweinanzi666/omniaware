@@ -1,0 +1,27 @@
+{
+  "id": "VxBMyb29G5M",
+  "source_url": "https://www.youtube.com/watch?v=VxBMyb29G5M",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\VxBMyb29G5M.log",
+  "filename": "VxBMyb29G5M.mp4",
+  "bytes": 12440774,
+  "sha256": "dd7b90577a5ad46f0ddceba39c224688fe2f1ebdc44243024cd9c649c198fcde",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 640,
+        "height": 480
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "101.912381"
+    }
+  }
+}

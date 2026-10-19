@@ -1,0 +1,27 @@
+{
+  "id": "mZcKrUntfNo",
+  "source_url": "https://www.youtube.com/watch?v=mZcKrUntfNo",
+  "status": "complete",
+  "error": null,
+  "log": "E:\\OmniAware_Data\\logs\\video\\mZcKrUntfNo.log",
+  "filename": "mZcKrUntfNo.mp4",
+  "bytes": 5450911,
+  "sha256": "7accbf4a884e9c3ee4fd8a50db0f5868e8779c03dae96704947b2e494ec996bd",
+  "media": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 480,
+        "height": 352
+      },
+      {
+        "codec_type": "audio"
+      }
+    ],
+    "format": {
+      "duration": "107.856689"
+    }
+  }
+}

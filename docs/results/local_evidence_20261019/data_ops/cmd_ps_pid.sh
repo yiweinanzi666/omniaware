@@ -1,0 +1,1 @@
+ps -p 2280749 -o pid,etime,stat,cmd || true

@@ -1,0 +1,121 @@
+{
+  "okvqa": {
+    "splits": {
+      "train2014": {
+        "questions": 9009,
+        "annotations": 9009,
+        "images_expected": 8998
+      },
+      "val2014": {
+        "questions": 5046,
+        "annotations": 5046,
+        "images_expected": 5033
+      }
+    },
+    "images_complete": 14031,
+    "images_expected": 14031,
+    "bytes": 2314513084,
+    "failures": [],
+    "question_coverage": 1.0,
+    "source": "https://okvqa.allenai.org/download.html",
+    "image_selection": "All unique COCO images referenced by official OK-VQA train and val questions; unrelated COCO images omitted. No question subsampling."
+  },
+  "gs": [
+    {
+      "file": "okvqa_train_corpus.csv",
+      "rows": 112724,
+      "nonempty_passages": 112724,
+      "bytes": 41252142,
+      "sha256": "f6646ad30d05166cfd32c281566a0032656035761e7d33acaf3267bfbb9d4997",
+      "prepared_path": "cache\\okvqa_gs112k\\corpus.jsonl",
+      "prepared_sha256": "c89fa9c4954753d9d769acd34320469bf7975b0429578afb1bf8662d40260ca3",
+      "source_url": "https://drive.google.com/file/d/1O8HkDzWIMc-uzLgG3BqHz-g2qtGeRcT6/view",
+      "usage": "Training-only GS main corpus"
+    },
+    {
+      "file": "okvqa_full_corpus.csv",
+      "rows": 168306,
+      "nonempty_passages": 168306,
+      "bytes": 60445862,
+      "sha256": "4ab2352a2bff6413ac74f1a18ef7ffcc8a15b5f77df97a5b6afd8375448128ae",
+      "prepared_path": "cache\\okvqa_gs168k_full\\corpus.jsonl",
+      "prepared_sha256": "834ac59446f1ecc41030e8b527c14fca5b3ef72e6f2f977062b765e4fb02b42a",
+      "source_url": "https://drive.google.com/file/d/1x9unz58_Lw7oLgTO73nslQ92xr4un6bl/view",
+      "usage": "Appendix comparison only; includes evaluation-question retrieval results"
+    }
+  ],
+  "hybridqa": {
+    "suite_questions": 2000,
+    "suite_tables": 1849,
+    "suite_paragraphs": 61750,
+    "questions_with_all_source_files": 2000,
+    "missing_tables": [],
+    "missing_passage_files": [],
+    "source_table_files": 15316,
+    "source_passage_files": 15316,
+    "raw_storage": "Complete ZIP; suite files read directly from ZIP to preserve Windows-incompatible filenames",
+    "sources": [
+      {
+        "repo": "wenhuchen/WikiTables-WithLinks",
+        "commit": "dc066e1a6d5281511d8b73a6107d5ad2824cc2b2",
+        "url": "https://codeload.github.com/wenhuchen/WikiTables-WithLinks/zip/dc066e1a6d5281511d8b73a6107d5ad2824cc2b2",
+        "archive_sha256": "6d4bac29d4a72bb387230ea7de596d4a8e4965528a2997c9d5f2b13d017c8244",
+        "archive_bytes": 193533225,
+        "archive_entries": 30641,
+        "raw_storage": "Complete original ZIP, including filenames invalid on Windows; access directly with zipfile. Previously extracted legal paths are auxiliary only."
+      },
+      {
+        "repo": "wenhuchen/HybridQA",
+        "commit": "db22fda8c5951438fade3c69d75b350335ba93b3",
+        "url": "https://codeload.github.com/wenhuchen/HybridQA/zip/db22fda8c5951438fade3c69d75b350335ba93b3",
+        "archive_sha256": "fb94e44c12f9f91b75e7743c119b70f131d12d67033f2eaafd4e280836a039c7"
+      }
+    ]
+  },
+  "dpr": {
+    "documents": 3000000,
+    "corpus_bytes": 2215790437,
+    "corpus_sha256": "cb016937456b94ac91505ef7eb93fbb1f20b9cbedb889b4e3dbef6233598a8bf",
+    "source_url": "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
+    "raw_gzip_bytes": 4694541059,
+    "raw_md5": "612fe66e0b6b41ee28f806140226c563"
+  },
+  "videorag": {
+    "population": 8621,
+    "target": 1725,
+    "complete": 1199,
+    "fraction": 0.1390789931562464,
+    "bytes": 30864374175,
+    "gold_complete": 174,
+    "gold_total": 178,
+    "questions_total": 374,
+    "questions_covered": 366,
+    "missing_gold_ids": [
+      "5zs8RRsF9TM",
+      "D6JOjFCNUyU",
+      "R2ORuSOnmoA",
+      "s4UvmPov9dY"
+    ],
+    "storage_stop": false,
+    "seed": 20261015,
+    "failed_attempts": 1578,
+    "indexes": [
+      {
+        "name": "video",
+        "rows": 1199,
+        "sha256": "dce6792409d8a04dfbf79156c95342b769c1872ceb08f77cedebfdfe6f931d62"
+      },
+      {
+        "name": "clip",
+        "rows": 6164,
+        "sha256": "2328dbfd1b3c76e80a782d313a49f3de421c3c734ce8e46d11c8cea6b4fa4821"
+      }
+    ]
+  },
+  "errors": [],
+  "webqa": "Excluded from dataset downloading",
+  "generated_at_utc": "2026-10-15T05:58:28Z",
+  "remaining_free_bytes": 128062980096,
+  "total_data_and_source_bytes": 43310250618,
+  "file_count_excluding_tools_and_git": 31374
+}
