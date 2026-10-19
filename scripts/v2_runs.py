@@ -77,7 +77,7 @@ def dev_check_path(decisions: str) -> str:
 
 def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None,
                 split: str | None = None, tag: str | None = None, baselines: bool = False,
-                seakr: bool = True, analysis_eab: bool = False, dtype: str = "bfloat16") -> list[str]:
+                seakr: bool = True, analysis_eab: bool = False, dtype: str = "float32") -> list[str]:
     """One omniaware.run command. ``baselines`` adds the external baseline arms (FiTM, M2-RAG, SeaKR) that the
     main table reports next to the v2 actions; ``seakr=False`` leaves out SeaKR (its cost, see docs/V2_RUNS.md).
     ``analysis_eab`` adds the ans1 EAB arm of the mechanism analysis (--analysis-eab); no v2 step reads it."""
@@ -206,7 +206,7 @@ def check_dev_check(decisions: str, allow_failed: bool) -> list[str]:
 
 def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seakr: bool = True,
          allow_failed_dev_check: bool = False,
-         position_ablation: bool = False, dtype: str = "bfloat16") -> tuple[list[list[str]], list[list[str]], list[str]]:
+         position_ablation: bool = False, dtype: str = "float32") -> tuple[list[list[str]], list[list[str]], list[str]]:
     """Return (commands run in order, lines that are printed but never executed, notes printed before the commands)."""
     if stage == "s1":
         smoke = 50 if n is None else n
@@ -283,7 +283,7 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--stage", required=True, choices=("s1", "s2", "s4"))
     ap.add_argument("--dataset", required=True, choices=tuple(DATASETS))
-    ap.add_argument("--dtype", default="bfloat16", choices=("bfloat16", "float32"),
+    ap.add_argument("--dtype", default="float32", choices=("bfloat16", "float32"),
                     help="precision for every decode, including calibration and position ablation")
     ap.add_argument("--n", type=int, default=None, help="S1 smoke size (default 50)")
     ap.add_argument("--decisions", default=None,

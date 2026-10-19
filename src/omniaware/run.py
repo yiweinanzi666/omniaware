@@ -321,7 +321,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
     ap.add_argument("--model", default="2b", choices=["2b", "8b", "internvl3.5-8b"])
-    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float32"],
+    ap.add_argument("--dtype", default="float32", choices=["bfloat16", "float32"],
                     help="model precision; verify real weights with the same dtype before running")
     ap.add_argument("--max-patches", type=int, default=1, help="InternVL: 448px tiles per image (256 tokens each)")
     ap.add_argument("--split", required=True, choices=["calib", "dev", "test"],

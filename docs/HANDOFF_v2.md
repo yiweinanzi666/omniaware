@@ -74,7 +74,7 @@ python scripts/analysis/image_evidence_check.py --n 50 --output runs/image_evide
 3. **图像证据真的进了模型。** 看 `runs/image_evidence_check.json`：每道图像题的 `static_mixed` 和 `static_image` 输入里有几张图、文件是否可读、缩放后的像素和视觉 token 数、gold 图片是否在选中的证据里。旧数据里图像题加了检索反而变差（即使回答格式相同也是如此），需要判断这是管线 bug 还是真实现象。可以再跑一下它打印的 GPU 探针命令（让模型描述每张检索到的图）。
 
 4. **溯源记录写出来了，而且内容合理。** 这一条在本机只用假模型测过，真实模型和真实图片上要在冒烟时确认：
-   - `runs/v2_s1_<数据集>/<数据集>.env.ndjson` 里 `git_commit` 不为空，`git_dirty` 是 `false`（有未提交的改动就先提交或还原再跑），`model.attn_implementation` 是 `sdpa`，`model.dtype` 和 `gpus` 符合预期；
+   - `runs/v2_s1_<数据集>/<数据集>.env.ndjson` 里 `git_commit` 不为空，`git_dirty` 是 `false`（有未提交的改动就先提交或还原再跑），`model.attn_implementation` 是 `sdpa`，`model.dtype` 是 `torch.float32`（BF16 未通过真实权重自检，见 [NODE04_FP32.md](NODE04_FP32.md)；`--dtype` 默认即 `float32`），`gpus` 符合预期；
    - `<数据集>.jsonl` 里 WebQA 图像题的 `actions.static_image.input.n_images` 大于 0，`image_tokens` 里每个数都大于 0；`actions.direct.input.n_images` 是 0（OK-VQA 的直答带问题图片，应为 1）；
    - `actions.<动作>.first_token.topk` 里每个候选都有 `text`；
    - `<数据集>.prompts.ndjson` 有 20 行，打开看几条，确认 prompt 的样子符合预期；

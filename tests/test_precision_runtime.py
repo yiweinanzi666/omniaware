@@ -78,6 +78,18 @@ def test_wrong_loaded_dtype_fails_before_calibration(tmp_path, monkeypatch):
     assert not list((tmp_path / "cache").glob("ucal_*.json"))
 
 
+def test_default_dtype_is_the_verified_float32(tmp_path):
+    # BF16 failed the real-weight check on node04 (docs/NODE04_FP32.md); a command without --dtype must not use it.
+    assert run.build_parser().get_default("dtype") == "float32"
+    root = Path(__file__).resolve().parents[1]
+    env = dict(os.environ, OMNIAWARE_RUNS=str(tmp_path / "runs"), OMNIAWARE_CACHE=str(tmp_path / "cache"))
+    result = subprocess.run([sys.executable, str(root / "scripts/v2_runs.py"), "--stage", "s2",
+                             "--dataset", "okvqa_gs", "--dry-run"], env=env, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    decodes = [line for line in result.stdout.splitlines() if "-m omniaware.run " in line]
+    assert decodes and all("--dtype float32" in line for line in decodes)
+
+
 @pytest.mark.parametrize("stage,extra", [("s1", []), ("s2", ["--position-ablation"])])
 def test_stage_cli_propagates_dtype_and_isolated_paths(tmp_path, stage, extra):
     root = Path(__file__).resolve().parents[1]

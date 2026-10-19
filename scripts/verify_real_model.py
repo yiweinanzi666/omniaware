@@ -1,7 +1,7 @@
 """Verify the Omni-Aware prompt and EAB path on a real checkpoint (run once on the GPU server, per backbone).
 
     python -m scripts.verify_real_model --model /path/to/qwen3-vl-8b-instruct --image sample.jpg \
-        [--examples questions.json] [--dtype bfloat16] [--max-pixels 262144] [--out result.json]
+        [--examples questions.json] [--dtype float32] [--max-pixels 262144] [--out result.json]
 
 Checks (each reports ``ok``; the exit status is 1 when a check fails; the JSON report is printed):
   template    the hand-written ChatML prompt tokenises token by token like processor.apply_chat_template,
@@ -277,7 +277,7 @@ def main(argv=None) -> int:
     ap.add_argument("--examples", default=None,
                     help="JSON list of {qid, dataset, question, query_images, chunks:[{cid, modality, title, text, "
                          "image, frames, r}]} for the statistics (default: one text chunk and the --image)")
-    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float32"])
+    ap.add_argument("--dtype", default="float32", choices=["bfloat16", "float32"])
     ap.add_argument("--device", default=None)
     ap.add_argument("--max-pixels", type=int, default=256 * 32 * 32)
     ap.add_argument("--max-patches", type=int, default=1)
