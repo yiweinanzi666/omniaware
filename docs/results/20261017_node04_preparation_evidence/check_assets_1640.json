@@ -1,0 +1,12 @@
+{
+  "start": "2026-10-17T16:41:54.098043+08:00",
+  "command": [
+    "/home/user/Futaoran/omniaware_v2_python311/bin/python",
+    "-m",
+    "scripts.setup.check_assets"
+  ],
+  "cwd": "/home/user/Futaoran/omniaware_v2_exec_lf",
+  "exit_code": 1,
+  "end": "2026-10-17T16:42:29.898175+08:00",
+  "log_sha256": "a3ae061547542e493c7e8c4dee73c09c36318ef6c7c5a298b45859e4e7d3979f"
+}

@@ -1,0 +1,518 @@
+{
+  "webqa_full": {
+    "env": [
+      {
+        "git_commit": "2f2e1a2fdb666146271a69b2e691d8208ae94f21",
+        "git_dirty": false,
+        "model": {
+          "kind": "qwen3_vl",
+          "device": "cuda",
+          "dtype": "torch.bfloat16",
+          "attn_implementation": "sdpa",
+          "n_layers": 36,
+          "vocab_size": 151669,
+          "image_size": {
+            "shortest_edge": 65536,
+            "longest_edge": 262144
+          }
+        },
+        "gpus": [
+          "NVIDIA L20"
+        ],
+        "python": "3.11.17",
+        "torch": "2.11.0+cu128",
+        "transformers": "5.5.3"
+      }
+    ],
+    "prompt_rows": 20,
+    "prompt_examples": [
+      {
+        "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+        "question": "Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\nQuestion: Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Fox hunting: Arthur Conan Doyle's story, \"How the Brigadier Slew the Fox\", in which the French officer Brigadier Gerard joins an English fox hunt but commits the unpardonable sin of slaying the fox with his sabre.\n\n[E2] (text): Michael Sinclair (British Army officer) - Wikipedia: For other people named Michael Sinclair, see Michael Sinclair (disambiguation). Lieutenant Albert Michael Sinclair, DSO (26 February 1918 – 25 September 1944), known as the Red Fox, was a British prisoner at Colditz Castle ( POW camp Oflag IV-C) during World War II.\n\n[E3] (text): 1st Battalion, 120th Field Artillery Regiment: As rumor has it, a red fox was either run over or found on the side of the road by some soldiers. As a prank, those soldiers threw the carcass in the tent of LTC Owen P. Rexford.\n\n[E4] (text): 1st Battalion, 120th Field Artillery Regiment: After the situation was defused, the tail of the fox was cut off and used as an antenna flag for LTC Rexford's jeep. His radio name was \"Red Fox 1\" from that point on.\n\n[E5] (text): 1st Battalion, 120th Field Artillery Regiment - Wikipedia: The 1st Battalion, 120th Field Artillery Regiment, also known as the \"Red Fox\" Battalion came into being on 22 September 1917 at Camp MacArthur, Waco, Texas, as part of the 57th Field Artillery Brigade, better known as the Iron Brigade. The 120th Field Artillery Regiment previously had been the 1st Wisconsin Cavalry.\n\nQuestion: Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_image": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg>\nCaption: Red fox\n\n[E2] (image): Red fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30209409.jpg>\nCaption: Red fox pelts\n\n[E3] (image): Fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30088632.jpg>\nCaption: Fox skeleton\n\n[E4] (image): Officer (armed forces)\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30216927.jpg>\nCaption: A commissioned officer and a non-commissioned officer of the British Army prepare for a mission in Afghanistan.\n\n[E5] (image): Red fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30322118.jpg>\nCaption: Juvenile red foxes are known as kits\n\nQuestion: Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30209409.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30088632.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30216927.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30322118.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg>\nCaption: Red fox\n\n[E2] (text): Fox hunting: Arthur Conan Doyle's story, \"How the Brigadier Slew the Fox\", in which the French officer Brigadier Gerard joins an English fox hunt but commits the unpardonable sin of slaying the fox with his sabre.\n\n[E3] (text): Michael Sinclair (British Army officer) - Wikipedia: For other people named Michael Sinclair, see Michael Sinclair (disambiguation). Lieutenant Albert Michael Sinclair, DSO (26 February 1918 – 25 September 1944), known as the Red Fox, was a British prisoner at Colditz Castle ( POW camp Oflag IV-C) during World War II.\n\n[E4] (image): Red fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30209409.jpg>\nCaption: Red fox pelts\n\n[E5] (text): 1st Battalion, 120th Field Artillery Regiment: As rumor has it, a red fox was either run over or found on the side of the road by some soldiers. As a prank, those soldiers threw the carcass in the tent of LTC Owen P. Rexford.\n\nQuestion: Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30209409.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Fox\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg>\nCaption: Red fox\n\n[E2] (text): Michael Sinclair (British Army officer) - Wikipedia: For other people named Michael Sinclair, see Michael Sinclair (disambiguation). Lieutenant Albert Michael Sinclair, DSO (26 February 1918 – 25 September 1944), known as the Red Fox, was a British prisoner at Colditz Castle ( POW camp Oflag IV-C) during World War II.\n\n[E3] (text): 1st Battalion, 120th Field Artillery Regiment: After the situation was defused, the tail of the fox was cut off and used as an antenna flag for LTC Rexford's jeep. His radio name was \"Red Fox 1\" from that point on.\n\n[E4] (text): 1st Battalion, 120th Field Artillery Regiment - Wikipedia: The 1st Battalion, 120th Field Artillery Regiment, also known as the \"Red Fox\" Battalion came into being on 22 September 1917 at Camp MacArthur, Waco, Texas, as part of the 57th Field Artillery Brigade, better known as the Iron Brigade. The 120th Field Artillery Regiment previously had been the 1st Wisconsin Cavalry.\n\n[E5] (text): Red fox: British red foxes are heavily built, but short, while continental European red foxes are closer to the general average among red fox populations.\n\nQuestion: Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30059811.jpg"
+            ]
+          }
+        }
+      },
+      {
+        "qid": "d5d5742a0dba11ecb1e81171463288e9",
+        "question": "What Latin name is given to the daughter of Zeus and Demeter?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\nQuestion: What Latin name is given to the daughter of Zeus and Demeter?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Persephone - Wikipedia: In Greek mythology, Persephone ( / pərˈsɛfəniː / pər-SEF-ə-nee; Greek: Περσεφόνη, romanized : Persephónē ), also called Kore or Kora ( / ˈkɔːriː / KOR-ee; Greek: Κόρη, romanized : Kórē, lit. 'the maiden'), is the daughter of Zeus and Demeter.\n\n[E2] (text): Persephone: Demeter is united with her, the god Poseidon, and she bears him a daughter, the unnameable Despoina. Poseidon appears as a horse, as it usually happens in Northern European folklore.\n\n[E3] (text): Demeter: Some of the earliest accounts of Demeter's relationships to other deities comes from Hesiod's Theogeny, written c. 700 BC. In it, Demeter is described as the daughter of Cronus and Rhea.\n\n[E4] (text): Demeter: According to Diodorus Siculus, in his Bibliotheca historica written in the 1st century BC, Demeter and her husband Zeus were also the parents of Dionysus.\n\n[E5] (text): Persephone - Wikipedia: In Latin, her name is rendered Proserpina. She was identified by the Romans as the Italic goddess Libera, who was conflated with Prosperina. Myths similar to Persephone's descent and return to earth also appear in the cults of male gods like Attis, Adonis, and Osiris, and in Minoan Crete.\n\nQuestion: What Latin name is given to the daughter of Zeus and Demeter?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_image": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30275636.jpg>\nCaption: Pompeiian relief of Demeter in her aspects of mother goddess and goddess of agriculture\n\n[E2] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30012971.jpg>\nCaption: Demeter rejoiced, for her daughter was by her side.\n\n[E3] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30039060.jpg>\nCaption: Demeter. A marble statue of Demeter,National Roman Museum\n\n[E4] (image): Persephone\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30086576.jpg>\nCaption: Kore, daughter of Demeter, celebrated with her mother by the Thesmophoriazusae (women of the festival). Acropolis Museum, Athens\n\n[E5] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30203121.jpg>\nCaption: Triptolemus, Demeter and Persephone by the Triptolemos-painter, c. 470 BC, Louvre\n\nQuestion: What Latin name is given to the daughter of Zeus and Demeter?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30275636.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30012971.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30039060.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30086576.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30203121.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Persephone - Wikipedia: In Greek mythology, Persephone ( / pərˈsɛfəniː / pər-SEF-ə-nee; Greek: Περσεφόνη, romanized : Persephónē ), also called Kore or Kora ( / ˈkɔːriː / KOR-ee; Greek: Κόρη, romanized : Kórē, lit. 'the maiden'), is the daughter of Zeus and Demeter.\n\n[E2] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30275636.jpg>\nCaption: Pompeiian relief of Demeter in her aspects of mother goddess and goddess of agriculture\n\n[E3] (text): Persephone: Demeter is united with her, the god Poseidon, and she bears him a daughter, the unnameable Despoina. Poseidon appears as a horse, as it usually happens in Northern European folklore.\n\n[E4] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30012971.jpg>\nCaption: Demeter rejoiced, for her daughter was by her side.\n\n[E5] (image): Demeter\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30039060.jpg>\nCaption: Demeter. A marble statue of Demeter,National Roman Museum\n\nQuestion: What Latin name is given to the daughter of Zeus and Demeter?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30275636.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30012971.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30039060.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Persephone - Wikipedia: In Greek mythology, Persephone ( / pərˈsɛfəniː / pər-SEF-ə-nee; Greek: Περσεφόνη, romanized : Persephónē ), also called Kore or Kora ( / ˈkɔːriː / KOR-ee; Greek: Κόρη, romanized : Kórē, lit. 'the maiden'), is the daughter of Zeus and Demeter.\n\n[E2] (text): Persephone: Demeter is united with her, the god Poseidon, and she bears him a daughter, the unnameable Despoina. Poseidon appears as a horse, as it usually happens in Northern European folklore.\n\n[E3] (image): Persephone\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30086576.jpg>\nCaption: Kore, daughter of Demeter, celebrated with her mother by the Thesmophoriazusae (women of the festival). Acropolis Museum, Athens\n\n[E4] (text): Demeter: According to Diodorus Siculus, in his Bibliotheca historica written in the 1st century BC, Demeter and her husband Zeus were also the parents of Dionysus.\n\n[E5] (image): Persephone\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30147187.jpg>\nCaption: Demeter drives her horse-drawn chariot containing her daughter Persephone at Selinunte, Sicily 6th century BC\n\nQuestion: What Latin name is given to the daughter of Zeus and Demeter?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30086576.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30147187.jpg"
+            ]
+          }
+        }
+      },
+      {
+        "qid": "d5d034e20dba11ecb1e81171463288e9",
+        "question": "What type of ship building technique might have been used to make quadriremes?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\nQuestion: What type of ship building technique might have been used to make quadriremes?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Trireme - Wikipedia: The early trireme was a development of the penteconter, an ancient warship with a single row of 25 oars on each side (i.e., a single-banked boat), and of the bireme ( Ancient Greek: διήρης, diērēs ), a warship with two banks of oars, of Phoenician origin. The word dieres does not appear until the Roman period.\n\n[E2] (text): Ancient shipbuilding techniques - Wikipedia: This method of ship construction appears to have originated from the seafaring nations of the Mediterranean, although evidence of peg- mortise-and-tenon joinery later appears in Southeast Asia. Frame-first construction involves laying down the framework of the vessel before attaching the planks to the boat.\n\n[E3] (text): Trireme - Wikipedia: As a ship it was fast and agile, and it was the dominant warship in the Mediterranean during the 7th to 4th centuries BC, after which it was largely superseded by the larger quadriremes and quinqueremes. Triremes played a vital role in the Persian Wars, the creation of the Athenian maritime empire, and its downfall in the Peloponnesian War .\n\n[E4] (text): Trireme: The trireme was constructed to maximize all traits of the ship to the point where if any changes were made the design would be compromised.\n\n[E5] (text): Shipbuilding: Development in the Middle Ages favored \"round ships\", with a broad beam and heavily curved at both ends. Another important ship type was the galley which was constructed with both sails and oars.\n\nQuestion: What type of ship building technique might have been used to make quadriremes?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          },
+          "static_image": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Ancient navies and vessels\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30118849.jpg>\nCaption: Drawing of Ancient Egyptian ship with a sail.\n\n[E2] (image): Wooden ship model\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30132688.jpg>\nCaption: Model of 17th-century English merchantman ship\n\n[E3] (image): Ship\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30008833.jpg>\nCaption: Egyptian sailing ship, c. 1422–1411 BC\n\n[E4] (image): Seventy-four (ship)\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30042402.jpg>\nCaption: Broadside of a French 74-gun ship from 1755\n\n[E5] (image): Ancient navies and vessels\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30066216.jpg>\nCaption: Model of Ancient Egyptian ship.\n\nQuestion: What type of ship building technique might have been used to make quadriremes?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30118849.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30132688.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30008833.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30042402.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30066216.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (image): Ancient navies and vessels\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30118849.jpg>\nCaption: Drawing of Ancient Egyptian ship with a sail.\n\n[E2] (image): Wooden ship model\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30132688.jpg>\nCaption: Model of 17th-century English merchantman ship\n\n[E3] (image): Ship\n<image:/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30008833.jpg>\nCaption: Egyptian sailing ship, c. 1422–1411 BC\n\n[E4] (text): Trireme - Wikipedia: The early trireme was a development of the penteconter, an ancient warship with a single row of 25 oars on each side (i.e., a single-banked boat), and of the bireme ( Ancient Greek: διήρης, diērēs ), a warship with two banks of oars, of Phoenician origin. The word dieres does not appear until the Roman period.\n\n[E5] (text): Ancient shipbuilding techniques - Wikipedia: This method of ship construction appears to have originated from the seafaring nations of the Mediterranean, although evidence of peg- mortise-and-tenon joinery later appears in Southeast Asia. Frame-first construction involves laying down the framework of the vessel before attaching the planks to the boat.\n\nQuestion: What type of ship building technique might have been used to make quadriremes?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30118849.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30132688.jpg",
+              "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images/30008833.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\nBased on the following evidence, answer the question.\n\n[E1] (text): Ancient shipbuilding techniques - Wikipedia: This method of ship construction appears to have originated from the seafaring nations of the Mediterranean, although evidence of peg- mortise-and-tenon joinery later appears in Southeast Asia. Frame-first construction involves laying down the framework of the vessel before attaching the planks to the boat.\n\n[E2] (text): Trireme - Wikipedia: As a ship it was fast and agile, and it was the dominant warship in the Mediterranean during the 7th to 4th centuries BC, after which it was largely superseded by the larger quadriremes and quinqueremes. Triremes played a vital role in the Persian Wars, the creation of the Athenian maritime empire, and its downfall in the Peloponnesian War .\n\n[E3] (text): Pinas (ship): It is an ancient and unique building technique, the origins of which might date back to the Proto-Malay migrations that colonised the archipelago thousands of years ago.\n\n[E4] (text): Shipbuilding: Ship design work, also called naval architecture, may be conducted using a ship model basin. Previously, loftsmen at the mould lofts of shipyards were responsible for taking the dimensions, and details from drawings and plans and translating this information into templates, battens, ordinates, cutting sketches, profiles, margins and other data.\n\n[E5] (text): Ancient shipbuilding techniques: Fastenings of this type have been demonstrated to perform well in coastal regions, being capable of withstanding the rigors of heavy surf as well as the impact of beaching. The lashed-plank technique can be found worldwide as well.\n\nQuestion: What type of ship building technique might have been used to make quadriremes?\nWrite the short answer alone on the first line. On the second line, answer in one complete sentence that restates the key object in the question.<|im_end|>\n<|im_start|>assistant\n",
+            "images": []
+          }
+        }
+      }
+    ],
+    "log_has_env": true,
+    "log_has_done": true,
+    "format": {
+      "answer_format": "answer_first",
+      "questions": 50,
+      "actions": {
+        "direct": {
+          "questions": 50,
+          "answer_first_ok": 0.94,
+          "answer_token_is_first": 0.82,
+          "template_start": 0.22
+        },
+        "static_text": {
+          "questions": 50,
+          "answer_first_ok": 0.9583333333333334,
+          "answer_token_is_first": 0.76,
+          "template_start": 0.34
+        },
+        "static_image": {
+          "questions": 49,
+          "answer_first_ok": 1.0,
+          "answer_token_is_first": 0.8571428571428571,
+          "template_start": 0.2653061224489796
+        },
+        "static_mixed": {
+          "questions": 50,
+          "answer_first_ok": 0.98,
+          "answer_token_is_first": 0.82,
+          "template_start": 0.28
+        },
+        "rerank_static": {
+          "questions": 50,
+          "answer_first_ok": 0.9795918367346939,
+          "answer_token_is_first": 0.86,
+          "template_start": 0.24
+        }
+      },
+      "min_answer_first": 0.9,
+      "passed": true,
+      "below": []
+    },
+    "completion": {
+      "dataset": "webqa_full",
+      "questions": 50,
+      "output": "webqa_full.jsonl",
+      "output_sha256": "c88c71200f4d16f5282310747abf86b459b03ba510563ad3bfb5c9bbec5f81b8",
+      "config": "webqa_full_config.json",
+      "config_sha256": "b5b3cbc129794c619cc1be1e45a7740c0954396337aef1e7deaea1e51603bd85",
+      "written_utc": "2026-10-17T10:48:06.593121+00:00",
+      "empty_answer_rate": 0.0,
+      "refusal_rate": 0.007285974499089253,
+      "n_answers": 549,
+      "n_empty": 0,
+      "n_blank": 0,
+      "n_citation_only": 0,
+      "n_refusal": 4,
+      "empty_by_arm": {
+        "direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static_joint": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "gated:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_trigger:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_shared:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_text": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 2
+        },
+        "action:static_image": {
+          "n": 49,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 1
+        },
+        "action:static_mixed": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:rerank_static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 1
+        }
+      }
+    },
+    "sha256": {
+      "webqa_full.log": "af33a90c4548c5373c44c3a3c09ddc476441b5a6ec4ecb9ab5fa6793ac0b87c3",
+      "webqa_full.env.ndjson": "1856f9be7b7d79eff4a1e33585c00109e40c0be0c6e09f1e2297ef68c8b16554",
+      "webqa_full_config.json": "b5b3cbc129794c619cc1be1e45a7740c0954396337aef1e7deaea1e51603bd85",
+      "webqa_full.jsonl": "c88c71200f4d16f5282310747abf86b459b03ba510563ad3bfb5c9bbec5f81b8",
+      "webqa_full.prompts.ndjson": "489996c0b41fbbed8dd54fac0b9bd6051c83642de1a80183599aee6b9727226e",
+      "webqa_full.merged.json": "ff7d5aa1f017a3ab7c91bd3dced215244b5f5c7c2eb32d218d3ef3a80f72997d",
+      "webqa_full.answer_format.json": "0b297605c5fac1a56aebd48bd59e9446e448fe144982be58a25a02db62f9bc0b"
+    }
+  },
+  "okvqa_gs": {
+    "env": [
+      {
+        "git_commit": "5cb10f3dca7abb3c46617831c0f834ba59c3104b",
+        "git_dirty": false,
+        "model": {
+          "kind": "qwen3_vl",
+          "device": "cuda",
+          "dtype": "torch.bfloat16",
+          "attn_implementation": "sdpa",
+          "n_layers": 36,
+          "vocab_size": 151669,
+          "image_size": {
+            "shortest_edge": 65536,
+            "longest_edge": 262144
+          }
+        },
+        "gpus": [
+          "NVIDIA L20"
+        ],
+        "python": "3.11.17",
+        "torch": "2.11.0+cu128",
+        "transformers": "5.5.3"
+      }
+    ],
+    "prompt_rows": 20,
+    "prompt_examples": [
+      {
+        "qid": "3296875",
+        "question": "What is the type of dog on the woman's lap?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg>\nQuestion: What is the type of dog on the woman's lap?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg"
+            ]
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): labrador tops most popular dog breed list for 29th year in a row | smart news | smithsonian magazine accessibility navigation primary navigation content toggle share search subscribe (left) renew (left) give a gift (left) smithsonian magazine subscribe (mobile) facebook instagram pinterest twitter google+ newsletter search search search search smartnews history science innovation arts & culture travel featured: 3,800 years ago, a baby was buried in a jar history archaeology u.s. the rankings stay much the same from year to year, but in 2019, pembroke welsh corgis broke the top ten for the first time a labrador retriever, but you probably knew that already, given that this pooch is america's most popular breed (joshua köller via pexels) by katherine j. i am not persuaded. pic.twitter.com/7jqcbhtjrs— stephen king (@stephenking) june 26, 2015 among the internet's most recognizable corgis are the beloved pets of england's elizabeth ii, who fell in love with the canines at a young age, around the time her ...\n\n[E2] (text): the bichon frise, known as the bichon à poil frisé in france meaning a curly haired lap dog is a small sized breed with a cute appearance. these dogs are known for their high level of intelligence alongside a strong and dominant personality.\n\n[E3] (text): this article has been cited by other articles in pmc.associated datasupplementary materialsfigure s1: short examples of pedigrees of a) bull terrier b) miniature bull terrier, c) german shepherd d) staffordshire bull terrier. a variant of tc is “spinning”, in which the affected dog spins rapidly in tight circles without apparent interest in the tail. vulink n, denys d, bus l, westenberg h. female hormones affect symptom severity in obsessive-compulsive disorder.\n\n[E4] (text): originating over 2000 years ago, pugs were bred to be lap dogs and they've served royalty in china and europe. the dog breed pug sitting in the park the coat of the black pug shines jet black.\n\n[E5] (text): the black lab dog is a variation of the labrador retriever breed. they come in three color varieties: yellow, chocolate, and black.\n\nQuestion: What is the type of dog on the woman's lap?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): labrador tops most popular dog breed list for 29th year in a row | smart news | smithsonian magazine accessibility navigation primary navigation content toggle share search subscribe (left) renew (left) give a gift (left) smithsonian magazine subscribe (mobile) facebook instagram pinterest twitter google+ newsletter search search search search smartnews history science innovation arts & culture travel featured: 3,800 years ago, a baby was buried in a jar history archaeology u.s. the rankings stay much the same from year to year, but in 2019, pembroke welsh corgis broke the top ten for the first time a labrador retriever, but you probably knew that already, given that this pooch is america's most popular breed (joshua köller via pexels) by katherine j. i am not persuaded. pic.twitter.com/7jqcbhtjrs— stephen king (@stephenking) june 26, 2015 among the internet's most recognizable corgis are the beloved pets of england's elizabeth ii, who fell in love with the canines at a young age, around the time her ...\n\n[E2] (text): the bichon frise, known as the bichon à poil frisé in france meaning a curly haired lap dog is a small sized breed with a cute appearance. these dogs are known for their high level of intelligence alongside a strong and dominant personality.\n\n[E3] (text): this article has been cited by other articles in pmc.associated datasupplementary materialsfigure s1: short examples of pedigrees of a) bull terrier b) miniature bull terrier, c) german shepherd d) staffordshire bull terrier. a variant of tc is “spinning”, in which the affected dog spins rapidly in tight circles without apparent interest in the tail. vulink n, denys d, bus l, westenberg h. female hormones affect symptom severity in obsessive-compulsive disorder.\n\n[E4] (text): originating over 2000 years ago, pugs were bred to be lap dogs and they've served royalty in china and europe. the dog breed pug sitting in the park the coat of the black pug shines jet black.\n\n[E5] (text): the black lab dog is a variation of the labrador retriever breed. they come in three color varieties: yellow, chocolate, and black.\n\nQuestion: What is the type of dog on the woman's lap?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): the bichon frise, known as the bichon à poil frisé in france meaning a curly haired lap dog is a small sized breed with a cute appearance. these dogs are known for their high level of intelligence alongside a strong and dominant personality.\n\n[E2] (text): originating over 2000 years ago, pugs were bred to be lap dogs and they've served royalty in china and europe. the dog breed pug sitting in the park the coat of the black pug shines jet black.\n\n[E3] (text): it's not a lap dog with a mature weight between 55 to 80 pounds, but this family favorite will want to sit on your lap and cuddle. the colors of the saddle coat are different in this breed—usually a black and tan or a black and red. find out 15 secrets dog trainers won't tell you for free. and those short legs carrying a long body aren't going to get much taller growing into just 10 to 12 inches tall.\n\n[E4] (text): the beagle is a breed of small hound that is similar in appearance to the much larger foxhound. miniature breeds of beagle-type dogs were known from the times of edward ii and henry vii, who both had packs of glove beagles, so named since they were small enough to fit on a glove, and queen elizabeth i kept a breed known as a pocket beagle, which stood 8 to 9 inches (20 to 23 cm) at the shoulder. elizabeth i referred to the dogs as her singing beagles and often entertained guests at her royal table by letting her pocket beagles cavort amid their plates and cups.[3] 19th-century sources refer to these breeds interchangeably and it is possible that the two names refer to the same small variety.\n\n[E5] (text): pugs are from the toy group, originally bred to sit on laps. they are also one of the oldest dog breeds, and can be traced back to 400bc china.\n\nQuestion: What is the type of dog on the woman's lap?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000329687.jpg"
+            ]
+          }
+        }
+      },
+      {
+        "qid": "4703135",
+        "question": "What camera is she using to take this picture?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg>\nQuestion: What camera is she using to take this picture?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg"
+            ]
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): a camera phone is a mobile phone which is able to capture photographs and often record video using one or more built-in digital cameras. nearly all camera phones use cmos active-pixel image sensors (cmos sensors), due to largely reduced power consumption compared to charge-coupled device (ccd) type cameras, which few camera phones use. the spacially limited form factor of mobile phones brings design disadvantages over dedicated digital cameras for use as camera, such as limits on image sensor size, ergonomy and lack of dedicated knobs and buttons for control. he wirelessly transmitted his cell phone pictures to more than 2,000 family, friends and associates around the world.\n\n[E2] (text): a camera phone is a mobile phone which is able to capture photographs and often record video using one or more built-in digital cameras. few mobile phones such as the 2009 samsung i8000 omnia ii have a two-level shutter button to resemble the point-and-shoot intuition from dedicated digital cameras.[3] a few camera phones are designed to resemble separate low-end digital compact cameras in appearance and to some degree in features and picture quality, and are branded as both mobile phones and cameras. nearly all camera phones use cmos active-pixel image sensors (cmos sensors), due to largely reduced power consumption compared to charge-coupled device (ccd) type cameras, which few camera phones use.\n\n[E3] (text): lens, size of the lens (measured in millimeters), and type of camera itself.\n\n[E4] (text): download this woman taking picture of waterfall with smart phone photo now. and search more of istock's library of royalty-free stock images that features autumn photos available for quick and easy download.product #:gm617375502$33.00istockin stockimagesphotosillustrationsvectorsvideoimagesphotosillustrationsvectorsvideosearch by imagewoman taking picture of waterfall with smart phone stock photo...autumn, telephone, mobile phone, photo messaging, smart phoneonly from istockwoman taking picture of waterfall with smart phone dslr picture of a woman taking picture of a waterfalls with a smart phone in forest.\n\n[E5] (text): a digital camera is a camera that captures photographs in digital memory. most cameras produced today are digital,[1] and while there are still dedicated digital cameras, many more cameras are now incorporated into mobile devices like smartphones, which can, among many other purposes, use their cameras to initiate live video-telephony and directly edit and upload image to others.[2] however, high-end, high-definition dedicated cameras are still commonly used by professionals and those who desire to take higher-quality photographs. the two major types of digital image sensor are ccd and cmos. a new type of camera emerged, called a mirrorless interchangeable-lens camera.\n\nQuestion: What camera is she using to take this picture?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): a camera phone is a mobile phone which is able to capture photographs and often record video using one or more built-in digital cameras. nearly all camera phones use cmos active-pixel image sensors (cmos sensors), due to largely reduced power consumption compared to charge-coupled device (ccd) type cameras, which few camera phones use. the spacially limited form factor of mobile phones brings design disadvantages over dedicated digital cameras for use as camera, such as limits on image sensor size, ergonomy and lack of dedicated knobs and buttons for control. he wirelessly transmitted his cell phone pictures to more than 2,000 family, friends and associates around the world.\n\n[E2] (text): a camera phone is a mobile phone which is able to capture photographs and often record video using one or more built-in digital cameras. few mobile phones such as the 2009 samsung i8000 omnia ii have a two-level shutter button to resemble the point-and-shoot intuition from dedicated digital cameras.[3] a few camera phones are designed to resemble separate low-end digital compact cameras in appearance and to some degree in features and picture quality, and are branded as both mobile phones and cameras. nearly all camera phones use cmos active-pixel image sensors (cmos sensors), due to largely reduced power consumption compared to charge-coupled device (ccd) type cameras, which few camera phones use.\n\n[E3] (text): lens, size of the lens (measured in millimeters), and type of camera itself.\n\n[E4] (text): download this woman taking picture of waterfall with smart phone photo now. and search more of istock's library of royalty-free stock images that features autumn photos available for quick and easy download.product #:gm617375502$33.00istockin stockimagesphotosillustrationsvectorsvideoimagesphotosillustrationsvectorsvideosearch by imagewoman taking picture of waterfall with smart phone stock photo...autumn, telephone, mobile phone, photo messaging, smart phoneonly from istockwoman taking picture of waterfall with smart phone dslr picture of a woman taking picture of a waterfalls with a smart phone in forest.\n\n[E5] (text): a digital camera is a camera that captures photographs in digital memory. most cameras produced today are digital,[1] and while there are still dedicated digital cameras, many more cameras are now incorporated into mobile devices like smartphones, which can, among many other purposes, use their cameras to initiate live video-telephony and directly edit and upload image to others.[2] however, high-end, high-definition dedicated cameras are still commonly used by professionals and those who desire to take higher-quality photographs. the two major types of digital image sensor are ccd and cmos. a new type of camera emerged, called a mirrorless interchangeable-lens camera.\n\nQuestion: What camera is she using to take this picture?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): download this woman taking picture of waterfall with smart phone photo now. and search more of istock's library of royalty-free stock images that features autumn photos available for quick and easy download.product #:gm617375502$33.00istockin stockimagesphotosillustrationsvectorsvideoimagesphotosillustrationsvectorsvideosearch by imagewoman taking picture of waterfall with smart phone stock photo...autumn, telephone, mobile phone, photo messaging, smart phoneonly from istockwoman taking picture of waterfall with smart phone dslr picture of a woman taking picture of a waterfalls with a smart phone in forest.\n\n[E2] (text): a digital camera is a camera that captures photographs in digital memory. most cameras produced today are digital,[1] and while there are still dedicated digital cameras, many more cameras are now incorporated into mobile devices like smartphones, which can, among many other purposes, use their cameras to initiate live video-telephony and directly edit and upload image to others.[2] however, high-end, high-definition dedicated cameras are still commonly used by professionals and those who desire to take higher-quality photographs. the two major types of digital image sensor are ccd and cmos. a new type of camera emerged, called a mirrorless interchangeable-lens camera.\n\n[E3] (text): the iphone is a fantastic device for snapping pictures: it has excellent hardware, smart software, and it's easy enough for your grandmother to use. but you can work around most of them by being smart about your snapping. at night, use the camera app's exposure slider to boost light in the photo.\n\n[E4] (text): woman photographer taking photo of waterfall travel lifestyle adventure concept active vacations into the wild harmony with nature.\n\n[E5] (text): photo about female photographer is taking a picture from the gullfoss waterfall - iceland. image of activity, adult, circle - 83097534.\n\nQuestion: What camera is she using to take this picture?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000470313.jpg"
+            ]
+          }
+        }
+      },
+      {
+        "qid": "5789675",
+        "question": "How fast can this train go?",
+        "actions": {
+          "direct": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg>\nQuestion: How fast can this train go?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg"
+            ]
+          },
+          "static_text": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): japan's future ultra-fast bullet train will reach speeds up to 311 mph (video). by andrea romano. updated february 27, 2020. advertisement.\n\n[E2] (text): for example, the maximum speed of long-distance trains powered by electric locomotives fluctuate from 100 to 120 km/h (62-74 mph), rarely reaching 140 km/h (87 mph). qualify as high-speed, as they can reach speeds of up to 320 km/h (199 mph).russia's fastest train — the sapsan siemens velaro train connecting moscow with st.\n\n[E3] (text): you can ride a train at 217 mphthe fastest scheduled trains are on china's beijing to shanghai line.this line opened in 2011 and was designed for 380 km/h (236 mph), but is currently \"limited\" to 350 km/h (217 mph).trains g17 and g38 now cover the roughly 600 from beijing to nanjing at an average speed of 318 km/h (198 mph), which earns them the top station to station speed.\n\n[E4] (text): amtrak train was going 100 mph, twice the speed limit before fatal crash: report - pennlive.com skip to articleset weatherback to main menuclosecustomize your weatherset your location:enter city and state or zip codesubmitsubscribe nowaccount menusign in large chevronchevron that denotes content that can open up.create account large chevronchevron that denotes content that can open up.newslettershelp/faqsearchplease support high-quality local journalism. night was going about twice the speed it should've been traveling, the wall street journal is reporting.the speed limit is 70 mph just before the curve and 50 mph along the curve itself, the federal railroad administration said.according to the wsj:(the train) appears to have been traveling at more than 100 miles an hour as it entered a sharp curve where it derailed tuesday night, killing at least six people, according to two people with knowledge of the investigation.the speed limit in that section of track drops to 50 miles per hour, according to the federal railroad administration.investigators are focusing on ...\n\n[E5] (text): once it enters operation sometime around 2030, it will run at speeds of up to 360 kph (224 mph), comfortably making it the world's fastest bullet train.it will also outpace china's fuxing train, which runs at 10 kph slower despite being designed with the same top speed capabilities as the alfa-x.the model will operate at speeds of up to 360 km/h.the model's futuristic design features 10 cars and a long pointed nose.\n\nQuestion: How fast can this train go?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg"
+            ]
+          },
+          "static_mixed": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): japan's future ultra-fast bullet train will reach speeds up to 311 mph (video). by andrea romano. updated february 27, 2020. advertisement.\n\n[E2] (text): for example, the maximum speed of long-distance trains powered by electric locomotives fluctuate from 100 to 120 km/h (62-74 mph), rarely reaching 140 km/h (87 mph). qualify as high-speed, as they can reach speeds of up to 320 km/h (199 mph).russia's fastest train — the sapsan siemens velaro train connecting moscow with st.\n\n[E3] (text): you can ride a train at 217 mphthe fastest scheduled trains are on china's beijing to shanghai line.this line opened in 2011 and was designed for 380 km/h (236 mph), but is currently \"limited\" to 350 km/h (217 mph).trains g17 and g38 now cover the roughly 600 from beijing to nanjing at an average speed of 318 km/h (198 mph), which earns them the top station to station speed.\n\n[E4] (text): amtrak train was going 100 mph, twice the speed limit before fatal crash: report - pennlive.com skip to articleset weatherback to main menuclosecustomize your weatherset your location:enter city and state or zip codesubmitsubscribe nowaccount menusign in large chevronchevron that denotes content that can open up.create account large chevronchevron that denotes content that can open up.newslettershelp/faqsearchplease support high-quality local journalism. night was going about twice the speed it should've been traveling, the wall street journal is reporting.the speed limit is 70 mph just before the curve and 50 mph along the curve itself, the federal railroad administration said.according to the wsj:(the train) appears to have been traveling at more than 100 miles an hour as it entered a sharp curve where it derailed tuesday night, killing at least six people, according to two people with knowledge of the investigation.the speed limit in that section of track drops to 50 miles per hour, according to the federal railroad administration.investigators are focusing on ...\n\n[E5] (text): once it enters operation sometime around 2030, it will run at speeds of up to 360 kph (224 mph), comfortably making it the world's fastest bullet train.it will also outpace china's fuxing train, which runs at 10 kph slower despite being designed with the same top speed capabilities as the alfa-x.the model will operate at speeds of up to 360 km/h.the model's futuristic design features 10 cars and a long pointed nose.\n\nQuestion: How fast can this train go?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg"
+            ]
+          },
+          "rerank_static": {
+            "prompt": "<|im_start|>user\n<image:/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg>\nBased on the following evidence, answer the question.\n\n[E1] (text): japan's future ultra-fast bullet train will reach speeds up to 311 mph (video). by andrea romano. updated february 27, 2020. advertisement.\n\n[E2] (text): japan's levitating train travels 300 mph and just carried its first passengers we're using cookies to improve your experience. with the help of magnets; its top speeds put other trains to shame.\n\n[E3] (text): the fastest trains are capable of speeds in excess of 400 km/h (250 mph), though operational top speeds in day-to-day service are often limited to 300 km/h (190 mph) or less. are 200 km/h (120 mph) or higher in revenue service and some high-speed rail services contain no purpose-built tracks whatsoever. where some passengers sitting directly behind the driver can see the tracks through the front window is easy to implement and has been done on some german ices.\n\n[E4] (text): while these two currently hold all the records, other fast trains, such as the hemu-400x, zefiro 380 and talgo avril, are close contenders for the crown of world's fastest trains. shanghai maglev tops the list with its maximum operational speed of 430km/h and average speed of 251kmph.\n\n[E5] (text): among the fastest in the world, these trains regularly top 200 mph and even crack the 300 mph mark. high-speed rail is finally becoming a reality in america.\n\nQuestion: How fast can this train go?\nAnswer the question using a single word or phrase.<|im_end|>\n<|im_start|>assistant\n",
+            "images": [
+              "/home/user/Futaoran/omniaware/assets/data/coco/val2014/COCO_val2014_000000578967.jpg"
+            ]
+          }
+        }
+      }
+    ],
+    "log_has_env": true,
+    "log_has_done": true,
+    "format": {
+      "answer_format": "plain",
+      "questions": 50,
+      "actions": {
+        "direct": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.98,
+          "template_start": 0.04
+        },
+        "static_text": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.92,
+          "template_start": 0.1
+        },
+        "static_mixed": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.92,
+          "template_start": 0.1
+        },
+        "rerank_static": {
+          "questions": 50,
+          "answer_first_ok": null,
+          "answer_token_is_first": 0.92,
+          "template_start": 0.1
+        }
+      },
+      "min_answer_first": 0.9,
+      "passed": true,
+      "below": []
+    },
+    "completion": {
+      "dataset": "okvqa_gs",
+      "questions": 50,
+      "output": "okvqa_gs.jsonl",
+      "output_sha256": "ba5343a1f06e97569d39619b6be18eeaedd6eaf42e0165b7874524700d3e599d",
+      "config": "okvqa_gs_config.json",
+      "config_sha256": "c3026ea1bb495c405e44eedbe654d430ae7c33bcc0b4173c2468e4c2480564e7",
+      "written_utc": "2026-10-17T12:55:56.249149+00:00",
+      "empty_answer_rate": 0.0,
+      "refusal_rate": 0.0,
+      "n_answers": 500,
+      "n_empty": 0,
+      "n_blank": 0,
+      "n_citation_only": 0,
+      "n_refusal": 0,
+      "empty_by_arm": {
+        "direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "static_joint": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "gated:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_trigger:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "nte_shared:static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:direct": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_text": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:static_mixed": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        },
+        "action:rerank_static": {
+          "n": 50,
+          "blank": 0,
+          "citation_only": 0,
+          "refusal": 0
+        }
+      }
+    },
+    "sha256": {
+      "okvqa_gs.log": "9655c5f1aef5efabfc1f1ef7d6284b4b159ad8fbf41b30365a57b871d6ff58cf",
+      "okvqa_gs.env.ndjson": "fe441dff219e2e75941f8e932386b5d781f8a741b8f2dbc32c59976307ec833b",
+      "okvqa_gs_config.json": "c3026ea1bb495c405e44eedbe654d430ae7c33bcc0b4173c2468e4c2480564e7",
+      "okvqa_gs.jsonl": "ba5343a1f06e97569d39619b6be18eeaedd6eaf42e0165b7874524700d3e599d",
+      "okvqa_gs.prompts.ndjson": "7efb399df82b3c4694cb1f6835b54579df08b122515e92bee1c5375c12db1546",
+      "okvqa_gs.merged.json": "0cc419053016983cef4bc501e74e8827eb4d25eb0d11fb2fae8c0c4acccef47d",
+      "okvqa_gs.answer_format.json": "e5d6258af30ab5cdb5e9f44b698bd8c61293d9bd0acde57d4de10bf1f34dbb3e"
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "started": "2026-10-17T06:19:12.012298+08:00",
+  "assets": {
+    "webqa_trainval": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/WebQA_train_val.json",
+      "exists": true,
+      "bytes": 661922314,
+      "sha256": "7ff6ba4aae749dbdd6400c69251e97a785e689039206d91d7541bec15eab3dbe"
+    },
+    "webqa_test": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/WebQA_test.json",
+      "exists": true,
+      "bytes": 116724654,
+      "sha256": "a15cea11c0fbd49c425fcf9a01fc47da4f5f2674e7481751261160fd88b233db"
+    },
+    "webqa_images": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/webqa_full4966_images/images",
+      "exists": true,
+      "files": 389743,
+      "bytes": 75658713105
+    },
+    "webqa_open_images": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/images",
+      "exists": true,
+      "files": 389743,
+      "bytes": 75658713105
+    },
+    "okvqa_annotations": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/okvqa_local/original/mscoco_val2014_annotations.json.zip",
+      "exists": true,
+      "bytes": 395495,
+      "sha256": "6ef3c4d68bea516580c2090a05b4a4ca42e4d80e5469b04ca03fcb10b64b050d"
+    },
+    "okvqa_questions": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/okvqa_local/original/OpenEnded_mscoco_val2014_questions.json.zip",
+      "exists": true,
+      "bytes": 116271,
+      "sha256": "84756c5fcba1da8144c0bc1efd8a3075dc52ad5fa4aef39f56762dc578dbd58b"
+    },
+    "okvqa_inputs": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/okvqa_val5046_assets/validation_inputs.jsonl",
+      "exists": true,
+      "bytes": 849413,
+      "sha256": "b99d5f43ffe021df15580f71d127758acc9043f0bf1b934c806a7661ea30b59c",
+      "lines": 5046
+    },
+    "coco_images": {
+      "path": "/home/user/Futaoran/omniaware/assets/data/coco/val2014",
+      "exists": true,
+      "files": 5033,
+      "bytes": 830594178
+    },
+    "webqa_open_pool_stats.json": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/pool_stats.json",
+      "exists": true,
+      "bytes": 362,
+      "sha256": "b40c76cbcf3d082abeb655b4f04d5068215fb02b9f6bdb00d337d3c618647e9a"
+    },
+    "webqa_open_text_documents.jsonl": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/text_documents.jsonl",
+      "exists": true,
+      "bytes": 253109555,
+      "sha256": "a46de8e263371f85ba51fe6e662653b5d67c08ea94cbc4aba0e2c47492bd5ac2",
+      "lines": 545820
+    },
+    "webqa_open_image_corpus.jsonl": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/image_corpus.jsonl",
+      "exists": true,
+      "bytes": 62512052,
+      "sha256": "e2724eecf583e98abf6a5c1b2810817f1054a6d5059f7d8122c2998f5d1fa7a7",
+      "lines": 389750
+    },
+    "webqa_rankings_train_bge": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/bge/rankings.jsonl",
+      "exists": true,
+      "bytes": 25162332,
+      "sha256": "32d989fabe72b6d2294b55399ec669d7138caf9bef20d543d569687b9bc3eafb",
+      "lines": 36766
+    },
+    "webqa_rankings_train_clip": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_train/clip/rankings.jsonl",
+      "exists": true,
+      "bytes": 13766094,
+      "sha256": "ee085fa8acc7de45f46ac2630166a11f311bb52af745aa07ec0c496a2a886b72",
+      "lines": 36766
+    },
+    "webqa_rankings_val_bge": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/bge/rankings.jsonl",
+      "exists": true,
+      "bytes": 3398706,
+      "sha256": "99e2a3483f87bb833adc00f3de41a346f355e6d6fcc9e15fabd9590b485060cd",
+      "lines": 4966
+    },
+    "webqa_rankings_val_clip": {
+      "path": "/home/user/Futaoran/omniaware/assets/webqa_open/dense_top5_full/webqa_val/clip/rankings.jsonl",
+      "exists": true,
+      "bytes": 1859312,
+      "sha256": "7d5d0fb7fd962478cabd4bc3583caedbadba1c2b64e87fe360afd746924bf988",
+      "lines": 4966
+    },
+    "gs_corpus.jsonl": {
+      "path": "/home/user/Futaoran/omniaware/cache/okvqa_gs112k/corpus.jsonl",
+      "exists": true,
+      "bytes": 43613003,
+      "sha256": "0ba5607c4733de5e94e644e92b4883f684b7cd37bcc4b23238eeb6abe86c96e6",
+      "lines": 113019
+    },
+    "gs_emb_112724.f16": {
+      "path": "/home/user/Futaoran/omniaware/cache/okvqa_gs112k/emb_112724.f16",
+      "exists": true,
+      "bytes": 230858752,
+      "sha256": "4b508715504ef7d2ddf16e46a969f2795d6eea28b4c2fd301f3fe75e74bdd36f"
+    },
+    "gs_emb_112724.done": {
+      "path": "/home/user/Futaoran/omniaware/cache/okvqa_gs112k/emb_112724.done",
+      "exists": true,
+      "bytes": 6,
+      "sha256": "e5afbeddb17d7fdc2a623e4ae3713a0c8ca0fb55031c72ff8411a23fc408cbe3"
+    },
+    "gs_candidates_full.jsonl": {
+      "path": "/home/user/Futaoran/omniaware/cache/okvqa_gs112k/candidates_full.jsonl",
+      "exists": true,
+      "bytes": 51605463,
+      "sha256": "a394b1e7bbbbb0db1247c9430ac58bf8a395660b9af893dd2ee8a03c64facede",
+      "lines": 5046
+    },
+    "model_qwen3-vl-8b-instruct": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/qwen3-vl-8b-instruct",
+      "exists": true,
+      "files": 39,
+      "bytes": 17545919261
+    },
+    "model_bge-large-en-v1.5": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/bge-large-en-v1.5",
+      "exists": true,
+      "files": 11,
+      "bytes": 1340864049
+    },
+    "model_clip-vit-large-patch14": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/clip-vit-large-patch14",
+      "exists": true,
+      "files": 13,
+      "bytes": 1712140461
+    },
+    "model_bge-reranker-v2-m3": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/bge-reranker-v2-m3",
+      "exists": true,
+      "files": 6,
+      "bytes": 2293242108
+    },
+    "model_e5_citation_support/deberta_nli": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/e5_citation_support/deberta_nli",
+      "exists": true,
+      "files": 8,
+      "bytes": 881305316
+    },
+    "model_bartscore": {
+      "path": "/home/user/Futaoran/omniaware/assets/cache/bartscore",
+      "exists": false
+    }
+  },
+  "checks": {
+    "corpus_112724": false,
+    "embedding_bytes": true,
+    "embedding_done": true,
+    "candidates": {
+      "rows": 5046,
+      "unique_question_ids": 5046,
+      "bad_qids": [],
+      "pass": true
+    },
+    "okvqa_images": {
+      "questions": 5046,
+      "distinct_image_ids": 5033,
+      "missing": [],
+      "decode_errors": [],
+      "pass": true
+    }
+  },
+  "ended": "2026-10-17T06:54:41.466611+08:00"
+}

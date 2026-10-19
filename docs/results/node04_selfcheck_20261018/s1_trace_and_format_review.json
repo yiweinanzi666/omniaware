@@ -1,0 +1,1413 @@
+{
+  "webqa": {
+    "questions": 50,
+    "input_trace_counts": {
+      "direct": {
+        "available": 50,
+        "images": 0,
+        "visual_tokens": 0,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0,
+        "incorrect_direct_image_count": 0
+      },
+      "static_text": {
+        "available": 50,
+        "images": 0,
+        "visual_tokens": 0,
+        "refusal": 2,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      },
+      "static_image": {
+        "available": 49,
+        "images": 242,
+        "visual_tokens": 55802,
+        "refusal": 1,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0,
+        "image_question_count": 22,
+        "missing_image_input": 0,
+        "invalid_image_token_count": 0
+      },
+      "static_mixed": {
+        "available": 50,
+        "images": 128,
+        "visual_tokens": 29487,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      },
+      "rerank_static": {
+        "available": 50,
+        "images": 44,
+        "visual_tokens": 10344,
+        "refusal": 1,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      }
+    },
+    "first20_review": [
+      {
+        "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+        "question": "Which came first, the \"Red Fox Battallion\", or the British military officer later known as the \"Red Fox\"?",
+        "actions": {
+          "direct": {
+            "short": "The \"Red Fox Battalion\" came first.",
+            "answer": "The \"Red Fox Battalion\" predates the British military officer later known as the \"Red Fox.\"",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "The \"Red Fox Battalion\" came first.",
+            "answer": "The \"Red Fox Battalion\" was formed in 1917, while the British officer known as the \"Red Fox\" (Lieutenant Albert Michael Sinclair) was a prisoner of war during World War II, which began in 1939.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "The British military officer later known as the \"Red Fox\"",
+            "answer": "The British military officer later known as the \"Red Fox\" came first, as the \"Red Fox Battalion\" is a fictional or metaphorical unit, while the officer is a real historical figure.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "The British military officer later known as the \"Red Fox\".",
+            "answer": "The British military officer later known as the \"Red Fox\" came first.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "The \"Red Fox Battalion\"",
+            "answer": "The \"Red Fox Battalion\" came first, as it was formed in 1917, while the British officer known as \"Red Fox\" was active during World War II (1939–1945).",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5d5742a0dba11ecb1e81171463288e9",
+        "question": "What Latin name is given to the daughter of Zeus and Demeter?",
+        "actions": {
+          "direct": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Proserpina",
+            "answer": "The Latin name given to the daughter of Zeus and Demeter is Proserpina.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Persephone",
+            "answer": "The daughter of Zeus and Demeter is named Persephone.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5d034e20dba11ecb1e81171463288e9",
+        "question": "What type of ship building technique might have been used to make quadriremes?",
+        "actions": {
+          "direct": {
+            "short": "Clinker-built or lapstrake construction",
+            "answer": "Quadriremes were built using clinker or lapstrake techniques, where overlapping planks were fastened together to form a strong, watertight hull.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Frame-first construction",
+            "answer": "The type of shipbuilding technique likely used to make quadriremes was frame-first construction, as this method was employed in ancient Mediterranean shipbuilding, which produced the trireme and its successors like the quadrireme.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Keel and frame construction with multiple rows of oars.",
+            "answer": "Quadriremes were ancient warships built using a keel and frame construction technique with four rows of oars.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Frame-first construction",
+            "answer": "The ship building technique likely used to make quadriremes was frame-first construction, as this method was common in ancient Mediterranean shipbuilding and was used for earlier warships like the trireme and bireme.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Frame-first construction",
+            "answer": "The type of shipbuilding technique likely used to make quadriremes is frame-first construction, as this method was prevalent in ancient Mediterranean shipbuilding, where quadriremes were developed and used.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5db7faa0dba11ecb1e81171463288e9",
+        "question": "The mineral composed of iron (II) carbonate and is 48% iron is commonly found where?",
+        "actions": {
+          "direct": {
+            "short": "Siderite",
+            "answer": "Siderite, the mineral composed of iron(II) carbonate and containing 48% iron, is commonly found in sedimentary rock formations and coal beds.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Siderite",
+            "answer": "The mineral siderite, composed of iron(II) carbonate and containing 48% iron, is commonly found in iron formations and sedimentary rocks as part of iron-bearing deposits.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Siderite",
+            "answer": "Siderite, the mineral composed of iron (II) carbonate and containing 48% iron, is commonly found in sedimentary rocks and iron-rich deposits.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Siderite",
+            "answer": "The mineral siderite, composed of iron(II) carbonate and containing 48% iron, is commonly found in iron ore deposits.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Siderite",
+            "answer": "The mineral siderite, composed of iron(II) carbonate and containing 48% iron, is commonly found in iron ore deposits.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5c128c60dba11ecb1e81171463288e9",
+        "question": "Which is more triangular: The Pro Football Hall of Fame or the Rock and Roll Hall of Fame?",
+        "actions": {
+          "direct": {
+            "short": "The Pro Football Hall of Fame",
+            "answer": "The Pro Football Hall of Fame is more triangular than the Rock and Roll Hall of Fame.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "The Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular because its exhibit wing juts out over Lake Erie, creating a distinct triangular shape.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame has a more prominent triangular shape, featuring a large glass pyramid, compared to the Pro Football Hall of Fame, which has a dome-shaped roof.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "The Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular, featuring a prominent glass pyramid structure, while the Pro Football Hall of Fame has a more traditional, rectangular design.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "The Rock and Roll Hall of Fame",
+            "answer": "The Rock and Roll Hall of Fame is more triangular because its design features a wing that juts out over Lake Erie, creating a distinct triangular shape, while no such architectural detail is mentioned for the Pro Football Hall of Fame.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5db03fe0dba11ecb1e81171463288e9",
+        "question": "What part of the Limestone Massif of northwestern Syria are part of the four ethnic mountains of western Syria?",
+        "actions": {
+          "direct": {
+            "short": "The Limestone Massif of northwestern Syria is not part of the four ethnic mountains of western Syria.",
+            "answer": "The Limestone Massif of northwestern Syria is not included among the four ethnic mountains of western Syria.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are one of the four \"ethnic mountains\" of western Syria.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "",
+            "answer": "",
+            "refusal": true,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are one of the four \"ethnic mountains\" of western Syria.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Kurd Mountains",
+            "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are one of the four \"ethnic mountains\" of western Syria.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5d331920dba11ecb1e81171463288e9",
+        "question": "Is the diet of the Metopidius indicus and the chimney swift the same?",
+        "actions": {
+          "direct": {
+            "short": "No.",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5cc8e640dba11ecb1e81171463288e9",
+        "question": "Between an Amanita lividopallescens and a Small pink fungi, which mushroom has the larger cap?",
+        "actions": {
+          "direct": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Small pink fungi",
+            "answer": "The Small pink fungi has the larger cap.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens mushroom has the larger cap compared to the small pink fungi.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens mushroom has the larger cap compared to the Small pink fungi.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Amanita lividopallescens",
+            "answer": "The Amanita lividopallescens has the larger cap compared to the small pink fungi.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5cb69580dba11ecb1e81171463288e9",
+        "question": "How are the statues positioned in the stairs at the west entrance of Sha Tin?",
+        "actions": {
+          "direct": {
+            "short": "The statues are positioned facing outward, ascending the stairs.",
+            "answer": "The statues at the west entrance of Sha Tin are arranged to face outward as they ascend the stairs.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Not mentioned in the evidence.",
+            "answer": "The evidence provided does not contain any information about statues or their positioning at the west entrance of Sha Tin.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "They are seated on red platforms along both sides of the stairs.",
+            "answer": "The statues are positioned seated on red platforms along both sides of the stairs at the west entrance of Sha Tin.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "On both sides of the stairs.",
+            "answer": "The statues are positioned on both sides of the stairs at the west entrance of Sha Tin.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "The statues are positioned along both sides of the stairs, with some seated on red platforms and others standing, flanking the pathway.",
+            "answer": "The statues at the west entrance stairs in Sha Tin are arranged along both sides of the staircase, seated on red platforms or standing, lining the path.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5df71780dba11ecb1e81171463288e9",
+        "question": "Both Medea and Rhesus were most likely written by what great playwright?",
+        "actions": {
+          "direct": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the ancient Greek playwright Euripides.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Euripides",
+            "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5c272c60dba11ecb1e81171463288e9",
+        "question": "Are the Greek islands pipes in the Museum of Greek Folk Instruments in Athens all the exact same size?",
+        "actions": {
+          "direct": {
+            "short": "No.",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "The Greek islands pipes displayed in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "The Greek islands pipes displayed in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5da29fc0dba11ecb1e81171463288e9",
+        "question": "What are the two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian?",
+        "actions": {
+          "direct": {
+            "short": "Merostomata and Remipedia",
+            "answer": "The two suborders of arthropods that first developed near the end of the Early Cambrian and thrived during the Middle Cambrian are Merostomata and Remipedia.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Agnostida",
+            "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostida and the trilobite orders Redlichiida, Corynexochida, and Ptychopariida.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Agnostida and Eodiscina",
+            "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostida and Eodiscina.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Agnostida and trilobites",
+            "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostida and trilobites.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Agnostina and Eodiscina",
+            "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostina and Eodiscina.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+        "question": "Between Union Square in NYC and Union Square in San Francisco, do either or both have palm trees?",
+        "actions": {
+          "direct": {
+            "short": "No.",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco has palm trees.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco are explicitly stated to have palm trees in the provided evidence.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Union Square in San Francisco has palm trees, but Union Square in NYC does not.",
+            "answer": "Union Square in San Francisco features palm trees, while Union Square in New York City does not.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Union Square in San Francisco has palm trees; Union Square in NYC does not.",
+            "answer": "Union Square in San Francisco features palm trees, while Union Square in New York City does not.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "No",
+            "answer": "Neither Union Square in NYC nor Union Square in San Francisco is mentioned as having palm trees in the provided evidence.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5c617e60dba11ecb1e81171463288e9",
+        "question": "Is the Golden Pavilion Temple near a pond ?",
+        "actions": {
+          "direct": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is located near a pond.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is near a pond, as the reflection of its golden surfaces on the pond is noted as a key visual feature.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is near a pond.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple is near a pond.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Yes",
+            "answer": "The Golden Pavilion Temple, specifically Kinkaku-ji in Kyoto, Japan, is located near a pond called Kyōko-chi, which reflects the pavilion.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+        "question": "Is Lavenham High Street a one-way street or is it open to two-way traffic?",
+        "actions": {
+          "direct": {
+            "short": "Two-way traffic",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "",
+            "answer": "",
+            "refusal": true,
+            "answer_first_ok": null
+          },
+          "static_image": {
+            "short": "Two-way traffic.",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Two-way traffic.",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Two-way traffic",
+            "answer": "Lavenham High Street is open to two-way traffic.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5c50c840dba11ecb1e81171463288e9",
+        "question": "Which purple flowers have the most petals?",
+        "actions": {
+          "direct": {
+            "short": "There is no single purple flower with the most petals, as petal counts vary widely by species and even individual blooms.",
+            "answer": "Purple flowers do not universally have the most petals; petal numbers depend on the specific species and can range from a few to hundreds.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Passiflora incarnata",
+            "answer": "Passiflora incarnata has five petals, which is the highest number mentioned among the purple-flowered species described.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+            "answer": "The purple flowers with the most petals are the daisy-like flowers in image E1.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "The purple flowers with the most petals are the daisy-like flowers in E1.",
+            "answer": "The purple flowers with the most petals are the daisy-like flowers in E1.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Passiflora incarnata",
+            "answer": "Passiflora incarnata has five petals and features a purple corona, making it a purple-flowered species with the most petals among those described.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5ce9d120dba11ecb1e81171463288e9",
+        "question": "Are there gaps between the petals of both the Alcea Rosea Hollyhocks and the Packera cana?",
+        "actions": {
+          "direct": {
+            "short": "Yes.",
+            "answer": "Both the Alcea Rosea Hollyhocks and the Packera cana have gaps between their petals.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "No",
+            "answer": "The evidence provided does not mention petal structure or gaps between petals for either Alcea rosea hollyhocks or Packera cana.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "No",
+            "answer": "The provided evidence only shows Alcea Rosea Hollyhocks, not Packera cana, so there are no gaps between petals to compare.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "No",
+            "answer": "The provided evidence does not contain any images or descriptions of Packera cana, so there is no basis to compare petal gaps between Alcea Rosea Hollyhocks and Packera cana.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Yes.",
+            "answer": "The petals of both Alcea Rosea Hollyhocks and Packera cana show visible gaps between them.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5d76de80dba11ecb1e81171463288e9",
+        "question": "How many bilabial consonants are used in the system that was created in 1886 so that people could write down sounds of languages in a standard way?",
+        "actions": {
+          "direct": {
+            "short": "2",
+            "answer": "The International Phonetic Alphabet, created in 1886, uses two bilabial consonants: /p/ and /b/.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_text": {
+            "short": "Eight",
+            "answer": "The system created in 1886 to standardize writing down sounds of languages, the International Phonetic Alphabet, uses eight bilabial consonants.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "10",
+            "answer": "The system created in 1886, the International Phonetic Alphabet, uses 10 bilabial consonants.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Eight",
+            "answer": "The system created in 1886 to write down sounds of languages in a standard way, the International Phonetic Alphabet, uses eight bilabial consonants.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Eight",
+            "answer": "The system created in 1886 to write down sounds of languages in a standard way—the International Phonetic Alphabet (IPA)—uses eight bilabial consonants.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5de89020dba11ecb1e81171463288e9",
+        "question": "How much closer is Gainesville Regional Airport to Gainesville than Winchester Airport is to Winchester, Ontario, Canada?",
+        "actions": {
+          "direct": {
+            "short": "Gainesville Regional Airport is approximately 1.5 miles from Gainesville, while Winchester Airport is about 10 miles from Winchester, Ontario — making Gainesville’s airport roughly 8.5 miles closer.",
+            "answer": "Gainesville Regional Airport is significantly closer to its namesake city than Winchester Airport is to Winchester, Ontario.",
+            "refusal": false,
+            "answer_first_ok": false
+          },
+          "static_text": {
+            "short": "0 miles",
+            "answer": "Gainesville Regional Airport is not closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada, as both are described as being three miles from their respective cities.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "0 miles",
+            "answer": "Gainesville Regional Airport is located in Gainesville, Florida, and there is no Winchester Airport in Winchester, Ontario, Canada, making the distance between them zero miles as they are in different countries.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "0 miles",
+            "answer": "Gainesville Regional Airport is not closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada, as both are described as being three miles from their respective cities.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "0 miles",
+            "answer": "Gainesville Regional Airport is located in Gainesville, Florida, so it is not closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada — they are both located directly within their respective cities.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      },
+      {
+        "qid": "d5dce9300dba11ecb1e81171463288e9",
+        "question": "What is the name for the type of person that is prejudiced against the victims of the attack that Philo of Alexandria describes as occurring in 38 CE and resulting in thousands of deaths?",
+        "actions": {
+          "direct": {
+            "short": "Philo of Alexandria describes the victims as being targeted by “haters” or “enemies of the Jews,” but the specific term for the prejudiced group he refers to is “anti-Jewish persecutors” or “persecutors of the Jewish people.”",
+            "answer": "The type of person Philo describes as prejudiced against the victims of the 38 CE attack is an anti-Jewish persecutor.",
+            "refusal": false,
+            "answer_first_ok": false
+          },
+          "static_text": {
+            "short": "Antisemite",
+            "answer": "The person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_image": {
+            "short": "Antisemite",
+            "answer": "The term \"antisemite\" refers to a person who holds prejudice or hatred against Jews, which aligns with the historical context of Philo of Alexandria's description of the attack in 38 CE.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "static_mixed": {
+            "short": "Antisemite",
+            "answer": "The term \"antisemite\" refers to a person who holds prejudice or hatred against Jews, which aligns with the description of the attack Philo of Alexandria documented in 38 CE.",
+            "refusal": false,
+            "answer_first_ok": true
+          },
+          "rerank_static": {
+            "short": "Antisemite",
+            "answer": "The person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+            "refusal": false,
+            "answer_first_ok": true
+          }
+        }
+      }
+    ]
+  },
+  "okvqa": {
+    "questions": 50,
+    "input_trace_counts": {
+      "direct": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0,
+        "incorrect_direct_image_count": 0
+      },
+      "static_text": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      },
+      "static_mixed": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      },
+      "rerank_static": {
+        "available": 50,
+        "images": 50,
+        "visual_tokens": 11568,
+        "refusal": 0,
+        "empty_non_refusal": 0,
+        "missing_first_token_text": 0
+      }
+    },
+    "first20_review": [
+      {
+        "qid": "3296875",
+        "question": "What is the type of dog on the woman's lap?",
+        "actions": {
+          "direct": {
+            "short": "poodle",
+            "answer": "poodle",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "cavalier king charles spaniel",
+            "answer": "cavalier king charles spaniel",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "cavalier king charles spaniel",
+            "answer": "cavalier king charles spaniel",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "bichon frise",
+            "answer": "bichon frise",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "4703135",
+        "question": "What camera is she using to take this picture?",
+        "actions": {
+          "direct": {
+            "short": "digital",
+            "answer": "digital",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "camera phone",
+            "answer": "camera phone",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "camera phone",
+            "answer": "camera phone",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "digital camera",
+            "answer": "digital camera",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "5789675",
+        "question": "How fast can this train go?",
+        "actions": {
+          "direct": {
+            "short": "200 mph",
+            "answer": "200 mph",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "311 mph",
+            "answer": "311 mph",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "311 mph",
+            "answer": "311 mph",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "300 mph",
+            "answer": "300 mph",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1736935",
+        "question": "What derby is the horse apart of?",
+        "actions": {
+          "direct": {
+            "short": "kentucky",
+            "answer": "kentucky",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "kentucky derby",
+            "answer": "kentucky derby",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "kentucky derby",
+            "answer": "kentucky derby",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "kentucky derby",
+            "answer": "kentucky derby",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "236715",
+        "question": "What move is this considered?",
+        "actions": {
+          "direct": {
+            "short": "overhand serve",
+            "answer": "overhand serve",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "serve",
+            "answer": "serve",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "serve",
+            "answer": "serve",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "float serve",
+            "answer": "float serve",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1987175",
+        "question": "The man is indicating what to the obeserver?",
+        "actions": {
+          "direct": {
+            "short": "shhh",
+            "answer": "shhh",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "shhh",
+            "answer": "shhh",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "shhh",
+            "answer": "shhh",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "shhh",
+            "answer": "shhh",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "532295",
+        "question": "Name the material which is used to make the name board shown in this picture?",
+        "actions": {
+          "direct": {
+            "short": "metal",
+            "answer": "metal",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "aluminum",
+            "answer": "aluminum",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "2031105",
+        "question": "When was this type of vehicle first made?",
+        "actions": {
+          "direct": {
+            "short": "1830",
+            "answer": "1830",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "1885",
+            "answer": "1885",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "1885",
+            "answer": "1885",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "1885",
+            "answer": "1885",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "4400005",
+        "question": "The natural structure shown is made of what material?",
+        "actions": {
+          "direct": {
+            "short": "rock",
+            "answer": "rock",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "rock",
+            "answer": "rock",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "rock",
+            "answer": "rock",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "bamboo",
+            "answer": "bamboo",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "2018255",
+        "question": "Who made this?",
+        "actions": {
+          "direct": {
+            "short": "cake maker",
+            "answer": "cake maker",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "oren neu dag",
+            "answer": "oren neu dag",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "oren neu dag",
+            "answer": "oren neu dag",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "Thomas Mayer",
+            "answer": "Thomas Mayer",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1546075",
+        "question": "What kind of climate do those trees flourish in?",
+        "actions": {
+          "direct": {
+            "short": "warm",
+            "answer": "warm",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "warm and sunny",
+            "answer": "warm and sunny",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "warm and sunny",
+            "answer": "warm and sunny",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "tropical",
+            "answer": "tropical",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "5427825",
+        "question": "What time of year is it?",
+        "actions": {
+          "direct": {
+            "short": "winter",
+            "answer": "winter",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "winter",
+            "answer": "winter",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "winter",
+            "answer": "winter",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "autumn",
+            "answer": "autumn",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1974995",
+        "question": "What year did the company advertising on the side of this bag open for business?",
+        "actions": {
+          "direct": {
+            "short": "1946",
+            "answer": "1946",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "1901",
+            "answer": "1901",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "1901",
+            "answer": "1901",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "1901",
+            "answer": "1901",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "293465",
+        "question": "What makes up the smoke stack on this cake?",
+        "actions": {
+          "direct": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "marshmallow",
+            "answer": "marshmallow",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "4812675",
+        "question": "What activity is the man in the canoe about to do?",
+        "actions": {
+          "direct": {
+            "short": "row",
+            "answer": "row",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "canoeing",
+            "answer": "canoeing",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "canoeing",
+            "answer": "canoeing",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "paddle",
+            "answer": "paddle",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "5528425",
+        "question": "What position is the player playing?",
+        "actions": {
+          "direct": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "pitcher",
+            "answer": "pitcher",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1187415",
+        "question": "How high can this kite fly?",
+        "actions": {
+          "direct": {
+            "short": "100 feet",
+            "answer": "100 feet",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "300 feet",
+            "answer": "300 feet",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "2984405",
+        "question": "What model plane is this?",
+        "actions": {
+          "direct": {
+            "short": "boeing 737",
+            "answer": "boeing 737",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "cessna 172",
+            "answer": "cessna 172",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "cessna 172",
+            "answer": "cessna 172",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "Boeing 737",
+            "answer": "Boeing 737",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "2022015",
+        "question": "Where are these donuts being made?",
+        "actions": {
+          "direct": {
+            "short": "bakery",
+            "answer": "bakery",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "not specified",
+            "answer": "not specified",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "not specified",
+            "answer": "not specified",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "in a bakery",
+            "answer": "in a bakery",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      },
+      {
+        "qid": "1863225",
+        "question": "What city is this in?",
+        "actions": {
+          "direct": {
+            "short": "new york",
+            "answer": "new york",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_text": {
+            "short": "new york",
+            "answer": "new york",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "static_mixed": {
+            "short": "new york",
+            "answer": "new york",
+            "refusal": false,
+            "answer_first_ok": null
+          },
+          "rerank_static": {
+            "short": "new york city",
+            "answer": "new york city",
+            "refusal": false,
+            "answer_first_ok": null
+          }
+        }
+      }
+    ]
+  }
+}
