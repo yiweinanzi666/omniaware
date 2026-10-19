@@ -1,0 +1,811 @@
+{
+  "dataset": "webqa_full",
+  "source_commit": "318ab6c59a9bba7d379e166d119074443bb68892",
+  "sample": "first20 original S1 order, all available actions",
+  "actions_reviewed": 100,
+  "manual_gate": "FAIL",
+  "sentence_first_lines": 1,
+  "decision": "Stop WebQA before S2. Do not iterate prompts without a new approved plan.",
+  "checks": [
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Red Fox Battalion",
+      "answer": "The Red Fox Battalion came first, predating the British officer later known as the \"Red Fox.\"",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Red Fox Battalion",
+      "answer": "The \"Red Fox Battalion\" came first, as it was formed on 22 September 1917, predating Lieutenant Albert Michael Sinclair, known as the \"Red Fox,\" who was a prisoner during World War II.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "British military officer",
+      "answer": "The British military officer later known as the \"Red Fox\" came first, as there is no historical record of a \"Red Fox Battalion\" in military history.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "British military officer",
+      "answer": "The British military officer, Lieutenant Albert Michael Sinclair, known as the \"Red Fox,\" predates the \"Red Fox Battalion\" by several decades.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d3d7f00dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Red Fox Battalion",
+      "answer": "The \"Red Fox Battalion\" came first, established on 22 September 1917, predating the British officer known as \"Red Fox\" who was active during World War II.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d5742a0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Persephone",
+      "answer": "The daughter of Zeus and Demeter is named Persephone.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d5742a0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Proserpina",
+      "answer": "The daughter of Zeus and Demeter is known in Latin as Proserpina.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d5742a0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Persephone",
+      "answer": "The daughter of Zeus and Demeter is named Persephone.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d5742a0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Persephone",
+      "answer": "The daughter of Zeus and Demeter is named Persephone.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d5742a0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Kore",
+      "answer": "The daughter of Zeus and Demeter is called Kore.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Clinker-built",
+      "answer": "Quadriremes were likely constructed using clinker-built shipbuilding techniques, where overlapping planks are fastened together.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Frame-first construction",
+      "answer": "Quadriremes were likely built using frame-first construction, a technique originating from Mediterranean shipbuilding traditions.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Keel and frame construction",
+      "answer": "Quadriremes were built using keel and frame construction, a technique that provided structural integrity for large, oared warships.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Frame-first construction",
+      "answer": "Quadriremes, like other ancient warships, were likely built using frame-first construction, where the internal framework is assembled before attaching the planks.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d034e20dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Frame-first construction",
+      "answer": "Quadriremes were likely built using frame-first construction, a technique involving laying down the vessel’s framework before attaching planks.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db7faa0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Siderite",
+      "answer": "Siderite, an iron(II) carbonate mineral that is 48% iron by mass, is commonly found in sedimentary rocks and hydrothermal deposits.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. First line names a mineral while second line supplies a location: question/answer-content issue recorded separately, not automatically called a format failure."
+    },
+    {
+      "qid": "d5db7faa0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Siderite",
+      "answer": "Siderite, the mineral composed of iron (II) carbonate and containing 48% iron, is commonly found in iron formations and sedimentary rocks.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. First line names a mineral while second line supplies a location: question/answer-content issue recorded separately, not automatically called a format failure."
+    },
+    {
+      "qid": "d5db7faa0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Siderite",
+      "answer": "Siderite, a mineral composed of iron(II) carbonate and containing 48% iron, is commonly found in sedimentary rocks.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. First line names a mineral while second line supplies a location: question/answer-content issue recorded separately, not automatically called a format failure."
+    },
+    {
+      "qid": "d5db7faa0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Siderite",
+      "answer": "Siderite, the mineral composed of iron (II) carbonate and containing 48% iron, is commonly found in iron ore deposits.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. First line names a mineral while second line supplies a location: question/answer-content issue recorded separately, not automatically called a format failure."
+    },
+    {
+      "qid": "d5db7faa0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Siderite",
+      "answer": "Siderite, the mineral composed of iron (II) carbonate, is commonly found in iron ore deposits and is valued for being 48% iron.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. First line names a mineral while second line supplies a location: question/answer-content issue recorded separately, not automatically called a format failure."
+    },
+    {
+      "qid": "d5c128c60dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Rock and Roll Hall of Fame",
+      "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c128c60dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "The Rock and Roll Hall of Fame",
+      "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c128c60dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Rock and Roll Hall of Fame",
+      "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame due to its prominent pyramid-like glass structure.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c128c60dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Rock and Roll Hall of Fame",
+      "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c128c60dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Rock and Roll Hall of Fame",
+      "answer": "The Rock and Roll Hall of Fame is more triangular than the Pro Football Hall of Fame.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Jabal al-Akrad",
+      "answer": "The Jabal al-Akrad is part of the four ethnic mountains of western Syria and lies within the Limestone Massif of northwestern Syria.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Kurd Mountains",
+      "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are among the four \"ethnic mountains\" of western Syria.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Al-Hasakah",
+      "answer": "The Al-Hasakah region, part of the Limestone Massif in northwestern Syria, is one of the four ethnic mountains of western Syria.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Kurd Mountains",
+      "answer": "The Kurd Mountains are part of the Limestone Massif of northwestern Syria and are one of the four ethnic mountains of western Syria.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5db03fe0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Kurd Mountains",
+      "answer": "The Kurd Mountains, part of the Limestone Massif of northwestern Syria, are among the four \"ethnic mountains\" of western Syria.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d331920dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "No",
+      "answer": "The diet of Metopidius indicus and the chimney swift is not the same.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d331920dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "No",
+      "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift eats flying insects and spiders, while the bronze-winged jacana forages on floating aquatic vegetation.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d331920dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "No",
+      "answer": "The diet of the Metopidius indicus and the chimney swift is not the same.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d331920dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "No",
+      "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift feeds on flying insects and spiders, while the bronze-winged jacana forages on aquatic vegetation.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d331920dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "No",
+      "answer": "The diet of the Metopidius indicus and the chimney swift is not the same; the chimney swift feeds on flying insects and spiders, while the bronze-winged jacana forages on aquatic vegetation.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cc8e640dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Amanita lividopallescens",
+      "answer": "The Amanita lividopallescens has a larger cap than the Small pink fungi.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cc8e640dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Small pink fungi",
+      "answer": "The Small pink fungi has the larger cap compared to the Amanita lividopallescens.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cc8e640dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Amanita lividopallescens",
+      "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cc8e640dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Amanita lividopallescens",
+      "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cc8e640dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Amanita lividopallescens",
+      "answer": "The Amanita lividopallescens has the larger cap compared to the Small pink fungi.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Facing outward",
+      "answer": "The statues at the west entrance stairs of Sha Tin are positioned facing outward.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Not mentioned",
+      "answer": "The statues at the west entrance of Sha Tin are not described in the provided evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. Semantic abstention wording is not identified by existing refusal flag; preserve parser-defined metrics."
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "On both sides",
+      "answer": "The statues are positioned on both sides of the stairs at the west entrance of Sha Tin.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "On both sides",
+      "answer": "The statues are positioned on both sides of the stairs at the west entrance of Sha Tin.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5cb69580dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "On both sides",
+      "answer": "The statues are positioned on both sides of the stairs at the west entrance of the Ten Thousand Buddhas Monastery in Sha Tin.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5df71780dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Euripides",
+      "answer": "Both Medea and Rhesus were written by the ancient Greek playwright Euripides.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5df71780dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Euripides",
+      "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5df71780dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Euripides",
+      "answer": "Both Medea and Rhesus were written by the great playwright Euripides.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5df71780dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Euripides",
+      "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5df71780dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Euripides",
+      "answer": "Both Medea and Rhesus were most likely written by the great playwright Euripides.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c272c60dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "No",
+      "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c272c60dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "No",
+      "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c272c60dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "No",
+      "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c272c60dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "No",
+      "answer": "The Greek islands pipes displayed in the Museum of Greek Folk Instruments in Athens are not all the exact same size, as shown by the varying lengths and designs of the Askomandoura pipes from Ikaria, Cephalonia, Kalymnos, and Karpathos.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c272c60dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "No",
+      "answer": "The Greek islands pipes in the Museum of Greek Folk Instruments in Athens are not all the exact same size.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5da29fc0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Merostomata and Remipedia",
+      "answer": "The two suborders of arthropods that first developed near the end of the Early Cambrian and thrived during the Middle Cambrian are Merostomata and Remipedia.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5da29fc0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Agnostida",
+      "answer": "The order Agnostida, an arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian, is the subject of the question, though it is not divided into two suborders as implied.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5da29fc0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Agnostida and Eodiscina",
+      "answer": "The two suborders of arthropods that first developed near the end of the Early Cambrian and thrived during the Middle Cambrian are Agnostida and Eodiscina.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5da29fc0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Agnostida",
+      "answer": "The two suborders of the order of arthropod that first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian are Agnostida and the trilobites from the Redlichiida, Corynexochida, and Ptychopariida orders.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5da29fc0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Agnostina and Eodiscina",
+      "answer": "The two suborders of the order Agnostida, which first developed near the end of the Early Cambrian period and thrived during the Middle Cambrian, are Agnostina and Eodiscina.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "No",
+      "answer": "Neither Union Square in NYC nor Union Square in San Francisco has palm trees.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "No",
+      "answer": "Neither Union Square in NYC nor Union Square in San Francisco are mentioned as having palm trees in the provided evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "San Francisco",
+      "answer": "Union Square in San Francisco has palm trees, while Union Square in NYC does not.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "San Francisco",
+      "answer": "Union Square in San Francisco has palm trees, but Union Square in NYC does not.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ccc8fc0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "No",
+      "answer": "Neither Union Square in NYC nor Union Square in San Francisco is mentioned as having palm trees in the provided evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c617e60dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Yes",
+      "answer": "The Golden Pavilion Temple is located near a pond.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c617e60dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Yes",
+      "answer": "The Golden Pavilion Temple is near a pond, as the reflection of its golden surfaces on the pond is noted as a key visual feature.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c617e60dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Yes",
+      "answer": "The Golden Pavilion Temple is situated near a pond, as shown in multiple images of the temple reflecting in the water.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c617e60dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Yes",
+      "answer": "The Golden Pavilion Temple is situated near a pond, as evidenced by its reflection visible in the water in multiple images.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c617e60dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Yes",
+      "answer": "The Golden Pavilion Temple, specifically Kinkaku-ji in Kyoto, Japan, is located near a pond called Kyōko-chi.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Two-way",
+      "answer": "Lavenham High Street is open to two-way traffic.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Not specified",
+      "answer": "The provided evidence does not indicate whether Lavenham High Street is one-way or open to two-way traffic.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. Semantic abstention wording is not identified by existing refusal flag; preserve parser-defined metrics."
+    },
+    {
+      "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Two-way",
+      "answer": "Lavenham High Street is open to two-way traffic.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Two-way",
+      "answer": "Lavenham High Street is open to two-way traffic.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c5b92c0dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Two-way traffic",
+      "answer": "Lavenham High Street is open to two-way traffic.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Hydrangea macrophylla",
+      "answer": "Hydrangea macrophylla has the most petals among purple flowers, often displaying hundreds per bloom.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "Passiflora incarnata",
+      "answer": "Passiflora incarnata has five petals, which is the highest number mentioned among the purple flowers described.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Aster novae-angliae",
+      "answer": "The purple Aster novae-angliae flowers have the most petals, with each flower displaying numerous slender, elongated petals radiating from a yellow center.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Aster",
+      "answer": "The purple aster flowers have the most petals, with each flower displaying numerous slender petals surrounding a yellow center.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5c50c840dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Passiflora incarnata",
+      "answer": "Passiflora incarnata has five petals, which is the highest number mentioned among the purple flowers listed.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ce9d120dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "No",
+      "answer": "Neither Alcea Rosea Hollyhocks nor Packera cana have noticeable gaps between their petals.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ce9d120dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "No",
+      "answer": "There are no gaps between the petals of either the Alcea Rosea Hollyhocks or the Packera cana, as neither species is described with such a feature in the provided evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ce9d120dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "No",
+      "answer": "There are no gaps between the petals of the Alcea Rosea Hollyhocks shown, and Packera cana is not depicted in the evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ce9d120dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "No",
+      "answer": "There are no gaps between the petals of Alcea Rosea Hollyhocks, and Packera cana is not depicted in the evidence.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5ce9d120dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Yes",
+      "answer": "Both Alcea Rosea Hollyhocks and Packera cana have visible gaps between their petals.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d76de80dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "None",
+      "answer": "The 1886 system, the International Phonetic Alphabet, does not use bilabial consonants as a category but rather specifies individual sounds, including bilabial ones like /p/, /b/, /m/, which are part of its inventory.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d76de80dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "eight",
+      "answer": "The system created in 1886 to write down sounds of languages in a standard way, the International Phonetic Alphabet, uses eight bilabial consonants.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d76de80dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "1886",
+      "answer": "The system created in 1886, the International Phonetic Alphabet, uses 1886 bilabial consonants.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d76de80dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Eight",
+      "answer": "The system created in 1886, the International Phonetic Alphabet, uses eight bilabial consonants.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5d76de80dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "eight",
+      "answer": "The system created in 1886 to write down sounds of languages in a standard way, the International Phonetic Alphabet, uses eight bilabial consonants.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Gainesville Regional Airport is closer.",
+      "answer": "Gainesville Regional Airport is closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+      "format": "FAIL",
+      "note": "First line is a full sentence and only says closer, rather than a distance. Manual short-answer requirement fails."
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "3 miles closer",
+      "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Not applicable",
+      "answer": "Gainesville Regional Airport is not in Ontario, Canada, and there is no Winchester Airport in Ontario, so the question cannot be answered with a distance.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label. Semantic abstention wording is not identified by existing refusal flag; preserve parser-defined metrics."
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "3 miles closer",
+      "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5de89020dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "3 miles",
+      "answer": "Gainesville Regional Airport is 3 miles closer to Gainesville than Winchester Airport is to Winchester, Ontario, Canada.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "direct",
+      "short": "Sadducees",
+      "answer": "The Sadducees were the group prejudiced against the victims of the attack Philo of Alexandria described in 38 CE, which resulted in thousands of deaths.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "static_text",
+      "short": "antisemite",
+      "answer": "A person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "static_image",
+      "short": "Antisemite",
+      "answer": "The term for the type of person prejudiced against the victims of the attack Philo of Alexandria described in 38 CE is an antisemite.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "static_mixed",
+      "short": "Antisemite",
+      "answer": "A person prejudiced against Jews, the victims of the attack Philo of Alexandria described in 38 CE, is called an antisemite.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    },
+    {
+      "qid": "d5dce9300dba11ecb1e81171463288e9",
+      "action": "rerank_static",
+      "short": "Antisemite",
+      "answer": "A person prejudiced against the victims of the attack described by Philo of Alexandria in 38 CE is called an antisemite.",
+      "format": "PASS",
+      "note": "Concise word/phrase on first line; complete sentence follows. This is a format check, not a semantic accuracy label."
+    }
+  ]
+}

@@ -10,9 +10,16 @@ from __future__ import annotations
 import hashlib
 
 INSTRUCTIONS = {
-    "webqa": ("Write the short answer alone on the first line. On the second line, answer in one complete sentence "
-              "that restates the key object in the question."),
-    "okvqa": "Answer the question using a single word or phrase.",   # DEV_DECISIONS revision of 2026-10-14
+    # User-approved format revision; development exposure is disclosed in DEV_DECISIONS (2026-10-18).
+    "webqa": ("Return exactly two lines. On the first line, give only the shortest word or phrase that directly "
+              "answers the question. Keep words needed to identify the answer, including complete names, numbers "
+              "and units. Do not restate the question, explain the answer, or add a label on the first line. "
+              "On the second line, write one complete sentence that states the same answer and restates the key "
+              "object in the question. Do not add any other lines."),
+    "okvqa": ("Answer the question using only the shortest word or phrase that directly answers it. Keep words "
+              "needed to identify the answer, including complete names, numbers and units. Omit introductory "
+              "wording and words that only repeat the question. Do not explain the answer, add a label, or write "
+              "a complete sentence."),
     "hybridqa": "Please respond with only the exact answer.",
     "videorag": "Please respond in a complete sentence.",
 }

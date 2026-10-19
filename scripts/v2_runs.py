@@ -77,7 +77,7 @@ def dev_check_path(decisions: str) -> str:
 
 def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decisions: str | None = None,
                 split: str | None = None, tag: str | None = None, baselines: bool = False,
-                seakr: bool = True, analysis_eab: bool = False) -> list[str]:
+                seakr: bool = True, analysis_eab: bool = False, dtype: str = "bfloat16") -> list[str]:
     """One omniaware.run command. ``baselines`` adds the external baseline arms (FiTM, M2-RAG, SeaKR) that the
     main table reports next to the v2 actions; ``seakr=False`` leaves out SeaKR (its cost, see docs/V2_RUNS.md).
     ``analysis_eab`` adds the ans1 EAB arm of the mechanism analysis (--analysis-eab); no v2 step reads it."""
@@ -90,6 +90,7 @@ def run_command(stage: str, dataset: str, *, n_eval: int | None = None, decision
         "--dataset", dataset,
         "--split", split,
         "--model", MODEL,
+        "--dtype", dtype,
         "--tag", tag,
         "--calib-source", DATASETS[dataset],
         "--n-calib", N_CALIB,
@@ -205,13 +206,13 @@ def check_dev_check(decisions: str, allow_failed: bool) -> list[str]:
 
 def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seakr: bool = True,
          allow_failed_dev_check: bool = False,
-         position_ablation: bool = False) -> tuple[list[list[str]], list[list[str]], list[str]]:
+         position_ablation: bool = False, dtype: str = "bfloat16") -> tuple[list[list[str]], list[list[str]], list[str]]:
     """Return (commands run in order, lines that are printed but never executed, notes printed before the commands)."""
     if stage == "s1":
         smoke = 50 if n is None else n
         if smoke < 1:
             raise SystemExit("S1 --n must be a positive number of questions")
-        cmd = run_command(stage, dataset, n_eval=smoke)
+        cmd = run_command(stage, dataset, n_eval=smoke, dtype=dtype)
         cmd += ["--max-empty-rate", S1_MAX_EMPTY_RATE]
         return [cmd, format_command(f"v2_{stage}_{dataset}", dataset)], [image_evidence_command(smoke)], []
     if n is not None:
@@ -224,9 +225,9 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
         calib_tag, dev_tag = f"v2_s2_{dataset}_calib", f"v2_s2_{dataset}_dev"
         # run.py writes per-question records only for --split, so calibration and dev are decoded separately.
         # The baseline arms are decoded on the dev run only: the calibration table reads the v2 actions alone.
-        runs = [run_command(stage, dataset, split="calib", tag=calib_tag),
+        runs = [run_command(stage, dataset, split="calib", tag=calib_tag, dtype=dtype),
                 run_command(stage, dataset, split="dev", tag=dev_tag, baselines=True, seakr=seakr,
-                            analysis_eab=True)]
+                            analysis_eab=True, dtype=dtype)]
         runs += [score_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [build_command(tag, dataset) for tag in (calib_tag, dev_tag)]
         runs += [position_command(dev_tag, dataset), audit_command(dev_tag, dataset)]
@@ -234,7 +235,7 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
             # The same development questions under the sentence-only instruction: there the first generated token
             # is often a template word, so the analysis can compare it with the answer token inside one decode.
             sentence_tag = f"{dev_tag}_sentence"
-            runs += [run_command(stage, dataset, split="dev", tag=sentence_tag) + ["--answer-style", "sentence"],
+            runs += [run_command(stage, dataset, split="dev", tag=sentence_tag, dtype=dtype) + ["--answer-style", "sentence"],
                      score_command(sentence_tag, dataset), build_command(sentence_tag, dataset),
                      position_command(sentence_tag, dataset)]
         runs += [gate_command(dev_tag, dataset), select_command(calib_tag, dataset),
@@ -248,7 +249,7 @@ def plan(stage: str, dataset: str, *, n: int | None, decisions: str | None, seak
         notes += check_dev_check(decisions, allow_failed_dev_check)
         tag = f"v2_s4_{dataset}"
         return [run_command(stage, dataset, decisions=decisions, tag=tag, baselines=True, seakr=seakr,
-                            analysis_eab=True),
+                            analysis_eab=True, dtype=dtype),
                 score_command(tag, dataset), build_command(tag, dataset), apply_command(tag, dataset, decisions)], \
             [], notes
     raise SystemExit(f"unknown stage {stage}")
@@ -282,6 +283,8 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--stage", required=True, choices=("s1", "s2", "s4"))
     ap.add_argument("--dataset", required=True, choices=tuple(DATASETS))
+    ap.add_argument("--dtype", default="bfloat16", choices=("bfloat16", "float32"),
+                    help="precision for every decode, including calibration and position ablation")
     ap.add_argument("--n", type=int, default=None, help="S1 smoke size (default 50)")
     ap.add_argument("--decisions", default=None,
                     help="S4 frozen decisions JSON (required for s4; S2 writes one per dataset to "
@@ -307,7 +310,7 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("--position-ablation is for --stage s2 on a WebQA dataset (an answer-first format)")
     commands, printed_only, notes = plan(args.stage, args.dataset, n=args.n, decisions=args.decisions,
                                          seakr=not args.no_seakr, allow_failed_dev_check=args.allow_failed_dev_check,
-                                         position_ablation=args.position_ablation)
+                                         position_ablation=args.position_ablation, dtype=args.dtype)
     for note in notes:
         print(note)
     for cmd in commands + printed_only:

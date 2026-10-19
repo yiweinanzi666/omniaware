@@ -321,6 +321,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=sorted(data.LOADERS))
     ap.add_argument("--model", default="2b", choices=["2b", "8b", "internvl3.5-8b"])
+    ap.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float32"],
+                    help="model precision; verify real weights with the same dtype before running")
     ap.add_argument("--max-patches", type=int, default=1, help="InternVL: 448px tiles per image (256 tokens each)")
     ap.add_argument("--split", required=True, choices=["calib", "dev", "test"],
                     help="calib: decode the calibration questions; dev: tune here; test: run once with frozen settings")
@@ -650,7 +652,12 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
 
     model_path = {"8b": paths.QWEN_8B, "2b": paths.QWEN_2B, "internvl3.5-8b": paths.INTERNVL_8B}[args.model]
     t0 = time.time()
-    qwen = QwenEAB(model_path, max_pixels=args.max_pixels, max_patches=args.max_patches)
+    requested_dtype = getattr(torch, args.dtype)
+    qwen = QwenEAB(model_path, dtype=requested_dtype,
+                   max_pixels=args.max_pixels, max_patches=args.max_patches)
+    actual_dtype = getattr(getattr(qwen, "model", None), "dtype", None)
+    if actual_dtype is not None and actual_dtype != requested_dtype:
+        raise RuntimeError(f"requested model dtype {requested_dtype}, loaded {actual_dtype}")
     qwen.capture_at = qwen.n_layers // 2 if args.attn_layer == "mid" else -1
     print(f"[model] {args.model} loaded on {qwen.device} in {time.time() - t0:.1f}s, {qwen.n_layers} layers", flush=True)
     # One line per launch (a resumed or sharded run appends): code version, libraries, hardware, model loading.
@@ -842,11 +849,12 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
                                                     short_instruction=pipeline.SHORT_INSTRUCTION)
     instruction_tag = f"_ins{run_instruction['instruction_sha256'][:12]}"
     ucal_path = cache_dir / (f"ucal_{args.dataset}_{args.model}_k{args.k}_{args.image_mode}_n{args.n_calib}"
-                             f"_{args.calib_source}{args.split_seed}{style}{instruction_tag}.json")
+                             f"_{args.calib_source}{args.split_seed}{style}{instruction_tag}_{args.dtype}.json")
     # Each calibration entry is keyed by its fingerprint: question content, every setting its raw values depend
     # on, and (for route-rule query) the hash of the UniversalRAG route file.
     query_routes_sha = runio.sha256_file(args.query_routes) if args.query_routes else None
     ucal_settings = {"encoders": runio.encoder_identity(), "model": args.model, "model_path": str(model_path),
+                     "dtype": args.dtype,
                      "answer_style": args.answer_style, "instruction_sha256": run_instruction["instruction_sha256"],
                      "k": args.k, "image_mode": args.image_mode, "beta": args.beta,
                      "min_per_modality": args.min_per_modality, "modality_routing": args.modality_routing,
@@ -919,6 +927,7 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     variants = [pipeline.parse_variant(v) for v in args.variants.split(",") if v]
 
     seakr_settings = {"model": args.model, "model_path": str(model_path), "answer_style": args.answer_style,
+                      "dtype": args.dtype,
                       "instruction_sha256": run_instruction["instruction_sha256"],
                       "samples": args.seakr_samples, "max_new_tokens": args.seakr_max_new_tokens}
 
@@ -929,7 +938,7 @@ def evaluate(ap, args, out_dir: Path, norm_source: dict | None) -> None:
     if args.seakr_samples:
         scache_path = cache_dir / (f"seakr_{args.dataset}_{args.model}_n{args.seakr_samples}_m{args.seakr_max_new_tokens}"
                                    f"_c{args.n_calib}_{args.calib_source}{args.split_seed}{style}"
-                                   f"{instruction_tag}.json")
+                                   f"{instruction_tag}_{args.dtype}.json")
         saved_scache = json.loads(scache_path.read_text(encoding="utf8")) if scache_path.exists() else {}
         scache = {e["qid"]: saved_scache[e["qid"]] for e in calib
                   if e["qid"] in saved_scache and saved_scache[e["qid"]].get("fingerprint") == seakr_fingerprint(e)}
