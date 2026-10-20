@@ -16,6 +16,29 @@
 
 完整 CPU 回归与真实权重数值检查通过后重新做两套 50 题 S1、人工前 20 题格式及图像/溯源验收。数值和自动格式通过不替代人工判定；任一条失败或不明确则停止该数据集，不自动迭代提示词。S1 全部明确通过才从新的 S2 校准重新开始；S4 仍禁止。该修订尚未有新提示词运行结果，不宣称能通过格式关卡或提高得分。
 
+## 修订：接受 node04 S1 人工格式结果，从新的 S2 校准开始（2026-10-20，已观察 S1 开发样例后）
+
+**决定。** 2026-10-18 批准的 WebQA 与 OK-VQA 两条指令保持不变。两套 S1（源码 `318ab6c`，运行 namespace `fp32_format_20261018`）的人工格式结果判为可接受，两个数据集从新的 S2 校准开始。本决定在查看 S1 开发样例之后作出，修订的是 2026-10-18 修订中“S1 全部明确通过才从新的 S2 校准重新开始”一条；论文与交接文档按事后修订披露。
+
+**人工判定事实**（`docs/results/node04_format_validation_20261018/format_*_manual_review.json`，固定前 20 题、全部可用动作）：
+
+- WebQA：100 个动作中 1 个偏差。qid `d5de89020dba11ecb1e81171463288e9` 的 `direct` 第一行为整句 `Gainesville Regional Airport is closer.`，也没有回答问题中的 how much。其余 99 个动作第一行为短答案；自动结构检查 `answer_first_ok` 在全部 5 个动作上为 1.000。
+- OK-VQA：80 个动作中 2 个偏差。qid `2022015`（“Where are these donuts being made?”）的 `static_text` 与 `static_mixed` 均输出 `at a donut shop`，保留了引导词 at a。其余 78 个为词或短语；完整名称与有意义的多词短语（如 `on premises`）按格式通过。
+- 各动作 `template_start`：WebQA `direct` 0.10、`static_text` 0.22、`static_image` 0.18、`static_mixed` 0.16、`rerank_static` 0.16；OK-VQA 0.04–0.08。用户确认这些差异不构成 HANDOFF 第 2 条所说的“某个动作的 `template_start` 明显高于其他动作”。
+
+**接受理由。**
+
+1. 偏差集中且比例低：WebQA 1/100，出现在一题的一个动作；OK-VQA 2/80，出现在同一题的两个证据动作。
+2. 信号仍读在承载答案的 token 上。`signals.answer_slot` 跳过 `FUNCTION_WORDS`（含 at、a），三处偏差的答案槽分别落在 `Gainesville` 与 `donut` 的首个 token，答案 token 上的 U_omni 测量位置与格式正确的输出一致。
+3. 偏差不改变官方得分。WebQA 官方评分读第二行整句，第一行只用于信号与 token F1。qid `2022015` 的 10 个参考答案为 bakery ×6、dunkin donuts ×2、ukraine ×2，`at a donut shop` 与去掉引导词后的 `donut shop` 在 VQA 精确匹配下同为 0 分。
+4. 再改提示词会在同一批开发样例上叠加第二次事后修订，并作废现有 S1 验收；2026-10-18 修订已规定不自动迭代提示词。
+
+**保持不变。** 指令文本、解析器、官方评分、拒答规则、阈值、图像与生成预算、split seed 2027 和题目切分均不变；偏差答案原样保留，不按 gold 删词或改写。S1 输出不进入 S2：S2 的校准、开发集答案与决定文件全部重新生成，提示词哈希继续隔离 U/SeaKR 校准。S2 的 gate（相对差距 ≥ +8%）与 devcheck（相对最强单一动作 ≥ +5%，配对 bootstrap 95% CI 下界 > 0）照常执行；S4 只在二者都通过后运行，每个数据集一次。
+
+**披露。** S2 结束后，按同一人工标准复核开发集前 20 题全部动作的格式，报告偏差数，与本修订一同写入结果报告。该复核只用于披露，不改变 gate、select、devcheck 或主表。
+
+用户于 2026-10-20 明确批准本修订。
+
 ## 运行（两阶段，因为 β、τ_b 会改变 EAB 偏置的强度）
 
 ```bash
