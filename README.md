@@ -10,7 +10,7 @@ Omni-Aware 是面向多模态 Web 问答的隐空间证据控制。它在一个�
 
 > **拿到代码后先读 [docs/HANDOFF_v2.md](docs/HANDOFF_v2.md)。** 它按顺序写了要做什么、在哪两处必须停下来等判断、每一步回传什么。
 >
-> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 主表实验还没有跑。** 截至 2026-10-18，真实 Qwen3-VL-8B 的 FP32 自检通过（BF16 未通过，见 [docs/NODE04_FP32.md](docs/NODE04_FP32.md)，`--dtype` 默认为 `float32`）；两套 S1 冒烟完成 50/50，但人工格式关卡未通过，S2 尚未在 FP32 下运行，S4 未运行（[重验报告](docs/results/20261018_node04_format_revalidation_report.md)）。 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
+> **当前状态（v2）：** 方向是风险控制下的逐题仲裁。**正式 v2 主表实验还没有跑。** 截至 2026-10-18，真实 Qwen3-VL-8B 的 FP32 自检通过（BF16 未通过，见 [docs/NODE04_FP32.md](docs/NODE04_FP32.md)，`--dtype` 默认为 `float32`）；两套 S1 冒烟完成 50/50，但人工格式关卡未通过（[重验报告](docs/results/20261018_node04_format_revalidation_report.md)）；2026-10-20 用户批准修订，接受该 S1 结果并从新的 S2 校准开始（[DEV_DECISIONS](docs/DEV_DECISIONS.md) 2026-10-20 修订，事后修订）。S2 尚未在 FP32 下运行，S4 未运行。 论文里尚未跑出的实验数字都是占位符 `\ph`。旧仓库、论文 V3.20，以及相对历史缓存基线算出的提升，都不能当作结果。v1 EAB 降为分析。协议见 [docs/PROTOCOL.md](docs/PROTOCOL.md)，表与命令的对应见 [docs/PAPER_TABLE_MAP.md](docs/PAPER_TABLE_MAP.md)。预注册条文见 [docs/DEV_DECISIONS.md](docs/DEV_DECISIONS.md) 的 v2 预注册一节；测试命令只读冻结文件 `runs/v2_decisions/<dataset>.json`。
 
 作废、不得进入论文主表的旧结果：
 
